@@ -1,0 +1,168 @@
+{
+  "schema": "bac-source-review-independence-v1",
+  "reviewer": "/root/bac_astra_wip22_terminal_review",
+  "producer": "/root/bac_pop_standalone_step_prepare",
+  "runtime_evidence_producer": "/root",
+  "independent": true,
+  "created_at": "2026-11-14T08:55:46.207392+00:00",
+  "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r124-candidate.json",
+    "bytes": 208211,
+    "sha256": "f63c225e8d12669906f89cc78fef468cd6da01ddcdab01d18ca859d2fcb0e25c"
+  },
+  "source_inventory": [
+    {
+      "root": "R",
+      "path": "src/townlet/population/vectorized.py",
+      "bytes": 161106,
+      "sha256": "ea05fddb584cc7836e663e2aa2cada3c4dca1fcbc08584e030efa1816ac4bf38",
+      "lines": 3163
+    },
+    {
+      "root": "R",
+      "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "bytes": 36347,
+      "sha256": "2621285b5d259be7f4bf8eb5e7b2ae1d2eb29c867923a7e2aa043c9e6246f7ef",
+      "lines": 791
+    },
+    {
+      "root": "R",
+      "path": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+      "bytes": 4534,
+      "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509",
+      "lines": 102
+    }
+  ],
+  "prior_charged_body": {
+    "root": "W",
+    "path": "evidence-management/wip22-preparation/terminal-independent-check-v1.py",
+    "bytes": 6835,
+    "sha256": "00886fc5a25cc015a210f1a46de0b8d5720bd3e49d4a4b735aa74516c9e4c6af",
+    "lines": 115
+  },
+  "charged_lines": 4171,
+  "charged_bodies": 4,
+  "scope": "Actual standalone POP sample/cleanup source and assertion-causality review; supplier implementations opaque; no application execution by reviewer.",
+  "disposition": "REQUEST CHANGES: R124 planned prerequisite qualification is incomplete",
+  "findings": [
+    {
+      "id": "R124-1",
+      "priority": "P2",
+      "title": "Reconcile failed-step diagnostics with genuine quarantine",
+      "source": "src/townlet/population/vectorized.py",
+      "line": 2507,
+      "changed_trigger_line": 2115
+    },
+    {
+      "id": "R124-2",
+      "priority": "P2",
+      "title": "Migrate the required A-only standalone sample witness",
+      "source": "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "line": 301,
+      "evidence_basis": "Original observed traceback; this implementation body was not opened."
+    }
+  ],
+  "evidence": [
+    {
+      "root": "W",
+      "path": "wave35/r124-candidate.json",
+      "bytes": 208211,
+      "sha256": "f63c225e8d12669906f89cc78fef468cd6da01ddcdab01d18ca859d2fcb0e25c"
+    },
+    {
+      "root": "W",
+      "path": "wave35/r123-candidate.json",
+      "bytes": 208092,
+      "sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793"
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-POP-STANDALONE-STEP-CLEANUP-PLAN-v1.md",
+      "bytes": 9092,
+      "sha256": "247c0ec85b0b10d40d182bcc0c6dc3671b3f52ed8dca3bc900042a909e1c71ba"
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-POP-STANDALONE-STEP-CLEANUP-IMPLEMENTATION-HANDOFF-v1.md",
+      "bytes": 4151,
+      "sha256": "2102102034f2df397ff87e5efccdc3e8ecd4a4e2e47e46259b6ad55449df2b51"
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-PARENT-REPLAY-CURRENT-SUPPLIER.md",
+      "bytes": 22883,
+      "sha256": "f6c48b621acbc26f9198a8e25f71a6f25b29fc4697d8f3e7d0bf77a0154b7b37"
+    },
+    {
+      "root": "W",
+      "path": "wave35-preparation/T18e-R0-REPLAY-FIX-B-CURRENT-API.md",
+      "bytes": 5835,
+      "sha256": "5a2292099017c7fa32180ee0384f4e2221096496535e28c31b5a49b234cb3bf5"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/parent-c1/doc-draft/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "bytes": 6085,
+      "sha256": "b9debb77ad27bb918f3bcc4a3923c015a68a74b3fafb0971105d4f5140b537eb"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/pop-standalone-step/r124-static-attempt-1/summary.json",
+      "bytes": 6465,
+      "sha256": "498ef14f493afcc472d25d7e3038fca3b9897d76ef424ecc5734161d8236a79b"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/pop-standalone-step/r123-root-red-disposition-v1.json",
+      "bytes": 1074,
+      "sha256": "694ee1cbf4798bd9220999bf0a3fae3eb2c8e75bf6dcbcd4585fa6b9a54509b4"
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r124-pop-original-attempt-1/pop-original-result.json",
+      "bytes": 1042,
+      "sha256": "b4f91e3ff97f2eab871dad0a58722808848266c09def5628cebed0c934408a47"
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r124-pop-original-attempt-1/pop-original.log",
+      "bytes": 578,
+      "sha256": "f25430a88697f26778c949982382c954594c200f04cba1f127d3a94540871b6b"
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r124-pop-original-attempt-1/pop-original-custody.json",
+      "bytes": 644,
+      "sha256": "e5eb65eaf3bf5b01a4e078524058da97bc6641f839e1b74743504ae346ca0678"
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r124-pop-step-owners-attempt-1/pop-step-owners-result.json",
+      "bytes": 1456,
+      "sha256": "cddee6c984a75a521841e031106b7d87de940db4288f2d41da2cd492f0c63536"
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r124-pop-step-owners-attempt-1/pop-step-owners.log",
+      "bytes": 10502,
+      "sha256": "af1e12bc87f05e020d7fbab13aae9840161be858d220dee6a8e5fe61accb2d9c"
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r124-pop-step-owners-attempt-1/pop-step-owners-negative-custody.json",
+      "bytes": 960,
+      "sha256": "864c3cbfa4b428cd0585e8d9a6431b93d10bf21b8d23918d468a608b8d679da5"
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r124-pop-step-owners-attempt-1/pop-step-owners-failure-index.json",
+      "bytes": 1100,
+      "sha256": "d20d99e409918044134a95e8e46dbbca55aba30b349508a7cf7811e1b2b6816d"
+    }
+  ],
+  "independence_basis": "Dedicated reviewer did not author the patch, tests, plan, or runtime records. Prior WIP22 evidence review did not inspect these APP bodies. Source hashes/diff, original test assertions, attributed producer contracts, and actual root execution records independently examined.",
+  "mutations": "Only this review and its source/independence JSON; no APP/index/Git or runtime action."
+}

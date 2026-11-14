@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-14T09:01:01.622388+00:00",
+  "status": "frozen for independent review; root adoption required before consumer use",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/freeze-v4.json",
+    "bytes": 3836,
+    "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+  },
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+      "bytes": 37058,
+      "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+    }
+  ],
+  "line_counts": {
+    "bac_hardware_protocol_v1.py": 526,
+    "test_bac_hardware_protocol_v1.py": 686
+  },
+  "budget": {
+    "files": 2,
+    "maximum_lines": 1400
+  },
+  "inert_sources": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/green01/bac_hardware_protocol_v1.py.txt",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/green01/test_bac_hardware_protocol_v1.py.txt",
+      "bytes": 37058,
+      "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+    }
+  ],
+  "schema": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/schema-inventory-v3.json",
+    "bytes": 22851,
+    "sha256": "2a209f16710538935b6ee276df0acb0837a10687717840a3bd089e596edaec8a"
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+    "bytes": 13987,
+    "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+  },
+  "red": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+    "bytes": 3274,
+    "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+  },
+  "green": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+    "bytes": 3282,
+    "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+  },
+  "test_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/green01/output.log",
+    "bytes": 260,
+    "sha256": "ce0350dfb08d81566f1988a7a7901be42dcf0cb2da882b8a529fcab55018495f"
+  },
+  "authority": "Root implementation grant in agent conversation; P3 quiescence confirmed before mutation; no P3 retry until root adoption",
+  "boundary": "Only two Q P0 bodies edited; no APP source/runtime or Git/index operations; no P3/full-chain/hardware qualification claimed."
+}

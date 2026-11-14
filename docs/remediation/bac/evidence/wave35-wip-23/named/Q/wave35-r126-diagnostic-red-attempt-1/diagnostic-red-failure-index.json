@@ -1,0 +1,137 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_tree": "c02a3aa45c487a74d8b4e1ed408df786f69f304e",
+  "unique_node_phase_failures": 30,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where False = callable(None)",
+      "count": 30,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_preserves_native_local_failure_contract[per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_retains_completion_history[shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[empty_participation-runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_preserves_native_local_failure_contract[shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_retains_completion_history[per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_pending_completion[bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[healthy-bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[healthy-runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_restore-runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[empty_participation-bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_unauthenticated_quarantine[bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_unauthenticated_quarantine[runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_pending_completion[runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_restore-bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_callbacks_cannot_borrow_authority[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[install_restore-runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_callbacks_cannot_borrow_authority[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[install_restore-bank]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

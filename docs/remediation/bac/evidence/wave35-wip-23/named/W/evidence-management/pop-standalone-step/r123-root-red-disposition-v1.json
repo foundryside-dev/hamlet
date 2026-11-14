@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-14T08:49:31.569253+00:00",
+  "candidate_manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r123-candidate.json",
+  "candidate_manifest_sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793",
+  "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+  "collection_count": 23,
+  "red_counts": {
+    "failed": 9,
+    "passed": 1,
+    "skipped": 0,
+    "errors": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "custody": "PASS",
+  "classification": {
+    "new_sample_missing_lineage_before_injected_sentinel": 4,
+    "new_physics_reached_real_step_but_wrong_quarantine_reason": 4,
+    "original_handoff_missing_lineage_plus_secondary_quarantine_note": 1,
+    "original_env_failure_stage_control_pass": 1
+  },
+  "intended_causal_assertions_reached": true,
+  "disposition": "Approve only three planned explicit current-protocol caller edits; preserve all assertions. Not full C1/BAC acceptance.",
+  "scope": "R123 RED, before POP edits; overlapping collection is not runtime"
+}

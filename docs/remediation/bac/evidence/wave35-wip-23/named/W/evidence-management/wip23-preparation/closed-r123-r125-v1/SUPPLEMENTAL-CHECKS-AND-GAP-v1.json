@@ -1,0 +1,178 @@
+{
+  "status": "CLOSED SUPPORTING CHECKS AND EXACT MISSING-SNAPSHOT GAP",
+  "static_checks": [
+    {
+      "check": "R124-static-black-0",
+      "kind": "static",
+      "status": "PASSED",
+      "record": {
+        "root": "W",
+        "path": "evidence-management/pop-standalone-step/r124-static-attempt-1/black-0.json",
+        "bytes": 949,
+        "sha256": "322539ead835d29ecd5e620ebdc8440f196c6de4dd791492695ce433799e11ce"
+      },
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/population/vectorized.py"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-11-14T08:52:48.567722+00:00",
+      "ended_at": "2026-11-14T08:52:49.316100+00:00",
+      "runtime_counts": null,
+      "scope": "Static command; not pytest runtime or collection coverage."
+    },
+    {
+      "check": "R124-static-black-1",
+      "kind": "static",
+      "status": "PASSED",
+      "record": {
+        "root": "W",
+        "path": "evidence-management/pop-standalone-step/r124-static-attempt-1/black-1.json",
+        "bytes": 980,
+        "sha256": "017417fd9a8554f20067b9f725943b8760cfd70aa1079334fdde32e3ab7b2578"
+      },
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-11-14T08:52:49.316492+00:00",
+      "ended_at": "2026-11-14T08:52:49.696031+00:00",
+      "runtime_counts": null,
+      "scope": "Static command; not pytest runtime or collection coverage."
+    },
+    {
+      "check": "R124-static-black-2",
+      "kind": "static",
+      "status": "PASSED",
+      "record": {
+        "root": "W",
+        "path": "evidence-management/pop-standalone-step/r124-static-attempt-1/black-2.json",
+        "bytes": 990,
+        "sha256": "45680c86ac83fbf45ebe18271e80c44bc94175c7dbc010900d3cdb189ccdf05e"
+      },
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-11-14T08:52:49.696524+00:00",
+      "ended_at": "2026-11-14T08:52:49.881417+00:00",
+      "runtime_counts": null,
+      "scope": "Static command; not pytest runtime or collection coverage."
+    },
+    {
+      "check": "R124-static-mypy",
+      "kind": "static",
+      "status": "FAILED",
+      "record": {
+        "root": "W",
+        "path": "evidence-management/pop-standalone-step/r124-static-attempt-1/mypy.json",
+        "bytes": 952,
+        "sha256": "7816a85a708241d5dd84f9688f6f00c687e632d58e7fef679ff147f253a4a250"
+      },
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet",
+        "--show-error-codes",
+        "--no-incremental"
+      ],
+      "exit_code": 1,
+      "started_at": "2026-11-14T08:52:13.053884+00:00",
+      "ended_at": "2026-11-14T08:52:47.372012+00:00",
+      "runtime_counts": null,
+      "scope": "Static command; not pytest runtime or collection coverage."
+    },
+    {
+      "check": "R124-static-no-defaults",
+      "kind": "static",
+      "status": "PASSED",
+      "record": {
+        "root": "W",
+        "path": "evidence-management/pop-standalone-step/r124-static-attempt-1/no-defaults.json",
+        "bytes": 1022,
+        "sha256": "e60fa95600b3e8ca7465748143e2e22cfae91d5ea44bce39b94a740b783e94c6"
+      },
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-11-14T08:52:47.373048+00:00",
+      "ended_at": "2026-11-14T08:52:48.566949+00:00",
+      "runtime_counts": null,
+      "scope": "Static command; not pytest runtime or collection coverage."
+    },
+    {
+      "check": "R124-static-ruff",
+      "kind": "static",
+      "status": "PASSED",
+      "record": {
+        "root": "W",
+        "path": "evidence-management/pop-standalone-step/r124-static-attempt-1/ruff.json",
+        "bytes": 905,
+        "sha256": "9f8a3e70558c93c67846ee38aef6cbdad6ab606a450eda226b0c867a254f4427"
+      },
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "exit_code": 0,
+      "started_at": "2026-11-14T08:52:12.711725+00:00",
+      "ended_at": "2026-11-14T08:52:13.053466+00:00",
+      "runtime_counts": null,
+      "scope": "Static command; not pytest runtime or collection coverage."
+    }
+  ],
+  "unresolved_exact_snapshot": {
+    "logical_path": "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+    "rounds": [
+      123,
+      124
+    ],
+    "sha256": "9186a953f79cd8b4cf2a4fea47c6ff24197ae53764b6d2e6fa33267f78000bd5",
+    "bytes": 36730,
+    "git_blob": "aca1d4532f65b2f784e11bc30e4061defcadaba2",
+    "git_tree_observations": {
+      "R123": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "R124": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87"
+    },
+    "available_in_git": true,
+    "body_interpreted": false,
+    "source_copy_created": false,
+    "remaining": "No existing exact inert source snapshot found in finite supplied snapshot or WIP22 object pools. Root may preserve exact blob bytes at a new inert path when authorized; never substitute R125/current source."
+  },
+  "P0_intentional_symlink_fixture_count": 236,
+  "preparation_failure": {
+    "root": "W",
+    "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/preparation-attempt-1-failure.json",
+    "bytes": 413,
+    "sha256": "90e1a548c0fabeadf515e97e317ae92387de5866ad39aa65fd3cd3d9fcdf1ebc"
+  },
+  "scope": "No source copied or interpreted; no root selector, seal, active P3 selection, Git writes or page/doc edits."
+}

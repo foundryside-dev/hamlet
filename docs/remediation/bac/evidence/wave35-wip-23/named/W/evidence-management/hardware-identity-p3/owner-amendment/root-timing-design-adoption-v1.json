@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-14T09:11:42.129989+00:00",
+  "status": "ROOT ADOPTS REVIEWED ADDITIVE P3 TIMING DESIGN FOR BOUNDED IMPLEMENTATION",
+  "proposal": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-TIMING-AMENDMENT-v2.md",
+    "bytes": 9747,
+    "sha256": "2804f48102a6dc3a209fb75b9749a766ea535118aa383e7ab217b75f4948157e"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-TIMING-INDEPENDENT-REVIEW-v2.md",
+    "bytes": 2706,
+    "sha256": "6f0bb7fbb5387083a870582cbd9a5739a3b9efe26aedb0015bc4e8efcec1b60d"
+  },
+  "scope": "Existing two P3 bodies, five-body3878line ceiling. Prefix measurements distinct from actual owner return brackets; parent ack/reap10s corroboration preserves original margins. Existing accepted CPU-bound policy/resource linkage mandatory.",
+  "remaining": "Actual owner/P2/P4/P5 instrumentation/integration and hardware unqualified; source/workload resource authorization not inferred from policy alone."
+}

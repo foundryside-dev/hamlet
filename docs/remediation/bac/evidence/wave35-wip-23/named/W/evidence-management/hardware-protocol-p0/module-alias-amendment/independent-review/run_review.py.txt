@@ -1,0 +1,45 @@
+import datetime, hashlib, json, os, subprocess
+from pathlib import Path
+D = Path(__file__).parent
+Q = Path("/workspace/bac-review-2026-11-01/qualification")
+F = D.parent / "freeze-v5.json"
+def ref(p):
+    b = p.read_bytes()
+    return {"path": str(p), "bytes": len(b), "sha256": hashlib.sha256(b).hexdigest()}
+def now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+freeze = json.loads(F.read_text())
+assert ref(F)["sha256"] == "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+verified = []
+def walk(obj):
+    if isinstance(obj, dict):
+        if {"path", "sha256", "bytes"} <= obj.keys():
+            actual = ref(Path(obj["path"]))
+            assert all(actual[k] == obj[k] for k in actual), obj["path"]
+            verified.append(actual)
+        for v in obj.values(): walk(v)
+    elif isinstance(obj, list):
+        for v in obj: walk(v)
+walk(freeze)
+sources = [Q / "bac_hardware_protocol_v1.py", Q / "test_bac_hardware_protocol_v1.py", D / "test_independent_alias.py", Path(__file__)]
+before = [dict(ref(p), lines=len(p.read_bytes().splitlines())) for p in sources]
+assert len(sources) <= 5 and sum(x["lines"] for x in before) <= 5000
+cpu = min(os.sched_getaffinity(0))
+os.sched_setaffinity(0, {cpu})
+env = dict(os.environ)
+overrides = {"PYTHONDONTWRITEBYTECODE": "1", "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "CUDA_VISIBLE_DEVICES": "", "PYTHONPATH": str(Q)}
+env.update(overrides)
+argv = ["/workspace/hamlet/.venv/bin/python", "-B", "-m", "pytest", "-c", "/dev/null", "--rootdir", str(Q), "--noconftest", "-p", "no:cacheprovider", "--basetemp", str(D / "tmp"), "-q", str(sources[1]), str(sources[2])]
+start = now()
+with (D / "output.log").open("xb") as log:
+    child = subprocess.Popen(argv, cwd=Q, env=env, stdout=log, stderr=subprocess.STDOUT)
+    actual_argv = Path(f"/proc/{child.pid}/cmdline").read_bytes().rstrip(b"\0").decode().split("\0")
+    affinity = sorted(os.sched_getaffinity(child.pid))
+    code = child.wait(timeout=90)
+end = now()
+after = [ref(p) for p in sources]
+assert all(a["sha256"] == b["sha256"] for a,b in zip(before, after))
+record = dict(argv=argv, actual_argv=actual_argv, pid=child.pid, start=start, end=end, exit_code=code, cpu_affinity=affinity, cwd=str(Q), environment_overrides=overrides, sources_before=before, sources_after=after, freeze=ref(F), verified_freeze_references=verified, log=ref(D / "output.log"))
+(D / "execution.json").write_text(json.dumps(record, indent=2) + "\n")
+print(json.dumps({"exit_code":code, "pid":child.pid, "sources_lines":sum(x["lines"] for x in before), "record":ref(D / "execution.json")}))
+print((D / "output.log").read_text())

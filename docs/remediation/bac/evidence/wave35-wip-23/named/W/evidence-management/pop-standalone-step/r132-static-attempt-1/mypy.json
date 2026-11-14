@@ -1,0 +1,23 @@
+{
+  "name": "mypy",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "mypy",
+    "src/townlet",
+    "--show-error-codes",
+    "--no-incremental"
+  ],
+  "cwd": "/workspace/hamlet",
+  "start_utc": "2026-11-14T09:57:00.036709+00:00",
+  "parent_pid": 219577,
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r132-candidate.json",
+  "manifest_sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a",
+  "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+  "script_sha256": "3992706d818f101cea7646cfad82f3c56618203415f7c0a3195d85bbfa50b9d3",
+  "pid": 219617,
+  "exit_code": 1,
+  "end_utc": "2026-11-14T09:57:32.222162+00:00",
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.log",
+  "log_sha256": "74e12f2b7af7064426ea505bddb1fc3bef3416216c3b983cace7b3a0518fd0dc"
+}

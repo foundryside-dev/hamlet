@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-14T09:50:26.053736+00:00",
+  "exact_Q_members": 24,
+  "hash_reference_occurrences_verified": 533,
+  "scope": "Byte/reference and exact selected directory membership checks only; no APP, Git, qualification or final seal.",
+  "status": "PASS",
+  "verified_rounds": [
+    126,
+    127,
+    128,
+    129
+  ]
+}

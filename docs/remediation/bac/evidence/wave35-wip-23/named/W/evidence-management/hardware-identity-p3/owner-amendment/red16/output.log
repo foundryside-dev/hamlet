@@ -1,0 +1,56 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_primitive_reference_rejects_namespace_replacement ____________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...tive_reference_rejec0/freeze.json', 'sha256': '0217783e66a2a8f9da8ae8ce7688c0f7e36f2b6b16672442513ae423ef468ab7'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f126a2cc640>
+
+    def test_primitive_reference_rejects_namespace_replacement(capsule,monkeypatch):
+        api=_api();parent=capsule['tmp']/'namespace';parent.mkdir();target=parent/'data';target.write_bytes(b'actual bytes')
+        original=api._directory;calls=0
+        def replace(path):
+            nonlocal calls
+            if str(path)==str(parent):
+                calls+=1
+                if calls==2:
+                    parent.rename(parent.with_name('old-namespace'));parent.mkdir()
+                    os.link(parent.with_name('old-namespace')/'data',target)
+            return original(path)
+        monkeypatch.setattr(api,'_directory',replace)
+>       with pytest.raises(ValueError,match='namespace'):api._primitive_ref(str(target))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:874: Failed
+____________ test_preparation_uses_existing_cpu_bound_justification ____________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...ration_uses_existing0/freeze.json', 'sha256': '2b2712ec7d97d51fba229238e5f112754a4f101d8f4311909f7a3dfcc488663c'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f126a23eea0>
+
+    def test_preparation_uses_existing_cpu_bound_justification(capsule,monkeypatch):
+        import fcntl
+        api,_=_owner(capsule,monkeypatch,'fork-guard');_fork_policy(capsule)
+>       ref=capsule['job']['obligations'][-1]['contract'];launch=_launch(capsule,api,ref,monkeypatch,'fork')
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:880: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:630: in _launch
+    start=api.record_process(capsule['context'],'start')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:394: in record_process
+    _require(protocol.file_reference(Path(protocol.__file__))['sha256']==PROTOCOL_SHA, 'protocol bytes unadopted')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, message = 'protocol bytes unadopted'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: protocol bytes unadopted
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:43: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_primitive_reference_rejects_namespace_replacement
+FAILED test_bac_hardware_identity_v1.py::test_preparation_uses_existing_cpu_bound_justification
+2 failed, 80 deselected in 0.90s

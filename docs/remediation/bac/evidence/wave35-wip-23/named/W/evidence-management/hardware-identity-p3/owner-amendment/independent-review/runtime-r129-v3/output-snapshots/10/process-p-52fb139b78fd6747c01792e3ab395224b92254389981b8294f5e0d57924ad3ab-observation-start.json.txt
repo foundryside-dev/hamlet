@@ -1,0 +1,175 @@
+{
+  "at": "2026-11-14T09:39:41.805351Z",
+  "context": {
+    "command": {
+      "bytes": 5095,
+      "path": "/tmp/bac-p3-inert-n9htnqsy/output/attempt/job/command.json",
+      "sha256": "90b0f2145c8ca7aba417f43112160ff907a5e8d3449e494a45f5b8b8fdd4a6cc"
+    },
+    "environment_delta": {
+      "common": {},
+      "worker": {}
+    },
+    "job_id": "job",
+    "lifecycle": [
+      {
+        "bytes": 37054,
+        "path": "/tmp/bac-p3-inert-n9htnqsy/output/attempt/job/owner-launch-child-1.json",
+        "sha256": "12bc6457597c3c2e164c80da4655e07cba6c81b19e5954e41182b517e70aef3c"
+      }
+    ],
+    "parent_start": [
+      {
+        "bytes": 37484,
+        "path": "/tmp/bac-p3-inert-n9htnqsy/output/attempt/job/process-p-bc7c2a7369cc197660fa2c831db754d75556dabc5a93d8582f6b1553590485f4-start.json",
+        "sha256": "888c0a7efe604ee52adca8a22a83bb71a4050e8dc1a7da261dd78793450a93ba"
+      }
+    ],
+    "policy": [],
+    "replacement_start": [],
+    "required_imports": [
+      {
+        "name": "inert_module",
+        "phases": [
+          "end"
+        ],
+        "reference": {
+          "bytes": 19,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/runtime-r129-v3/tmp/test_preloaded_fork_recorder_z0/source/pkg/inert-module.txt",
+          "sha256": "68dbe2e07dc5305478dcf486a2597403d9a3f4fae0f35459655f69fedee57b99"
+        }
+      }
+    ],
+    "role_id": "fork-guard",
+    "runtime": [],
+    "schema": "bac-hardware-identity-context-v1",
+    "spec": {
+      "bytes": 13409,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/runtime-r129-v3/tmp/test_preloaded_fork_recorder_z0/spec.json",
+      "sha256": "35086e1290a0337ff09ade853c7dc9e4200a0657e2c0b49c04a3acee1eed3447"
+    },
+    "trusted_grant": {
+      "bytes": 3235,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/runtime-r129-v3/tmp/test_preloaded_fork_recorder_z0/grant.json",
+      "sha256": "718e2bd4637222f6198f7c3a24ceae7458e37b46231ccaf4ce9f4e97bbbf7e10"
+    },
+    "worker_identity": null,
+    "worker_roles": []
+  },
+  "cuda_marker": null,
+  "environment": {
+    "BROWSER_MANAGEMENT_SOCKET_PATH": "/home/agent/.local/run/browser-management/socket",
+    "CAAS_DIND_STORAGE_DRIVER": "vfs",
+    "CAAS_IMAGE_GIT_COMMIT_SHA": "969fca457cb91df54eb491d22bcaff20654139fe",
+    "CAAS_IMAGE_VERSION": "20261019221748-969fca457cb9",
+    "CLOUDSDK_CORE_CUSTOM_CA_CERTS_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS": "1",
+    "CODEX_BROWSER_DEFER_ACTIVATION": "1",
+    "CODEX_CAAS_SESSION_ID": "8b2c2c5624924e16852b25f75fe6149b",
+    "CODEX_CI": "1",
+    "CODEX_ENVIRONMENT_ID": "ccarenv_b64_Y2NhcmVudl9iNTE4NmVkNmE1NzQ4MTkxYTI4Njc1NDgxMTY2MDc3Yw",
+    "CODEX_EXEC_SERVER_PROXY_PRIVATE_IPS_VIA_UPSTREAM": "true",
+    "CODEX_EXEC_SERVER_REMOTE_BASE_URL": "https://codex-cloud-environments.chatgpt.com/api",
+    "CODEX_HOME": "/home/agent/.codex",
+    "CODEX_NO_UPDATE": "1",
+    "CODEX_PRIMARY_RUNTIME": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PRIMARY_RUNTIME_BUNDLE_VERSION": "26.1013.11914",
+    "CODEX_PRIMARY_RUNTIME_NODE": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "CODEX_PRIMARY_RUNTIME_NODE_MODULES": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "CODEX_PRIMARY_RUNTIME_PYTHON": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "CODEX_PRIMARY_RUNTIME_ROOT": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PROXY_CERT": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "CODEX_SANDBOX_NETWORK_DISABLED": "1",
+    "CODEX_SESSION_ID": "01a193e8-ae65-741d-9700-f53bdb72809b",
+    "CODEX_THREAD_ID": "6af828bf-7468-8191-b064-2c6e0ca5c09d",
+    "CODEX_TOOL_CALL_ID": "exec-8c587659-d817-4b2e-ad0e-1f111e8efcee",
+    "CODEX_VERSION": "0.0.0",
+    "COLORTERM": "",
+    "COLUMNS": "80",
+    "CUDA_VISIBLE_DEVICES": "",
+    "DEBIAN_FRONTEND": "noninteractive",
+    "DOCKER_IGNORE_BR_NETFILTER_ERROR": "1",
+    "DOCKER_TLS_CERTDIR": "",
+    "GH_PAGER": "cat",
+    "GH_TOKEN": "ghu_codex-cloud-github-proxy",
+    "GIT_PAGER": "cat",
+    "GRPC_DEFAULT_SSL_ROOTS_FILE_PATH": "/etc/ssl/certs/ca-certificates.crt",
+    "HOME": "/home/agent",
+    "HTTPS_PROXY": "http://proxy:8080",
+    "HTTP_PROXY": "http://proxy:8080",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "LINES": "24",
+    "MKL_NUM_THREADS": "1",
+    "NETWORK": "caas_neko_desktop",
+    "NODE_EXTRA_CA_CERTS": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "NODE_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "NO_COLOR": "1",
+    "NO_PROXY": "localhost,127.0.0.1,::1",
+    "NPM_CONFIG_AUDIT": "false",
+    "NPM_CONFIG_FUND": "false",
+    "NPM_CONFIG_PREFIX": "/home/agent/.local",
+    "OMP_NUM_THREADS": "1",
+    "OPENAI_CLUSTER": "applied-caas24",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PAGER": "cat",
+    "PATH": "/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "PLAYWRIGHT_NODEJS_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "PWD": "/workspace",
+    "PYTEST_CURRENT_TEST": "test_inert (call)",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTEST_VERSION": "8.4.2",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification",
+    "REMOTE_DESKTOP_H265_ENABLED": "0",
+    "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
+    "RUST_LOG": "codex_exec_server=info,codex_cli=info,error",
+    "SHELL": "/bin/bash",
+    "SHLVL": "0",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "TERM": "dumb",
+    "USER": "agent",
+    "_": "/usr/bin/taskset",
+    "http_proxy": "http://proxy:8080",
+    "https_proxy": "http://proxy:8080",
+    "no_proxy": "localhost,127.0.0.1,::1"
+  },
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 215495,
+    "ppid": 215489,
+    "start_identity": "12849203"
+  },
+  "module_names_after_sha256": "040d0993aa374fee7644429482ea0e2bfbb57e03cca177ee0275fbc43f68f61a",
+  "module_names_before_sha256": "040d0993aa374fee7644429482ea0e2bfbb57e03cca177ee0275fbc43f68f61a",
+  "observation_limit": "guard-only: no Torch/CUDA calls permitted",
+  "owner_claim": [
+    {
+      "bytes": 530,
+      "path": "/tmp/bac-p3-inert-n9htnqsy/output/attempt/job/owner-claim-child-1.json",
+      "sha256": "fd7aee21978f7cefa3507a9c1e8260c022fc5ce8838c25b74ae01d5230417fd8"
+    }
+  ],
+  "phase": "start",
+  "python_debug": true,
+  "python_optimize": 0,
+  "recorder_mode": "fork-guard",
+  "sampler": [
+    {
+      "bytes": 2888,
+      "path": "/tmp/bac-p3-inert-n9htnqsy/output/attempt/job/sampler-p-52fb139b78fd6747c01792e3ab395224b92254389981b8294f5e0d57924ad3ab-start.json",
+      "sha256": "79634c4df951bd1e96d9aa70cc6d901328591c6e05bde2a47841fc0d809177af"
+    }
+  ],
+  "schema": "bac-hardware-process-observation-v2",
+  "source_method": "direct-git",
+  "torch_anomaly": {
+    "reason": "guard-only: no Torch/CUDA calls permitted",
+    "state": "unavailable",
+    "value": null
+  },
+  "torch_loaded": true,
+  "worker_identity": null
+}

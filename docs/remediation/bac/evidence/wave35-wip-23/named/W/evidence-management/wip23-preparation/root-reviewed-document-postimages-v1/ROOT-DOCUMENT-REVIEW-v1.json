@@ -1,0 +1,41 @@
+{
+  "status": "ROOT SOURCE-VERIFIED AND APPROVED EXACT DOCUMENT POSTIMAGES; APPLY ONLY WITH SEALED WIP23 PUBLICATION",
+  "at": "2026-11-14T10:05:25.824056+00:00",
+  "files": [
+    {
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "bytes": 9158,
+      "sha256": "80389141f88757ec09b5503aca379248e018aa6b3724bb8c1edf26edef764206",
+      "original_sha256": "e89b4c5bb92ab38d4715b844bb26091785fa197ae343b81e21d1c5e6d0186058"
+    },
+    {
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/EVIDENCE-INDEX.md",
+      "bytes": 24746,
+      "sha256": "68e427f83864e3b463e48565b820cce8debbe73976589ccd3491b6472cb7fafd",
+      "original_sha256": "c0035652a7fa91cf93995f83ad924a8fcf8c439bc438b8ad69b947aca5292ff5"
+    },
+    {
+      "destination": "README.md",
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/README.md",
+      "bytes": 33433,
+      "sha256": "a055986ffc6f1901bce6819cb759b48e0b92fd940d2d347e97e8e02d6f06214f",
+      "original_sha256": "6a8a4c4ea597026cd2bc78105af676fbc4954e0500d4dd5faace745a4b17fcb3"
+    },
+    {
+      "destination": "docs/remediation/bac/STATUS.md",
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/STATUS.md",
+      "bytes": 113723,
+      "sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371",
+      "original_sha256": "c523b8959fba692e336894dffedf1e2dc4221cf4961e3ab1d8e209dbe5fc9135"
+    }
+  ],
+  "candidate_manifest_sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58",
+  "basis": "Root read actual runtime/BANK diagnostic eligibility/capture/loaders and POP complete export/selector/cleanup; independent R131 producer, fresh R132 POP and R133 typing reviews; exact R133 runtime/static and own-source R132 records. Existing retention text preserved. Unrelated historical STATUS bytes restored exactly after WIP22 marker.",
+  "scope": "Component repair only; no full BAC, CUDA, global typing, broader owner or final CI pass claim."
+}

@@ -1,0 +1,21 @@
+{
+  "role": "body_distinct",
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-body-distinct-attempt-1-spec.json",
+  "spec_sha256": "a8ae27dd8c0ebafed6847242030b62c722e800e11584f4fe85b1cbf47163a008",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-body-distinct-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T09:55:43.548293+00:00",
+  "environment_delta": {
+    "BAC_PARENT_C1_POISON_CASE": "body_distinct"
+  },
+  "orchestrator_pid": 218604,
+  "script_sha256": "cb7579d7e686048e1397e483ef2fa12b6b1854a558d85878c9ee81c6bc3192c9",
+  "launcher_pid": 218613,
+  "launcher_start_ticks": 12945389,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T09:55:54.171753+00:00"
+}

@@ -1,0 +1,30 @@
+{
+  "name": "pop-step-collection",
+  "exit_code": 0,
+  "seconds": 4.732666237003286,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+    "--collect-only",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r123-pop-step-collection-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r123-pop-step-collection-attempt-1/pop-step-collection.log",
+  "sha256": "2d86702b6b29cb50c98706740578ce3256e67ca092396421a6292573d0a0a892",
+  "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "manifest_sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

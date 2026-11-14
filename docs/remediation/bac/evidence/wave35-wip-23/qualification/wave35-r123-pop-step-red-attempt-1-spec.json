@@ -1,0 +1,31 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r123-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r123-pop-step-red-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "pop-step-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay[shared-none]",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution[env-executing-0]",
+        "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r123-pop-step-red-attempt-1"
+      ]
+    }
+  ]
+}

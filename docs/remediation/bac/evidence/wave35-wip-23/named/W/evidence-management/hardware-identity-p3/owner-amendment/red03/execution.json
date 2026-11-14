@@ -1,0 +1,63 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "owner_launch_binds_actual_call or actual_call_registry"
+  ],
+  "actual_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "owner_launch_binds_actual_call or actual_call_registry"
+  ],
+  "pid": 209001,
+  "stat": "209001 (python) R 209000 208996 208996 0 -1 4194560 25 0 0 0 0 0 0 0 20 0 1 0 12536770 7708672 0 18446744073709551615 4325376 7599353 140722141991728 0 0 0 0 0 0 0 0 0 17 1 0 0 0 0 0 10436024 11028232 240775168 140722141995500 140722141995789 140722141995789 140722141999061 0\n",
+  "start": "2026-11-14T08:47:37.365548+00:00",
+  "end": "2026-11-14T08:47:38.234168+00:00",
+  "exit_code": 1,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "sha256": "c4c9aa1802105b204bf968cb57eebd320bf0e5d45a97df99c437225a0fc03fb8",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red03/bac_hardware_identity_v1.py.txt",
+      "lines": 630
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "sha256": "4f17591e91438e9338d04d4301d7b50467661acd80202e77bebd8caefc0cf97a",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red03/test_bac_hardware_identity_v1.py.txt",
+      "lines": 625
+    }
+  ],
+  "interpreter": "/usr/bin/python3.13",
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cpu_max": "400000 100000\n",
+  "memory_current": "2264797184\n"
+}

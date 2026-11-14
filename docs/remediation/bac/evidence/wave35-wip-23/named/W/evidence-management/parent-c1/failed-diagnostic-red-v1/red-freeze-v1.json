@@ -1,0 +1,77 @@
+{
+  "status": "TEST-ONLY RED frozen; not executed",
+  "files": [
+    {
+      "path": "/workspace/hamlet/src/townlet/config/exploration_policy.py",
+      "sha256": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9",
+      "lines": 1313
+    },
+    {
+      "path": "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py",
+      "sha256": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4",
+      "lines": 1443
+    },
+    {
+      "path": "/workspace/hamlet/src/townlet/exploration/parent_custody.py",
+      "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f",
+      "lines": 239
+    },
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "sha256": "b968c943bafccfe2f6317464380a286fe3de3ae5efa7e0e32ae09e61ede1ee4b",
+      "lines": 1165
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-C1-FAILED-DIAGNOSTIC-IMPLEMENTATION-PLAN-v1.md",
+      "sha256": "3137a53537a0561665dafccef940c9fe4ada035e1c0eaf2c9e351309a18bbf1a",
+      "lines": 41
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-C1-FAILED-DIAGNOSTIC-SUPPLIER-v2.md",
+      "sha256": "b0d78028aaea09479d089646505c0b7b379fbc5c2cc2293161862f1b852d411f",
+      "lines": 22
+    }
+  ],
+  "ordinary_nodes": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_retains_completion_history[shared]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_retains_completion_history[per_world]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[healthy-runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[healthy-bank]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[empty_participation-runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[empty_participation-bank]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_unauthenticated_quarantine[runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_unauthenticated_quarantine[bank]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_restore-runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_restore-bank]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-bank]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[install_restore-runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[install_restore-bank]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_callbacks_cannot_borrow_authority[False]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_callbacks_cannot_borrow_authority[True]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_pending_completion[runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_pending_completion[bank]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_preserves_native_local_failure_contract[shared]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_preserves_native_local_failure_contract[per_world]"
+  ],
+  "isolated_poison_nodes": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection"
+  ],
+  "poison_environment": {
+    "BAC_PARENT_C1_POISON_CASE": "diagnostic_completion"
+  },
+  "poison_witness": "parent-c1-diagnostic_completion.json",
+  "existing_poison_roles": "unchanged, require their existing separate fresh-process schedules",
+  "validation": "AST parse, Black --check and Ruff check PASS; no APP import, collection, or execution",
+  "node_expansion": "AST-derived explicit parameters; root must bind actual collection to sealed candidate"
+}

@@ -1,0 +1,1852 @@
+{
+  "accounting": "R130collection42 and41FAIL; R131focused41PASS and isolated generic poison1PASS. New poison RED UNRUN. Counts overlap and are not summed.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r130-candidate.json",
+            "root": "W",
+            "sha256": "7caed99a9143d99991ad3db140a8efd719f341131d68797c5f55e4e20effaa5f"
+          },
+          "candidate_tree": "c1d97d11ba34a87357da67d1f506040fd1d3c9f3",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r130-collection-spec.json",
+              "root": "Q",
+              "sha256": "72f0fbe2f88738f0230c5d35d39fefc59a121918c1cc53203888a313400cb4bb",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r130-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4698f7003972564c315dfd129e32bb83a25614b7b6e8275de001fe18349a15fb"
+          },
+          "exit_code": null,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "id": "wave35-r130-collection-spec.json--unrun",
+          "path": "wave35-r130-collection-spec.json",
+          "record_id": "unrun",
+          "round": 130,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 spec; actual named generic diagnostic checks retained separately."
+        }
+      ],
+      "check": "wave35-r130-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r130-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r130-candidate.json",
+            "root": "W",
+            "sha256": "7caed99a9143d99991ad3db140a8efd719f341131d68797c5f55e4e20effaa5f"
+          },
+          "candidate_tree": "c1d97d11ba34a87357da67d1f506040fd1d3c9f3",
+          "collected_count": 42,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[pending]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[empty_participation]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[auth]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[shared]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[per_world]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_completion_uncertainty",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r130-generic-diagnostic-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "158d915b1cac3bc99650311d5c6fc57e56a997bb6093283735919ff0096cfbce",
+              "type": "file"
+            },
+            {
+              "bytes": 660,
+              "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection-custody.json",
+              "root": "Q",
+              "sha256": "ee85b7d37594268199322998253a0c0916d98f2b77ac5ddc4801216d28efca88",
+              "type": "file"
+            },
+            {
+              "bytes": 6887,
+              "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection-result.json",
+              "root": "Q",
+              "sha256": "13b87641287f200c57db31b3798f3d7de07254ba9be2eabedaa1de9cda66839f",
+              "type": "file"
+            },
+            {
+              "bytes": 4208,
+              "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection.log",
+              "root": "Q",
+              "sha256": "db51783a87eb79c0d3a5f2570ceb83e910b8b260289c2868bf766eeb08eda1e0",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.420133923005778,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r130-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4698f7003972564c315dfd129e32bb83a25614b7b6e8275de001fe18349a15fb"
+          },
+          "exit_code": 0,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r130-generic-diagnostic-collection-attempt-1--generic-diagnostic-collection",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r130-generic-diagnostic-collection-attempt-1--generic-diagnostic-collection",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r130-generic-diagnostic-collection-attempt-1--generic-diagnostic-collection",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            },
+            {
+              "bytes": 4596,
+              "path": "verify_bac_failed_run.py",
+              "required_by": "wave35-r130-generic-diagnostic-collection-attempt-1--generic-diagnostic-collection",
+              "root": "Q",
+              "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+            }
+          ],
+          "id": "wave35-r130-generic-diagnostic-collection-attempt-1--generic-diagnostic-collection",
+          "log_paths": [
+            {
+              "bytes": 4208,
+              "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection.log",
+              "root": "Q",
+              "sha256": "db51783a87eb79c0d3a5f2570ceb83e910b8b260289c2868bf766eeb08eda1e0"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 940,
+            "path": "evidence-management/pop-standalone-step/wave35-r130-generic-diagnostic-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "da496bedb14ae18c682aa93d7c46505e04f11756be99686677ae1beaede23176"
+          },
+          "path": "wave35-r130-generic-diagnostic-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "158d915b1cac3bc99650311d5c6fc57e56a997bb6093283735919ff0096cfbce"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 6887,
+            "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection-result.json",
+            "root": "Q",
+            "sha256": "13b87641287f200c57db31b3798f3d7de07254ba9be2eabedaa1de9cda66839f"
+          },
+          "record_id": "generic-diagnostic-collection",
+          "round": 130,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 660,
+            "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection-custody.json",
+            "root": "Q",
+            "sha256": "ee85b7d37594268199322998253a0c0916d98f2b77ac5ddc4801216d28efca88"
+          }
+        }
+      ],
+      "check": "wave35-r130-generic-diagnostic-collection-attempt-1--generic-diagnostic-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r130-generic-diagnostic-collection-attempt-1--generic-diagnostic-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "actual_worker_count": 2,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r130-candidate.json",
+            "root": "W",
+            "sha256": "7caed99a9143d99991ad3db140a8efd719f341131d68797c5f55e4e20effaa5f"
+          },
+          "candidate_tree": "c1d97d11ba34a87357da67d1f506040fd1d3c9f3",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[pending]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[empty_participation]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[auth]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[shared]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[per_world]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r130-generic-diagnostic-red-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 41,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 2232,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-004575d12900e0e3.json",
+              "root": "Q",
+              "sha256": "53e2b79975ecf21c870110d22128a4dffe3ec552aa76ab12b0c58673c59fa005",
+              "type": "file"
+            },
+            {
+              "bytes": 2218,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-03f50808efda2d62.json",
+              "root": "Q",
+              "sha256": "3fc0895e043d69cb7cbdb3a01bac644984aa6e43c9fdb9d8d2066682e6a48acc",
+              "type": "file"
+            },
+            {
+              "bytes": 2250,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-0816f123fec6abac.json",
+              "root": "Q",
+              "sha256": "da0f25e1cb5727b311a7f3c17ad1d47a76be0e025fb30ac1be20552515aef6b9",
+              "type": "file"
+            },
+            {
+              "bytes": 1662,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-08e522686c09baa1.json",
+              "root": "Q",
+              "sha256": "5f9baae25e715b61ce2f3cfeb7536234776bcd98c81c9f012c53694c9f1cc1a3",
+              "type": "file"
+            },
+            {
+              "bytes": 2220,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-0e9165c9d2837314.json",
+              "root": "Q",
+              "sha256": "cbaba94bba128ac810c1809dabdc569acde0c1a7af7a10a7ca3c5dd06a1f7693",
+              "type": "file"
+            },
+            {
+              "bytes": 1656,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-1076cf1348af2585.json",
+              "root": "Q",
+              "sha256": "a3cecb61eabb8817bdd3a1686612de2e0e00c64169f5392e8001145db81c399e",
+              "type": "file"
+            },
+            {
+              "bytes": 2216,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-143648572d56f8dc.json",
+              "root": "Q",
+              "sha256": "041c6ae8a3a7bcee12a82412a4dd7cc5a33fc2cf4e6027088f3f74ecc8f7132e",
+              "type": "file"
+            },
+            {
+              "bytes": 2236,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-1b3cb24e5ad95212.json",
+              "root": "Q",
+              "sha256": "6e5e230a274d066bcec6826eab3c76a09ec27d012391263fd3b1cd57b2fc9fc7",
+              "type": "file"
+            },
+            {
+              "bytes": 2232,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-22b65e495ae3740d.json",
+              "root": "Q",
+              "sha256": "2fefa11855d3c619911ad76e0613a9d398e5746c37d16325166c39321c34981f",
+              "type": "file"
+            },
+            {
+              "bytes": 1923,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-274a5028f39b87a4.json",
+              "root": "Q",
+              "sha256": "7b7b95fbd3853c9a2a3937fccc7d686a0243cf91cdc764b7e0f74f022ac29e9c",
+              "type": "file"
+            },
+            {
+              "bytes": 2220,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2a4cefe9f5c31c1e.json",
+              "root": "Q",
+              "sha256": "bc07ad58609fb22e83284bef86c725d1e48547a9a6fa0531b70652525ba3c4e3",
+              "type": "file"
+            },
+            {
+              "bytes": 2248,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2aa9f40b41117b5c.json",
+              "root": "Q",
+              "sha256": "3fc5af3d6c15ed6b98f66176bfec392730c1bdc232de3ea8c36cdeffb6346308",
+              "type": "file"
+            },
+            {
+              "bytes": 1988,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2ba90b9f605b2bcd.json",
+              "root": "Q",
+              "sha256": "d2311d9bb70eb53d33830c32b7af82d364eafdf1d73570b3d1c488b46e69c337",
+              "type": "file"
+            },
+            {
+              "bytes": 2222,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2fc5e787c49d7b5c.json",
+              "root": "Q",
+              "sha256": "286b511764c099154cb78a8ab6f2509888f53164140b6e032d3daa2d31be6b93",
+              "type": "file"
+            },
+            {
+              "bytes": 2214,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-33c55deda91afb32.json",
+              "root": "Q",
+              "sha256": "96aee5d189cb9f95ccdd9ba4db18d4c96366db499561f23420177ce84f125e77",
+              "type": "file"
+            },
+            {
+              "bytes": 2242,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-3792ae46f5da22ba.json",
+              "root": "Q",
+              "sha256": "b14b79ed45726b62065ecbbfca8c51091613f957c9d5062224cfe7440573dcae",
+              "type": "file"
+            },
+            {
+              "bytes": 2212,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-38ec02a3dfa9d690.json",
+              "root": "Q",
+              "sha256": "b4608da62994d8797143795425ec5d9e20823ac3314ac9da1ca69343e175e4ee",
+              "type": "file"
+            },
+            {
+              "bytes": 1917,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-3dfcc2b22cec4752.json",
+              "root": "Q",
+              "sha256": "15f45a3dc47a923b0ddea47fdb249a4e9fa9ab1b249159759fbebbe6fd7b3bc4",
+              "type": "file"
+            },
+            {
+              "bytes": 1994,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-3ebe0aaecc61be55.json",
+              "root": "Q",
+              "sha256": "d196531b1c6d0eb1a25f44a5c31abf54d0c10a436cdd0fb49a60f6e01a1759f2",
+              "type": "file"
+            },
+            {
+              "bytes": 2226,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-50d9aca74015cd20.json",
+              "root": "Q",
+              "sha256": "db8daff971b655317a5ed3ad59a367922b2e101e6c57e47e8cc95a79b8603bdb",
+              "type": "file"
+            },
+            {
+              "bytes": 2228,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-56db2ad8fd3e7bb7.json",
+              "root": "Q",
+              "sha256": "c5ba715c1efa369f6b9952a9bc18db38e75f66f3f32977c163a1b60b4d6cb957",
+              "type": "file"
+            },
+            {
+              "bytes": 2228,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-5ca20d945496b899.json",
+              "root": "Q",
+              "sha256": "2cef133d448e3fb05b134e4d790fc3fa3b95e5513e4be9ecf3424d44d91a1fc2",
+              "type": "file"
+            },
+            {
+              "bytes": 1757,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-61fca2b49a92aa3e.json",
+              "root": "Q",
+              "sha256": "4e48e40efe8deb8f0f3282bd2498c7417c0c759056dc2a0d99a8a9319d429678",
+              "type": "file"
+            },
+            {
+              "bytes": 2018,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-790941be756f243e.json",
+              "root": "Q",
+              "sha256": "7f50ffe00873e939f6e85e513ea8fae28d719a117e7bfaef1af6ee8c5ce03094",
+              "type": "file"
+            },
+            {
+              "bytes": 2238,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-82881a6efffc1504.json",
+              "root": "Q",
+              "sha256": "01c191aea39403992d898c9518682e069f7f70ea432acc55cf55b52f7a513a50",
+              "type": "file"
+            },
+            {
+              "bytes": 2214,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-852da60af82a0931.json",
+              "root": "Q",
+              "sha256": "66524a1cdf3186aff5a3b9d114c55e1c4c4e8f70db862666a48238133c2e1cf3",
+              "type": "file"
+            },
+            {
+              "bytes": 2216,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-858bcb8a144b63f4.json",
+              "root": "Q",
+              "sha256": "3997fdaf94ed7f431409c6716152ddd74ef2f8a82faecd3f41da4a56c4bfb232",
+              "type": "file"
+            },
+            {
+              "bytes": 1925,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-91f164900cb17670.json",
+              "root": "Q",
+              "sha256": "4db2d892ac4b0118fdda0fc5d0102b2a8243250abd012f5d5fab41bd6f9d2358",
+              "type": "file"
+            },
+            {
+              "bytes": 2244,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-9cb20c9a0c9ebf38.json",
+              "root": "Q",
+              "sha256": "0c3f85daea81e04c61e7f657fa7c747e0f6f8a13893fda9c3b0b2ec3d6f74eca",
+              "type": "file"
+            },
+            {
+              "bytes": 2232,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-9f484ce268758cd9.json",
+              "root": "Q",
+              "sha256": "1bdc1f87df5e0efec72999be2d58103c37cf9d29aad2c533e9b2fc89d4eaa5b0",
+              "type": "file"
+            },
+            {
+              "bytes": 2226,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-9ffd77ab3854378b.json",
+              "root": "Q",
+              "sha256": "ed52f84246fa76da337ed220c7658f35cf117259884d21f112659307cd96745c",
+              "type": "file"
+            },
+            {
+              "bytes": 1759,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-b27cabc19dca28f2.json",
+              "root": "Q",
+              "sha256": "d5c115492f1513837a3cce9f5f05d863e02c75d5f2e1a87eecfa7a5cde309dc9",
+              "type": "file"
+            },
+            {
+              "bytes": 2216,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-b38532c1ffa9e49a.json",
+              "root": "Q",
+              "sha256": "8f021ae74c9e44c51664cc637608b861d18dbe573aca39f766f598161ccfb2a4",
+              "type": "file"
+            },
+            {
+              "bytes": 2230,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-bcf1b50239e072d2.json",
+              "root": "Q",
+              "sha256": "a738f5980ccaa3c9ddb2cce74a9d2c1a13df6bbfa48558934193c16db69187df",
+              "type": "file"
+            },
+            {
+              "bytes": 1915,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-c8a54bb2845f6dac.json",
+              "root": "Q",
+              "sha256": "1a333f64bfcd1dcdf5b6400a834b67469d2aa9c2254a3247042e2687d11d2302",
+              "type": "file"
+            },
+            {
+              "bytes": 2234,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-d5415d8fbe9289d2.json",
+              "root": "Q",
+              "sha256": "578a6420f7ec6a5624843ffeef2d03527f4af175471a13443afa631c5fd4f086",
+              "type": "file"
+            },
+            {
+              "bytes": 2210,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-e24ae702e466832c.json",
+              "root": "Q",
+              "sha256": "967547230133551b22247eeab453435b717974bc69afc7ab33a460c3c2426e07",
+              "type": "file"
+            },
+            {
+              "bytes": 2234,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-e45a0eed983f0700.json",
+              "root": "Q",
+              "sha256": "9182844666b8cc9b0788a1964651d5851c1f174aac9f7a6c4f5b8724b9434a02",
+              "type": "file"
+            },
+            {
+              "bytes": 2226,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-eb44f412100d857e.json",
+              "root": "Q",
+              "sha256": "3751bfe15521697dace342e3e513ef92d48dca0175b5322ea224083a47e855cf",
+              "type": "file"
+            },
+            {
+              "bytes": 2210,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-f2d6a3e7bf66f1c0.json",
+              "root": "Q",
+              "sha256": "bfab8810bb26da8e66f749f8837fe09e2670503838be1a22636b8598f048c898",
+              "type": "file"
+            },
+            {
+              "bytes": 2232,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-fe4ca42804ed88cb.json",
+              "root": "Q",
+              "sha256": "ee43d5bb59c8d573f9cbb3a51bc58b30b94c186db145f6276a43479f948481b7",
+              "type": "file"
+            },
+            {
+              "bytes": 2243,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-0816f123fec6abac.json",
+              "root": "Q",
+              "sha256": "2a605e023ef612b37eee8228e2f5725ee8cfbe3b9e5d93f266431e0a275baf4e",
+              "type": "file"
+            },
+            {
+              "bytes": 1655,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-08e522686c09baa1.json",
+              "root": "Q",
+              "sha256": "576303c1e1b261a15350c6f830d842399676473f9dbe6b3351cb98c731285cc5",
+              "type": "file"
+            },
+            {
+              "bytes": 1649,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-1076cf1348af2585.json",
+              "root": "Q",
+              "sha256": "0e6a6c56e3093ee311880a189b5bbdca82d7f05a53670e62222401aa89d2fdda",
+              "type": "file"
+            },
+            {
+              "bytes": 1916,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-274a5028f39b87a4.json",
+              "root": "Q",
+              "sha256": "e76719519b20114295369908ba36e4eef3d27afa1b865f88fd931387049df68b",
+              "type": "file"
+            },
+            {
+              "bytes": 2241,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-2aa9f40b41117b5c.json",
+              "root": "Q",
+              "sha256": "0ea03d500545940b027d768edc335546d7c4b6b71e556db0d279abef5c637f00",
+              "type": "file"
+            },
+            {
+              "bytes": 1981,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-2ba90b9f605b2bcd.json",
+              "root": "Q",
+              "sha256": "f563cc62f990122df9a35b125b73beaabbab87404bf784732972540ab3e53e1e",
+              "type": "file"
+            },
+            {
+              "bytes": 2235,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-3792ae46f5da22ba.json",
+              "root": "Q",
+              "sha256": "789b7a2e1044a8d4fef79d50fceabfbe12e92b3365a8d7e7220358a79361f4a4",
+              "type": "file"
+            },
+            {
+              "bytes": 1910,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-3dfcc2b22cec4752.json",
+              "root": "Q",
+              "sha256": "a3e124c6eb9eded901e657f12762fbe2f7e46425ec1b969736fb6420fafc0808",
+              "type": "file"
+            },
+            {
+              "bytes": 1987,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-3ebe0aaecc61be55.json",
+              "root": "Q",
+              "sha256": "f3c9ae7b5bba2aa024ea01d4812b0b53f979d315d8d60187020fc2a4aa8d7042",
+              "type": "file"
+            },
+            {
+              "bytes": 2219,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-50d9aca74015cd20.json",
+              "root": "Q",
+              "sha256": "0b1f6efee57e7f998f0474b80ab6ba4fc65b1bc13ea7e2b4c5f1711e6a8a88d3",
+              "type": "file"
+            },
+            {
+              "bytes": 2221,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-56db2ad8fd3e7bb7.json",
+              "root": "Q",
+              "sha256": "9a73165814a51c9aede9873f8aa4e0ca98b3062ff63cbd9eb96869a4b6e540a9",
+              "type": "file"
+            },
+            {
+              "bytes": 1750,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-61fca2b49a92aa3e.json",
+              "root": "Q",
+              "sha256": "b68228e712cff0936ed845355b2205d84e83a2f47a6a682cb1431e8a4f7e2661",
+              "type": "file"
+            },
+            {
+              "bytes": 2011,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-790941be756f243e.json",
+              "root": "Q",
+              "sha256": "3ea305164247dae0902af3dcf452631c07578a82d3b7ca6c873e6d961311d3ec",
+              "type": "file"
+            },
+            {
+              "bytes": 1918,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-91f164900cb17670.json",
+              "root": "Q",
+              "sha256": "922892de29922ace9d3a4481d8d6d187f23f0b7892ddf483e99bc4178e683c68",
+              "type": "file"
+            },
+            {
+              "bytes": 2237,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-9cb20c9a0c9ebf38.json",
+              "root": "Q",
+              "sha256": "2376d68b1d206d5483d1b355416248d22851215ebe02fa32eb9e692934f0c033",
+              "type": "file"
+            },
+            {
+              "bytes": 2225,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-9f484ce268758cd9.json",
+              "root": "Q",
+              "sha256": "732b6980b72deb8d1b250d25d7459dcdc589a1b11775f4393ae76f4e98c03863",
+              "type": "file"
+            },
+            {
+              "bytes": 2219,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-9ffd77ab3854378b.json",
+              "root": "Q",
+              "sha256": "78cc06be3ef337929b63c062e7c413657aff758ab3fd854f819a5a2de2e35ffd",
+              "type": "file"
+            },
+            {
+              "bytes": 1752,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-b27cabc19dca28f2.json",
+              "root": "Q",
+              "sha256": "aff845a0fb79e0ebdda0277db0ec5157433764501ec24205c73cc1ac606dfd83",
+              "type": "file"
+            },
+            {
+              "bytes": 1908,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-c8a54bb2845f6dac.json",
+              "root": "Q",
+              "sha256": "e76129e2b21acc5d9d29fab2f12fbda51d05d179ac201c45c362e8be30560213",
+              "type": "file"
+            },
+            {
+              "bytes": 2227,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-e45a0eed983f0700.json",
+              "root": "Q",
+              "sha256": "f4a43e63c214a4a6f3ebb108b12665bd44812d04806585caad04ae991556a103",
+              "type": "file"
+            },
+            {
+              "bytes": 2225,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-fe4ca42804ed88cb.json",
+              "root": "Q",
+              "sha256": "52756a51401a6118da4700a76da48ac52f58a47a7b2e8fa601e52083795e2713",
+              "type": "file"
+            },
+            {
+              "bytes": 2225,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-004575d12900e0e3.json",
+              "root": "Q",
+              "sha256": "c3ed447687146092f7056bbe0aef3366185f55120aa972aa924c77ce127fbafa",
+              "type": "file"
+            },
+            {
+              "bytes": 2211,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-03f50808efda2d62.json",
+              "root": "Q",
+              "sha256": "67bbf3fb952f1fb6924f9bd2ea5e9fa4c3b12b4e6750124928e2c913d13e2e72",
+              "type": "file"
+            },
+            {
+              "bytes": 2213,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-0e9165c9d2837314.json",
+              "root": "Q",
+              "sha256": "c8b8af56d32a6cc49da1b49bfba88240c06a3c65ae8eea7879f0e0a586088d51",
+              "type": "file"
+            },
+            {
+              "bytes": 2209,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-143648572d56f8dc.json",
+              "root": "Q",
+              "sha256": "4ca1472952f31daa054e2162a4e74cdfb0174bea013d565186f38c72bf817627",
+              "type": "file"
+            },
+            {
+              "bytes": 2229,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-1b3cb24e5ad95212.json",
+              "root": "Q",
+              "sha256": "6950a2c97044b638874158151b64e6e3deb7c15d0a6b58ab6f1a8d4fff0818d3",
+              "type": "file"
+            },
+            {
+              "bytes": 2225,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-22b65e495ae3740d.json",
+              "root": "Q",
+              "sha256": "d9685264f013e67e90f868fad53dd58fbd9f0fa078a36a5d604db268f6abd21a",
+              "type": "file"
+            },
+            {
+              "bytes": 2213,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-2a4cefe9f5c31c1e.json",
+              "root": "Q",
+              "sha256": "c844a8d7b33ac779db53b6d5fc35cbd2e549281b44840956c1c12ce3149705f6",
+              "type": "file"
+            },
+            {
+              "bytes": 2215,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-2fc5e787c49d7b5c.json",
+              "root": "Q",
+              "sha256": "e92bb7a3423078d34aff8f1dadf98d554950c2989e98b86beddfc4b17d5401bc",
+              "type": "file"
+            },
+            {
+              "bytes": 2207,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-33c55deda91afb32.json",
+              "root": "Q",
+              "sha256": "9ada0097c077624af9d8c83443919443fd1275fb5bdbc5ebdf7780522fedcc94",
+              "type": "file"
+            },
+            {
+              "bytes": 2205,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-38ec02a3dfa9d690.json",
+              "root": "Q",
+              "sha256": "740200a0005cb2c9df2e15a7d4cdfcddb121bfb61e56ded1b3294c92310cdbdf",
+              "type": "file"
+            },
+            {
+              "bytes": 2221,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-5ca20d945496b899.json",
+              "root": "Q",
+              "sha256": "3cf9835726a91d8131991d1f22734243e8e41436f82fd10b700c33edb41f8e61",
+              "type": "file"
+            },
+            {
+              "bytes": 2231,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-82881a6efffc1504.json",
+              "root": "Q",
+              "sha256": "8d81e1c86e342db9c87e69989258881d9f130d75c91d8796a2958c3534cd9280",
+              "type": "file"
+            },
+            {
+              "bytes": 2207,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-852da60af82a0931.json",
+              "root": "Q",
+              "sha256": "714843e45b918db4b27977c03cc9036801bb8688cf3c7cbb4dc67c162d0d2d76",
+              "type": "file"
+            },
+            {
+              "bytes": 2209,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-858bcb8a144b63f4.json",
+              "root": "Q",
+              "sha256": "305c586e93df539e5ed9997fe5098e7eed9e6059d2bc5ebeef93dd1b8e18fc7c",
+              "type": "file"
+            },
+            {
+              "bytes": 2209,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-b38532c1ffa9e49a.json",
+              "root": "Q",
+              "sha256": "ea63ba3e7b39805b79bf4fbebbf0ef089a5fd1f137d6e35f4c9cd5815297e1d3",
+              "type": "file"
+            },
+            {
+              "bytes": 2223,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-bcf1b50239e072d2.json",
+              "root": "Q",
+              "sha256": "013ec43edbfd02f45a096b11b684a5f246c414888fc196f1a220e5858fd872eb",
+              "type": "file"
+            },
+            {
+              "bytes": 2227,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-d5415d8fbe9289d2.json",
+              "root": "Q",
+              "sha256": "ca6055182e4dcc3a8e63ac48f611acbcee6d20288bfa99702baccfc80501989e",
+              "type": "file"
+            },
+            {
+              "bytes": 2203,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-e24ae702e466832c.json",
+              "root": "Q",
+              "sha256": "6f856907fe66fbc41c18a64084f8a781f590e70fd022caf26cdf21045f1e29f9",
+              "type": "file"
+            },
+            {
+              "bytes": 2219,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-eb44f412100d857e.json",
+              "root": "Q",
+              "sha256": "2452bdaafb20a52e7bc4baebf79130be6521e27166d9639d47cbf9599bd33603",
+              "type": "file"
+            },
+            {
+              "bytes": 2203,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-f2d6a3e7bf66f1c0.json",
+              "root": "Q",
+              "sha256": "e7604dbf6bd464de28949b60c97ae491b30f0a61f8c8e6c20b83b1da9e40ff60",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-controller.json",
+              "root": "Q",
+              "sha256": "158d915b1cac3bc99650311d5c6fc57e56a997bb6093283735919ff0096cfbce",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-gw0.json",
+              "root": "Q",
+              "sha256": "11907e1de19d6ae029a44879b34105c9700da64cf8d36f241d0da9539c7fc425",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4d0565c08b0d82564f24797d0c21cf18e124c9991912dc89bec85255ae20ebc9",
+              "type": "file"
+            },
+            {
+              "bytes": 8818,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-failure-index.json",
+              "root": "Q",
+              "sha256": "213333285a40dc95e7009ff1234c3ba74df9ac65c13e2734a90fb5744ede51d8",
+              "type": "file"
+            },
+            {
+              "bytes": 961,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "81e1f309d96356104949eb8f8b5c7bb849727bfe86f5556f438b4c1a892e28eb",
+              "type": "file"
+            },
+            {
+              "bytes": 6762,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-result.json",
+              "root": "Q",
+              "sha256": "53b178cf9dfca43443102e2fa57c22eb85b7276ffb50cc8e48cfdd6122293bf0",
+              "type": "file"
+            },
+            {
+              "bytes": 85095,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red.log",
+              "root": "Q",
+              "sha256": "c7e579780b058454c6d2b65486ac4db32affa49d190e0622dbb8215d66e84536",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 17.327811552997446,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r130-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4698f7003972564c315dfd129e32bb83a25614b7b6e8275de001fe18349a15fb"
+          },
+          "exit_code": 1,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r130-generic-diagnostic-red-attempt-1--generic-diagnostic-red",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r130-generic-diagnostic-red-attempt-1--generic-diagnostic-red",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r130-generic-diagnostic-red-attempt-1--generic-diagnostic-red",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            },
+            {
+              "bytes": 4596,
+              "path": "verify_bac_failed_run.py",
+              "required_by": "wave35-r130-generic-diagnostic-red-attempt-1--generic-diagnostic-red",
+              "root": "Q",
+              "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+            }
+          ],
+          "id": "wave35-r130-generic-diagnostic-red-attempt-1--generic-diagnostic-red",
+          "log_paths": [
+            {
+              "bytes": 85095,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red.log",
+              "root": "Q",
+              "sha256": "c7e579780b058454c6d2b65486ac4db32affa49d190e0622dbb8215d66e84536"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 928,
+            "path": "evidence-management/pop-standalone-step/wave35-r130-generic-diagnostic-red-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "e4cf26c4a0925bb97d2e3acf7f2bb1ec66500f0f4e0ec7a4a5791d71caab2d03"
+          },
+          "path": "wave35-r130-generic-diagnostic-red-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-controller.json",
+              "root": "Q",
+              "sha256": "158d915b1cac3bc99650311d5c6fc57e56a997bb6093283735919ff0096cfbce"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-gw0.json",
+              "root": "Q",
+              "sha256": "11907e1de19d6ae029a44879b34105c9700da64cf8d36f241d0da9539c7fc425"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4d0565c08b0d82564f24797d0c21cf18e124c9991912dc89bec85255ae20ebc9"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 6762,
+            "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-result.json",
+            "root": "Q",
+            "sha256": "53b178cf9dfca43443102e2fa57c22eb85b7276ffb50cc8e48cfdd6122293bf0"
+          },
+          "record_id": "generic-diagnostic-red",
+          "round": 130,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 961,
+            "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-negative-custody.json",
+            "root": "Q",
+            "sha256": "81e1f309d96356104949eb8f8b5c7bb849727bfe86f5556f438b4c1a892e28eb"
+          }
+        }
+      ],
+      "check": "wave35-r130-generic-diagnostic-red-attempt-1--generic-diagnostic-red",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r130-generic-diagnostic-red-attempt-1--generic-diagnostic-red"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r130-candidate.json",
+            "root": "W",
+            "sha256": "7caed99a9143d99991ad3db140a8efd719f341131d68797c5f55e4e20effaa5f"
+          },
+          "candidate_tree": "c1d97d11ba34a87357da67d1f506040fd1d3c9f3",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r130-owned-spec.json",
+              "root": "Q",
+              "sha256": "3869cfd5d1a8f294b0d5ae155f7212d3c0aa8de7ec638853469442fd7cfaec6a",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r130-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4698f7003972564c315dfd129e32bb83a25614b7b6e8275de001fe18349a15fb"
+          },
+          "exit_code": null,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "id": "wave35-r130-owned-spec.json--unrun",
+          "path": "wave35-r130-owned-spec.json",
+          "record_id": "unrun",
+          "round": 130,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 spec; actual named generic diagnostic checks retained separately."
+        }
+      ],
+      "check": "wave35-r130-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r130-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 207540,
+    "path": "wave35/r130-candidate.json",
+    "root": "W",
+    "sha256": "7caed99a9143d99991ad3db140a8efd719f341131d68797c5f55e4e20effaa5f"
+  },
+  "candidate_tree": "c1d97d11ba34a87357da67d1f506040fd1d3c9f3",
+  "execution_subtrees": null,
+  "execution_subtrees_unavailable_reason": "No separately recorded subtree identity extracted; no Git calls authorized. Exact own candidate source_files retained.",
+  "fixture_preflight": {
+    "bytes": 4983,
+    "path": "wave35/r130-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "4698f7003972564c315dfd129e32bb83a25614b7b6e8275de001fe18349a15fb"
+  },
+  "interval_inventory": {
+    "wave35-r130-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r130-collection-spec.json",
+        "root": "Q",
+        "sha256": "72f0fbe2f88738f0230c5d35d39fefc59a121918c1cc53203888a313400cb4bb",
+        "type": "file"
+      }
+    ],
+    "wave35-r130-generic-diagnostic-collection-attempt-1": [
+      {
+        "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection/identity-controller.json",
+        "root": "Q",
+        "sha256": "158d915b1cac3bc99650311d5c6fc57e56a997bb6093283735919ff0096cfbce",
+        "type": "file"
+      },
+      {
+        "bytes": 660,
+        "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection-custody.json",
+        "root": "Q",
+        "sha256": "ee85b7d37594268199322998253a0c0916d98f2b77ac5ddc4801216d28efca88",
+        "type": "file"
+      },
+      {
+        "bytes": 6887,
+        "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection-result.json",
+        "root": "Q",
+        "sha256": "13b87641287f200c57db31b3798f3d7de07254ba9be2eabedaa1de9cda66839f",
+        "type": "file"
+      },
+      {
+        "bytes": 4208,
+        "path": "wave35-r130-generic-diagnostic-collection-attempt-1/generic-diagnostic-collection.log",
+        "root": "Q",
+        "sha256": "db51783a87eb79c0d3a5f2570ceb83e910b8b260289c2868bf766eeb08eda1e0",
+        "type": "file"
+      }
+    ],
+    "wave35-r130-generic-diagnostic-collection-attempt-1-spec.json": [
+      {
+        "bytes": 6797,
+        "path": "wave35-r130-generic-diagnostic-collection-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "0d8fd304d4e00f655e7680ef686982b49bb44515139d2815994103792d8cf405",
+        "type": "file"
+      }
+    ],
+    "wave35-r130-generic-diagnostic-red-attempt-1": [
+      {
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 2232,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-004575d12900e0e3.json",
+        "root": "Q",
+        "sha256": "53e2b79975ecf21c870110d22128a4dffe3ec552aa76ab12b0c58673c59fa005",
+        "type": "file"
+      },
+      {
+        "bytes": 2218,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-03f50808efda2d62.json",
+        "root": "Q",
+        "sha256": "3fc0895e043d69cb7cbdb3a01bac644984aa6e43c9fdb9d8d2066682e6a48acc",
+        "type": "file"
+      },
+      {
+        "bytes": 2250,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-0816f123fec6abac.json",
+        "root": "Q",
+        "sha256": "da0f25e1cb5727b311a7f3c17ad1d47a76be0e025fb30ac1be20552515aef6b9",
+        "type": "file"
+      },
+      {
+        "bytes": 1662,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-08e522686c09baa1.json",
+        "root": "Q",
+        "sha256": "5f9baae25e715b61ce2f3cfeb7536234776bcd98c81c9f012c53694c9f1cc1a3",
+        "type": "file"
+      },
+      {
+        "bytes": 2220,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-0e9165c9d2837314.json",
+        "root": "Q",
+        "sha256": "cbaba94bba128ac810c1809dabdc569acde0c1a7af7a10a7ca3c5dd06a1f7693",
+        "type": "file"
+      },
+      {
+        "bytes": 1656,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-1076cf1348af2585.json",
+        "root": "Q",
+        "sha256": "a3cecb61eabb8817bdd3a1686612de2e0e00c64169f5392e8001145db81c399e",
+        "type": "file"
+      },
+      {
+        "bytes": 2216,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-143648572d56f8dc.json",
+        "root": "Q",
+        "sha256": "041c6ae8a3a7bcee12a82412a4dd7cc5a33fc2cf4e6027088f3f74ecc8f7132e",
+        "type": "file"
+      },
+      {
+        "bytes": 2236,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-1b3cb24e5ad95212.json",
+        "root": "Q",
+        "sha256": "6e5e230a274d066bcec6826eab3c76a09ec27d012391263fd3b1cd57b2fc9fc7",
+        "type": "file"
+      },
+      {
+        "bytes": 2232,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-22b65e495ae3740d.json",
+        "root": "Q",
+        "sha256": "2fefa11855d3c619911ad76e0613a9d398e5746c37d16325166c39321c34981f",
+        "type": "file"
+      },
+      {
+        "bytes": 1923,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-274a5028f39b87a4.json",
+        "root": "Q",
+        "sha256": "7b7b95fbd3853c9a2a3937fccc7d686a0243cf91cdc764b7e0f74f022ac29e9c",
+        "type": "file"
+      },
+      {
+        "bytes": 2220,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2a4cefe9f5c31c1e.json",
+        "root": "Q",
+        "sha256": "bc07ad58609fb22e83284bef86c725d1e48547a9a6fa0531b70652525ba3c4e3",
+        "type": "file"
+      },
+      {
+        "bytes": 2248,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2aa9f40b41117b5c.json",
+        "root": "Q",
+        "sha256": "3fc5af3d6c15ed6b98f66176bfec392730c1bdc232de3ea8c36cdeffb6346308",
+        "type": "file"
+      },
+      {
+        "bytes": 1988,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2ba90b9f605b2bcd.json",
+        "root": "Q",
+        "sha256": "d2311d9bb70eb53d33830c32b7af82d364eafdf1d73570b3d1c488b46e69c337",
+        "type": "file"
+      },
+      {
+        "bytes": 2222,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-2fc5e787c49d7b5c.json",
+        "root": "Q",
+        "sha256": "286b511764c099154cb78a8ab6f2509888f53164140b6e032d3daa2d31be6b93",
+        "type": "file"
+      },
+      {
+        "bytes": 2214,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-33c55deda91afb32.json",
+        "root": "Q",
+        "sha256": "96aee5d189cb9f95ccdd9ba4db18d4c96366db499561f23420177ce84f125e77",
+        "type": "file"
+      },
+      {
+        "bytes": 2242,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-3792ae46f5da22ba.json",
+        "root": "Q",
+        "sha256": "b14b79ed45726b62065ecbbfca8c51091613f957c9d5062224cfe7440573dcae",
+        "type": "file"
+      },
+      {
+        "bytes": 2212,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-38ec02a3dfa9d690.json",
+        "root": "Q",
+        "sha256": "b4608da62994d8797143795425ec5d9e20823ac3314ac9da1ca69343e175e4ee",
+        "type": "file"
+      },
+      {
+        "bytes": 1917,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-3dfcc2b22cec4752.json",
+        "root": "Q",
+        "sha256": "15f45a3dc47a923b0ddea47fdb249a4e9fa9ab1b249159759fbebbe6fd7b3bc4",
+        "type": "file"
+      },
+      {
+        "bytes": 1994,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-3ebe0aaecc61be55.json",
+        "root": "Q",
+        "sha256": "d196531b1c6d0eb1a25f44a5c31abf54d0c10a436cdd0fb49a60f6e01a1759f2",
+        "type": "file"
+      },
+      {
+        "bytes": 2226,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-50d9aca74015cd20.json",
+        "root": "Q",
+        "sha256": "db8daff971b655317a5ed3ad59a367922b2e101e6c57e47e8cc95a79b8603bdb",
+        "type": "file"
+      },
+      {
+        "bytes": 2228,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-56db2ad8fd3e7bb7.json",
+        "root": "Q",
+        "sha256": "c5ba715c1efa369f6b9952a9bc18db38e75f66f3f32977c163a1b60b4d6cb957",
+        "type": "file"
+      },
+      {
+        "bytes": 2228,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-5ca20d945496b899.json",
+        "root": "Q",
+        "sha256": "2cef133d448e3fb05b134e4d790fc3fa3b95e5513e4be9ecf3424d44d91a1fc2",
+        "type": "file"
+      },
+      {
+        "bytes": 1757,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-61fca2b49a92aa3e.json",
+        "root": "Q",
+        "sha256": "4e48e40efe8deb8f0f3282bd2498c7417c0c759056dc2a0d99a8a9319d429678",
+        "type": "file"
+      },
+      {
+        "bytes": 2018,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-790941be756f243e.json",
+        "root": "Q",
+        "sha256": "7f50ffe00873e939f6e85e513ea8fae28d719a117e7bfaef1af6ee8c5ce03094",
+        "type": "file"
+      },
+      {
+        "bytes": 2238,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-82881a6efffc1504.json",
+        "root": "Q",
+        "sha256": "01c191aea39403992d898c9518682e069f7f70ea432acc55cf55b52f7a513a50",
+        "type": "file"
+      },
+      {
+        "bytes": 2214,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-852da60af82a0931.json",
+        "root": "Q",
+        "sha256": "66524a1cdf3186aff5a3b9d114c55e1c4c4e8f70db862666a48238133c2e1cf3",
+        "type": "file"
+      },
+      {
+        "bytes": 2216,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-858bcb8a144b63f4.json",
+        "root": "Q",
+        "sha256": "3997fdaf94ed7f431409c6716152ddd74ef2f8a82faecd3f41da4a56c4bfb232",
+        "type": "file"
+      },
+      {
+        "bytes": 1925,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-91f164900cb17670.json",
+        "root": "Q",
+        "sha256": "4db2d892ac4b0118fdda0fc5d0102b2a8243250abd012f5d5fab41bd6f9d2358",
+        "type": "file"
+      },
+      {
+        "bytes": 2244,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-9cb20c9a0c9ebf38.json",
+        "root": "Q",
+        "sha256": "0c3f85daea81e04c61e7f657fa7c747e0f6f8a13893fda9c3b0b2ec3d6f74eca",
+        "type": "file"
+      },
+      {
+        "bytes": 2232,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-9f484ce268758cd9.json",
+        "root": "Q",
+        "sha256": "1bdc1f87df5e0efec72999be2d58103c37cf9d29aad2c533e9b2fc89d4eaa5b0",
+        "type": "file"
+      },
+      {
+        "bytes": 2226,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-9ffd77ab3854378b.json",
+        "root": "Q",
+        "sha256": "ed52f84246fa76da337ed220c7658f35cf117259884d21f112659307cd96745c",
+        "type": "file"
+      },
+      {
+        "bytes": 1759,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-b27cabc19dca28f2.json",
+        "root": "Q",
+        "sha256": "d5c115492f1513837a3cce9f5f05d863e02c75d5f2e1a87eecfa7a5cde309dc9",
+        "type": "file"
+      },
+      {
+        "bytes": 2216,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-b38532c1ffa9e49a.json",
+        "root": "Q",
+        "sha256": "8f021ae74c9e44c51664cc637608b861d18dbe573aca39f766f598161ccfb2a4",
+        "type": "file"
+      },
+      {
+        "bytes": 2230,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-bcf1b50239e072d2.json",
+        "root": "Q",
+        "sha256": "a738f5980ccaa3c9ddb2cce74a9d2c1a13df6bbfa48558934193c16db69187df",
+        "type": "file"
+      },
+      {
+        "bytes": 1915,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-c8a54bb2845f6dac.json",
+        "root": "Q",
+        "sha256": "1a333f64bfcd1dcdf5b6400a834b67469d2aa9c2254a3247042e2687d11d2302",
+        "type": "file"
+      },
+      {
+        "bytes": 2234,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-d5415d8fbe9289d2.json",
+        "root": "Q",
+        "sha256": "578a6420f7ec6a5624843ffeef2d03527f4af175471a13443afa631c5fd4f086",
+        "type": "file"
+      },
+      {
+        "bytes": 2210,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-e24ae702e466832c.json",
+        "root": "Q",
+        "sha256": "967547230133551b22247eeab453435b717974bc69afc7ab33a460c3c2426e07",
+        "type": "file"
+      },
+      {
+        "bytes": 2234,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-e45a0eed983f0700.json",
+        "root": "Q",
+        "sha256": "9182844666b8cc9b0788a1964651d5851c1f174aac9f7a6c4f5b8724b9434a02",
+        "type": "file"
+      },
+      {
+        "bytes": 2226,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-eb44f412100d857e.json",
+        "root": "Q",
+        "sha256": "3751bfe15521697dace342e3e513ef92d48dca0175b5322ea224083a47e855cf",
+        "type": "file"
+      },
+      {
+        "bytes": 2210,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-f2d6a3e7bf66f1c0.json",
+        "root": "Q",
+        "sha256": "bfab8810bb26da8e66f749f8837fe09e2670503838be1a22636b8598f048c898",
+        "type": "file"
+      },
+      {
+        "bytes": 2232,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-controller-fe4ca42804ed88cb.json",
+        "root": "Q",
+        "sha256": "ee43d5bb59c8d573f9cbb3a51bc58b30b94c186db145f6276a43479f948481b7",
+        "type": "file"
+      },
+      {
+        "bytes": 2243,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-0816f123fec6abac.json",
+        "root": "Q",
+        "sha256": "2a605e023ef612b37eee8228e2f5725ee8cfbe3b9e5d93f266431e0a275baf4e",
+        "type": "file"
+      },
+      {
+        "bytes": 1655,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-08e522686c09baa1.json",
+        "root": "Q",
+        "sha256": "576303c1e1b261a15350c6f830d842399676473f9dbe6b3351cb98c731285cc5",
+        "type": "file"
+      },
+      {
+        "bytes": 1649,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-1076cf1348af2585.json",
+        "root": "Q",
+        "sha256": "0e6a6c56e3093ee311880a189b5bbdca82d7f05a53670e62222401aa89d2fdda",
+        "type": "file"
+      },
+      {
+        "bytes": 1916,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-274a5028f39b87a4.json",
+        "root": "Q",
+        "sha256": "e76719519b20114295369908ba36e4eef3d27afa1b865f88fd931387049df68b",
+        "type": "file"
+      },
+      {
+        "bytes": 2241,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-2aa9f40b41117b5c.json",
+        "root": "Q",
+        "sha256": "0ea03d500545940b027d768edc335546d7c4b6b71e556db0d279abef5c637f00",
+        "type": "file"
+      },
+      {
+        "bytes": 1981,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-2ba90b9f605b2bcd.json",
+        "root": "Q",
+        "sha256": "f563cc62f990122df9a35b125b73beaabbab87404bf784732972540ab3e53e1e",
+        "type": "file"
+      },
+      {
+        "bytes": 2235,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-3792ae46f5da22ba.json",
+        "root": "Q",
+        "sha256": "789b7a2e1044a8d4fef79d50fceabfbe12e92b3365a8d7e7220358a79361f4a4",
+        "type": "file"
+      },
+      {
+        "bytes": 1910,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-3dfcc2b22cec4752.json",
+        "root": "Q",
+        "sha256": "a3e124c6eb9eded901e657f12762fbe2f7e46425ec1b969736fb6420fafc0808",
+        "type": "file"
+      },
+      {
+        "bytes": 1987,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-3ebe0aaecc61be55.json",
+        "root": "Q",
+        "sha256": "f3c9ae7b5bba2aa024ea01d4812b0b53f979d315d8d60187020fc2a4aa8d7042",
+        "type": "file"
+      },
+      {
+        "bytes": 2219,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-50d9aca74015cd20.json",
+        "root": "Q",
+        "sha256": "0b1f6efee57e7f998f0474b80ab6ba4fc65b1bc13ea7e2b4c5f1711e6a8a88d3",
+        "type": "file"
+      },
+      {
+        "bytes": 2221,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-56db2ad8fd3e7bb7.json",
+        "root": "Q",
+        "sha256": "9a73165814a51c9aede9873f8aa4e0ca98b3062ff63cbd9eb96869a4b6e540a9",
+        "type": "file"
+      },
+      {
+        "bytes": 1750,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-61fca2b49a92aa3e.json",
+        "root": "Q",
+        "sha256": "b68228e712cff0936ed845355b2205d84e83a2f47a6a682cb1431e8a4f7e2661",
+        "type": "file"
+      },
+      {
+        "bytes": 2011,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-790941be756f243e.json",
+        "root": "Q",
+        "sha256": "3ea305164247dae0902af3dcf452631c07578a82d3b7ca6c873e6d961311d3ec",
+        "type": "file"
+      },
+      {
+        "bytes": 1918,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-91f164900cb17670.json",
+        "root": "Q",
+        "sha256": "922892de29922ace9d3a4481d8d6d187f23f0b7892ddf483e99bc4178e683c68",
+        "type": "file"
+      },
+      {
+        "bytes": 2237,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-9cb20c9a0c9ebf38.json",
+        "root": "Q",
+        "sha256": "2376d68b1d206d5483d1b355416248d22851215ebe02fa32eb9e692934f0c033",
+        "type": "file"
+      },
+      {
+        "bytes": 2225,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-9f484ce268758cd9.json",
+        "root": "Q",
+        "sha256": "732b6980b72deb8d1b250d25d7459dcdc589a1b11775f4393ae76f4e98c03863",
+        "type": "file"
+      },
+      {
+        "bytes": 2219,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-9ffd77ab3854378b.json",
+        "root": "Q",
+        "sha256": "78cc06be3ef337929b63c062e7c413657aff758ab3fd854f819a5a2de2e35ffd",
+        "type": "file"
+      },
+      {
+        "bytes": 1752,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-b27cabc19dca28f2.json",
+        "root": "Q",
+        "sha256": "aff845a0fb79e0ebdda0277db0ec5157433764501ec24205c73cc1ac606dfd83",
+        "type": "file"
+      },
+      {
+        "bytes": 1908,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-c8a54bb2845f6dac.json",
+        "root": "Q",
+        "sha256": "e76129e2b21acc5d9d29fab2f12fbda51d05d179ac201c45c362e8be30560213",
+        "type": "file"
+      },
+      {
+        "bytes": 2227,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-e45a0eed983f0700.json",
+        "root": "Q",
+        "sha256": "f4a43e63c214a4a6f3ebb108b12665bd44812d04806585caad04ae991556a103",
+        "type": "file"
+      },
+      {
+        "bytes": 2225,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw0-fe4ca42804ed88cb.json",
+        "root": "Q",
+        "sha256": "52756a51401a6118da4700a76da48ac52f58a47a7b2e8fa601e52083795e2713",
+        "type": "file"
+      },
+      {
+        "bytes": 2225,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-004575d12900e0e3.json",
+        "root": "Q",
+        "sha256": "c3ed447687146092f7056bbe0aef3366185f55120aa972aa924c77ce127fbafa",
+        "type": "file"
+      },
+      {
+        "bytes": 2211,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-03f50808efda2d62.json",
+        "root": "Q",
+        "sha256": "67bbf3fb952f1fb6924f9bd2ea5e9fa4c3b12b4e6750124928e2c913d13e2e72",
+        "type": "file"
+      },
+      {
+        "bytes": 2213,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-0e9165c9d2837314.json",
+        "root": "Q",
+        "sha256": "c8b8af56d32a6cc49da1b49bfba88240c06a3c65ae8eea7879f0e0a586088d51",
+        "type": "file"
+      },
+      {
+        "bytes": 2209,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-143648572d56f8dc.json",
+        "root": "Q",
+        "sha256": "4ca1472952f31daa054e2162a4e74cdfb0174bea013d565186f38c72bf817627",
+        "type": "file"
+      },
+      {
+        "bytes": 2229,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-1b3cb24e5ad95212.json",
+        "root": "Q",
+        "sha256": "6950a2c97044b638874158151b64e6e3deb7c15d0a6b58ab6f1a8d4fff0818d3",
+        "type": "file"
+      },
+      {
+        "bytes": 2225,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-22b65e495ae3740d.json",
+        "root": "Q",
+        "sha256": "d9685264f013e67e90f868fad53dd58fbd9f0fa078a36a5d604db268f6abd21a",
+        "type": "file"
+      },
+      {
+        "bytes": 2213,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-2a4cefe9f5c31c1e.json",
+        "root": "Q",
+        "sha256": "c844a8d7b33ac779db53b6d5fc35cbd2e549281b44840956c1c12ce3149705f6",
+        "type": "file"
+      },
+      {
+        "bytes": 2215,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-2fc5e787c49d7b5c.json",
+        "root": "Q",
+        "sha256": "e92bb7a3423078d34aff8f1dadf98d554950c2989e98b86beddfc4b17d5401bc",
+        "type": "file"
+      },
+      {
+        "bytes": 2207,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-33c55deda91afb32.json",
+        "root": "Q",
+        "sha256": "9ada0097c077624af9d8c83443919443fd1275fb5bdbc5ebdf7780522fedcc94",
+        "type": "file"
+      },
+      {
+        "bytes": 2205,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-38ec02a3dfa9d690.json",
+        "root": "Q",
+        "sha256": "740200a0005cb2c9df2e15a7d4cdfcddb121bfb61e56ded1b3294c92310cdbdf",
+        "type": "file"
+      },
+      {
+        "bytes": 2221,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-5ca20d945496b899.json",
+        "root": "Q",
+        "sha256": "3cf9835726a91d8131991d1f22734243e8e41436f82fd10b700c33edb41f8e61",
+        "type": "file"
+      },
+      {
+        "bytes": 2231,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-82881a6efffc1504.json",
+        "root": "Q",
+        "sha256": "8d81e1c86e342db9c87e69989258881d9f130d75c91d8796a2958c3534cd9280",
+        "type": "file"
+      },
+      {
+        "bytes": 2207,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-852da60af82a0931.json",
+        "root": "Q",
+        "sha256": "714843e45b918db4b27977c03cc9036801bb8688cf3c7cbb4dc67c162d0d2d76",
+        "type": "file"
+      },
+      {
+        "bytes": 2209,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-858bcb8a144b63f4.json",
+        "root": "Q",
+        "sha256": "305c586e93df539e5ed9997fe5098e7eed9e6059d2bc5ebeef93dd1b8e18fc7c",
+        "type": "file"
+      },
+      {
+        "bytes": 2209,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-b38532c1ffa9e49a.json",
+        "root": "Q",
+        "sha256": "ea63ba3e7b39805b79bf4fbebbf0ef089a5fd1f137d6e35f4c9cd5815297e1d3",
+        "type": "file"
+      },
+      {
+        "bytes": 2223,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-bcf1b50239e072d2.json",
+        "root": "Q",
+        "sha256": "013ec43edbfd02f45a096b11b684a5f246c414888fc196f1a220e5858fd872eb",
+        "type": "file"
+      },
+      {
+        "bytes": 2227,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-d5415d8fbe9289d2.json",
+        "root": "Q",
+        "sha256": "ca6055182e4dcc3a8e63ac48f611acbcee6d20288bfa99702baccfc80501989e",
+        "type": "file"
+      },
+      {
+        "bytes": 2203,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-e24ae702e466832c.json",
+        "root": "Q",
+        "sha256": "6f856907fe66fbc41c18a64084f8a781f590e70fd022caf26cdf21045f1e29f9",
+        "type": "file"
+      },
+      {
+        "bytes": 2219,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-eb44f412100d857e.json",
+        "root": "Q",
+        "sha256": "2452bdaafb20a52e7bc4baebf79130be6521e27166d9639d47cbf9599bd33603",
+        "type": "file"
+      },
+      {
+        "bytes": 2203,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/failure-gw1-f2d6a3e7bf66f1c0.json",
+        "root": "Q",
+        "sha256": "e7604dbf6bd464de28949b60c97ae491b30f0a61f8c8e6c20b83b1da9e40ff60",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-controller.json",
+        "root": "Q",
+        "sha256": "158d915b1cac3bc99650311d5c6fc57e56a997bb6093283735919ff0096cfbce",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-gw0.json",
+        "root": "Q",
+        "sha256": "11907e1de19d6ae029a44879b34105c9700da64cf8d36f241d0da9539c7fc425",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red/identity-gw1.json",
+        "root": "Q",
+        "sha256": "4d0565c08b0d82564f24797d0c21cf18e124c9991912dc89bec85255ae20ebc9",
+        "type": "file"
+      },
+      {
+        "bytes": 8818,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-failure-index.json",
+        "root": "Q",
+        "sha256": "213333285a40dc95e7009ff1234c3ba74df9ac65c13e2734a90fb5744ede51d8",
+        "type": "file"
+      },
+      {
+        "bytes": 961,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-negative-custody.json",
+        "root": "Q",
+        "sha256": "81e1f309d96356104949eb8f8b5c7bb849727bfe86f5556f438b4c1a892e28eb",
+        "type": "file"
+      },
+      {
+        "bytes": 6762,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red-result.json",
+        "root": "Q",
+        "sha256": "53b178cf9dfca43443102e2fa57c22eb85b7276ffb50cc8e48cfdd6122293bf0",
+        "type": "file"
+      },
+      {
+        "bytes": 85095,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1/generic-diagnostic-red.log",
+        "root": "Q",
+        "sha256": "c7e579780b058454c6d2b65486ac4db32affa49d190e0622dbb8215d66e84536",
+        "type": "file"
+      }
+    ],
+    "wave35-r130-generic-diagnostic-red-attempt-1-spec.json": [
+      {
+        "bytes": 6686,
+        "path": "wave35-r130-generic-diagnostic-red-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "79aff5fe6110f6931ed179616459c669494ed32fb24dd456198df66c982ae6a5",
+        "type": "file"
+      }
+    ],
+    "wave35-r130-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r130-owned-spec.json",
+        "root": "Q",
+        "sha256": "3869cfd5d1a8f294b0d5ae155f7212d3c0aa8de7ec638853469442fd7cfaec6a",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 130,
+  "schema": "bac-closed-round-history-component-v1",
+  "scope": "No R132 or final checkpoint seal; no whole BAC or hardware qualification.",
+  "source_aliases": [
+    {
+      "exact_retained": {
+        "bytes": 60772,
+        "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-exact-source-retention-v1/test_runtime_bank_parent_custody.py.txt",
+        "root": "W",
+        "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872"
+      },
+      "original": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872"
+    }
+  ],
+  "status": "CLOSED HISTORY ONLY"
+}

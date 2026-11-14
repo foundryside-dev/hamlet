@@ -1,0 +1,43 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____________ test_owner_launch_binds_actual_call_and_spawn_policy _____________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-135/test_owner_launch_binds_actual0/source/pkg/inert-module.txt'), 'bl..._launch_binds_actual0/freeze.json', 'sha256': 'c6afa79d8d7453ce3232c78db36b27529b5661d5872af99e99f7fb26b55532b4'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fca9fd94180>
+
+    def test_owner_launch_binds_actual_call_and_spawn_policy(capsule,monkeypatch):
+>       api,ref=_owner(capsule,monkeypatch);launch=_launch(capsule,api,ref,monkeypatch)
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-135/test_owner_launch_binds_actual0/source/pkg/inert-module.txt'), 'bl..._launch_binds_actual0/freeze.json', 'sha256': 'c6afa79d8d7453ce3232c78db36b27529b5661d5872af99e99f7fb26b55532b4'}, ...}
+api = <module 'bac_hardware_identity_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py'>
+ref = {'bytes': 1109, 'path': '/tmp/pytest-of-agent/pytest-135/test_owner_launch_binds_actual0/contract.json', 'sha256': '7ac41087bde87cd23916a40f05cf510317b2e5046ae0430f7bed5d0f15cec335'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fca9fd94180>
+method = 'spawn', instance = 'child-1'
+
+    def _launch(capsule,api,ref,monkeypatch,method='spawn',instance='child-1'):
+        start=api.record_process(capsule['context'],'start')
+>       hook=api.pytest_runtest_call(types.SimpleNamespace(nodeid='test_inert'));next(hook)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'bac_hardware_identity_v1' has no attribute 'pytest_runtest_call'
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:594: AttributeError
+_________________ test_actual_call_registry_cannot_be_spoofed __________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-135/test_actual_call_registry_cann0/source/pkg/inert-module.txt'), 'bl...l_call_registry_cann0/freeze.json', 'sha256': '1c5fb63212a8f1e360305811ad70c8f9ce04d364b469d6dd8fbcfd3ad8a7d971'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fca9fd0aea0>
+
+    def test_actual_call_registry_cannot_be_spoofed(capsule,monkeypatch):
+        api,ref=_owner(capsule,monkeypatch);start=api.record_process(capsule['context'],'start')
+>       hook=api.pytest_runtest_call(types.SimpleNamespace(nodeid='different-real-case'));next(hook)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'bac_hardware_identity_v1' has no attribute 'pytest_runtest_call'
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:618: AttributeError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_owner_launch_binds_actual_call_and_spawn_policy
+FAILED test_bac_hardware_identity_v1.py::test_actual_call_registry_cannot_be_spoofed
+2 failed, 49 deselected in 0.59s

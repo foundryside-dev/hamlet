@@ -1,0 +1,791 @@
+"""Actual POP/ENV handoff tests; the local boundary driver does not certify T26/native restore."""
+
+from __future__ import annotations
+
+import copy
+from dataclasses import dataclass
+from typing import Any
+
+import numpy as np
+import pytest
+import torch
+
+from tests.test_townlet.regressions.bac.test_pw_scope_conversion import compiled as compiled
+from tests.test_townlet.regressions.bac.test_pw_scope_conversion import equal, policy
+from townlet.config import exploration_policy as policy_types
+from townlet.config.bac_options import BaCOptions, resolve_bac_options
+from townlet.config.brain_config import apply_training_overrides
+from townlet.config.drive_as_code import IntrinsicStrategyConfig
+from townlet.config.exploration_policy import build_exploration
+from townlet.config.world_roster import WorldRosterDeclaration
+from townlet.curriculum.factory import build_curriculum
+from townlet.environment.vectorized_env import WorldReceiptIssuer
+from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor
+from townlet.population.vectorized import VectorizedPopulation
+from townlet.training import clock_ledger as clock_types
+from townlet.training.episode import freeze_lane_outcome
+from townlet.training.replay_contract import ReplayRequest
+
+IDS = ("parent-A", "parent-B", "parent-C", "parent-D", "parent-E", "parent-F", "parent-G", "parent-H")
+FAMILIES = ("none", "count_based", "rnd", "adaptive_rnd", "icm")
+UNITS = {
+    "vector_ticks",
+    "eligible_transitions",
+    "optimizer_updates",
+    "completed_batch_episodes",
+    "predictor_admitted_rows",
+    "predictor_consumed_minibatches",
+    "predictor_dropped_rows",
+}
+
+
+@dataclass(eq=False)
+class ParentFixture:
+    """Real component owners; this object owns only local bootstrap choreography."""
+
+    env: Any
+    population: VectorizedPopulation
+    runtime: Any
+    bank: Any
+    reports: list[Any]
+    boundary: Any = None
+    release: Any = None
+    record: Any = None
+
+    def bind(self) -> None:
+        pop = self.population
+        self.boundary = self.env.bind_boundary_authority(
+            owner=self,
+            role_owners={
+                "population": pop,
+                "curiosity": self.bank,
+                "curriculum": pop.curriculum,
+                "exploration": self.runtime,
+                "network": pop.q_network,
+                "optimizer": pop.optimizer,
+                # A constant schedule has no separate live scheduler owner.
+                "scheduler": pop if pop.scheduler is None else pop.scheduler,
+                "replay": pop.replay_buffer,
+                "selection": self.runtime,
+            },
+        )
+
+    def enter(self, batch: int = 0) -> None:
+        pop = self.population
+        if self.boundary is None:
+            self.bind()
+            self.release = self.boundary.bootstrap(first_batch_episode=batch)
+            self.env.install_boundary_release(self.release)
+        reservation = self.env.prepare_episode(batch_episode=batch, release=self.release)
+        self.env.validate_episode_reservation(reservation)
+        pop.bind_episode_worlds(world_ids=IDS, world_episode_seqs=reservation.world_episode_seqs)
+        pop.begin_batch_episode(batch, planned_horizon=20)
+        self.record, activation = pop.reset(reservation=reservation, retired_world_ids=())
+        assert activation.owner is pop
+        curiosity = self.runtime.begin_episode(accepted=self.record.accepted)
+        self.env.activate_episode(
+            accepted=self.record.accepted,
+            population_receipt=activation,
+            curiosity_receipt=curiosity,
+        )
+        equal(pop.current_obs, self.record.observation)
+
+    def complete(self) -> tuple[Any, ...]:
+        """Real component effects under a local controller; no HC/T26 native attestation."""
+        pop, accepted = self.population, self.record.accepted
+        for lane in range(len(IDS)):
+            pop.flush_episode(lane, reason="budget")
+        outcomes, key = pop.completed_outcomes, accepted.batch_episode
+        participants = tuple(world for world in accepted.world_ids if any(event.world_id == world for event in outcomes))
+        content = tuple((item.payload.hex(), item.fingerprint) for item in map(freeze_lane_outcome, outcomes))
+        curriculum = pop.curriculum.prepare_episode_outcomes(outcomes)
+        bank = self.runtime.prepare_completion(
+            accepted=accepted, boundary_key=key, completion_content=content, outcomes=outcomes, participated_world_ids=participants
+        )
+        closing = self.env.prepare_episode_close(
+            accepted=accepted,
+            boundary_key=key,
+            completion_content=content,
+            participated_world_ids=participants,
+            dispositions=bank.prepared_receipt,
+        )
+        self.env.freeze_episode_close(closing)
+        pop.curriculum.commit_prepared_episode_outcomes(curriculum)
+        retirement = self.runtime.commit_completion(prepared=bank)
+        pop.commit_episode_outcomes(outcomes)
+        pop.sync_exploration_metrics()
+        equal(pop.current_epsilons, self.runtime.epsilon_tensor(batch_size=len(IDS), device="cpu"))
+        kinds = (
+            "curriculum_receipt",
+            "exploration_receipt",
+            "population_commit_receipt",
+            "epsilon_install_receipt",
+            "selection_sync_receipt",
+        )
+        owners = (pop.curriculum, self.runtime, pop, self.runtime, self.runtime, self)
+        self.effect_issuers = tuple(WorldReceiptIssuer(owner=owner) for owner in owners)
+        payload = dict(accepted=accepted, boundary_key=key, completion_content=content)
+        effects = {kind: issuer.issue(kind=kind, payload=payload) for kind, issuer in zip(kinds, self.effect_issuers[:-1], strict=True)}
+        closure = self.env.close_episode(closing, dispositions=retirement)
+        effects.update(batch_episode=key, accepted_identity=accepted, completion_content=content, retirement_receipt=retirement)
+        receipt = self.effect_issuers[-1].issue(kind="boundary_effects", payload=effects)
+        self.release = self.boundary.completed(closure=closure, effects=receipt)
+        self.env.install_boundary_release(self.release)
+        return outcomes
+
+    def candidate(self) -> dict[str, Any]:
+        masks = self.env.get_action_masks()
+        return {
+            "accepted": self.record.accepted,
+            "world_ids": IDS,
+            "predecessor": self.population.current_obs.clone(),
+            "actions": masks.long().argmax(dim=1),
+            "active_on_entry": ~self.env.dones.clone(),
+        }
+
+
+def make_parent(compiled: Any, family: str = "none", scope: str = "shared", *, selected_policy: Any = None) -> ParentFixture:
+    device = torch.device("cpu")
+    selected = compiled.get_level(compiled.metadata.primary_level)
+    effective = compiled.effective_run
+    assert effective.training.population.size == len(IDS)
+    env = compiled.create_environment(
+        num_agents=len(IDS),
+        level_name=compiled.metadata.primary_level,
+        device=device,
+        world_roster=WorldRosterDeclaration.from_dict({"schema": "world-roster-v1", "world_ids": list(IDS)}),
+        training_seed=selected.training.seed,
+        lane_world_ids=IDS,
+    )
+    curriculum = build_curriculum(
+        effective.training,
+        curriculum_options=effective.options.curriculum,
+        static_policy=effective.static_policy,
+        device=device,
+    )
+    curriculum.initialize_population(len(IDS))
+    if selected_policy is None:
+        if compiled.metadata.primary_level == "L0_test":
+            selected_policy = policy(compiled, family, scope, "paced_fifo")
+        else:
+            # The exported smoke-policy helper owns L0_test only; other real packs use their own selected authoring.
+            options = resolve_bac_options(selected.training.bac_options, training=selected.training).options.model_dump(exclude_none=True)
+            options["curiosity_scope"] = {"scope": scope, "seed_policy": "legacy_shared_v1" if scope == "shared" else "world_id_derived_v1"}
+            options["rnd"]["service_mode"] = "paced_fifo"
+            drive = selected.drive.intrinsic.model_dump()
+            drive["strategy"] = family
+            selected_policy = policy_types.resolve_exploration_policy(
+                IntrinsicStrategyConfig.model_validate(drive), selected.training, BaCOptions.model_validate(options)
+            )
+    descriptor = WorldCuriosityDescriptor.from_policy(
+        selected_policy,
+        world_ids=IDS,
+        observation_dim=selected.token_spec.total_dims,
+        action_dim=selected.action_metadata.total_actions,
+        training_seed=selected.training.seed,
+    )
+    owner: dict[str, Any] = {}
+    reports: list[Any] = []
+
+    def issuer_factory(bank: Any) -> Any:
+        assert "bank" not in owner
+        owner["bank"] = bank
+        return WorldReceiptIssuer(owner=bank)
+
+    def validate_committed_batch(*, batch_episode: int, outcomes: tuple[Any, ...]) -> None:
+        owner["population"].validate_committed_batch(batch_episode=batch_episode, outcomes=outcomes)
+
+    def validate_parent_cadence(*, cadence: Any, mode: str, accepted: Any, parent_restore: Any) -> None:
+        owner["population"].validate_parent_cadence(cadence=cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
+
+    runtime = build_exploration(
+        policy=selected_policy,
+        descriptor=descriptor,
+        device=device,
+        validate_accepted_episode=env.validate_accepted_episode,
+        issuer_factory=issuer_factory,
+        report_allocation=reports.append,
+        validate_committed_batch=validate_committed_batch,
+        validate_parent_cadence=validate_parent_cadence,
+    )
+    resolved = resolve_bac_options(selected.training.bac_options, training=selected.training)
+    pop = VectorizedPopulation.for_training(
+        env=env,
+        curriculum=curriculum,
+        exploration=runtime,
+        agent_ids=list(IDS),
+        device=device,
+        brain_config=apply_training_overrides(compiled.brain, selected.training),
+        obs_dim=selected.token_spec.total_dims,
+        train_frequency=1,
+        batch_size=2,
+        sequence_length=8,  # Actual smoke-pack YAML; flat learner uses length1 requests.
+        max_grad_norm=10.0,  # Actual smoke-pack YAML, explicit constructor input.
+        action_dim=selected.action_metadata.total_actions,
+        tb_logger=None,
+        max_episodes=2,
+        max_steps_per_episode=20,
+        replay_options=resolved.options.replay,
+        min_transitions=2,
+        replay_rng=np.random.Generator(np.random.PCG64(selected.training.seed)),
+        replay_origin="authored",
+        beta_vector_tick_horizon=40,
+        beta_horizon_origin="explicit test episodes2 * declared test horizon20; vector ticks",
+        current_vector_tick=0,
+    )
+    owner["population"] = pop
+    return ParentFixture(env, pop, runtime, owner["bank"], reports)
+
+
+def identity(accepted: Any) -> dict[str, Any]:
+    return {
+        "batch_episode": accepted.batch_episode,
+        "world_ids": list(accepted.world_ids),
+        "world_episode_seqs": list(accepted.world_episode_seqs),
+    }
+
+
+def progress(pop: VectorizedPopulation) -> dict[str, Any]:
+    reading = pop.vector_step_progress
+    assert set(reading) == {"vector_tick", "status", "last_reached_stage", "accepted_identity"}
+    return reading
+
+
+def assert_failed(rig: ParentFixture, stage: str, tick: int) -> None:
+    reading = progress(rig.population)
+    assert reading == {
+        "vector_tick": 1,
+        "status": "failed",
+        "last_reached_stage": stage,
+        "accepted_identity": identity(rig.record.accepted),
+    }
+    assert rig.population.total_steps == rig.population.clock_ledger.vector_ticks == tick
+
+
+def observe_runtime(monkeypatch: Any, rig: ParentFixture) -> dict[str, list[Any]]:
+    calls: dict[str, list[Any]] = {"reward": [], "service": []}
+    reward, service = rig.runtime.reward, rig.runtime.admit_and_service
+
+    def reward_call(**kwargs: Any) -> Any:
+        result = reward(**kwargs)
+        calls["reward"].append((kwargs, result))
+        return result
+
+    def service_call(**kwargs: Any) -> Any:
+        result = service(**kwargs)
+        calls["service"].append((kwargs, result))
+        return result
+
+    monkeypatch.setattr(rig.runtime, "reward", reward_call)
+    monkeypatch.setattr(rig.runtime, "admit_and_service", service_call)
+    return calls
+
+
+def test_current_runtime_constructor_and_telemetry(compiled: Any) -> None:
+    """First focused RED must reach actual POP's current-runtime telemetry seam."""
+    rig = make_parent(compiled)
+    assert rig.population.exploration is rig.runtime
+    assert rig.population.token_spec.total_dims == rig.population.current_obs.shape[1]
+    rig.population.sync_exploration_metrics()
+    equal(rig.population.current_epsilons, rig.runtime.epsilon_tensor(batch_size=len(IDS), device="cpu"))
+    assert rig.population.clock_ledger == clock_types.ClockLedger()
+
+
+def test_reservation_reset_returns_actual_world_record_and_pop_receipt(compiled: Any) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    assert rig.record.accepted.world_ids == IDS
+    assert rig.record.accepted.world_episode_seqs == (1,) * len(IDS)
+    assert rig.population.total_steps == 0
+    assert rig.population.clock_ledger == clock_types.ClockLedger()
+    assert rig.env.world_phase == "active"
+    assert rig.population.vector_step_progress is None
+
+
+def test_equal_preparation_is_owned_pure_and_identity_only(compiled: Any) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    candidate = rig.candidate()
+    before = rig.runtime.checkpoint_state()
+    rng = torch.get_rng_state().clone()
+    world_tick = rig.env.global_tick
+    prepared = rig.population.prepare_vector_step(**candidate)
+    assert type(prepared) is clock_types.PreparedVectorStep
+    assert rig.population.prepare_vector_step(**candidate) is prepared
+    equal(rig.runtime.checkpoint_state(), before)
+    equal(torch.get_rng_state(), rng)
+    assert rig.env.global_tick == world_tick
+    assert rig.population.total_steps == 0
+    original = {key: value.clone() if isinstance(value, torch.Tensor) else value for key, value in candidate.items()}
+    candidate["predecessor"].add_(10)
+    with pytest.raises((ValueError, RuntimeError)):
+        rig.population.prepare_vector_step(**candidate)
+    assert rig.population.prepare_vector_step(**original) is prepared
+    for foreign in (clock_types.PreparedVectorStep(), copy.copy(prepared)):
+        with pytest.raises((ValueError, RuntimeError)):
+            rig.population.claim_vector_step(prepared=foreign, **original)
+    assert rig.population.claim_vector_step(prepared=prepared, **original) == 1
+    with pytest.raises((ValueError, RuntimeError)):
+        rig.population.claim_vector_step(prepared=prepared, **original)
+    assert rig.env.global_tick == world_tick  # A direct claim is not physics or service.
+    equal(rig.runtime.checkpoint_state(), before)
+
+
+@pytest.mark.parametrize("changed", ("accepted", "world_ids", "predecessor", "actions", "active_on_entry"))
+def test_changed_pending_content_refuses_without_new_claim(compiled: Any, changed: str) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    original = rig.candidate()
+    prepared = rig.population.prepare_vector_step(**original)
+    candidate = {key: value.clone() if isinstance(value, torch.Tensor) else value for key, value in original.items()}
+    if changed == "accepted":
+        candidate[changed] = copy.copy(original[changed])
+    elif changed == "world_ids":
+        candidate[changed] = IDS[::-1]
+    elif changed == "predecessor":
+        candidate[changed][0, 0] += 1
+    elif changed == "actions":
+        candidate[changed][0] = (candidate[changed][0] + 1) % rig.population.action_dim
+    else:
+        candidate[changed][0] = ~candidate[changed][0]
+    before = rig.runtime.checkpoint_state()
+    with pytest.raises((ValueError, RuntimeError)):
+        rig.population.prepare_vector_step(**candidate)
+    with pytest.raises((ValueError, RuntimeError)):
+        rig.population.claim_vector_step(prepared=prepared, **candidate)
+    equal(rig.runtime.checkpoint_state(), before)
+    assert rig.population.total_steps == rig.env.global_tick == 0
+    assert rig.population.claim_vector_step(prepared=prepared, **original) == 1
+
+
+@pytest.mark.parametrize(
+    "field,kind",
+    (("predecessor", "shape"), ("predecessor", "nan"), ("actions", "dtype"), ("actions", "bounds"), ("active_on_entry", "dtype")),
+)
+def test_prepare_rejects_whole_input_geometry(compiled: Any, field: str, kind: str) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    candidate = rig.candidate()
+    if kind == "shape":
+        candidate[field] = candidate[field][:-1]
+    elif kind == "nan":
+        candidate[field][0, 0] = float("nan")
+    elif kind == "bounds":
+        candidate[field][0] = rig.population.action_dim
+    else:
+        candidate[field] = candidate[field].float()
+    with pytest.raises((TypeError, ValueError, RuntimeError)):
+        rig.population.prepare_vector_step(**candidate)
+    assert rig.population.total_steps == rig.env.global_tick == 0
+    assert rig.population.claim_vector_step(prepared=rig.population.prepare_vector_step(**rig.candidate()), **rig.candidate()) == 1
+
+
+def test_foreign_destination_cannot_claim_actual_issued_handle(compiled: Any) -> None:
+    source, target = make_parent(compiled), make_parent(compiled)
+    source.enter()
+    target.enter()
+    prepared = source.population.prepare_vector_step(**source.candidate())
+    with pytest.raises((ValueError, RuntimeError)):
+        target.population.claim_vector_step(prepared=prepared, **target.candidate())
+    assert target.population.total_steps == target.env.global_tick == 0
+
+
+@pytest.mark.parametrize("family", FAMILIES)
+@pytest.mark.parametrize("scope", ("shared", "per_world"))
+def test_actual_parent_handoff_single_reward_service_and_replay(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+    """Actual ENV/composer/replay; requires the separately implemented ENV handoff consumer."""
+    rig = make_parent(compiled, family, scope)
+    rig.enter()
+    before = rig.population.current_obs.clone()
+    calls = observe_runtime(monkeypatch, rig)
+    inserted: list[dict[str, Any]] = []
+    original_push = rig.population.replay_buffer.push_recorded
+
+    def push(**kwargs: Any) -> None:
+        original_push(**kwargs)
+        inserted.append(copy.deepcopy(kwargs))
+
+    monkeypatch.setattr(rig.population.replay_buffer, "push_recorded", push)
+    state = rig.population.step_population(rig.env)
+    handoff = state.info["intrinsic_transition"]
+    assert type(handoff) is policy_types.IntrinsicStepHandoff
+    assert len(calls["reward"]) == len(calls["service"]) == 1
+    reward_args, reward = calls["reward"][0]
+    service_args, receipts = calls["service"][0]
+    assert reward_args["update_stats"] is True
+    for args in (reward_args, service_args):
+        assert args["context"] is handoff.context
+        assert args["stamp"] is handoff.stamp
+        assert args["accepted"] is handoff.accepted is rig.record.accepted
+    equal(handoff.context.predecessor, before)
+    equal(handoff.context.actions, state.actions)
+    equal(handoff.context.successor, state.observations)
+    equal(handoff.context.active_on_entry, state.info["active_on_entry"])
+    assert handoff.context.vector_tick == rig.population.total_steps == 1
+    assert handoff.stamp.world_ids == IDS
+    assert inserted and rig.population.replay_buffer.retained_transitions == int(state.info["active_on_entry"].sum())
+    actual = inserted[0]
+    equal(actual["observations"], before)
+    equal(actual["next_observations"], state.observations)
+    equal(actual["rewards"].total, state.rewards)
+    for name in ("extrinsic", "intrinsic", "shaping"):
+        equal(getattr(actual["rewards"], name), state.info["reward_components"][name])
+    equal(actual["next_action_masks"], state.info["successor_action_masks"])
+    equal(state.intrinsic_rewards, reward.raw)
+    ledger = rig.population.clock_ledger
+    assert ledger.vector_ticks == 1
+    assert ledger.eligible_transitions == len(IDS)
+    assert ledger.predictor_admitted_rows == sum(receipt.admitted_rows for receipt in receipts)
+    assert ledger.predictor_consumed_minibatches == sum(receipt.optimizer_updates for receipt in receipts)
+    assert ledger.predictor_dropped_rows == sum(receipt.dropped_rows for receipt in receipts)
+    assert ledger.optimizer_updates == rig.population.training_step_counter == 1
+    request = ReplayRequest(len(IDS), 1, 2, "uniform_without_replacement", "feedforward", "transition")
+    assert rig.population.replay_buffer.readiness(request).ready
+    batch = rig.population.replay_buffer.sample_batch(request, lineage=None)
+    equal(batch.rewards, state.rewards[batch.unit_ids])
+    for name in ("extrinsic", "intrinsic", "shaping"):
+        assert bool(getattr(batch, f"rewards_{name}_present").all())
+        equal(getattr(batch, f"rewards_{name}"), state.info["reward_components"][name][batch.unit_ids])
+    equal(batch.next_observations, state.observations[batch.unit_ids])
+    equal(batch.next_action_masks, state.info["successor_action_masks"][batch.unit_ids])
+    assert progress(rig.population) == {
+        "vector_tick": 1,
+        "status": "completed",
+        "last_reached_stage": "completed",
+        "accepted_identity": identity(rig.record.accepted),
+    }
+    # Cached component retry is genuine; it never invokes another POP/ENV step.
+    saved = rig.runtime.checkpoint_state()
+    equal(rig.runtime.reward(**reward_args).raw, reward.raw)
+    equal(rig.runtime.admit_and_service(**service_args), receipts)
+    equal(rig.runtime.checkpoint_state(), saved)
+    assert rig.population.total_steps == rig.env.global_tick == 1
+
+
+def test_step_nonreentry_refuses_before_second_env_execution(compiled: Any, monkeypatch: Any) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    select = rig.runtime.select_actions
+    env_step = rig.env.step
+    executions: list[None] = []
+
+    def recursive_select(*args: Any, **kwargs: Any) -> Any:
+        with pytest.raises(RuntimeError, match="(?i)reentran"):
+            rig.population.step_population(rig.env)
+        return select(*args, **kwargs)
+
+    def physical_step(*args: Any, **kwargs: Any) -> Any:
+        executions.append(None)
+        return env_step(*args, **kwargs)
+
+    monkeypatch.setattr(rig.runtime, "select_actions", recursive_select)
+    monkeypatch.setattr(rig.env, "step", physical_step)
+    rig.population.step_population(rig.env)
+    assert len(executions) == 1
+    assert rig.population.total_steps == 1
+
+
+@pytest.mark.parametrize(
+    "seam,stage,advanced",
+    (("env", "executing", 0), ("replay", "env_returned", 0), ("service", "replay_admitted", 0), ("pace", "advanced", 1)),
+)
+def test_partial_failure_records_reached_cut_and_refuses_reexecution(
+    compiled: Any, monkeypatch: Any, seam: str, stage: str, advanced: int
+) -> None:
+    rig = make_parent(compiled, "rnd")
+    rig.enter()
+    physical_calls: list[None] = []
+    env_step = rig.env.step
+
+    def physical_step(*args: Any, **kwargs: Any) -> Any:
+        physical_calls.append(None)
+        result = env_step(*args, **kwargs)
+        if seam == "env":
+            raise RuntimeError("injected after actual physics")
+        return result
+
+    monkeypatch.setattr(rig.env, "step", physical_step)
+    if seam == "replay":
+        push = rig.population.replay_buffer.push_recorded
+
+        def after_push(**kwargs: Any) -> None:
+            push(**kwargs)
+            raise RuntimeError("injected after actual replay")
+
+        monkeypatch.setattr(rig.population.replay_buffer, "push_recorded", after_push)
+    elif seam == "service":
+        service = rig.runtime.admit_and_service
+
+        def after_service(**kwargs: Any) -> Any:
+            service(**kwargs)
+            raise RuntimeError("injected after actual service")
+
+        monkeypatch.setattr(rig.runtime, "admit_and_service", after_service)
+    elif seam == "pace":
+        pace = rig.population._pace_replay
+
+        def after_pace() -> None:
+            pace()
+            raise RuntimeError("injected after actual pacing")
+
+        monkeypatch.setattr(rig.population, "_pace_replay", after_pace)
+    with pytest.raises(RuntimeError, match="injected"):
+        rig.population.step_population(rig.env)
+    assert_failed(rig, stage, advanced)
+    assert rig.env.global_tick == 1
+    if seam != "env":
+        assert rig.population.replay_buffer.retained_transitions == len(IDS)
+    with pytest.raises(RuntimeError):
+        rig.population.step_population(rig.env)
+    assert len(physical_calls) == 1
+    assert_failed(rig, stage, advanced)
+    if seam == "pace":
+        diagnostic = copy.deepcopy(rig.population.get_checkpoint_state())
+        equal(diagnostic["vector_step_progress"], rig.population.vector_step_progress)
+        assert diagnostic["vector_step_progress"]["status"] == "failed"
+        receiver = make_parent(compiled, "rnd")
+        with pytest.raises(ValueError, match="Failed or in-progress"):
+            receiver.population.prepare_checkpoint_state(
+                diagnostic, mode="completed_boundary", parent_restore=None, validate_parent_restore=None, initialization=None
+            )
+
+
+def test_current_initial_transport_has_complete_exact_ledger(compiled: Any) -> None:
+    rig = make_parent(compiled)
+    checkpoint = rig.population.get_checkpoint_state()
+    assert checkpoint["version"] == 7
+    assert set(checkpoint) == {
+        "version",
+        "q_network",
+        "optimizer",
+        "scheduler",
+        "total_steps",
+        "exploration_state",
+        "universe_metadata",
+        "target_network",
+        "training_step_counter",
+        "replay_buffer",
+        "clock_ledger",
+        "vector_step_progress",
+    }
+    assert checkpoint["vector_step_progress"] is None
+    assert set(checkpoint["clock_ledger"]) == UNITS
+    assert all(type(value) is int and value == 0 for value in checkpoint["clock_ledger"].values())
+    assert checkpoint["exploration_state"]["schema"] == "exploration-runtime-state-v1"
+    rig.population.validate_checkpoint_state(checkpoint)
+
+
+@pytest.mark.parametrize("corrupt", ("bool", "float", "int_subclass", "negative", "extra", "missing", "tick", "old_version"))
+def test_bad_current_ledger_refuses_before_population_mutation(compiled: Any, corrupt: str) -> None:
+    source, target = make_parent(compiled), make_parent(compiled)
+    incoming = copy.deepcopy(source.population.get_checkpoint_state())
+    before = copy.deepcopy(target.population.get_checkpoint_state())
+    ledger = incoming["clock_ledger"]
+    if corrupt == "extra":
+        ledger["invented_clock"] = 0
+    elif corrupt == "missing":
+        del ledger["eligible_transitions"]
+    elif corrupt == "tick":
+        ledger["vector_ticks"] = 1
+    elif corrupt == "old_version":
+        incoming["version"] = 6
+    elif corrupt == "int_subclass":
+
+        class IntegerAlias(int):
+            pass
+
+        ledger["eligible_transitions"] = IntegerAlias(0)
+    else:
+        ledger["eligible_transitions"] = {"bool": True, "float": 0.0, "negative": -1}[corrupt]
+    with pytest.raises(ValueError):
+        target.population.load_checkpoint_state(incoming)
+    equal(target.population.get_checkpoint_state(), before)
+
+
+def test_completed_progress_snapshot_is_owned_portable_data(compiled: Any) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    rig.population.step_population(rig.env)
+    reading = progress(rig.population)
+    assert reading["accepted_identity"] == identity(rig.record.accepted)
+    reading["accepted_identity"]["world_ids"].reverse()
+    assert progress(rig.population)["accepted_identity"] == identity(rig.record.accepted)
+    saved = rig.population.get_checkpoint_state()
+    assert saved["clock_ledger"]["vector_ticks"] == saved["total_steps"] == 1
+    equal(saved["vector_step_progress"], progress(rig.population))
+
+
+def test_initial_pop_roundtrip_preserves_ledger_and_next_real_update(compiled: Any) -> None:
+    """POP's current loader only; does not attest outer HC/T26 atomic publication."""
+    source, target = make_parent(compiled, "rnd"), make_parent(compiled, "rnd")
+    saved = copy.deepcopy(source.population.get_checkpoint_state())
+    target.population.load_checkpoint_state(saved)
+    equal(target.population.get_checkpoint_state(), saved)
+    assert target.population.clock_ledger == source.population.clock_ledger
+    target.enter()
+    state = target.population.step_population(target.env)
+    assert state.info["intrinsic_transition"].context.vector_tick == 1
+    assert target.population.total_steps == target.population.clock_ledger.vector_ticks == 1
+    assert target.population.clock_ledger.optimizer_updates == target.population.training_step_counter == 1
+    assert target.population.clock_ledger.predictor_admitted_rows == len(IDS)
+
+
+def test_preclaim_refusal_does_not_enter_env_or_advance_vector_clock(compiled: Any, monkeypatch: Any) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    executions: list[None] = []
+    env_step = rig.env.step
+
+    def observe_env(*args: Any, **kwargs: Any) -> Any:
+        executions.append(None)
+        return env_step(*args, **kwargs)
+
+    def refuse_selection(*args: Any, **kwargs: Any) -> Any:
+        raise ValueError("injected preclaim selection refusal")
+
+    monkeypatch.setattr(rig.env, "step", observe_env)
+    monkeypatch.setattr(rig.population, "_select_eligible", refuse_selection)
+    with pytest.raises(ValueError, match="preclaim"):
+        rig.population.step_population(rig.env)
+    assert not executions
+    assert rig.population.total_steps == rig.population.clock_ledger.vector_ticks == 0
+    assert rig.env.global_tick == 0
+
+
+@pytest.mark.parametrize("after_child", (False, True))
+def test_batch_commit_failure_retains_exact_retry_custody(compiled: Any, monkeypatch: Any, after_child: bool) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    rig.population.step_population(rig.env)
+    for lane in range(len(IDS)):
+        rig.population.flush_episode(lane, reason="budget")
+    events = rig.population.completed_outcomes
+    before = rig.runtime.epsilon
+    selected = policy(compiled, "none", "shared", "paced_fifo")
+    expected = max(selected.epsilon_end, before * selected.epsilon_decay)
+    commit = rig.runtime.commit_batch_episode
+    attempts: list[None] = []
+
+    def fail_once(**kwargs: Any) -> None:
+        attempts.append(None)
+        if len(attempts) == 1:
+            if after_child:
+                commit(**kwargs)
+            raise RuntimeError("delegated batch commitment failure")
+        commit(**kwargs)
+
+    monkeypatch.setattr(rig.runtime, "commit_batch_episode", fail_once)
+    with pytest.raises(RuntimeError, match="delegated batch"):
+        rig.population.commit_episode_outcomes(events)
+    assert rig.population.clock_ledger.completed_batch_episodes == 0
+    assert rig.runtime.epsilon == (expected if after_child else before)
+    assert rig.population.batch_commit_progress["status"] == "pending"
+    rig.population.commit_episode_outcomes(events)
+    assert rig.population.clock_ledger.completed_batch_episodes == 1
+    assert rig.runtime.epsilon == expected
+    saved = rig.runtime.checkpoint_state()
+    rig.population.validate_parent_cadence(cadence=saved["cadence"], mode="live_episode", accepted=rig.record.accepted, parent_restore=None)
+    rig.population.commit_episode_outcomes(events)
+    equal(rig.runtime.checkpoint_state(), saved)
+    assert rig.population.clock_ledger.completed_batch_episodes == 1
+    assert len(attempts) == 2
+
+
+def test_post_env_reset_failure_never_issues_reusable_activation(compiled: Any, monkeypatch: Any) -> None:
+    rig = make_parent(compiled)
+    reset, issue = rig.env.reset, WorldReceiptIssuer.issue
+    resets: list[Any] = []
+    activations: list[Any] = []
+
+    def observe_reset(**kwargs: Any) -> Any:
+        record = reset(**kwargs)
+        resets.append((kwargs["reservation"], record))
+        return record
+
+    def observe_issue(issuer: Any, *, kind: str, payload: Any) -> Any:
+        receipt = issue(issuer, kind=kind, payload=payload)
+        if issuer.owner is rig.population and kind == "activation":
+            activations.append(receipt)
+        return receipt
+
+    def refuse_telemetry() -> None:
+        raise RuntimeError("post-ENV-reset telemetry failure")
+
+    monkeypatch.setattr(rig.env, "reset", observe_reset)
+    monkeypatch.setattr(WorldReceiptIssuer, "issue", observe_issue)
+    monkeypatch.setattr(rig.population, "_publish_exploration_metrics", refuse_telemetry)
+    with pytest.raises(RuntimeError, match="post-ENV-reset"):
+        rig.enter()
+    assert len(resets) == 1
+    assert resets[0][1].accepted.world_episode_seqs == (1,) * len(IDS)
+    assert not activations
+    assert rig.env.world_phase == "quarantined"
+    with pytest.raises(RuntimeError):
+        rig.population.reset(reservation=resets[0][0], retired_world_ids=())
+    assert len(resets) == 1
+    assert rig.population.total_steps == rig.population.clock_ledger.vector_ticks == 0
+
+
+@pytest.mark.parametrize("after_child", (False, True))
+def test_identical_multi_batch_commit_request_retries_pending_child(compiled: Any, monkeypatch: Any, after_child: bool) -> None:
+    rig = make_parent(compiled)
+    rig.enter()
+    rig.population.step_population(rig.env)
+    settled = rig.complete()
+    rig.enter(batch=1)
+    assert rig.record.accepted.world_episode_seqs == (2,) * len(IDS)
+    assert rig.env.global_tick == 0 and rig.population.total_steps == 1
+    rig.population.step_population(rig.env)
+    for lane in range(len(IDS)):
+        rig.population.flush_episode(lane, reason="budget")
+    request = settled + rig.population.completed_outcomes
+    before, commit, attempts = rig.runtime.epsilon, rig.runtime.commit_batch_episode, []
+    selected = policy(compiled, "none", "shared", "paced_fifo")
+    expected = max(selected.epsilon_end, before * selected.epsilon_decay)
+
+    def fail_once(**kwargs: Any) -> None:
+        attempts.append(kwargs["batch_episode"])
+        if len(attempts) == 1:
+            if after_child:
+                commit(**kwargs)
+            raise RuntimeError("delegated second-batch failure")
+        commit(**kwargs)
+
+    monkeypatch.setattr(rig.runtime, "commit_batch_episode", fail_once)
+    with pytest.raises(RuntimeError, match="second-batch"):
+        rig.population.commit_episode_outcomes(request)
+    assert rig.population.clock_ledger.completed_batch_episodes == 1
+    assert rig.runtime.epsilon == (expected if after_child else before)
+    with pytest.raises(RuntimeError):
+        rig.population.commit_episode_outcomes(settled)
+    rig.population.commit_episode_outcomes(request)
+    assert rig.population.clock_ledger.completed_batch_episodes == 2 and rig.runtime.epsilon == expected
+    saved = rig.runtime.checkpoint_state()
+    rig.population.commit_episode_outcomes(request)
+    equal(rig.runtime.checkpoint_state(), saved)
+    assert attempts == [1, 1]
+
+
+def test_initial_install_refuses_roles_bound_after_preparation(compiled: Any, monkeypatch: Any) -> None:
+    source, target = make_parent(compiled), make_parent(compiled)
+    pop = target.population
+    before = copy.deepcopy(pop.get_checkpoint_state())  # Export before preparation, never stale its child handle.
+    names = ("q_network", "optimizer", "scheduler", "replay_buffer")
+    owners = tuple(getattr(pop, name) for name in names)
+    prepared = pop.prepare_checkpoint_state(
+        source.population.get_checkpoint_state(), mode="initial", parent_restore=None, validate_parent_restore=None, initialization=None
+    )
+    target.bind()  # Actual component roles, without bootstrap/reset or a POP revision mutation.
+    assert target.env.world_phase == "fresh-bound"
+    install, publications = target.runtime.install_restore, []
+
+    def observe_install(**kwargs: Any) -> None:
+        publications.append(None)
+        install(**kwargs)
+
+    monkeypatch.setattr(target.runtime, "install_restore", observe_install)
+    with pytest.raises(ValueError, match="[Bb]ound"):
+        pop.install_checkpoint_state(prepared=prepared)
+    assert not publications
+    assert all(getattr(pop, name) is owner for name, owner in zip(names, owners, strict=True))
+    equal(pop.get_checkpoint_state(), before)

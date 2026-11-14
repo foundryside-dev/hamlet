@@ -1,0 +1,35 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_preparation_uses_existing_cpu_bound_justification ____________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...ration_uses_existing0/freeze.json', 'sha256': 'cc3dc2ac4e56b254695278e9ae9089b01219444d4042df4cd0f75600193180a6'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe548769e00>
+
+    def test_preparation_uses_existing_cpu_bound_justification(capsule,monkeypatch):
+        import fcntl
+        api,_=_owner(capsule,monkeypatch,'fork-guard');_fork_policy(capsule)
+>       ref=capsule['job']['obligations'][-1]['contract'];launch=_launch(capsule,api,ref,monkeypatch,'fork')
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:880: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:634: in _launch
+    return api.prepare_owner_launch(capsule['context'],start,ref,'test_inert',
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:828: in prepare_owner_launch
+    prepared = _prepare_fork(context,spec,job,role,candidate,environment,owner_contract) if start_method=='fork' else None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:536: in _prepare_fork
+    _require(bound.get('sampler_policy')==ref and bound.get('cpu_slots')==policy['cpu_slots'], 'sampler CPU justification missing')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, message = 'sampler CPU justification missing'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: sampler CPU justification missing
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:43: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_preparation_uses_existing_cpu_bound_justification
+1 failed, 1 passed, 80 deselected in 0.77s

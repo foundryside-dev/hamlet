@@ -1,0 +1,38 @@
+"""Root observation wrapper around the unchanged qualified CPU launcher."""
+from datetime import datetime, timezone
+from pathlib import Path
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import time
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+E = Path(__file__).parent
+spec_path = Path(sys.argv[1])
+spec_bytes = spec_path.read_bytes()
+spec = json.loads(spec_bytes)
+stem = Path(spec['output']).name
+argv = [str(R / '.venv/bin/python'), '-B', str(Q / 'run_bac_cold_checks_locked.py'), str(spec_path)]
+def now():
+    return datetime.now(timezone.utc).isoformat()
+record = dict(spec=str(spec_path), spec_sha256=hashlib.sha256(spec_bytes).hexdigest(),
+              argv=argv, start_utc=now(), orchestrator_pid=os.getpid(),
+              script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              environment_delta={}, scope='Outer launcher observations; original job results and import custody remain separate')
+started = time.monotonic()
+with (E / (stem + '-outer.stdout')).open('x') as stdout, (E / (stem + '-outer.stderr')).open('x') as stderr:
+    proc = subprocess.Popen(argv, cwd=R, stdout=stdout, stderr=stderr)
+    record['launcher_pid'] = proc.pid
+    stat = Path(f'/proc/{proc.pid}/stat').read_text()
+    record['launcher_start_ticks'] = int(stat[stat.rfind(')') + 2:].split()[19])
+    record['exit_code'] = proc.wait()
+record['end_utc'] = now()
+record['elapsed_seconds'] = time.monotonic() - started
+with (E / (stem + '-outer.json')).open('x') as out:
+    json.dump(record, out, indent=2)
+    out.write('\n')
+print(json.dumps(record))
+sys.exit(record['exit_code'])

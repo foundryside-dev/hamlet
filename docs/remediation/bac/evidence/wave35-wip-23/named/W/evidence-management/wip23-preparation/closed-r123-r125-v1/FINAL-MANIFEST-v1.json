@@ -1,0 +1,47 @@
+{
+  "status": "IMMUTABLE CLOSED-HISTORY HANDOFF; ONE DISTINCT SOURCE-SNAPSHOT GAP",
+  "files": [
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/HANDOFF-v1.json",
+      "bytes": 3682,
+      "sha256": "d537900835c3e4311caf56ca10fec66674134dde9600ca93f93a61859347f72e"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/SUPPLEMENTAL-CHECKS-AND-GAP-v1.json",
+      "bytes": 6420,
+      "sha256": "580470615d602f6a3642c021563e873dbb205622607b141b601c3b4d0a5b1986"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/preparation-attempt-1-failure.json",
+      "bytes": 413,
+      "sha256": "90e1a548c0fabeadf515e97e317ae92387de5866ad39aa65fd3cd3d9fcdf1ebc"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r123-history-component-v1.json",
+      "bytes": 38885,
+      "sha256": "178907fafc9a586c47b359e3d29e155d31e4369669e32cedd96d00c0f5f9a0f8"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r124-history-component-v1.json",
+      "bytes": 31108,
+      "sha256": "ab3b534c9bdd04f6614c407b0c37ccf329600d9c18ca5f10f0ccaa311319e2bf"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r125-history-component-v1.json",
+      "bytes": 18208,
+      "sha256": "f0834656bef379bd0a6ae40a3ba155d8ac8fede5c54ed15a645b1ad77794f70d"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/supporting-closure-v1.json",
+      "bytes": 699512,
+      "sha256": "ab6e918a9db174a03c8d71af3b2e4163b09943dd6522bf244d34a57aa31b134c"
+    }
+  ]
+}

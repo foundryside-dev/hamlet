@@ -1,0 +1,95 @@
+{
+  "schema": "bac-p3-independent-source-review-v1",
+  "reviewer": "/root/bac_astra_p3_owner_source_review",
+  "producer": "/root/bac_hardware_identity_p3",
+  "at": "2026-11-14T09:26:53.516927+00:00",
+  "disposition": "CHANGES REQUIRED: producer-owned timing failure coverage absent; bounded Q-only checks pass",
+  "source": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "bytes": 65961,
+      "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "bytes": 62678,
+      "sha256": "20129c680aa03ad1fa67b121e6ace69c477b54d75e4da66b673b9fad10ae45f8"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "read_budget": {
+    "implementation_bodies": 3,
+    "implementation_lines": 2647,
+    "own_runner_bodies": 1,
+    "maximum_bodies": 5,
+    "maximum_lines": 5000
+  },
+  "design": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-AMENDMENT-PROPOSAL-v2.md",
+      "bytes": 35319,
+      "sha256": "223951b0bbefb319892ecbd9c1b37b1cf686aea929546acffd652f9f68de57b3"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-AMENDMENT-INDEPENDENT-REVIEW-v2.md",
+      "bytes": 4040,
+      "sha256": "29482fad19e6b1eee5abee82298a78caa71c51a26e7e42ddedd57e7310ff002f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-TIMING-AMENDMENT-v2.md",
+      "bytes": 9747,
+      "sha256": "2804f48102a6dc3a209fb75b9749a766ea535118aa383e7ab217b75f4948157e"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-TIMING-INDEPENDENT-REVIEW-v2.md",
+      "bytes": 2706,
+      "sha256": "6f0bb7fbb5387083a870582cbd9a5739a3b9efe26aedb0015bc4e8efcec1b60d"
+    }
+  ],
+  "execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/execution.json",
+    "bytes": 7500,
+    "sha256": "eacfc5a42e987bdfa801556141c84c5cb999a4ccfed344f5cdd6c6bc3a26b12b"
+  },
+  "log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/output.log",
+    "bytes": 195,
+    "sha256": "2c27b91f636d9b3975e6def615b345d4580f588bcf4b0a6599e1f6dce6d8cef4"
+  },
+  "runner": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/run.py",
+    "bytes": 1895,
+    "sha256": "2f2ab530762ec44ac10f5d250bb18b6677e7ef03e349cf3bdee642b9b4e27e00"
+  },
+  "result": {
+    "passed": 85,
+    "deselected": 14,
+    "scope": "Serial Q-only inert suite; 3 discovery probes plus 11 actual-R source tests deselected. Counts overlap producer suite and must not be added.",
+    "sources_unchanged": true
+  },
+  "findings": [
+    {
+      "id": "P3-TIMING-NEGATIVES",
+      "priority": "P2",
+      "location": "test_bac_hardware_identity_v1.py:566",
+      "problem": "Timing amendment explicitly requires interrupted/late/aborted return coverage; current actual zero-import test covers only successful start/end with owner brackets. No test injects failure after process write but before emission receipt/return, failed emission writer, or budget expiry across the final emission tail.",
+      "required": "Add retained exact-source producer-owned negative evidence proving no successful return is fabricated, partial process/receipt artifacts remain truthful, and late final emission refuses. Preserve all attempts. Separately implement required consumer negatives in actual P2/P4/P5, without treating current producer success as consumer acceptance."
+    }
+  ],
+  "interface_obligations": [
+    "P2/P4 must parse raw-v2, owner-launch, atomic owner claims, sampler and emission records and independently bind full ancestry/environment/source/phase/inventory. Current consumers were not read or executed here.",
+    "P4/P5 must validate source-qualified actual owner entry/return rows and parent acknowledgement/reap: 3s each,6s cumulative,8s absolute returns,10s ack/reap; missing/crosswired/late records and valid7.9s-return/8.1s-ack are still mandatory finite integration tests.",
+    "P5 must correlate actual Process/context/os.fork, pipe, payload, wait, strict trial/action and RNG facts. launch.start_method is only a declaration by explicit design.",
+    "P2 owned-process-group cleanup after abrupt guard death with live Git remains a required independent backstop integration test.",
+    "Source-owned inter-op=5 setup, APP owner instrumentation and hardware qualification remain UNRUN/unqualified."
+  ],
+  "scope_limits": [
+    "No P0/P1/P2/P4/P5 or APP body inspection. No source/Git/index mutation, source copies, worktree, checkout or Git init.",
+    "No R-dependent independent test executed: root APP writer active. Producer full30 evidence is referenced only as historical producer result, not independently rerun.",
+    "No concrete source logic defect established in reviewed P3 path; this is not full timing or full-chain approval."
+  ]
+}

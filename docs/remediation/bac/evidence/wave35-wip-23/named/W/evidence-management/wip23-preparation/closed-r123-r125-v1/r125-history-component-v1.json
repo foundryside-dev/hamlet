@@ -1,0 +1,446 @@
+{
+  "accounting": {
+    "A_only_target_passed": 1,
+    "full23_repeated": false
+  },
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately recorded outer-launcher times are not substituted.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208538,
+            "path": "wave35/r125-candidate.json",
+            "root": "W",
+            "sha256": "3417e5b7697747aa2c830958d04933f08e9ab8acdbf4b5f54cbe292bc7ec9411"
+          },
+          "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r125-collection-spec.json",
+              "sha256": "0fbcb3ef54b21fd22a237d02603c0807a1bbf992062b6e1b712c39ae17ad7ede",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4808,
+            "path": "wave35/r125-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "93c3e338c85184b868605e0708e941063ff31fa270ac6983703c692e51f0c619"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4c1703d28712105b82bb0c046b5605cb9b93175f",
+            "tests": "fb399ea5148524af593f2f8963c3390b12773bb6"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA not qualified"
+          },
+          "id": "wave35-r125-collection-spec.json--unrun",
+          "path": "wave35-r125-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 125,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 collection/owned template; actual POP named attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r125-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "scope": "Closed exact-round component/history only; no terminal checkpoint qualification or whole-POP acceptance.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r125-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately recorded outer-launcher times are not substituted.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208538,
+            "path": "wave35/r125-candidate.json",
+            "root": "W",
+            "sha256": "3417e5b7697747aa2c830958d04933f08e9ab8acdbf4b5f54cbe292bc7ec9411"
+          },
+          "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r125-owned-spec.json",
+              "sha256": "c1df4d1c30a999a81284799a16c1a6edc3f40b386f54e755d978a3b9027695b0",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4808,
+            "path": "wave35/r125-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "93c3e338c85184b868605e0708e941063ff31fa270ac6983703c692e51f0c619"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4c1703d28712105b82bb0c046b5605cb9b93175f",
+            "tests": "fb399ea5148524af593f2f8963c3390b12773bb6"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA not qualified"
+          },
+          "id": "wave35-r125-owned-spec.json--unrun",
+          "path": "wave35-r125-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 125,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 collection/owned template; actual POP named attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r125-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "scope": "Closed exact-round component/history only; no terminal checkpoint qualification or whole-POP acceptance.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r125-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately recorded outer-launcher times are not substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208538,
+            "path": "wave35/r125-candidate.json",
+            "root": "W",
+            "sha256": "3417e5b7697747aa2c830958d04933f08e9ab8acdbf4b5f54cbe292bc7ec9411"
+          },
+          "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r125-pop-a-only-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only/identity-controller.json",
+              "sha256": "322053e8faee1605ddbccc05c6c6337b3a6675b0a442d7dab1dc5c5278baf948",
+              "type": "file"
+            },
+            {
+              "bytes": 641,
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only-custody.json",
+              "sha256": "5f68878b34404d584d537423d4e769a35cf3c4e803a7133496d9353d9bdf380d",
+              "type": "file"
+            },
+            {
+              "bytes": 1023,
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only-result.json",
+              "sha256": "13e1328c37f0a97b66e7feefad1512df77a5e700383aeab4d8ab2f4a3575a578",
+              "type": "file"
+            },
+            {
+              "bytes": 583,
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only.log",
+              "sha256": "c07f362b6e888ee3e6f0b6d47ad735c2e997215ef34abf62be7c8a58cc58b4a9",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 9.236408761003986,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4808,
+            "path": "wave35/r125-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "93c3e338c85184b868605e0708e941063ff31fa270ac6983703c692e51f0c619"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4c1703d28712105b82bb0c046b5605cb9b93175f",
+            "tests": "fb399ea5148524af593f2f8963c3390b12773bb6"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA not qualified"
+          },
+          "id": "wave35-r125-pop-a-only-attempt-1--pop-a-only",
+          "log_paths": [
+            {
+              "bytes": 583,
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only.log",
+              "root": "Q",
+              "sha256": "c07f362b6e888ee3e6f0b6d47ad735c2e997215ef34abf62be7c8a58cc58b4a9"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 903,
+            "path": "evidence-management/pop-standalone-step/wave35-r125-pop-a-only-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "e5f4747d04fbecbd453a0c010b73e31a74a86678218f83a03f64d0080fdf3b19"
+          },
+          "path": "wave35-r125-pop-a-only-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "322053e8faee1605ddbccc05c6c6337b3a6675b0a442d7dab1dc5c5278baf948"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "322053e8faee1605ddbccc05c6c6337b3a6675b0a442d7dab1dc5c5278baf948"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1023,
+            "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only-result.json",
+            "root": "Q",
+            "sha256": "13e1328c37f0a97b66e7feefad1512df77a5e700383aeab4d8ab2f4a3575a578"
+          },
+          "record_id": "pop-a-only",
+          "result": {
+            "bytes": 1023,
+            "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only-result.json",
+            "root": "Q",
+            "sha256": "13e1328c37f0a97b66e7feefad1512df77a5e700383aeab4d8ab2f4a3575a578"
+          },
+          "round": 125,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 641,
+            "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only-custody.json",
+            "root": "Q",
+            "sha256": "5f68878b34404d584d537423d4e769a35cf3c4e803a7133496d9353d9bdf380d"
+          }
+        }
+      ],
+      "check": "wave35-r125-pop-a-only-attempt-1--pop-a-only",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "scope": "Closed exact-round component/history only; no terminal checkpoint qualification or whole-POP acceptance.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r125-pop-a-only-attempt-1--pop-a-only"
+    }
+  ],
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 208538,
+    "path": "wave35/r125-candidate.json",
+    "root": "W",
+    "sha256": "3417e5b7697747aa2c830958d04933f08e9ab8acdbf4b5f54cbe292bc7ec9411"
+  },
+  "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4c1703d28712105b82bb0c046b5605cb9b93175f",
+    "tests": "fb399ea5148524af593f2f8963c3390b12773bb6"
+  },
+  "fixture_preflight": {
+    "bytes": 4808,
+    "path": "wave35/r125-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "93c3e338c85184b868605e0708e941063ff31fa270ac6983703c692e51f0c619"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r125-collection-spec.json",
+      "round": 125,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r125-owned-spec.json",
+      "round": 125,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r125-pop-a-only-attempt-1",
+      "round": 125,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r125-pop-a-only-attempt-1-spec.json",
+      "round": 125,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r125-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r125-collection-spec.json",
+        "sha256": "0fbcb3ef54b21fd22a237d02603c0807a1bbf992062b6e1b712c39ae17ad7ede",
+        "type": "file"
+      }
+    ],
+    "wave35-r125-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r125-owned-spec.json",
+        "sha256": "c1df4d1c30a999a81284799a16c1a6edc3f40b386f54e755d978a3b9027695b0",
+        "type": "file"
+      }
+    ],
+    "wave35-r125-pop-a-only-attempt-1": [
+      {
+        "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only/identity-controller.json",
+        "sha256": "322053e8faee1605ddbccc05c6c6337b3a6675b0a442d7dab1dc5c5278baf948",
+        "type": "file"
+      },
+      {
+        "bytes": 641,
+        "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only-custody.json",
+        "sha256": "5f68878b34404d584d537423d4e769a35cf3c4e803a7133496d9353d9bdf380d",
+        "type": "file"
+      },
+      {
+        "bytes": 1023,
+        "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only-result.json",
+        "sha256": "13e1328c37f0a97b66e7feefad1512df77a5e700383aeab4d8ab2f4a3575a578",
+        "type": "file"
+      },
+      {
+        "bytes": 583,
+        "path": "wave35-r125-pop-a-only-attempt-1/pop-a-only.log",
+        "sha256": "c07f362b6e888ee3e6f0b6d47ad735c2e997215ef34abf62be7c8a58cc58b4a9",
+        "type": "file"
+      }
+    ],
+    "wave35-r125-pop-a-only-attempt-1-spec.json": [
+      {
+        "bytes": 784,
+        "path": "wave35-r125-pop-a-only-attempt-1-spec.json",
+        "sha256": "68b5533453c78122766ea2a20aef0627cd219253de3f73e6ed7fec1d7deff048",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 125,
+  "schema": "bac-closed-round-history-component-v1",
+  "scope": "Retain all actual failures/UNRUNs and own candidate identities. Cross-round and overlapping counts not summed. R124 REQUEST CHANGES remains; R125 repairs A-only witness only; full failed diagnostic export P2 remains pending.",
+  "source_aliases": [
+    {
+      "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+      "exact_retained": {
+        "bytes": 161106,
+        "path": "evidence-management/pop-standalone-step/r124-executed-source/vectorized.py.txt",
+        "root": "W",
+        "sha256": "ea05fddb584cc7836e663e2aa2cada3c4dca1fcbc08584e030efa1816ac4bf38"
+      },
+      "live_hash_matches": true,
+      "original": "/workspace/hamlet/src/townlet/population/vectorized.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "ea05fddb584cc7836e663e2aa2cada3c4dca1fcbc08584e030efa1816ac4bf38"
+    },
+    {
+      "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+      "exact_retained": {
+        "bytes": 36758,
+        "path": "evidence-management/pop-standalone-step/r125-executed-source/test_initial_participation_population.py.txt",
+        "root": "W",
+        "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+      },
+      "live_hash_matches": true,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+    },
+    {
+      "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+      "exact_retained": {
+        "bytes": 36347,
+        "path": "evidence-management/pop-standalone-step/r124-executed-source/test_parent_intrinsic_handoff.py.txt",
+        "root": "W",
+        "sha256": "2621285b5d259be7f4bf8eb5e7b2ae1d2eb29c867923a7e2aa043c9e6246f7ef"
+      },
+      "live_hash_matches": true,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "2621285b5d259be7f4bf8eb5e7b2ae1d2eb29c867923a7e2aa043c9e6246f7ef"
+    },
+    {
+      "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+      "exact_retained": {
+        "bytes": 4534,
+        "path": "evidence-management/pop-standalone-step/r124-executed-source/test_population_standalone_step_cleanup.py.txt",
+        "root": "W",
+        "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+      },
+      "live_hash_matches": true,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+    },
+    {
+      "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+      "exact_retained": {
+        "bytes": 37523,
+        "path": "evidence-management/parent-c1/r122-executed-source/test_runtime_bank_parent_custody.py.txt",
+        "root": "W",
+        "sha256": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc"
+      },
+      "live_hash_matches": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc"
+    }
+  ],
+  "status": "CLOSED HISTORY PREPARATION; NOT CHECKPOINT SEAL"
+}

@@ -1,0 +1,66 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+______________ test_preloaded_fork_recorder_zero_imports_baseline ______________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-133/test_preloaded_fork_recorder_z0/source/pkg/inert-module.txt'), 'bl...aded_fork_recorder_z0/freeze.json', 'sha256': 'ce04485649e9efe93e38761e11490305b0a420e25e866b2ebdd096c103efd491'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3c388056e0>
+
+    def test_preloaded_fork_recorder_zero_imports_baseline(capsule,monkeypatch):
+        import builtins
+        api=_prepare(capsule,monkeypatch);_strict_role(capsule,'fork-guard')
+        parent=api.record_process(capsule['context'],'start')
+        context=dict(capsule['context'],role_id='fork-guard',parent_start=[parent])
+        read,write=os.pipe();pid=os.fork()
+        if pid==0:
+            os.close(read)
+            def forbidden(name,*args,**kwargs): raise AssertionError('forbidden import: '+name)
+            builtins.__import__=forbidden
+            try:
+                api.record_process(context,'start');api.record_process(context,'end');message=b'OK'
+            except BaseException as exc: message=str(exc).encode()
+            os.write(write,message);os._exit(0)
+        os.close(write);message=os.read(read,4096);os.close(read);os.waitpid(pid,0)
+>       assert message==b'OK',message.decode()
+E       AssertionError: forbidden import: ntpath
+E       assert b'forbidden import: ntpath' == b'OK'
+E         
+E         At index 0 diff: b'f' != b'O'
+E         Use -v to get more diff
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:552: AssertionError
+____________________ test_python_debug_is_not_torch_anomaly ____________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-133/test_python_debug_is_not_torch0/source/pkg/inert-module.txt'), 'bl...n_debug_is_not_torch0/freeze.json', 'sha256': 'da80268e5a3d30efa2b15d3f2dbf505638c8c1f1474657bc59f4353aeaf19e06'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3c38806ea0>
+
+    def test_python_debug_is_not_torch_anomaly(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        capsule['role'].update(observer='work',torch_policy='work',debug=True);_reseal(capsule)
+        torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda')
+        torch.get_num_threads=lambda:1;torch.get_num_interop_threads=lambda:1
+        torch.is_anomaly_enabled=lambda:False;cuda.is_initialized=lambda:False
+        monkeypatch.setitem(sys.modules,'torch',torch);monkeypatch.setitem(sys.modules,'torch.cuda',cuda)
+>       value=_read(api.record_process(capsule['context'],'start'));raw=_read(value['debug']['provenance'])
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:562: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:407: in record_process
+    facts,torch_observation,cuda_observation,loaded,marker,reason = _torch(role,phase)
+                                                                    ^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:269: in _torch
+    _require(type(value) is type(role[key]) and value == role[key], 'role configuration mismatch: '+key)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, message = 'role configuration mismatch: debug'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: role configuration mismatch: debug
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:35: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_preloaded_fork_recorder_zero_imports_baseline
+FAILED test_bac_hardware_identity_v1.py::test_python_debug_is_not_torch_anomaly
+2 failed, 48 deselected in 0.65s

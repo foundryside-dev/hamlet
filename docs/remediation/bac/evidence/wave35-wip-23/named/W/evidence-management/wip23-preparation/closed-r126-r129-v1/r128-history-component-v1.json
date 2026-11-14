@@ -1,0 +1,531 @@
+{
+  "accounting": "Original pace1 PASS; failed initial capture retained; missing root postflight is unresolved.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately retained outer launcher observations are not substituted.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208716,
+            "path": "wave35/r128-candidate.json",
+            "root": "W",
+            "sha256": "89e36ada06c18b39c28fc74e1e85e08f87e4ea74c48410816e9da7c13104a982"
+          },
+          "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r128-collection-spec.json",
+              "root": "Q",
+              "sha256": "8620ee3ee06158d1b73b513bb19f0e5f25ca4c8be86394fbbfcd1a6a2edbb204",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4913,
+            "path": "wave35/r128-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ff7d5b62ad29cfe5c6164598f0df4b83a393724cef9979dfc3cbcc20893928f2"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA unavailable/unqualified"
+          },
+          "id": "wave35-r128-collection-spec.json--unrun",
+          "path": "wave35-r128-collection-spec.json",
+          "record_id": "unrun",
+          "round": 128,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named attempts retained separately."
+        }
+      ],
+      "check": "wave35-r128-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "scope": "Closed-round history component only; no terminal qualification or whole BAC acceptance.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r128-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately retained outer launcher observations are not substituted.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208716,
+            "path": "wave35/r128-candidate.json",
+            "root": "W",
+            "sha256": "89e36ada06c18b39c28fc74e1e85e08f87e4ea74c48410816e9da7c13104a982"
+          },
+          "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r128-owned-spec.json",
+              "root": "Q",
+              "sha256": "d9de28679a44c0a5b332984dd21af202f54e28c1b77362299e04705d06ab18ff",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4913,
+            "path": "wave35/r128-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ff7d5b62ad29cfe5c6164598f0df4b83a393724cef9979dfc3cbcc20893928f2"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA unavailable/unqualified"
+          },
+          "id": "wave35-r128-owned-spec.json--unrun",
+          "path": "wave35-r128-owned-spec.json",
+          "record_id": "unrun",
+          "round": 128,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named attempts retained separately."
+        }
+      ],
+      "check": "wave35-r128-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "scope": "Closed-round history component only; no terminal qualification or whole BAC acceptance.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r128-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately retained outer launcher observations are not substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208716,
+            "path": "wave35/r128-candidate.json",
+            "root": "W",
+            "sha256": "89e36ada06c18b39c28fc74e1e85e08f87e4ea74c48410816e9da7c13104a982"
+          },
+          "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution[pace-advanced-1]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r128-pop-diagnostic-original-attempt-1"
+          ],
+          "counts": {
+            "passed": 1
+          },
+          "counts_basis": "Original retained pytest summary; no postflight verifier exists.",
+          "descendants": [
+            {
+              "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original/identity-controller.json",
+              "root": "Q",
+              "sha256": "b620f8ae173b8316566a0a91fedaf6d2e8bcd0188da7a38a760a669f114f6f9c",
+              "type": "file"
+            },
+            {
+              "bytes": 1095,
+              "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original-result.json",
+              "root": "Q",
+              "sha256": "6c35d1c52f98830991d6728f70df310c8713b8646e27235799786a01c29dfb08",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original.log",
+              "root": "Q",
+              "sha256": "07ddd5dd9233d31e0d3535c0f843182a3d2f5e59942411f042f3601b1e785bcc",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 10.618377791004605,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4913,
+            "path": "wave35/r128-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ff7d5b62ad29cfe5c6164598f0df4b83a393724cef9979dfc3cbcc20893928f2"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA unavailable/unqualified"
+          },
+          "harness_current_hash_matches_recorded": true,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+              "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+              "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+              "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+            },
+            {
+              "bytes": 1664,
+              "path": "evidence-management/pop-standalone-step/run-observed-spec-v1.py",
+              "required_by": "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+              "root": "W",
+              "sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+              "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+            }
+          ],
+          "id": "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original.log",
+              "root": "Q",
+              "sha256": "07ddd5dd9233d31e0d3535c0f843182a3d2f5e59942411f042f3601b1e785bcc"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 930,
+            "path": "evidence-management/pop-standalone-step/wave35-r128-pop-diagnostic-original-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "26c9c5e498d8c1b2df0880f587631e170d48e8d36c9fee65ccfb7a9eeeb51782"
+          },
+          "path": "wave35-r128-pop-diagnostic-original-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "b620f8ae173b8316566a0a91fedaf6d2e8bcd0188da7a38a760a669f114f6f9c"
+            }
+          ],
+          "process_custody_limitation": "Original witnesses lack literal attempt_id and PID; preserve exact spec/result/source linkage, do not invent observations.",
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1095,
+            "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original-result.json",
+            "root": "Q",
+            "sha256": "6c35d1c52f98830991d6728f70df310c8713b8646e27235799786a01c29dfb08"
+          },
+          "record_id": "pop-diagnostic-original",
+          "result": {
+            "bytes": 1095,
+            "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original-result.json",
+            "root": "Q",
+            "sha256": "6c35d1c52f98830991d6728f70df310c8713b8646e27235799786a01c29dfb08"
+          },
+          "round": 128,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": null
+        }
+      ],
+      "check": "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "scope": "Closed-round history component only; no terminal qualification or whole BAC acceptance.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original"
+    }
+  ],
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 208716,
+    "path": "wave35/r128-candidate.json",
+    "root": "W",
+    "sha256": "89e36ada06c18b39c28fc74e1e85e08f87e4ea74c48410816e9da7c13104a982"
+  },
+  "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+  "fixture_preflight": {
+    "bytes": 4913,
+    "path": "wave35/r128-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "ff7d5b62ad29cfe5c6164598f0df4b83a393724cef9979dfc3cbcc20893928f2"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r128-collection-spec.json",
+      "round": 128,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r128-owned-spec.json",
+      "round": 128,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r128-pop-diagnostic-original-attempt-1",
+      "round": 128,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r128-pop-diagnostic-original-attempt-1-spec.json",
+      "round": 128,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r128-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r128-collection-spec.json",
+        "root": "Q",
+        "sha256": "8620ee3ee06158d1b73b513bb19f0e5f25ca4c8be86394fbbfcd1a6a2edbb204",
+        "type": "file"
+      }
+    ],
+    "wave35-r128-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r128-owned-spec.json",
+        "root": "Q",
+        "sha256": "d9de28679a44c0a5b332984dd21af202f54e28c1b77362299e04705d06ab18ff",
+        "type": "file"
+      }
+    ],
+    "wave35-r128-pop-diagnostic-original-attempt-1": [
+      {
+        "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original/identity-controller.json",
+        "root": "Q",
+        "sha256": "b620f8ae173b8316566a0a91fedaf6d2e8bcd0188da7a38a760a669f114f6f9c",
+        "type": "file"
+      },
+      {
+        "bytes": 1095,
+        "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original-result.json",
+        "root": "Q",
+        "sha256": "6c35d1c52f98830991d6728f70df310c8713b8646e27235799786a01c29dfb08",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r128-pop-diagnostic-original-attempt-1/pop-diagnostic-original.log",
+        "root": "Q",
+        "sha256": "07ddd5dd9233d31e0d3535c0f843182a3d2f5e59942411f042f3601b1e785bcc",
+        "type": "file"
+      }
+    ],
+    "wave35-r128-pop-diagnostic-original-attempt-1-spec.json": [
+      {
+        "bytes": 842,
+        "path": "wave35-r128-pop-diagnostic-original-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "236937afcab175e251413f73daa6c18431826d6a2cb3d62d1c36347cf07a6007",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 128,
+  "schema": "bac-closed-round-history-component-v1",
+  "scope": "Retain failures and UNRUNs at own exact source. Counts overlap across selections and rounds and are not summed. No current-source or hardware acceptance claim.",
+  "source_aliases": [
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [],
+      "live_source_read": false,
+      "missing_exact_snapshot": true,
+      "original": "/workspace/hamlet/src/townlet/config/exploration_policy.py",
+      "sha256": "e08309e0c55ca0d757fc33c926a21ee266b2935082826c14994208d6aebc3191"
+    },
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [],
+      "live_source_read": false,
+      "missing_exact_snapshot": true,
+      "original": "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py",
+      "sha256": "8da80d4c87f666f6df7a4260ca16dd8feeb460ffa83e6713904e739598b667cc"
+    },
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [
+        {
+          "bytes": 8016,
+          "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/parent_custody.py.before.txt",
+          "root": "W",
+          "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"
+        },
+        {
+          "bytes": 8016,
+          "path": "evidence-management/parent-c1/r122-executed-source/parent_custody.py.txt",
+          "root": "W",
+          "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"
+        },
+        {
+          "bytes": 8016,
+          "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-executed-source/parent_custody.py.txt",
+          "root": "W",
+          "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"
+        }
+      ],
+      "live_source_read": false,
+      "original": "/workspace/hamlet/src/townlet/exploration/parent_custody.py",
+      "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"
+    },
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [
+        {
+          "bytes": 52506,
+          "path": "evidence-management/parent-c1/generic-diagnostic-red-v1/test_runtime_bank_parent_custody.py.r129.txt",
+          "root": "W",
+          "sha256": "b968c943bafccfe2f6317464380a286fe3de3ae5efa7e0e32ae09e61ede1ee4b"
+        },
+        {
+          "bytes": 52506,
+          "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/test_runtime_bank_parent_custody.py.r126.txt",
+          "root": "W",
+          "sha256": "b968c943bafccfe2f6317464380a286fe3de3ae5efa7e0e32ae09e61ede1ee4b"
+        },
+        {
+          "bytes": 52506,
+          "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-executed-source/test_runtime_bank_parent_custody.py.txt",
+          "root": "W",
+          "sha256": "b968c943bafccfe2f6317464380a286fe3de3ae5efa7e0e32ae09e61ede1ee4b"
+        }
+      ],
+      "live_source_read": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "sha256": "b968c943bafccfe2f6317464380a286fe3de3ae5efa7e0e32ae09e61ede1ee4b"
+    },
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [
+        {
+          "bytes": 161446,
+          "path": "evidence-management/pop-standalone-step/r128-executed-source/vectorized.py.txt",
+          "root": "W",
+          "sha256": "4cc490995fe34b17499030ec91de7bd1e4f19533a60fdb6338a92064a5c684e3"
+        },
+        {
+          "bytes": 161446,
+          "path": "evidence-management/pop-standalone-step/r129-executed-source/vectorized.py.txt",
+          "root": "W",
+          "sha256": "4cc490995fe34b17499030ec91de7bd1e4f19533a60fdb6338a92064a5c684e3"
+        }
+      ],
+      "live_source_read": false,
+      "original": "/workspace/hamlet/src/townlet/population/vectorized.py",
+      "sha256": "4cc490995fe34b17499030ec91de7bd1e4f19533a60fdb6338a92064a5c684e3"
+    },
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [
+        {
+          "bytes": 38548,
+          "path": "evidence-management/pop-standalone-step/r128-executed-source/test_parent_intrinsic_handoff.py.txt",
+          "root": "W",
+          "sha256": "8806af864533a94517e6f75ff87ef9b67a74d30cf2fc570736e0494e724b5e4d"
+        }
+      ],
+      "live_source_read": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "sha256": "8806af864533a94517e6f75ff87ef9b67a74d30cf2fc570736e0494e724b5e4d"
+    },
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [
+        {
+          "bytes": 36758,
+          "path": "evidence-management/pop-standalone-step/r128-executed-source/test_initial_participation_population.py.txt",
+          "root": "W",
+          "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+        },
+        {
+          "bytes": 36758,
+          "path": "evidence-management/pop-standalone-step/r129-executed-source/test_initial_participation_population.py.txt",
+          "root": "W",
+          "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+        },
+        {
+          "bytes": 36758,
+          "path": "evidence-management/pop-standalone-step/r125-executed-source/test_initial_participation_population.py.txt",
+          "root": "W",
+          "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+        }
+      ],
+      "live_source_read": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+    },
+    {
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "exact_retained_aliases": [
+        {
+          "bytes": 4534,
+          "path": "evidence-management/pop-standalone-step/r128-executed-source/test_population_standalone_step_cleanup.py.txt",
+          "root": "W",
+          "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+        },
+        {
+          "bytes": 4534,
+          "path": "evidence-management/pop-standalone-step/r129-executed-source/test_population_standalone_step_cleanup.py.txt",
+          "root": "W",
+          "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+        },
+        {
+          "bytes": 4534,
+          "path": "evidence-management/pop-standalone-step/r125-executed-source/test_population_standalone_step_cleanup.py.txt",
+          "root": "W",
+          "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+        },
+        {
+          "bytes": 4534,
+          "path": "evidence-management/pop-standalone-step/r124-executed-source/test_population_standalone_step_cleanup.py.txt",
+          "root": "W",
+          "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+        }
+      ],
+      "live_source_read": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+      "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+    }
+  ],
+  "status": "CLOSED HISTORY PREPARATION; NOT A SEAL"
+}

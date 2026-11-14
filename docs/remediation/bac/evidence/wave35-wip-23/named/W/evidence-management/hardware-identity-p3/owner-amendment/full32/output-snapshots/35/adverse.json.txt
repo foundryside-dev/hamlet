@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-c",
+    "import os; os.write(2,b\"y\"*100000)"
+  ],
+  "end_ns": 128040481929855,
+  "exit_code": -15,
+  "pid": 215024,
+  "start_ns": 128040450179573,
+  "stderr": {
+    "bytes": 8192,
+    "path": "/tmp/bac-p3-inert-ewu8rs03/output/attempt/job/adverse.stderr",
+    "sha256": "4b7fa1f19b33c15008d4c3b063524262fe9efb9acea89d089f77abd20d5356a7"
+  },
+  "stderr_truncated": true,
+  "stdout": {
+    "bytes": 0,
+    "path": "/tmp/bac-p3-inert-ewu8rs03/output/attempt/job/adverse.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout_truncated": false
+}

@@ -1,0 +1,25 @@
+{
+  "name": "c1-poison-diagnostic-completion",
+  "exit_code": 0,
+  "seconds": 8.667338999992353,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r127-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion.log",
+  "sha256": "8e6dda22fea468963831e9d5816745ce2fce3e4d960d1824415d78f0007ed153",
+  "candidate_tree": "60c786588781251f5dcadff6067ecbbf3cfe4cfb",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "manifest_sha256": "14576e4568e86ee6f9cbc86d3da44d1f55693ba1eea8a572a78e2bf9350fc069",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

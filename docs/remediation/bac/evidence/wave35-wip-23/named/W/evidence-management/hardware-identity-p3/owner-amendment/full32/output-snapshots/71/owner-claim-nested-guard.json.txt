@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-14T09:32:16.360538Z",
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 215080,
+    "ppid": 215075,
+    "start_identity": "12804669"
+  },
+  "launch": {
+    "bytes": 32272,
+    "path": "/tmp/bac-p3-inert-uhrig9qx/output/attempt/job/owner-launch-nested-guard.json",
+    "sha256": "19794ece1aa1afc401e87dd85b6ee2924686dc098fdfb956ddb1b85ab82c7616"
+  },
+  "monotonic_ns": 128046701037135,
+  "role_id": "fork-guard",
+  "schema": "bac-hardware-owner-claim-v1"
+}

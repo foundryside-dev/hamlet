@@ -1,0 +1,192 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [23 items]
+
+..................F..F.                                                  [100%]
+=================================== FAILURES ===================================
+_ test_partial_failure_records_reached_cut_and_refuses_reexecution[pace-advanced-1] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f7f19a750f0>
+seam = 'pace', stage = 'advanced', advanced = 1
+
+    @pytest.mark.parametrize(
+        "seam,stage,advanced",
+        (("env", "executing", 0), ("replay", "env_returned", 0), ("service", "replay_admitted", 0), ("pace", "advanced", 1)),
+    )
+    def test_partial_failure_records_reached_cut_and_refuses_reexecution(
+        compiled: Any, monkeypatch: Any, seam: str, stage: str, advanced: int
+    ) -> None:
+        rig = make_parent(compiled, "rnd")
+        rig.enter()
+        physical_calls: list[None] = []
+        env_step = rig.env.step
+    
+        def physical_step(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = env_step(*args, **kwargs)
+            if seam == "env":
+                raise RuntimeError("injected after actual physics")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step)
+        if seam == "replay":
+            push = rig.population.replay_buffer.push_recorded
+    
+            def after_push(**kwargs: Any) -> None:
+                push(**kwargs)
+                raise RuntimeError("injected after actual replay")
+    
+            monkeypatch.setattr(rig.population.replay_buffer, "push_recorded", after_push)
+        elif seam == "service":
+            service = rig.runtime.admit_and_service
+    
+            def after_service(**kwargs: Any) -> Any:
+                service(**kwargs)
+                raise RuntimeError("injected after actual service")
+    
+            monkeypatch.setattr(rig.runtime, "admit_and_service", after_service)
+        elif seam == "pace":
+            pace = rig.population._pace_replay
+    
+            def after_pace() -> None:
+                pace()
+                raise RuntimeError("injected after actual pacing")
+    
+            monkeypatch.setattr(rig.population, "_pace_replay", after_pace)
+        with pytest.raises(RuntimeError, match="injected"):
+            rig.population.step_population(rig.env)
+        assert_failed(rig, stage, advanced)
+        assert rig.env.global_tick == 1
+        if seam != "env":
+            assert rig.population.replay_buffer.retained_transitions == len(IDS)
+        with pytest.raises(RuntimeError):
+            rig.population.step_population(rig.env)
+        assert len(physical_calls) == 1
+        assert_failed(rig, stage, advanced)
+        if seam == "pace":
+>           diagnostic = copy.deepcopy(rig.population.get_checkpoint_state())
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:543: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:2507: in get_checkpoint_state
+    "exploration_state": self.exploration.checkpoint_state(),
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1180: in checkpoint_state
+    bank_state = self._bank_call("checkpoint_state")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:147: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:234: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1027: in checkpoint_state
+    self._available()
+src/townlet/exploration/scoped_curiosity.py:418: in _available
+    self._healthy()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f7f19a2d2c0>
+
+    def _healthy(self) -> None:
+        if self._failed or self._completion_uncertain:
+>           raise RuntimeError("curiosity bank quarantined")
+E           RuntimeError: curiosity bank quarantined
+
+src/townlet/exploration/scoped_curiosity.py:411: RuntimeError
+____________ test_actual_a_learning_replay_private_b_and_next_cycle ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f7f20794530>
+
+    def test_actual_a_learning_replay_private_b_and_next_cycle(compiled: Any, monkeypatch: Any) -> None:
+        rig = make_parent(compiled, "rnd", "per_world")
+        begin(rig)
+        calls = observe_runtime(monkeypatch, rig)
+        initial = rig.runtime.checkpoint_state()
+        b_before = next(world for world in initial["bank"]["worlds"] if world["world_id"] == IDS[1])
+        q_before = copy.deepcopy(rig.population.q_network.state_dict())
+        selected, expected, original_select = [], [], rig.runtime.select_actions
+    
+        def selector(values: Any, state: Any, masks: Any) -> Any:
+            selected.append((values.shape, state.observations.shape, masks.shape))
+            return original_select(values, state, masks)
+    
+        monkeypatch.setattr(rig.runtime, "select_actions", selector)
+        for tick in (1, 2):
+            previous = rig.population.current_obs.clone()
+            state = rig.population.step_population(rig.env)
+            expected.append(
+                copy.deepcopy(
+                    dict(
+                        observations=previous[0],
+                        actions=state.actions[0],
+                        next_observations=state.observations[0],
+                        dones=state.dones[0],
+                        rewards=state.rewards[0],
+                        next_action_masks=state.info["successor_action_masks"][0],
+                        **{f"rewards_{name}": state.info["reward_components"][name][0] for name in ("extrinsic", "intrinsic", "shaping")},
+                    )
+                )
+            )
+            handoff = state.info["intrinsic_transition"]
+            equal(handoff.context.predecessor, previous)
+            equal(handoff.context.active_on_entry, LIVE)
+            equal(handoff.stamp.eligible, LIVE)
+            assert handoff.context.vector_tick == tick
+            assert rig.population.replay_buffer.retained_transitions == tick
+            assert len(calls["reward"]) == len(calls["service"]) == tick
+            reward_args, _ = calls["reward"][-1]
+            service_args, _ = calls["service"][-1]
+            for args in (reward_args, service_args):
+                assert args["context"] is handoff.context and args["stamp"] is handoff.stamp and args["accepted"] is rig.record.accepted
+            equal(state.rewards[1:], torch.zeros(7))
+            for component in ("extrinsic", "intrinsic", "shaping"):
+                equal(state.info["reward_components"][component][1:], torch.zeros(7))
+        assert selected == [((1, rig.env.action_dim), (1, rig.env.observation_dim), (1, rig.env.action_dim))] * 2
+        ledger = rig.population.clock_ledger
+        assert ledger.vector_ticks == ledger.eligible_transitions == 2
+        assert ledger.optimizer_updates == rig.population.training_step_counter == 1
+        assert any(not torch.equal(value, q_before[key]) for key, value in rig.population.q_network.state_dict().items())
+>       batch = rig.population.replay_buffer.sample_batch(ReplayRequest(2, 1, 2, "uniform_without_replacement", "feedforward", "transition"))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_population.py:301: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:617: in guarded
+    with self._device_operation("sample", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=True):
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+arguments = {}
+
+    def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+        try:
+            lineage = arguments["lineage"]
+        except KeyError:
+>           raise TypeError("Missing required keyword-only argument: 'lineage'") from None
+E           TypeError: Missing required keyword-only argument: 'lineage'
+
+src/townlet/training/replay_contract.py:566: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution[pace-advanced-1]
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle
+======================== 2 failed, 21 passed in 16.88s =========================

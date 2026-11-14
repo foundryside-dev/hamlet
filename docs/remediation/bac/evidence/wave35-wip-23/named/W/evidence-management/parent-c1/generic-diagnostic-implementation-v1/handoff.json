@@ -1,0 +1,38 @@
+{
+  "status": "production frozen; root runtime and independent review pending",
+  "plan_sha256": "babab7675f4463b66ff6a6ed5d0496997588280d675e0446c7b1bd1dad5f13b6",
+  "files": [
+    {
+      "path": "src/townlet/config/exploration_policy.py",
+      "sha256": "5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363",
+      "lines": 1343
+    },
+    {
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c",
+      "lines": 1492
+    },
+    {
+      "path": "src/townlet/exploration/parent_custody.py",
+      "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f",
+      "lines": 239
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872",
+      "lines": 1348
+    }
+  ],
+  "total_with_retained_probe": 4486,
+  "body_count": 5,
+  "validation": [
+    "AST PASS",
+    "scoped Black --check PASS",
+    "scoped Ruff PASS"
+  ],
+  "runtime_execution": false,
+  "red": "Root R130 reports collection42 PASS and ordinary41 intended missing-API failures; isolated new poison RED unrun",
+  "execution_handoff": "generic-diagnostic-red-v1/red-freeze-v1.json SHA d4e783addff8a74940b31f66affa698827ac541bf93c389e2d4134940ba8aaab",
+  "new_isolated_poison_role": "generic_diagnostic_completion",
+  "retained_source_reference": "E/wip23-preparation/closed-r126-r129-v1/r127-exact-source-retention-v1; root alias resolution SHA d00e8a02b8165ca89a65c85422f6cc5169af028d1b1cfb849cc7f0a1ec673b51"
+}

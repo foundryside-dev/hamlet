@@ -797,7 +797,7 @@ class VectorizedPopulation(PopulationManager):
             self._last_readiness = signature
             return
         self._last_readiness = signature
-        batch = self.replay_buffer.sample_batch(request)
+        batch = self.replay_buffer.sample_batch(request, lineage=None)
         self.q_network.train()
         self.target_network.eval()
         if self.is_recurrent:
@@ -2112,7 +2112,7 @@ class VectorizedPopulation(PopulationManager):
                 self._failed_step = True
                 if self._vector_stage != "prepared":
                     for quarantine in (
-                        lambda: self.exploration.quarantine_episode(accepted=record.accepted, reason="population step failure"),
+                        lambda: self.exploration.quarantine_episode(accepted=record.accepted, reason="runtime_failure"),
                         lambda: self.env.abandon_episode(accepted=record.accepted, reason="runtime_failure"),
                     ):
                         try:
@@ -2491,7 +2491,8 @@ class VectorizedPopulation(PopulationManager):
         self._require_operation_idle()
         if self._owned_reset_pending:
             raise RuntimeError("An outstanding owned reset cannot export a checkpoint")
-        if self._failed_step and not self._has_failed_step_diagnostic():
+        failed_diagnostic = self._failed_step and self._has_failed_step_diagnostic()
+        if self._failed_step and not failed_diagnostic:
             raise RuntimeError("Failed reset or unclassified work cannot export a healthy checkpoint")
         if self._step_active or self._pending_batch_commit is not None or (self._vector_steps and not self._failed_step):
             raise RuntimeError("In-progress vector work cannot masquerade as a healthy checkpoint")
@@ -2504,7 +2505,7 @@ class VectorizedPopulation(PopulationManager):
             "optimizer": self.optimizer.state_dict(),
             "scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
             "total_steps": self.total_steps,
-            "exploration_state": self.exploration.checkpoint_state(),
+            "exploration_state": self._checkpoint_exploration_state(failed_diagnostic=failed_diagnostic),
             "universe_metadata": {
                 "meter_count": bars_config.meter_count,
                 "meter_names": bars_config.meter_names,
@@ -2518,6 +2519,11 @@ class VectorizedPopulation(PopulationManager):
             # All buffer types implement serialize(), but mypy doesn't infer it for unions.
             "replay_buffer": self.replay_buffer.serialize(),  # type: ignore[union-attr]
         }
+
+    def _checkpoint_exploration_state(self, *, failed_diagnostic: bool) -> dict[str, Any]:
+        if failed_diagnostic:
+            return cast(dict[str, Any], self.exploration.diagnostic_state())
+        return cast(dict[str, Any], self.exploration.checkpoint_state())
 
     def _has_failed_step_diagnostic(self) -> bool:
         progress = self._vector_step_progress

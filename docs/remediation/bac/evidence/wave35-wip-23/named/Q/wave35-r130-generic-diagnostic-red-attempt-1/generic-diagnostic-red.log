@@ -1,0 +1,1463 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [41 items]
+
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                [100%]
+=================================== FAILURES ===================================
+______ test_generic_diagnostic_full_payload[runtime_failure-shared-none] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d3dcd35c0>
+family = 'none', scope = 'shared', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d3e3a0440>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+___ test_generic_diagnostic_full_payload[runtime_failure-shared-count_based] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d3dcd2650>
+family = 'count_based', scope = 'shared', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d33033610>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+__________ test_generic_diagnostic_full_payload[initial-shared-none] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73bbcb5c0>
+family = 'none', scope = 'shared', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa73c298440>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_______ test_generic_diagnostic_full_payload[runtime_failure-shared-rnd] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32cb85f0>
+family = 'rnd', scope = 'shared', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32da7750>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_______ test_generic_diagnostic_full_payload[initial-shared-count_based] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73bbca650>
+family = 'count_based', scope = 'shared', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730fa2e90>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+__ test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32d25590>
+family = 'adaptive_rnd', scope = 'shared', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32c15ba0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+___________ test_generic_diagnostic_full_payload[initial-shared-rnd] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730bcd6d0>
+family = 'rnd', scope = 'shared', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730baec10>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_______ test_generic_diagnostic_full_payload[runtime_failure-shared-icm] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32d2ce20>
+family = 'icm', scope = 'shared', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32c31220>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+______ test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730ca0f30>
+family = 'adaptive_rnd', scope = 'shared', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730b63360>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+___________ test_generic_diagnostic_full_payload[initial-shared-icm] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730ebef10>
+family = 'icm', scope = 'shared', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730b61480>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_____ test_generic_diagnostic_full_payload[runtime_failure-per_world-none] _____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d33098250>
+family = 'none', scope = 'per_world', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32b8d6d0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_________ test_generic_diagnostic_full_payload[initial-per_world-none] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730f28050>
+family = 'none', scope = 'per_world', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730c2cb90>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_ test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32d8d250>
+family = 'count_based', scope = 'per_world', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32a945a0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_____ test_generic_diagnostic_full_payload[initial-per_world-count_based] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730ac2050>
+family = 'count_based', scope = 'per_world', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730d4b570>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_____ test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32b21130>
+family = 'rnd', scope = 'per_world', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32d24050>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_________ test_generic_diagnostic_full_payload[initial-per_world-rnd] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730b9ba70>
+family = 'rnd', scope = 'per_world', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730ca1040>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_ test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d3303e030>
+family = 'adaptive_rnd', scope = 'per_world', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d3309a650>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_____ test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730b98320>
+family = 'adaptive_rnd', scope = 'per_world', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730f28150>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_____ test_generic_diagnostic_full_payload[runtime_failure-per_world-icm] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d3e813af0>
+family = 'icm', scope = 'per_world', phase = 'runtime_failure'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32ce7850>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_________ test_generic_diagnostic_full_payload[initial-per_world-icm] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73c14c3d0>
+family = 'icm', scope = 'per_world', phase = 'initial'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730b75d50>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_________ test_generic_diagnostic_full_payload[available-shared-none] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730e127b0>
+family = 'none', scope = 'shared', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730e7ff20>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+____________ test_generic_diagnostic_restore_refusal[runtime-False] ____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32a78bb0>
+failed = False, owner_name = 'runtime'
+
+    @pytest.mark.parametrize("failed", [False, True])
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_generic_diagnostic_restore_refusal(compiled: Any, monkeypatch: Any, failed: bool, owner_name: str) -> None:
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        if failed:
+            source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = generic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32ebba70>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+______ test_generic_diagnostic_full_payload[available-shared-count_based] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73c55d160>
+family = 'count_based', scope = 'shared', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730afb980>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+____________ test_generic_diagnostic_restore_refusal[runtime-True] _____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32e54ef0>
+failed = True, owner_name = 'runtime'
+
+    @pytest.mark.parametrize("failed", [False, True])
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_generic_diagnostic_restore_refusal(compiled: Any, monkeypatch: Any, failed: bool, owner_name: str) -> None:
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        if failed:
+            source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = generic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d326135b0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+__________ test_generic_diagnostic_full_payload[available-shared-rnd] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73100ef90>
+family = 'rnd', scope = 'shared', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa7309ad0f0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_____________ test_generic_diagnostic_restore_refusal[bank-False] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d326cc290>
+failed = False, owner_name = 'bank'
+
+    @pytest.mark.parametrize("failed", [False, True])
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_generic_diagnostic_restore_refusal(compiled: Any, monkeypatch: Any, failed: bool, owner_name: str) -> None:
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        if failed:
+            source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = generic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4d326e94a0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_____ test_generic_diagnostic_full_payload[available-shared-adaptive_rnd] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73100fad0>
+family = 'adaptive_rnd', scope = 'shared', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730636270>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+______________ test_generic_diagnostic_restore_refusal[bank-True] ______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d326ce450>
+failed = True, owner_name = 'bank'
+
+    @pytest.mark.parametrize("failed", [False, True])
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_generic_diagnostic_restore_refusal(compiled: Any, monkeypatch: Any, failed: bool, owner_name: str) -> None:
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        if failed:
+            source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = generic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4d325c3570>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+__________ test_generic_diagnostic_full_payload[available-shared-icm] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730a9d7b0>
+family = 'icm', scope = 'shared', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa730a6cfc0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+________ test_generic_diagnostic_full_payload[available-per_world-none] ________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730a9d860>
+family = 'none', scope = 'per_world', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa7306a2090>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+____ test_generic_diagnostic_full_payload[available-per_world-count_based] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa730c8eb70>
+family = 'count_based', scope = 'per_world', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa7306a3dd0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+______________ test_generic_diagnostic_refusal_controls[pending] _______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d325b2410>
+kind = 'pending'
+
+    @pytest.mark.parametrize("kind", ["pending", "empty_participation", "auth"])
+    def test_generic_diagnostic_refusal_controls(compiled: Any, monkeypatch: Any, kind: str) -> None:
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        if kind == "pending":
+            rig.population.step_population(rig.env)
+            assert prepare_close(rig) is not None and rig.bank._prepared is not None
+        else:
+            reason = "runtime_failure" if kind == "auth" else kind
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d328ae360>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+________ test_generic_diagnostic_refusal_controls[empty_participation] _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d328afac0>
+kind = 'empty_participation'
+
+    @pytest.mark.parametrize("kind", ["pending", "empty_participation", "auth"])
+    def test_generic_diagnostic_refusal_controls(compiled: Any, monkeypatch: Any, kind: str) -> None:
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        if kind == "pending":
+            rig.population.step_population(rig.env)
+            assert prepare_close(rig) is not None and rig.bank._prepared is not None
+        else:
+            reason = "runtime_failure" if kind == "auth" else kind
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d328aee60>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+________________ test_generic_diagnostic_refusal_controls[auth] ________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32528730>
+kind = 'auth'
+
+    @pytest.mark.parametrize("kind", ["pending", "empty_participation", "auth"])
+    def test_generic_diagnostic_refusal_controls(compiled: Any, monkeypatch: Any, kind: str) -> None:
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        if kind == "pending":
+            rig.population.step_population(rig.env)
+            assert prepare_close(rig) is not None and rig.bank._prepared is not None
+        else:
+            reason = "runtime_failure" if kind == "auth" else kind
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1263: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d328af540>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+________ test_generic_diagnostic_full_payload[available-per_world-rnd] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73045f430>
+family = 'rnd', scope = 'per_world', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa7303a4e10>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+________________ test_generic_diagnostic_callback_guard[False] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32316f30>
+parent_bound = False
+
+    @pytest.mark.parametrize("parent_bound", [False, True])
+    def test_generic_diagnostic_callback_guard(compiled: Any, monkeypatch: Any, parent_bound: bool) -> None:
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       capture, peer = generic_api(rig.runtime), generic_api(rig.bank)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1284: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d328afd80>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+_________________ test_generic_diagnostic_callback_guard[True] _________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d32945ac0>
+parent_bound = True
+
+    @pytest.mark.parametrize("parent_bound", [False, True])
+    def test_generic_diagnostic_callback_guard(compiled: Any, monkeypatch: Any, parent_bound: bool) -> None:
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       capture, peer = generic_api(rig.runtime), generic_api(rig.bank)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1284: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32384890>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+___________ test_generic_diagnostic_native_failure_contract[shared] ____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d3e6aa6d0>
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_generic_diagnostic_native_failure_contract(compiled: Any, monkeypatch: Any, scope: str) -> None:
+        rig = make_parent(compiled, "rnd", scope)
+        begin(rig, retired=IDS[1:])
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32385440>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+____ test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa73bf79eb0>
+family = 'adaptive_rnd', scope = 'per_world', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa7303a71d0>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+__________ test_generic_diagnostic_native_failure_contract[per_world] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4d3e6aaed0>
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_generic_diagnostic_native_failure_contract(compiled: Any, monkeypatch: Any, scope: str) -> None:
+        rig = make_parent(compiled, "rnd", scope)
+        begin(rig, retired=IDS[1:])
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4d32385d30>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+________ test_generic_diagnostic_full_payload[available-per_world-icm] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa72ff0a6d0>
+family = 'icm', scope = 'per_world', phase = 'available'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    @pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+    def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+        rig = make_parent(compiled, family, scope)
+        if phase != "initial":
+            begin(rig, retired=IDS[1:])
+            diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        reason = None
+        if phase == "runtime_failure":
+            reason = phase
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       capture = generic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fa7303a7b70>
+
+    def generic_api(owner: Any) -> Any:
+        method = getattr(owner, "diagnostic_state", None)
+>       assert callable(method), "missing producer diagnostic_state API"
+E       AssertionError: missing producer diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1170: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-False]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-True]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-False]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-True]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[pending]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[empty_participation]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[auth]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[False]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[True]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[shared]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[per_world]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-icm]
+============================= 41 failed in 13.41s ==============================

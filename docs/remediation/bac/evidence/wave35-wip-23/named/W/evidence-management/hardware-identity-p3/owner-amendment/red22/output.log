@@ -1,0 +1,17 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_preloaded_fork_recorder_zero_imports ___________________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...aded_fork_recorder_z0/freeze.json', 'sha256': '3c88fad4fb4c94d1e72f9f284d79393915936106ed806548b625b50e73238da0'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3d520f8b00>
+
+>   ???
+E   AssertionError: [Errno 2] No such file or directory: 'sampler-emission-p-927e8b8bf194195c1c93e155ef0c75e487ab5ee2b5f7f4c2d24726442c3dea0a-start.json'
+E   assert False
+E    +  where False = <built-in method startswith of bytes object at 0x33f59910>(b'{')
+E    +    where <built-in method startswith of bytes object at 0x33f59910> = b"[Errno 2] No such file or directory: 'sampler-emission-p-927e8b8bf194195c1c93e155ef0c75e487ab5ee2b5f7f4c2d24726442c3dea0a-start.json'".startswith
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:589: AssertionError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_preloaded_fork_recorder_zero_imports
+1 failed, 92 deselected in 1.14s

@@ -1,0 +1,28 @@
+{
+  "name": "black-changed",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "src/townlet/config/exploration_policy.py",
+    "src/townlet/exploration/scoped_curiosity.py",
+    "src/townlet/population/vectorized.py",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+  ],
+  "cwd": "/workspace/hamlet",
+  "start_utc": "2026-11-14T09:57:33.080263+00:00",
+  "parent_pid": 219577,
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r132-candidate.json",
+  "manifest_sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a",
+  "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+  "script_sha256": "3992706d818f101cea7646cfad82f3c56618203415f7c0a3195d85bbfa50b9d3",
+  "pid": 219673,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T09:57:34.056701+00:00",
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.log",
+  "log_sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af"
+}

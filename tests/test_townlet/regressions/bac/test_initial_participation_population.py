@@ -298,7 +298,9 @@ def test_actual_a_learning_replay_private_b_and_next_cycle(compiled: Any, monkey
     assert ledger.vector_ticks == ledger.eligible_transitions == 2
     assert ledger.optimizer_updates == rig.population.training_step_counter == 1
     assert any(not torch.equal(value, q_before[key]) for key, value in rig.population.q_network.state_dict().items())
-    batch = rig.population.replay_buffer.sample_batch(ReplayRequest(2, 1, 2, "uniform_without_replacement", "feedforward", "transition"))
+    batch = rig.population.replay_buffer.sample_batch(
+        ReplayRequest(2, 1, 2, "uniform_without_replacement", "feedforward", "transition"), lineage=None
+    )
     assert batch.observations.shape == (2, rig.env.observation_dim)
     assert batch.next_action_masks.shape == (2, rig.env.action_dim)
     assert bool(batch.rewards_extrinsic_present.all()) and bool(batch.rewards_intrinsic_present.all())

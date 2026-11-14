@@ -1,0 +1,32 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+  ],
+  "signatures": [
+    {
+      "error": "RuntimeError: curiosity bank quarantined",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution[pace-advanced-1]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: Missing required keyword-only argument: 'lineage'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

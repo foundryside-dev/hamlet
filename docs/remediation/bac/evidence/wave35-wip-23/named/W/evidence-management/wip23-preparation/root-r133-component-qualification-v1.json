@@ -1,0 +1,143 @@
+{
+  "schema": "bac-r133-root-bounded-component-qualification-v1",
+  "at": "2026-11-14T10:07:05.785147+00:00",
+  "status": "BOUNDED APP REPAIR QUALIFIED FOR CHECKPOINT PREPARATION; TERMINAL PUBLICATION REVIEW STILL REQUIRED",
+  "references": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r133-candidate.json",
+      "bytes": 207540,
+      "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip23-preparation/root-r133-execution-identity-v1.json",
+      "bytes": 906,
+      "sha256": "006d590ac278419c9a56f219514234d3bc26130fd004b3f16dfe9f7ac5b82bd6"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime-custody.json",
+      "bytes": 651,
+      "sha256": "09ee6bcd15714464cd95a7fb9c9827bd576624ff791cda22011d193eaacf21c1"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime-custody.json",
+      "bytes": 651,
+      "sha256": "2962ea071147c7ac7ec14860e5dd44edce10b1c67d97e8fff7c00a1921260801"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime-custody.json",
+      "bytes": 663,
+      "sha256": "aa582f6ebe6db1fc98c7830f6e03c58a661bce410e24ae26610b555c57a33f55"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/r133-static-attempt-1/summary.json",
+      "bytes": 4773,
+      "sha256": "3b5363c9b5f484a54a76e78419a928a96863b753e0859a86dc22c5eeeb1a88a8"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/independent-review/r132-fresh/review.md",
+      "bytes": 10190,
+      "sha256": "4123e8a6337c4edc852d185a69533bb7e234a242a8fc33bc1394bbefe4b8500c"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/independent-review/r132-fresh/r133-typing-addendum.md",
+      "bytes": 3032,
+      "sha256": "ecdb4e5098ae04d3e98e0d2d610b39149722467d298ab942d94c521f9b12fdeb"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/r131-adversarial-source-review-v1.md",
+      "bytes": 5764,
+      "sha256": "245f090945f240a57122ed404979761e524681261394efe42dd55ea62bc8a6e8"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/r132-probe-source-before-v1.json",
+      "bytes": 394,
+      "sha256": "56f73a94cadc08c7310a4aa995d71f45393473831313773e1d2a7a83566ee3e4"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/r132-probe-source-after-v1.json",
+      "bytes": 384,
+      "sha256": "3c9a41e8a41f7c143b1f9f40bdcd67f4adec7fe34cd92bdaf47f4be9b35e1d7f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/ROOT-DOCUMENT-REVIEW-v1.json",
+      "bytes": 2355,
+      "sha256": "a54c70ef0a896925a8944e7518566e8ce8934e9a8cc357b199870b035974283a"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-body-distinct-attempt-1/root-poison-witness-verification.json",
+      "bytes": 1329,
+      "sha256": "5c6bcd2e4a581b08e05d5456452321309e008ebb376f7efb345c77bba189a947"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-body-same-attempt-1/root-poison-witness-verification.json",
+      "bytes": 1301,
+      "sha256": "a8a26a3a72692cac40f71e67684a852077c9db67b8fbe9c34d73ed2f5f8a64b1"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-child-false-parent-true-attempt-1/root-poison-witness-verification.json",
+      "bytes": 1399,
+      "sha256": "e3c18cd8884f5143cbe8ccba0abad7a5891080f436af9bc15364738e232a8eba"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-child-true-parent-false-attempt-1/root-poison-witness-verification.json",
+      "bytes": 1399,
+      "sha256": "6b82680c2175362ba822d55779701ac68b86eac3d3b25f70b7fbdb7746718544"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+      "bytes": 1385,
+      "sha256": "d2a174225208c2ccc87e19fa50be12d4fd094146e253f7eb823fc67092c0efc1"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+      "bytes": 1441,
+      "sha256": "9a222c9c5ef7fe607d60bc01950b42053b5b77a90936bda5208322903e26fa3b"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-install-completion-attempt-1/root-poison-witness-verification.json",
+      "bytes": 1364,
+      "sha256": "8933d86f10d9c426eb7ea9455aeb1e3b77f7a2d1b53b264feea1606723aac520"
+    }
+  ],
+  "closed": [
+    "Explicit standalone replay sampling lineage no longer fails the actual fresh-bound learning step.",
+    "Cleanup uses authenticated runtime_failure reason and preserves primary exception plus truthful reached stage and cleanup notes.",
+    "Full current diagnostic capture supports locally available BANK and authenticated ordinary quarantine without resume or recovery authority.",
+    "Actual failed POP proof selects generic diagnostic route; healthy route, full12fields and evaluation order preserved; prepared/cleanup-before-quarantine/pace controls pass.",
+    "New two helper return-type errors repaired by typing-only casts; no ignores or fallback."
+  ],
+  "evidence_accounting": {
+    "r133_pop": 25,
+    "r132_c1_ordinary": 133,
+    "r132_fresh_poison": 7,
+    "r132_independent": 36,
+    "r132_independent_warnings": 12,
+    "overlap": "R13325 repeats R13225; earlier focused checks overlap. No combined unique full-suite count.",
+    "same_byte_reuse": "R133 changes only POP two typing.cast wrappers versusR132. C1 producer/test/helper and independentprobe byte identities unchanged; noR133 C1/poison/probe execution claimed."
+  },
+  "static": {
+    "ruff": "PASS",
+    "black_changed": "PASS",
+    "defaults": "PASS",
+    "mypy": "FAIL:12 errors in2files, retained; R13214 includes2newnowrepaired"
+  },
+  "reviews": "Fresh independent bounded POP review plus typing-only delta; other-model actual producer source review and executed36case thread/fork probe. Zero unresolved boundedP1/P2 reported; nowholeBACclaim.",
+  "required_next": [
+    "Native/replay fixture correction per independently approved finite plan.",
+    "Genuine ENV width3 episode driver; C2 retained ENV exclusion, C3 registration/revalidation and POP restore/recurrent candidate lifecycle.",
+    "Remaining original owner assertions; full/default suites, coverage>=70, slow/learning, fullend-to-end and finalfreshindependentreviews.",
+    "P2/P4/P5 actualownerchain andsourceinstrumentation, B6, CUDA/serverqualification, exactfinalremoteCI.",
+    "Resolve12globaltyping errors."
+  ],
+  "historical_limitations": [
+    "R128 originalpace1PASS missing livepostflight remains missing; R132/R133 newexecutions retainownidentity.",
+    "R121 owner215FAIL/266PASS is historicalnotfreshcurrentfullownerrun.",
+    "ActualCUDAUNRUN; noavailable16workerserveraccess/topologyverified."
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope_decisions": "No capability removal/degradation/consolidation or newbranch/worktree; no requiredgap waived."
+}

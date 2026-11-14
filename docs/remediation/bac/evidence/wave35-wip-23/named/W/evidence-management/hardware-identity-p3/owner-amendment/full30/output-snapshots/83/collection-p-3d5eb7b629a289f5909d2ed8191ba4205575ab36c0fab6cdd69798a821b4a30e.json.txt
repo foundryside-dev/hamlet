@@ -1,0 +1,11 @@
+{
+  "ids": [
+    "test_bac_hardware_identity_v1.py::test_inert_owner_job"
+  ],
+  "process": {
+    "bytes": 8193,
+    "path": "/tmp/bac-p3-inert-wab6nlyj/output/attempt/job/process-p-3d5eb7b629a289f5909d2ed8191ba4205575ab36c0fab6cdd69798a821b4a30e-start.json",
+    "sha256": "71f5f0201816340cefd920c04980fadc4443043980b275096193a3c273fc95a5"
+  },
+  "schema": "bac-hardware-pytest-collection-v1"
+}

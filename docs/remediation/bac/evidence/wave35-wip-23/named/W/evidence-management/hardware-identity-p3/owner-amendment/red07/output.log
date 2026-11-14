@@ -1,0 +1,44 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_preloaded_fork_recorder_zero_imports ___________________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...aded_fork_recorder_z0/freeze.json', 'sha256': 'b727ea9a191b5564cf4c748255df51dc52f86a7191dff7f8de016a3b6126bb29'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5e5b3b02b0>
+
+    def test_preloaded_fork_recorder_zero_imports(capsule,monkeypatch):
+        import builtins
+        api,ref=_owner(capsule,monkeypatch,'fork-guard');_fork_policy(capsule)
+        _real_source(capsule,api,monkeypatch)
+        ref=capsule['job']['obligations'][-1]['contract']
+>       launch=_launch(capsule,api,ref,monkeypatch,'fork')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:604: in _launch
+    start=api.record_process(capsule['context'],'start')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:412: in record_process
+    candidate = _load(spec['candidate'], 'candidate')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:62: in _load
+    protocol.validate_record(kind, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:418: in _semantic
+    _require(_within(root, value["authorized_root"]), "import root escape")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'import root escape'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: import root escape
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_preloaded_fork_recorder_zero_imports
+1 failed, 50 deselected in 0.59s

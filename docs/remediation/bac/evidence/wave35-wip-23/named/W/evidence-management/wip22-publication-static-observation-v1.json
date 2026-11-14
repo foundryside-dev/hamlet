@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-14T08:43:42.734974+00:00",
+  "full_exit": 2,
+  "full_log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-publication-archive-whitespace-v1.log",
+  "scoped_source_and_docs_exit": 0,
+  "disposition": "Exact historical evidence bytes retain original whitespace; no archive rewriting. Active source and document diff check passes.",
+  "publication_tree": "155b91888f4d2960cab7cb93fc2f0cb0cac39868"
+}

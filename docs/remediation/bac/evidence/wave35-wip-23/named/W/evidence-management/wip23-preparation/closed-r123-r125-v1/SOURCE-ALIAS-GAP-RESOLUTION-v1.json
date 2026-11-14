@@ -1,0 +1,38 @@
+{
+  "schema": "bac-closed-history-source-alias-resolution-v1",
+  "status": "REPORTED SOURCE-SNAPSHOT GAP RESOLVED BY EXISTING EXACT INERT BYTES",
+  "at": "2026-11-14T09:13:37.940721+00:00",
+  "prior_frozen_manifest": {
+    "root": "W",
+    "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/FINAL-MANIFEST-v1.json",
+    "bytes": 1790,
+    "sha256": "6f89b25538d628e8ea35dc966c39e62d668f2c05087fb752579ebb57fbe03b40"
+  },
+  "prior_gap_observation": {
+    "root": "W",
+    "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/SUPPLEMENTAL-CHECKS-AND-GAP-v1.json",
+    "bytes": 6420,
+    "sha256": "580470615d602f6a3642c021563e873dbb205622607b141b601c3b4d0a5b1986"
+  },
+  "logical_alias": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+  "rounds": [
+    123,
+    124
+  ],
+  "expected_sha256": "9186a953f79cd8b4cf2a4fea47c6ff24197ae53764b6d2e6fa33267f78000bd5",
+  "exact_existing_inert_snapshot": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-POP-A-ONLY-WITNESS-BEFORE-v1.py.txt",
+    "bytes": 36730,
+    "sha256": "9186a953f79cd8b4cf2a4fea47c6ff24197ae53764b6d2e6fa33267f78000bd5"
+  },
+  "original_producer_handoff": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-POP-A-ONLY-WITNESS-HANDOFF-v1.md",
+    "bytes": 2887,
+    "sha256": "37d8b0a4c2a991a5097f597e592079674c0bb2c99c501e059518cc2d9b895a85"
+  },
+  "resolution": "The earlier finite lookup omitted this existing preparation-directory snapshot. Root supplied its exact path; hash-only recheck matches both candidate source declarations. Original frozen components and gap observation remain unchanged; future selection must include this linked alias resolution and the exact existing artifacts.",
+  "remaining_distinct_snapshot_gaps": 0,
+  "scope": "Only two supplied artifact hashes and prior manifest checked. No APP interpretation, Git extraction, source copy, broader search/re-audit or live R126 selection."
+}

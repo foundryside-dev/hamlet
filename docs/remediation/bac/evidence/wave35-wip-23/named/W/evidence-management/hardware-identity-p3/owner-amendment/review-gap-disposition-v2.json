@@ -1,0 +1,103 @@
+{
+  "actual_evidence": [
+    {
+      "bytes": 3820,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/negative31/execution.json",
+      "sha256": "23a29fb655c77e337dd4b3d085062a32a27d34ef26489d1af603adcc3c55a3e7"
+    },
+    {
+      "bytes": 3832,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/execution.json",
+      "sha256": "a760d0c7aa0f9aba5a3454074dfb22a5da8cdc51d044a76929533275e9ea12ee"
+    }
+  ],
+  "covered": [
+    {
+      "scope": "Successful actual caller entry/return rows, own Git/source/raw/process/emission records, actual parent pipe receive/reap; module/import/Torch/NumPy/Queue/RNG traps. Positive chronology only.",
+      "test": "test_preloaded_fork_recorder_zero_imports"
+    },
+    {
+      "scope": "Already-expired in-memory absolute cutoff supplied before recorder entry. Refusal; NOT late source/emission/return coverage.",
+      "test": "test_fork_refuses_changed_preparation[deadline]"
+    },
+    {
+      "scope": "Actual command deadline/output caps/nonzero exit with actual process reaping and retained command diagnostics. NOT interruption after P0 process write.",
+      "test": "test_sampler_deadline_and_output_caps[stall|stdout|stderr|both|exit]"
+    },
+    {
+      "scope": "Actual spawn parent exits after guard start; guard end refuses changed real ancestry. NOT post-process receipt interruption.",
+      "test": "test_nested_spawn_fork_actual_ancestry[True]"
+    },
+    {
+      "scope": "Two real fork children contend for exclusive launch claim; only one completes. NOT endpoint corruption validation.",
+      "test": "test_two_actual_forks_cannot_reuse_one_handle"
+    }
+  ],
+  "custody": "All listed missing gates remain required. No code edits/imports/tests performed for this disposition. Root will reconcile repair/partial-adoption boundaries; author does not self-adopt.",
+  "freeze": {
+    "bytes": 4147,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/freeze-v1.json",
+    "sha256": "1d3b4d5a10f978b5060cb5025af4abd3466b5e52239f1e4a989e07d25f9240e4"
+  },
+  "missing_consumer_owned": [
+    {
+      "disposition": "Required source-qualified consumer mutation tests. P3 emits observations and has no acceptance oracle for these externally written records.",
+      "gate": "Missing or cross-wired emission/return/ack/reap links",
+      "owner": "P4/P5 independently, P2 where correspondence belongs"
+    },
+    {
+      "disposition": "Required rejection using actual measured caller brackets; do not infer return from P3 prefix or sampler record.",
+      "gate": "Actual owner return beyond3s/combined6s/absolute8s",
+      "owner": "Qualified source owner observations plus P4/P5"
+    },
+    {
+      "disposition": "Required observed deadline/custody rejection. Parent endpoint is not an earlier8s proof.",
+      "gate": "Parent acknowledgement/reap beyond original10s deadline",
+      "owner": "Source-owner wait supervision and P4/P5, P2 outer custody"
+    },
+    {
+      "disposition": "Required positive boundary case preserving original10s parent margin; NOT executed in this P3 freeze.",
+      "gate": "Valid7.9s owner return /8.1s parent acknowledgement",
+      "owner": "P4/P5 current endpoint acceptance with qualified source-owner fixtures"
+    },
+    {
+      "disposition": "Required actual runner backstop test under its own source grant; not exercised or emulated as actual P2 by P3.",
+      "gate": "Abrupt guard death leaving live sampler; actual owned-group cleanup",
+      "owner": "P2/source owner integration"
+    }
+  ],
+  "missing_producer_owned": [
+    {
+      "disposition": "Required later actual producer implementation and source-qualified execution; inert P3 test caller is not the APP producer.",
+      "gate": "Qualified APP caller brackets and parent acknowledgement/reap instrumentation",
+      "owner": "Source owners/P5 integration"
+    }
+  ],
+  "new_producer_evidence": [
+    {
+      "scope": "Actual parent SIGTERM after actual P0 end write, before emission receipt. Child reaped as SIGTERM; partial source/raw/process/sampler retained, no receipt or successful return.",
+      "test": "test_fork_failed_emission_has_no_successful_return[signal_after_process]"
+    },
+    {
+      "scope": "Exact original injected writer OSError propagates unchanged; partials retained, no receipt/return, actual child and Git processes reaped.",
+      "test": "test_fork_failed_emission_has_no_successful_return[emission_writer]"
+    },
+    {
+      "scope": "Actual tail delay to deadline makes writer budget check refuse before receipt. Partial records retained; no API return.",
+      "test": "test_fork_failed_emission_has_no_successful_return[deadline_before_receipt]"
+    },
+    {
+      "scope": "Actual tail delay after truthful emission record makes final budget check refuse. Earlier emission timestamp does not assert future write/return; no API return.",
+      "test": "test_fork_failed_emission_has_no_successful_return[deadline_after_receipt]"
+    }
+  ],
+  "predecessor": {
+    "bytes": 5130,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/review-gap-disposition-v1.json",
+    "sha256": "cc91d4288d96a6e7cc93f837a2647ade92533123c68272d92a6a5e9ad819b71e"
+  },
+  "producer_checks": "Each case verifies immutable launch claim, independent lock acquisition after failure, actual wait/reap within owner10s, already reaped owned Git PIDs, and a distinct real fork reusing the handle refuses the existing claim.",
+  "schema": "bac-p3-owner-review-gap-disposition-v2",
+  "scope": "100PASS includes prior96 plus four producer negatives. It does not qualify missing consumer, actual source-owner, APP or hardware gates.",
+  "status": "Four P3 producer negatives now executed; fresh independent acceptance pending. Consumer/APP gates remain required."
+}

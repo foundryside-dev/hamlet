@@ -1,0 +1,96 @@
+"""Root orchestration: seven fresh isolated C1 poison cases, two CPUs concurrently with independent probes."""
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
+from pathlib import Path
+import hashlib
+import json
+import os
+import subprocess
+
+R = Path('/workspace/hamlet')
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+E = Path(__file__).parent
+PY = str(R / '.venv/bin/python')
+BASE = json.loads((Q / 'wave35-r132-c1-ordinary-runtime-attempt-1-spec.json').read_text())
+TEST = 'tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py'
+CASES = {
+    'body_same': 'test_body_and_completion_failure_identity[same]',
+    'body_distinct': 'test_body_and_completion_failure_identity[distinct]',
+    'child_false_parent_true': 'test_child_false_outer_true_preserves_bank_health',
+    'child_true_parent_false': 'test_child_true_outer_false_retains_bank_uncertainty',
+    'install_completion': 'test_install_completion_failure_cannot_restore_healthy_latch',
+    'diagnostic_completion': 'test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection',
+    'generic_diagnostic_completion': 'test_generic_diagnostic_completion_uncertainty',
+}
+def now():
+    return datetime.now(timezone.utc).isoformat()
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+def write(path, value):
+    with Path(path).open('x') as stream:
+        stream.write(json.dumps(value, indent=2) + '\n')
+def run(pair):
+    role, case = pair
+    name = 'c1-poison-' + role.replace('_', '-')
+    stem = 'wave35-r132-' + name + '-attempt-1'
+    spec_path = Q / (stem + '-spec.json')
+    spec = dict(BASE, output=str(Q / stem), jobs=[dict(name=name, args=[
+        '-m', 'pytest', TEST + '::' + case, '--no-cov', '-p', 'no:cacheprovider',
+        '-p', 'no:benchmark', '-p', 'bac_source_identity', '-q', '--basetemp=' + str(Q / 'scratch' / stem)])])
+    write(spec_path, spec)
+    argv = [PY, '-B', str(Q / 'run_bac_cold_checks_locked.py'), str(spec_path)]
+    record = dict(role=role, spec=str(spec_path), spec_sha256=sha(spec_path), argv=argv,
+                  start_utc=now(), environment_delta={'BAC_PARENT_C1_POISON_CASE': role},
+                  orchestrator_pid=os.getpid(), script_sha256=sha(__file__))
+    with (E / (stem + '-outer.stdout')).open('x') as stdout, (E / (stem + '-outer.stderr')).open('x') as stderr:
+        proc = subprocess.Popen(argv, cwd=R, env=dict(os.environ, BAC_PARENT_C1_POISON_CASE=role), stdout=stdout, stderr=stderr)
+        record['launcher_pid'] = proc.pid
+        stat = Path(f'/proc/{proc.pid}/stat').read_text()
+        record['launcher_start_ticks'] = int(stat[stat.rfind(')') + 2:].split()[19])
+        record['exit_code'] = proc.wait()
+    record['end_utc'] = now()
+    write(E / (stem + '-outer.json'), record)
+    return spec_path, record
+
+with ThreadPoolExecutor(max_workers=2) as pool:
+    records = list(pool.map(run, CASES.items()))
+
+# Postflight metadata verification is serialized; test execution above is parallel.
+for spec_path, outer in records:
+    spec = json.loads(spec_path.read_text())
+    name = spec['jobs'][0]['name']
+    out = Path(spec['output'])
+    tool = 'verify_bac_run.py' if outer['exit_code'] == 0 else 'verify_bac_failed_run.py'
+    with (out / 'root-postflight.stdout').open('x') as stdout, (out / 'root-postflight.stderr').open('x') as stderr:
+        verified = subprocess.run([PY, '-B', str(Q / tool), str(spec_path)], cwd=R, stdout=stdout, stderr=stderr)
+    assert verified.returncode == 0, (name, 'postflight')
+    if outer['exit_code'] != 0:
+        continue
+    custody = json.loads((out / (name + '-custody.json')).read_text())
+    assert custody['counts']['passed'] == 1 and custody['counts']['skipped'] == 0
+    witness_path = out / name / ('parent-c1-' + outer['role'] + '.json')
+    witness = json.loads(witness_path.read_text())
+    assert set(witness) == {'schema','role','node','pid','ppid','start_ticks','orig_argv','cmdline','manifest','source_root','expected_commit','expected_tree','runtime_profile','sha256','facts'}
+    assert witness['schema'] == 'bac-parent-c1-poison-self-v1'
+    assert witness['role'] == outer['role'] and witness['ppid'] == outer['launcher_pid']
+    assert type(witness['pid']) is int and witness['pid'] != outer['launcher_pid']
+    assert witness['start_ticks'] >= outer['launcher_start_ticks']
+    assert witness['node'] == TEST + '::' + CASES[outer['role']]
+    manifest = json.loads(Path(spec['manifest']).read_text())
+    assert witness['manifest'] == spec['manifest'] and witness['source_root'] == str(R)
+    assert witness['expected_commit'] == manifest['base_commit'] and witness['expected_tree'] == manifest['candidate_tree']
+    result = json.loads((out / (name + '-result.json')).read_text())
+    assert witness['orig_argv'] == result['command'] and witness['cmdline'] == result['command']
+    assert set(witness['runtime_profile']) == {'executable','torch_origin','torch_version','intra_op','inter_op','anomaly_enabled'}
+    assert witness['runtime_profile']['intra_op'] == 1
+    expected_paths = {str(R / TEST), spec['manifest'], *(str(R / p) for p in (
+        'src/townlet/config/exploration_policy.py', 'src/townlet/exploration/scoped_curiosity.py',
+        'src/townlet/exploration/parent_custody.py', 'src/townlet/exploration/rng_custody.py'))}
+    assert set(witness['sha256']) == expected_paths
+    for path, digest in witness['sha256'].items():
+        assert sha(path) == digest
+    assert witness['facts']['assertions_reached'] is True
+    write(out / 'root-poison-witness-verification.json', dict(status='PASS; C1 component only',
+        witness=str(witness_path), witness_sha256=sha(witness_path), outer=outer,
+        qualification='Actual fresh child ancestry, source, profile and assertions; CPU only, not CUDA qualification'))
+print(json.dumps([dict(role=r['role'], exit_code=r['exit_code']) for _, r in records], indent=2))

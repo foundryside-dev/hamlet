@@ -441,7 +441,7 @@ def test_actual_parent_handoff_single_reward_service_and_replay(compiled: Any, m
     assert ledger.optimizer_updates == rig.population.training_step_counter == 1
     request = ReplayRequest(len(IDS), 1, 2, "uniform_without_replacement", "feedforward", "transition")
     assert rig.population.replay_buffer.readiness(request).ready
-    batch = rig.population.replay_buffer.sample_batch(request)
+    batch = rig.population.replay_buffer.sample_batch(request, lineage=None)
     equal(batch.rewards, state.rewards[batch.unit_ids])
     for name in ("extrinsic", "intrinsic", "shaping"):
         assert bool(getattr(batch, f"rewards_{name}_present").all())
@@ -540,14 +540,123 @@ def test_partial_failure_records_reached_cut_and_refuses_reexecution(
     assert len(physical_calls) == 1
     assert_failed(rig, stage, advanced)
     if seam == "pace":
+        pop = rig.population
+        captured: list[dict[str, Any]] = []
+        capture = rig.runtime.diagnostic_state
+
+        def observe_diagnostic() -> dict[str, Any]:
+            result = capture()
+            captured.append(copy.deepcopy(result))
+            return result
+
+        monkeypatch.setattr(rig.runtime, "diagnostic_state", observe_diagnostic)
         diagnostic = copy.deepcopy(rig.population.get_checkpoint_state())
+        assert len(captured) == 1
+        equal(diagnostic["exploration_state"], captured[0])
+        assert set(diagnostic) == set(
+            "version clock_ledger vector_step_progress q_network optimizer scheduler total_steps exploration_state "
+            "universe_metadata target_network training_step_counter replay_buffer".split()
+        )
+        assert diagnostic["version"] == 7 and diagnostic["scheduler"] is pop.scheduler is None
+        assert diagnostic["total_steps"] == pop.total_steps == 1
+        assert diagnostic["training_step_counter"] == pop.training_step_counter == 0
+        equal(diagnostic["clock_ledger"], {name: getattr(pop.clock_ledger, name) for name in UNITS})
+        for name, value in (
+            ("q_network", pop.q_network.state_dict()),
+            ("target_network", pop.target_network.state_dict()),
+            ("optimizer", pop.optimizer.state_dict()),
+            ("replay_buffer", pop.replay_buffer.serialize()),
+        ):
+            equal(diagnostic[name], value)
+        exploration = diagnostic["exploration_state"]
+        assert exploration["schema"] == "exploration-runtime-diagnostic-v1"
+        assert exploration["bank"]["schema"] == "curiosity-bank-diagnostic-v1"
+        assert exploration["failure_reason"] == exploration["bank"]["failure_reason"] == "runtime_failure"
         equal(diagnostic["vector_step_progress"], rig.population.vector_step_progress)
         assert diagnostic["vector_step_progress"]["status"] == "failed"
         receiver = make_parent(compiled, "rnd")
+        equal(diagnostic["universe_metadata"], receiver.population.get_checkpoint_state()["universe_metadata"])
         with pytest.raises(ValueError, match="Failed or in-progress"):
             receiver.population.prepare_checkpoint_state(
                 diagnostic, mode="completed_boundary", parent_restore=None, validate_parent_restore=None, initialization=None
             )
+        fault = RuntimeError("actual diagnostic capture refused")
+
+        def refuse_diagnostic() -> dict[str, Any]:
+            raise fault
+
+        monkeypatch.setattr(rig.runtime, "diagnostic_state", refuse_diagnostic)
+        with pytest.raises(RuntimeError) as refused:
+            pop.get_checkpoint_state()
+        assert refused.value is fault
+
+
+@pytest.mark.parametrize("after_physics", (False, True), ids=("prepared", "cleanup-before-quarantine"))
+def test_failed_step_diagnostic_preserves_available_bank(compiled: Any, monkeypatch: Any, after_physics: bool) -> None:
+    """A genuine failed POP record must not require fabricating local BANK failure."""
+    rig = make_parent(compiled, "rnd")
+    rig.enter()
+    pop = rig.population
+    expected = copy.deepcopy(pop.get_checkpoint_state())
+    primary = RuntimeError("actual ENV boundary refusal")
+    secondary = RuntimeError("runtime quarantine refused before applying")
+    entries: list[None] = []
+    physical: list[None] = []
+    cleanup: list[tuple[Any, str]] = []
+    env_step = rig.env.step
+
+    def refuse_step(*args: Any, **kwargs: Any) -> Any:
+        entries.append(None)
+        if after_physics:
+            env_step(*args, **kwargs)
+            physical.append(None)
+        raise primary
+
+    def refuse_quarantine(*, accepted: Any, reason: str) -> None:
+        cleanup.append((accepted, reason))
+        raise secondary
+
+    monkeypatch.setattr(rig.env, "step", refuse_step)
+    monkeypatch.setattr(rig.runtime, "quarantine_episode", refuse_quarantine)
+    with pytest.raises(RuntimeError) as raised:
+        pop.step_population(rig.env)
+    assert raised.value is primary
+    assert len(entries) == 1 and len(physical) == rig.env.global_tick == int(after_physics)
+    assert_failed(rig, "executing" if after_physics else "prepared", 0)
+    assert pop.replay_buffer.retained_transitions == pop.training_step_counter == 0
+    if after_physics:
+        assert len(cleanup) == 1 and cleanup[0][0] is rig.record.accepted and cleanup[0][1] == "runtime_failure"
+        assert len(primary.__notes__) == 1 and repr(secondary) in primary.__notes__[0]
+        assert rig.env.world_phase == "quarantined"
+    else:
+        assert not cleanup and not getattr(primary, "__notes__", [])
+        assert rig.env.world_phase == "active"
+    with pytest.raises(RuntimeError):
+        pop.step_population(rig.env)
+    assert len(entries) == 1 and len(physical) == int(after_physics)
+    healthy = copy.deepcopy(rig.runtime.checkpoint_state())
+    diagnostic = copy.deepcopy(pop.get_checkpoint_state())
+    assert set(diagnostic) == set(
+        "version clock_ledger vector_step_progress q_network optimizer scheduler total_steps exploration_state "
+        "universe_metadata target_network training_step_counter replay_buffer".split()
+    )
+    exploration = copy.deepcopy(diagnostic["exploration_state"])
+    for payload, reference, schema in (
+        (exploration, healthy, "exploration-runtime-diagnostic-v1"),
+        (exploration["bank"], healthy["bank"], "curiosity-bank-diagnostic-v1"),
+    ):
+        assert payload["schema"] == schema and payload.pop("failure_reason") is None
+        payload["schema"] = reference["schema"]
+    equal(exploration, healthy)
+    expected["exploration_state"] = diagnostic["exploration_state"]  # Full current producer payload checked above.
+    expected["vector_step_progress"] = pop.vector_step_progress
+    equal(diagnostic, expected)
+    assert diagnostic["vector_step_progress"]["status"] == "failed"
+    receiver = make_parent(compiled, "rnd")
+    with pytest.raises(ValueError, match="Failed or in-progress"):
+        receiver.population.prepare_checkpoint_state(
+            diagnostic, mode="completed_boundary", parent_restore=None, validate_parent_restore=None, initialization=None
+        )
 
 
 def test_current_initial_transport_has_complete_exact_ledger(compiled: Any) -> None:

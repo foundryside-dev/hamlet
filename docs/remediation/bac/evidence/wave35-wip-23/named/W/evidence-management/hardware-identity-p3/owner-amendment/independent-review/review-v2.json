@@ -1,0 +1,113 @@
+{
+  "schema": "bac-p3-independent-source-review-v2",
+  "reviewer": "/root/bac_astra_p3_owner_source_review",
+  "producer": "/root/bac_hardware_identity_p3",
+  "at": "2026-11-14T09:40:36.707625+00:00",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/review-v1.json",
+    "bytes": 5626,
+    "sha256": "080c52fe06fd39a6e0f55dfdf6ff7616bd19358449c37918c6ad98130075098a"
+  },
+  "disposition": "APPROVED FOR BOUNDED P3 INERT PRODUCER TRANSPORT; consumer/APP/hardware qualification remains required and unrun",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/freeze-v3.json",
+    "bytes": 4260,
+    "sha256": "040b88c8de63d4d1a7cd785f2c2617bf03b2f95c60d9bcf736d2a7ca38a7945f"
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/interface-contract-v5.json",
+    "bytes": 10566,
+    "sha256": "a0130f27c50305cf5917bebd792fd904ef123be551ce4b246ad09822858b6d87"
+  },
+  "literal_rebinding": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/r129-literal-rebinding-proof-v1.json",
+    "bytes": 2606,
+    "sha256": "f0f95702864b04bd81fb13aeafd8901cb06bf9666090c481d730c4dad3be512b"
+  },
+  "source": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "bytes": 65961,
+      "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "bytes": 67361,
+      "sha256": "39b4513e3df308612924b2cd7c37111ebf91398645c1ebb57ec534af4e33bcf2"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/runtime-r129-v3/execution.json",
+    "bytes": 7428,
+    "sha256": "439fd55c78b15ac8091a0106d59d464206a7ac7795ff463cb0ce2461ae2860af"
+  },
+  "log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/runtime-r129-v3/output.log",
+    "bytes": 115,
+    "sha256": "aafece858bf8d60c82a6a0b59364395ff343defb5c2378ea0048e187733ddeb8"
+  },
+  "output_retention": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/runtime-r129-v3/output-retention-v1.json",
+    "bytes": 208414,
+    "sha256": "19c710dbe16bd6a032c4b17e37add2e62b1190f6030d71a3d58b939ed90328a2"
+  },
+  "collection": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/collection-v2/execution.json",
+    "bytes": 7525,
+    "sha256": "1a7ee79c251a2feac34e7d5ae52f9cea5c679c0687de434d87751e023677169a"
+  },
+  "runner": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/independent-review/run-v2.py",
+    "bytes": 1983,
+    "sha256": "76f214c2589b9b2bb400faa418ec2c5aee0b28c3e2d2fb3f532440c0e6cda334"
+  },
+  "result": {
+    "passed": 15,
+    "deselected": 88,
+    "exit_code": 0,
+    "elapsed_seconds_reported": 15.49,
+    "source_unchanged": true,
+    "parallelism": "One serial pytest process; inherited CPU affinity0,1 limits active CPU to2; root concurrent RED uses separate scope"
+  },
+  "git_lease": {
+    "head": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+    "tree": "e3d2274b34a6c8a6620a803fdf041d05151b66a0",
+    "candidate": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r129-candidate.json",
+      "bytes": 207540,
+      "sha256": "ebbe60fb1ccf0ee3395dda839908c6f8c3b0db6b53c1b30eabd4b3ea66a61c36"
+    },
+    "before_after_readonly_checks": "HEAD exact and git diff-index --cached --quiet against supplied tree both exit0 before and after actual execution; lease released to root"
+  },
+  "closed_finding": {
+    "id": "P3-TIMING-NEGATIVES",
+    "evidence": "All four actual new producer cases independently pass: SIGTERM after actual P0 end write before receipt; original writer OSError propagation; delay beyond deadline before receipt; delay beyond deadline after receipt. Tests verify no successful return, truthful retained partial artifacts, actual child/Git reaping, released lock, unchanged claim and refusal of distinct fork claim reuse."
+  },
+  "review_conclusions": [
+    "Implementation unchanged dee985; test addition72lines plus exact root-supplied tree rebinding only. Inverse replacement of R129 literal exactly reconstructs R128 test8666dc.",
+    "Previous11 R-dependent cases independently pass: no-import actual own-Git start/end, seven preparation mutations, actual nested spawn/fork with reparent refusal, and competing fork claims.",
+    "No remaining P1/P2 defect established within bounded P3 producer transport. Actual consumer correspondence and complete timing acceptance are not certified."
+  ],
+  "accounting": "Current15 runtime cases and prior85 Q-only checks are distinct selections but not represented as a new same-source100 test run. Prior85 exact tested source is retained in review-v1; their functions were unchanged by72-line addition and inert Git literal rebinding. Producer full32 100 remains exact R128 author result. Overlapping author/reviewer runs are not summed.",
+  "remaining_required": [
+    "P2/P4 must parse raw-v2, owner-launch, atomic owner claims, sampler and emission records and independently bind full ancestry/environment/source/phase/inventory. Current consumers were not read or executed here.",
+    "P4/P5 must validate source-qualified actual owner entry/return rows and parent acknowledgement/reap: 3s each,6s cumulative,8s absolute returns,10s ack/reap; missing/crosswired/late records and valid7.9s-return/8.1s-ack are still mandatory finite integration tests.",
+    "P5 must correlate actual Process/context/os.fork, pipe, payload, wait, strict trial/action and RNG facts. launch.start_method is only a declaration by explicit design.",
+    "P2 owned-process-group cleanup after abrupt guard death with live Git remains a required independent backstop integration test.",
+    "Source-owned inter-op=5 setup, APP owner instrumentation and hardware qualification remain UNRUN/unqualified."
+  ],
+  "read_budget": {
+    "implementation_bodies": 3,
+    "implementation_lines": 2719,
+    "own_runner_bodies": 2,
+    "whole_bodies": 5,
+    "total_lines": 2763,
+    "ceiling_lines": 5000
+  },
+  "retention": "All earlier reviews, failures, freezes and attempts remain unchanged. New output snapshots are inert evidence only. No APP/source/Git/index mutation, imports, hardware qualification or consumer-body inspection."
+}

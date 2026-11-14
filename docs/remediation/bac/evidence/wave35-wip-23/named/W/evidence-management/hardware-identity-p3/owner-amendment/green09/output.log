@@ -1,0 +1,52 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_preloaded_fork_recorder_zero_imports ___________________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...aded_fork_recorder_z0/freeze.json', 'sha256': 'a779f1e6dff903a69d0c3594e87621dccadffcc8bdac881b414d99f149a077c7'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc1dfc402b0>
+
+    def test_preloaded_fork_recorder_zero_imports(capsule,monkeypatch):
+        import builtins
+        api,ref=_owner(capsule,monkeypatch,'fork-guard');_fork_policy(capsule)
+        _real_source(capsule,api,monkeypatch)
+        ref=capsule['job']['obligations'][-1]['contract']
+>       launch=_launch(capsule,api,ref,monkeypatch,'fork')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:604: in _launch
+    start=api.record_process(capsule['context'],'start')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:457: in record_process
+    ref = _write(output,process_path.name,process,'process')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:91: in _write
+    protocol.validate_record(kind, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_preloaded_fork_recorder_zero_imports
+1 failed, 50 deselected in 0.66s

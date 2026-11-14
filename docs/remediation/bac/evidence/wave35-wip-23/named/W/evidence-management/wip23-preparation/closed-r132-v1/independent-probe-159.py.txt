@@ -1,0 +1,159 @@
+"""Independent R131 diagnostic custody probe; root execution only."""
+from __future__ import annotations
+
+import os
+import select
+import signal
+from threading import Event, Thread, current_thread
+from typing import Any
+
+import pytest
+
+from tests.test_townlet.regressions.bac.test_runtime_bank_parent_custody import (
+    Controller, IDS, begin, bound, compiled,
+    diagnostic_step, equal, make_parent, observe_diagnostic_children,
+)
+
+
+def capture_rig(compiled: Any, scope: str, api_case: str) -> Any:
+    rig = make_parent(compiled, "rnd", scope)
+    begin(rig, retired=IDS[1:])
+    diagnostic_step(rig)
+    if api_case != "generic_available":
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    return rig
+
+
+@pytest.mark.parametrize("api_case", ["failure", "generic_available", "generic_failed"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_diagnostic_stolen_thread_binding_refuses(compiled: Any, monkeypatch: Any, scope: str, owner_name: str, api_case: str) -> None:
+    rig = capture_rig(compiled, scope, api_case)
+    owner = getattr(rig, owner_name)
+    capture = getattr(owner, "failure_diagnostic_state" if api_case == "failure" else "diagnostic_state")
+    reference = capture()
+    children = observe_diagnostic_children(rig, monkeypatch)
+    errors: list[BaseException] = []
+    finished = Event()
+    with owner.retain_parent_custody() as custody:
+        controller = Controller()
+        invocation = controller.invocation()
+        with invocation as operation:
+            with custody.bind_operation(operation=operation):
+                def misuse() -> None:
+                    try:
+                        with custody.bind_operation(operation=operation):
+                            capture()
+                    except BaseException as error:
+                        errors.append(error)
+                    finally:
+                        finished.set()
+                thread = Thread(target=misuse, daemon=True)
+                thread.start()
+                assert finished.wait(2), "stolen binding blocked on retained custody"
+                assert len(errors) == 1 and isinstance(errors[0], RuntimeError)
+                assert "thread" in str(errors[0])
+                assert children == []
+                equal(capture(), reference)
+        assert invocation.completion_failed() is False
+    thread.join(2)
+    equal(capture(), reference)
+    assert rig.bank._failed is (api_case != "generic_available")
+    assert not rig.bank._completion_uncertain
+
+
+@pytest.mark.parametrize("api_case", ["failure", "generic_available", "generic_failed"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_diagnostic_thread_contender_preserves_lock_order(compiled: Any, monkeypatch: Any, scope: str, owner_name: str, api_case: str) -> None:
+    # Public standalone contenders wait; they do not borrow the parent's binding.
+    rig = capture_rig(compiled, scope, api_case)
+    owner = getattr(rig, owner_name)
+    capture = getattr(owner, "failure_diagnostic_state" if api_case == "failure" else "diagnostic_state")
+    reference = capture()
+    actual = owner._lock
+    main = current_thread()
+    attempted, started, finished = Event(), Event(), Event()
+    errors: list[BaseException] = []
+    values: list[Any] = []
+    class ObservedLock:
+        def __enter__(self) -> Any:
+            if current_thread() is not main:
+                attempted.set()
+            return actual.__enter__()
+        def __exit__(self, *args: Any) -> Any:
+            return actual.__exit__(*args)
+    def contender() -> None:
+        started.set()
+        try:
+            values.append(capture())
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            finished.set()
+    with bound(owner, Controller()):
+        with monkeypatch.context() as patch:
+            patch.setattr(owner, "_lock", ObservedLock())
+            thread = Thread(target=contender, daemon=True)
+            thread.start()
+            assert started.wait(2)
+            assert not attempted.wait(0.2), "owner lock entered before domain admission"
+            assert not finished.is_set(), "contender borrowed active parent authority"
+            equal(capture(), reference)
+    thread.join(5)
+    assert finished.is_set() and not errors and len(values) == 1
+    equal(values[0], reference)
+    equal(capture(), reference)
+    assert rig.bank._failed is (api_case != "generic_available")
+    assert not rig.bank._completion_uncertain
+
+
+@pytest.mark.skipif(not hasattr(os, "fork"), reason="actual fork unavailable")
+@pytest.mark.parametrize("api_case", ["failure", "generic_available", "generic_failed"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_diagnostic_actual_fork_refuses_before_owner_lock(compiled: Any, monkeypatch: Any, scope: str, owner_name: str, api_case: str) -> None:
+    rig = capture_rig(compiled, scope, api_case)
+    owner = getattr(rig, owner_name)
+    capture = getattr(owner, "failure_diagnostic_state" if api_case == "failure" else "diagnostic_state")
+    reference = capture()
+    class UnsafeChildLock:
+        def __enter__(self) -> Any:
+            raise AssertionError("foreign PID reached owner lock")
+        def __exit__(self, *args: Any) -> None:
+            raise AssertionError("foreign PID exited owner lock")
+    with bound(owner, Controller()):
+        read_fd, write_fd = os.pipe()
+        pid = os.fork()
+        if pid == 0:
+            os.close(read_fd)
+            try:
+                with monkeypatch.context() as patch:
+                    patch.setattr(owner, "_lock", UnsafeChildLock())
+                    try:
+                        capture()
+                    except RuntimeError as error:
+                        assert "process" in str(error).lower() or "fork" in str(error).lower()
+                    else:
+                        raise AssertionError("foreign PID diagnostic was admitted")
+                os.write(write_fd, b"PID_REFUSED_BEFORE_OWNER_LOCK")
+                os._exit(0)
+            except BaseException as error:
+                os.write(write_fd, repr(error).encode()[:1000])
+                os._exit(1)
+        os.close(write_fd)
+        try:
+            ready, _, _ = select.select([read_fd], [], [], 5)
+            if not ready:
+                os.kill(pid, signal.SIGKILL)
+            _, status = os.waitpid(pid, 0)
+            assert ready, "forked diagnostic blocked instead of rejecting inherited custody"
+            message = os.read(read_fd, 2048)
+            assert os.waitstatus_to_exitcode(status) == 0, message
+            assert message == b"PID_REFUSED_BEFORE_OWNER_LOCK", message
+        finally:
+            os.close(read_fd)
+        equal(capture(), reference)
+    equal(capture(), reference)
+    assert rig.bank._failed is (api_case != "generic_available")
+    assert not rig.bank._completion_uncertain

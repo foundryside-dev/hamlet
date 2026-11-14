@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-c",
+    "raise SystemExit(7)"
+  ],
+  "end_ns": 128040643217360,
+  "exit_code": 7,
+  "pid": 215026,
+  "start_ns": 128040620609449,
+  "stderr": {
+    "bytes": 0,
+    "path": "/tmp/bac-p3-inert-snowq2sw/output/attempt/job/adverse.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr_truncated": false,
+  "stdout": {
+    "bytes": 0,
+    "path": "/tmp/bac-p3-inert-snowq2sw/output/attempt/job/adverse.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout_truncated": false
+}

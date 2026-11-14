@@ -1,0 +1,22 @@
+{
+  "name": "black-1",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+  ],
+  "cwd": "/workspace/hamlet",
+  "start_utc": "2026-11-14T08:52:49.316492+00:00",
+  "parent_pid": 209849,
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r124-candidate.json",
+  "manifest_sha256": "f63c225e8d12669906f89cc78fef468cd6da01ddcdab01d18ca859d2fcb0e25c",
+  "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+  "script_sha256": "3e623295a12a0140eb2497b33c4a9a4f90bae8feba0e16b07ee34f983aa14e0f",
+  "pid": 209988,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T08:52:49.696031+00:00",
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/r124-static-attempt-1/black-1.log",
+  "log_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+}

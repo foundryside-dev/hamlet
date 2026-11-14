@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-14T09:31:50.310955Z",
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 214952,
+    "ppid": 214949,
+    "start_identity": "12802038"
+  },
+  "launch": {
+    "bytes": 7201,
+    "path": "/tmp/bac-p3-inert-wgsj_nsy/output/attempt/job/owner-launch-child-1.json",
+    "sha256": "36d5122b96d68ccf0459f838f7786e618da657291fcf93eaf2fef6f95de9ab88"
+  },
+  "monotonic_ns": 128020651436656,
+  "role_id": "spawn-child",
+  "schema": "bac-hardware-owner-claim-v1"
+}

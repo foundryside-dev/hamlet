@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-14T09:32:03.024244Z",
+  "controller_start": {
+    "bytes": 8606,
+    "path": "/tmp/bac-p3-inert-g92q49_f/output/attempt/job/process-p-fe273b1ba48e022c1af776dcb3d51da80763c5e2175d48b25a95465d809b99f0-start.json",
+    "sha256": "7d254630ec3e598c6ecbaeaf4b9639de2721182b2b7c317a7ae7fadaa559b167"
+  },
+  "error": "",
+  "phase": "configure",
+  "predecessor_start": [
+    {
+      "bytes": 8193,
+      "path": "/tmp/bac-p3-inert-g92q49_f/output/attempt/job/process-p-353d2eab186d01442a30cf8e891a099f3d6909a9365c13bcb09628c320e97759-start.json",
+      "sha256": "0cd4d18f664b9e3464e36a89430e484e0427f8dff9498e54c1c0e52eccfbbf2e"
+    }
+  ],
+  "prior_lifecycle": [
+    {
+      "bytes": 2050,
+      "path": "/tmp/bac-p3-inert-g92q49_f/output/attempt/job/worker-gw0-down.json",
+      "sha256": "22db57e2948c5cb96294dff078b7e5f0940ab596a278c378f65f544b9ba37a43"
+    }
+  ],
+  "process_start": [],
+  "role_id": "workers",
+  "schema": "bac-hardware-worker-lifecycle-v1",
+  "worker_identity": {
+    "mainargv": [
+      "/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest/__main__.py",
+      "-c",
+      "/dev/null",
+      "--rootdir",
+      "/workspace/bac-review-2026-11-01/qualification",
+      "--noconftest",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "xdist.plugin",
+      "-p",
+      "test_bac_hardware_identity_v1",
+      "-p",
+      "bac_hardware_identity_v1",
+      "--bac-identity-policy",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_pytest_controller_workers2/policy.json",
+      "--bac-identity-policy-sha256",
+      "fffaa750b40571dd4630078566a68103d2136c475cf524cefdcb06642d024f2b",
+      "-q",
+      "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_replacement",
+      "-n",
+      "1",
+      "--max-worker-restart",
+      "1"
+    ],
+    "testrunuid": "8cd7119f2a3240c7b07b4ba896622496",
+    "workercount": 1,
+    "workerid": "gw1"
+  }
+}

@@ -1,0 +1,701 @@
+{
+  "accounting": "R130collection42 and41FAIL; R131focused41PASS and isolated generic poison1PASS. New poison RED UNRUN. Counts overlap and are not summed.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r131-candidate.json",
+            "root": "W",
+            "sha256": "f21bfb5fc0a995533fe89c7dfbb41f934ac9c87a6699d5349e3ba6df18edc99d"
+          },
+          "candidate_tree": "f672f656e43c2965a0637227e23c1297197fdf8c",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_completion_uncertainty",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "748ff62230fe0b28371beb7872fd0073d565c67c129d619d3188a3cedefe9b36",
+              "type": "file"
+            },
+            {
+              "bytes": 2709,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/parent-c1-generic_diagnostic_completion.json",
+              "root": "Q",
+              "sha256": "736f67a31b3f6c49b5c14cdc53f6de49c52153f7c5d9d289d6a2540f9644e43c",
+              "type": "file"
+            },
+            {
+              "bytes": 670,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-custody.json",
+              "root": "Q",
+              "sha256": "7709b033294651284bb34515cd103809913ab5b65589230b9c459bbeba77a73d",
+              "type": "file"
+            },
+            {
+              "bytes": 1126,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-result.json",
+              "root": "Q",
+              "sha256": "50b17db023a88253ce4ba0d18ee444fa329f29042caede55b361b7fbd5ff3b18",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion.log",
+              "root": "Q",
+              "sha256": "18f5665517ea07ca5fa1fda534e5448ff16625c774725b8e9e4dc340ea5de827",
+              "type": "file"
+            },
+            {
+              "bytes": 1441,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "9fec5f6f068f409919ebd07b58fedcde12017a6785985b2b78d8c67face4a047",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 670,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "7709b033294651284bb34515cd103809913ab5b65589230b9c459bbeba77a73d",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.123558771010721,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r131-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ddf4720788373f01ed8f23d7c7d8d25a9237b605350bca16e9cc1748c46a58ac"
+          },
+          "exit_code": 0,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            },
+            {
+              "bytes": 4596,
+              "path": "verify_bac_failed_run.py",
+              "required_by": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+            }
+          ],
+          "id": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion.log",
+              "root": "Q",
+              "sha256": "18f5665517ea07ca5fa1fda534e5448ff16625c774725b8e9e4dc340ea5de827"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 933,
+            "path": "evidence-management/parent-c1/wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "42f588e97f493c397c5c49a290fe32f35f9eb7680b093d84c7ec17ea8682f765"
+          },
+          "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "748ff62230fe0b28371beb7872fd0073d565c67c129d619d3188a3cedefe9b36"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1126,
+            "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-result.json",
+            "root": "Q",
+            "sha256": "50b17db023a88253ce4ba0d18ee444fa329f29042caede55b361b7fbd5ff3b18"
+          },
+          "record_id": "c1-poison-generic-diagnostic-completion",
+          "round": 131,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 670,
+            "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-custody.json",
+            "root": "Q",
+            "sha256": "7709b033294651284bb34515cd103809913ab5b65589230b9c459bbeba77a73d"
+          }
+        }
+      ],
+      "check": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r131-candidate.json",
+            "root": "W",
+            "sha256": "f21bfb5fc0a995533fe89c7dfbb41f934ac9c87a6699d5349e3ba6df18edc99d"
+          },
+          "candidate_tree": "f672f656e43c2965a0637227e23c1297197fdf8c",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r131-collection-spec.json",
+              "root": "Q",
+              "sha256": "063e556d26f045f048de6f1df7c1ebfa6465665cb11fd8558c5dd178213b1f24",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r131-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ddf4720788373f01ed8f23d7c7d8d25a9237b605350bca16e9cc1748c46a58ac"
+          },
+          "exit_code": null,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "id": "wave35-r131-collection-spec.json--unrun",
+          "path": "wave35-r131-collection-spec.json",
+          "record_id": "unrun",
+          "round": 131,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 spec; actual named generic diagnostic checks retained separately."
+        }
+      ],
+      "check": "wave35-r131-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r131-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "actual_worker_count": 2,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r131-candidate.json",
+            "root": "W",
+            "sha256": "f21bfb5fc0a995533fe89c7dfbb41f934ac9c87a6699d5349e3ba6df18edc99d"
+          },
+          "candidate_tree": "f672f656e43c2965a0637227e23c1297197fdf8c",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-icm]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[pending]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[empty_participation]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[auth]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[False]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[True]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[shared]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[per_world]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r131-generic-diagnostic-focused-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "passed": 41,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-controller.json",
+              "root": "Q",
+              "sha256": "748ff62230fe0b28371beb7872fd0073d565c67c129d619d3188a3cedefe9b36",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-gw0.json",
+              "root": "Q",
+              "sha256": "15a713230d07aa387d655c15f05282f9a92f4fb3f6c6dca8bcfb83b1431f064e",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-gw1.json",
+              "root": "Q",
+              "sha256": "95a3009878917de28aa03a4775f528273cc783c9a7c8ab5e8ee8158997b3396b",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused-custody.json",
+              "root": "Q",
+              "sha256": "d46164af1cc25ae42d332278ec58283e023d9a1cc53eeeff767ad7c27dea8f1d",
+              "type": "file"
+            },
+            {
+              "bytes": 6778,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused-result.json",
+              "root": "Q",
+              "sha256": "f4e4c154e3bd170a09fa49c1fed111b29c1210fb20c42751fdf736ab84725337",
+              "type": "file"
+            },
+            {
+              "bytes": 602,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused.log",
+              "root": "Q",
+              "sha256": "92e367e51a2117f527d09cd2ce1f43fcd7d71aa6cd98358a919acabb4eac5da9",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 18.661937440003385,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r131-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ddf4720788373f01ed8f23d7c7d8d25a9237b605350bca16e9cc1748c46a58ac"
+          },
+          "exit_code": 0,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r131-generic-diagnostic-focused-attempt-1--generic-diagnostic-focused",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r131-generic-diagnostic-focused-attempt-1--generic-diagnostic-focused",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r131-generic-diagnostic-focused-attempt-1--generic-diagnostic-focused",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            },
+            {
+              "bytes": 4596,
+              "path": "verify_bac_failed_run.py",
+              "required_by": "wave35-r131-generic-diagnostic-focused-attempt-1--generic-diagnostic-focused",
+              "root": "Q",
+              "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+            }
+          ],
+          "id": "wave35-r131-generic-diagnostic-focused-attempt-1--generic-diagnostic-focused",
+          "log_paths": [
+            {
+              "bytes": 602,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused.log",
+              "root": "Q",
+              "sha256": "92e367e51a2117f527d09cd2ce1f43fcd7d71aa6cd98358a919acabb4eac5da9"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 936,
+            "path": "evidence-management/pop-standalone-step/wave35-r131-generic-diagnostic-focused-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "74f14bf5b8c23dc7fc86bff59cb1819fb14c9e43c8c0a88e4b1a4f83cfc4d0e1"
+          },
+          "path": "wave35-r131-generic-diagnostic-focused-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-controller.json",
+              "root": "Q",
+              "sha256": "748ff62230fe0b28371beb7872fd0073d565c67c129d619d3188a3cedefe9b36"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-gw0.json",
+              "root": "Q",
+              "sha256": "15a713230d07aa387d655c15f05282f9a92f4fb3f6c6dca8bcfb83b1431f064e"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-gw1.json",
+              "root": "Q",
+              "sha256": "95a3009878917de28aa03a4775f528273cc783c9a7c8ab5e8ee8158997b3396b"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 6778,
+            "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused-result.json",
+            "root": "Q",
+            "sha256": "f4e4c154e3bd170a09fa49c1fed111b29c1210fb20c42751fdf736ab84725337"
+          },
+          "record_id": "generic-diagnostic-focused",
+          "round": 131,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 659,
+            "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused-custody.json",
+            "root": "Q",
+            "sha256": "d46164af1cc25ae42d332278ec58283e023d9a1cc53eeeff767ad7c27dea8f1d"
+          }
+        }
+      ],
+      "check": "wave35-r131-generic-diagnostic-focused-attempt-1--generic-diagnostic-focused",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r131-generic-diagnostic-focused-attempt-1--generic-diagnostic-focused"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job has no absolute UTC; outer launcher timings remain separate.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r131-candidate.json",
+            "root": "W",
+            "sha256": "f21bfb5fc0a995533fe89c7dfbb41f934ac9c87a6699d5349e3ba6df18edc99d"
+          },
+          "candidate_tree": "f672f656e43c2965a0637227e23c1297197fdf8c",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r131-owned-spec.json",
+              "root": "Q",
+              "sha256": "62aca8f0137353ae246e4acbf56724f4dd874f093b61b2dcecb3b49d9443d45f",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r131-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ddf4720788373f01ed8f23d7c7d8d25a9237b605350bca16e9cc1748c46a58ac"
+          },
+          "exit_code": null,
+          "hardware": "CPU only; actual CUDA UNRUN",
+          "id": "wave35-r131-owned-spec.json--unrun",
+          "path": "wave35-r131-owned-spec.json",
+          "record_id": "unrun",
+          "round": 131,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 spec; actual named generic diagnostic checks retained separately."
+        }
+      ],
+      "check": "wave35-r131-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r131-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 207540,
+    "path": "wave35/r131-candidate.json",
+    "root": "W",
+    "sha256": "f21bfb5fc0a995533fe89c7dfbb41f934ac9c87a6699d5349e3ba6df18edc99d"
+  },
+  "candidate_tree": "f672f656e43c2965a0637227e23c1297197fdf8c",
+  "execution_subtrees": null,
+  "execution_subtrees_unavailable_reason": "No separately recorded subtree identity extracted; no Git calls authorized. Exact own candidate source_files retained.",
+  "fixture_preflight": {
+    "bytes": 4983,
+    "path": "wave35/r131-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "ddf4720788373f01ed8f23d7c7d8d25a9237b605350bca16e9cc1748c46a58ac"
+  },
+  "interval_inventory": {
+    "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1": [
+      {
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/identity-controller.json",
+        "root": "Q",
+        "sha256": "748ff62230fe0b28371beb7872fd0073d565c67c129d619d3188a3cedefe9b36",
+        "type": "file"
+      },
+      {
+        "bytes": 2709,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/parent-c1-generic_diagnostic_completion.json",
+        "root": "Q",
+        "sha256": "736f67a31b3f6c49b5c14cdc53f6de49c52153f7c5d9d289d6a2540f9644e43c",
+        "type": "file"
+      },
+      {
+        "bytes": 670,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-custody.json",
+        "root": "Q",
+        "sha256": "7709b033294651284bb34515cd103809913ab5b65589230b9c459bbeba77a73d",
+        "type": "file"
+      },
+      {
+        "bytes": 1126,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-result.json",
+        "root": "Q",
+        "sha256": "50b17db023a88253ce4ba0d18ee444fa329f29042caede55b361b7fbd5ff3b18",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion.log",
+        "root": "Q",
+        "sha256": "18f5665517ea07ca5fa1fda534e5448ff16625c774725b8e9e4dc340ea5de827",
+        "type": "file"
+      },
+      {
+        "bytes": 1441,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "9fec5f6f068f409919ebd07b58fedcde12017a6785985b2b78d8c67face4a047",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 670,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "7709b033294651284bb34515cd103809913ab5b65589230b9c459bbeba77a73d",
+        "type": "file"
+      }
+    ],
+    "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1-spec.json": [
+      {
+        "bytes": 858,
+        "path": "wave35-r131-c1-poison-generic-diagnostic-completion-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "1f959c56e9f4f6e4dd7c821cbf636219ffb56f5223da22c84f910db92b303c3c",
+        "type": "file"
+      }
+    ],
+    "wave35-r131-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r131-collection-spec.json",
+        "root": "Q",
+        "sha256": "063e556d26f045f048de6f1df7c1ebfa6465665cb11fd8558c5dd178213b1f24",
+        "type": "file"
+      }
+    ],
+    "wave35-r131-generic-diagnostic-focused-attempt-1": [
+      {
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-controller.json",
+        "root": "Q",
+        "sha256": "748ff62230fe0b28371beb7872fd0073d565c67c129d619d3188a3cedefe9b36",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-gw0.json",
+        "root": "Q",
+        "sha256": "15a713230d07aa387d655c15f05282f9a92f4fb3f6c6dca8bcfb83b1431f064e",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused/identity-gw1.json",
+        "root": "Q",
+        "sha256": "95a3009878917de28aa03a4775f528273cc783c9a7c8ab5e8ee8158997b3396b",
+        "type": "file"
+      },
+      {
+        "bytes": 659,
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused-custody.json",
+        "root": "Q",
+        "sha256": "d46164af1cc25ae42d332278ec58283e023d9a1cc53eeeff767ad7c27dea8f1d",
+        "type": "file"
+      },
+      {
+        "bytes": 6778,
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused-result.json",
+        "root": "Q",
+        "sha256": "f4e4c154e3bd170a09fa49c1fed111b29c1210fb20c42751fdf736ab84725337",
+        "type": "file"
+      },
+      {
+        "bytes": 602,
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1/generic-diagnostic-focused.log",
+        "root": "Q",
+        "sha256": "92e367e51a2117f527d09cd2ce1f43fcd7d71aa6cd98358a919acabb4eac5da9",
+        "type": "file"
+      }
+    ],
+    "wave35-r131-generic-diagnostic-focused-attempt-1-spec.json": [
+      {
+        "bytes": 6698,
+        "path": "wave35-r131-generic-diagnostic-focused-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "7b7a2235a09cf61df54be073018a35f615417524278b20d23acc8d25b8e47aac",
+        "type": "file"
+      }
+    ],
+    "wave35-r131-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r131-owned-spec.json",
+        "root": "Q",
+        "sha256": "62aca8f0137353ae246e4acbf56724f4dd874f093b61b2dcecb3b49d9443d45f",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 131,
+  "schema": "bac-closed-round-history-component-v1",
+  "scope": "No R132 or final checkpoint seal; no whole BAC or hardware qualification.",
+  "source_aliases": [
+    {
+      "exact_retained": {
+        "bytes": 60772,
+        "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-exact-source-retention-v1/test_runtime_bank_parent_custody.py.txt",
+        "root": "W",
+        "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872"
+      },
+      "original": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872"
+    }
+  ],
+  "status": "CLOSED HISTORY ONLY"
+}

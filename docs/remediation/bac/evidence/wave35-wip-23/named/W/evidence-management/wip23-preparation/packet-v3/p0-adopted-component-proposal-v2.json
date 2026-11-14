@@ -1,0 +1,906 @@
+{
+  "adoption": {
+    "bytes": 1581,
+    "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/root-adoption-v1.json",
+    "root": "W",
+    "sha256": "8dc4be0d0d79d910a56163cdfef1b1097965657047c74ae1b3aabae91b4fd01e"
+  },
+  "candidate_identity_role": "Checkpoint inclusion anchor only; P0 synthetic tool checks do not claim APP execution.",
+  "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+  "closure_boundary": "Explicit hash-bound adopted metadata reference graph within named amendment; external prerequisites hash-bound once, not recursively imported.",
+  "excluded": [],
+  "files": [
+    {
+      "bytes": 1581,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/root-adoption-v1.json",
+      "root": "W",
+      "sha256": "8dc4be0d0d79d910a56163cdfef1b1097965657047c74ae1b3aabae91b4fd01e"
+    },
+    {
+      "bytes": 3407,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+      "root": "W",
+      "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+    },
+    {
+      "bytes": 3258,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/review.md",
+      "root": "W",
+      "sha256": "a7c33b4b040671d91130721b8833a776b06d314a4cb65c44d9d8e73aba233459"
+    },
+    {
+      "bytes": 7584,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+      "root": "W",
+      "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+    },
+    {
+      "bytes": 3836,
+      "path": "evidence-management/hardware-protocol-p0/freeze-v4.json",
+      "root": "W",
+      "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+    },
+    {
+      "bytes": 34654,
+      "path": "bac_hardware_protocol_v1.py",
+      "root": "Q",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 37058,
+      "path": "test_bac_hardware_protocol_v1.py",
+      "root": "Q",
+      "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+    },
+    {
+      "bytes": 34654,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/bac_hardware_protocol_v1.py.txt",
+      "root": "W",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 37058,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/test_bac_hardware_protocol_v1.py.txt",
+      "root": "W",
+      "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+    },
+    {
+      "bytes": 22851,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/schema-inventory-v3.json",
+      "root": "W",
+      "sha256": "2a209f16710538935b6ee276df0acb0837a10687717840a3bd089e596edaec8a"
+    },
+    {
+      "bytes": 13987,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+      "root": "W",
+      "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+    },
+    {
+      "bytes": 3274,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+      "root": "W",
+      "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+    },
+    {
+      "bytes": 3282,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+      "root": "W",
+      "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+    },
+    {
+      "bytes": 260,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/output.log",
+      "root": "W",
+      "sha256": "ce0350dfb08d81566f1988a7a7901be42dcf0cb2da882b8a529fcab55018495f"
+    },
+    {
+      "bytes": 2096,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/test_independent_alias.py",
+      "root": "W",
+      "sha256": "c5ad44bc2006d5c2036b4d25c8764a193cdc154525f1814f8719191a4c12182b"
+    },
+    {
+      "bytes": 2995,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/run_review02.py",
+      "root": "W",
+      "sha256": "785121f3422bfea05e331025b7399dc5ae4aa5a167a7b9f009c2e55ea5ea44bb"
+    },
+    {
+      "bytes": 260,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/output.log",
+      "root": "W",
+      "sha256": "405836e7727ab1346762f2576654b3d0dc2aaeeca4fea4190a131c8b6c86ff73"
+    },
+    {
+      "bytes": 22624,
+      "path": "evidence-management/hardware-protocol-p0/schema-inventory-v2.json",
+      "root": "W",
+      "sha256": "d6882e7ab20c788299a9c29584920bdd8a76bd503c1a4ed12a0bff48f248e63d"
+    },
+    {
+      "bytes": 13184,
+      "path": "evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+      "root": "W",
+      "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+    },
+    {
+      "bytes": 2511,
+      "path": "evidence-management/hardware-protocol-p0/root-interface-amendment-decision-v1.json",
+      "root": "W",
+      "sha256": "5b23d1616de3b2857026f315bbc4ad6b17a4017ad2d766ad78bf08d98d21bb4c"
+    },
+    {
+      "bytes": 5739,
+      "path": "evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+      "root": "W",
+      "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+    },
+    {
+      "bytes": 8059,
+      "path": "wave35-preparation/CUDA-HARDWARE-P0-MODULE-ALIAS-AMENDMENT-v1.md",
+      "root": "W",
+      "sha256": "f37ba436e643192b7b17077110980616a3c9de57196b535f291d1daf723cd9ea"
+    },
+    {
+      "bytes": 34237,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/bac_hardware_protocol_v1.py.txt",
+      "root": "W",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "bytes": 37058,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/test_bac_hardware_protocol_v1.py.txt",
+      "root": "W",
+      "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+    },
+    {
+      "bytes": 23305,
+      "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/output.log",
+      "root": "W",
+      "sha256": "787812b5889aad847559d613424701ec5f50c5607df435dbc89eb63052c714bb"
+    }
+  ],
+  "reference_relationships": [
+    {
+      "from": {
+        "bytes": 1581,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/root-adoption-v1.json",
+        "root": "W",
+        "sha256": "8dc4be0d0d79d910a56163cdfef1b1097965657047c74ae1b3aabae91b4fd01e"
+      },
+      "to": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      }
+    },
+    {
+      "from": {
+        "bytes": 1581,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/root-adoption-v1.json",
+        "root": "W",
+        "sha256": "8dc4be0d0d79d910a56163cdfef1b1097965657047c74ae1b3aabae91b4fd01e"
+      },
+      "to": {
+        "bytes": 3258,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/review.md",
+        "root": "W",
+        "sha256": "a7c33b4b040671d91130721b8833a776b06d314a4cb65c44d9d8e73aba233459"
+      }
+    },
+    {
+      "from": {
+        "bytes": 1581,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/root-adoption-v1.json",
+        "root": "W",
+        "sha256": "8dc4be0d0d79d910a56163cdfef1b1097965657047c74ae1b3aabae91b4fd01e"
+      },
+      "to": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 3836,
+        "path": "evidence-management/hardware-protocol-p0/freeze-v4.json",
+        "root": "W",
+        "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/test_bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 22851,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/schema-inventory-v3.json",
+        "root": "W",
+        "sha256": "2a209f16710538935b6ee276df0acb0837a10687717840a3bd089e596edaec8a"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 13987,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+        "root": "W",
+        "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      },
+      "to": {
+        "bytes": 260,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/output.log",
+        "root": "W",
+        "sha256": "ce0350dfb08d81566f1988a7a7901be42dcf0cb2da882b8a529fcab55018495f"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 2096,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/test_independent_alias.py",
+        "root": "W",
+        "sha256": "c5ad44bc2006d5c2036b4d25c8764a193cdc154525f1814f8719191a4c12182b"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 2995,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/run_review02.py",
+        "root": "W",
+        "sha256": "785121f3422bfea05e331025b7399dc5ae4aa5a167a7b9f009c2e55ea5ea44bb"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 2096,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/test_independent_alias.py",
+        "root": "W",
+        "sha256": "c5ad44bc2006d5c2036b4d25c8764a193cdc154525f1814f8719191a4c12182b"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 2995,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/run_review02.py",
+        "root": "W",
+        "sha256": "785121f3422bfea05e331025b7399dc5ae4aa5a167a7b9f009c2e55ea5ea44bb"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 3407,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+        "root": "W",
+        "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 3836,
+        "path": "evidence-management/hardware-protocol-p0/freeze-v4.json",
+        "root": "W",
+        "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/test_bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 22851,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/schema-inventory-v3.json",
+        "root": "W",
+        "sha256": "2a209f16710538935b6ee276df0acb0837a10687717840a3bd089e596edaec8a"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 13987,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+        "root": "W",
+        "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 260,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/output.log",
+        "root": "W",
+        "sha256": "ce0350dfb08d81566f1988a7a7901be42dcf0cb2da882b8a529fcab55018495f"
+      }
+    },
+    {
+      "from": {
+        "bytes": 7584,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+        "root": "W",
+        "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+      },
+      "to": {
+        "bytes": 260,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/output.log",
+        "root": "W",
+        "sha256": "405836e7727ab1346762f2576654b3d0dc2aaeeca4fea4190a131c8b6c86ff73"
+      }
+    },
+    {
+      "from": {
+        "bytes": 22851,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/schema-inventory-v3.json",
+        "root": "W",
+        "sha256": "2a209f16710538935b6ee276df0acb0837a10687717840a3bd089e596edaec8a"
+      },
+      "to": {
+        "bytes": 22624,
+        "path": "evidence-management/hardware-protocol-p0/schema-inventory-v2.json",
+        "root": "W",
+        "sha256": "d6882e7ab20c788299a9c29584920bdd8a76bd503c1a4ed12a0bff48f248e63d"
+      }
+    },
+    {
+      "from": {
+        "bytes": 13987,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+        "root": "W",
+        "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+      },
+      "to": {
+        "bytes": 13184,
+        "path": "evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+        "root": "W",
+        "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 13987,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+        "root": "W",
+        "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+      },
+      "to": {
+        "bytes": 2511,
+        "path": "evidence-management/hardware-protocol-p0/root-interface-amendment-decision-v1.json",
+        "root": "W",
+        "sha256": "5b23d1616de3b2857026f315bbc4ad6b17a4017ad2d766ad78bf08d98d21bb4c"
+      }
+    },
+    {
+      "from": {
+        "bytes": 13987,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+        "root": "W",
+        "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+      },
+      "to": {
+        "bytes": 5739,
+        "path": "evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+        "root": "W",
+        "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+      }
+    },
+    {
+      "from": {
+        "bytes": 13987,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/interface-contract-v5.json",
+        "root": "W",
+        "sha256": "887ce5e5b61c5d7e13a00bfb1cb50bf95082b25b9159c37f54fc7c8469719071"
+      },
+      "to": {
+        "bytes": 8059,
+        "path": "wave35-preparation/CUDA-HARDWARE-P0-MODULE-ALIAS-AMENDMENT-v1.md",
+        "root": "W",
+        "sha256": "f37ba436e643192b7b17077110980616a3c9de57196b535f291d1daf723cd9ea"
+      }
+    },
+    {
+      "exact_retained_aliases": [
+        {
+          "bytes": 34237,
+          "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/bac_hardware_protocol_v1.py.txt",
+          "root": "W",
+          "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+        }
+      ],
+      "from": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      },
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "from": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      },
+      "to": {
+        "bytes": 34237,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/test_bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "exact_retained_aliases": [
+        {
+          "bytes": 34237,
+          "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/bac_hardware_protocol_v1.py.txt",
+          "root": "W",
+          "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+        }
+      ],
+      "from": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      },
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "from": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3274,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/execution.json",
+        "root": "W",
+        "sha256": "c5539dc7b00509189629bf7c3e0d115e5ef4e7b68e6146ac63b97502f533729f"
+      },
+      "to": {
+        "bytes": 23305,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/red01/output.log",
+        "root": "W",
+        "sha256": "787812b5889aad847559d613424701ec5f50c5607df435dbc89eb63052c714bb"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/test_bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      },
+      "to": {
+        "bytes": 34654,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      },
+      "to": {
+        "bytes": 37058,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "d954011ea35a78e200747aef12a28c287e9da375b13797a6cca8861ad7c283c5"
+      }
+    },
+    {
+      "from": {
+        "bytes": 3282,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/execution.json",
+        "root": "W",
+        "sha256": "adec6e1e576d87d5dbea368e16ae9eea6b690d90dd6aeaf9de916993d0370e66"
+      },
+      "to": {
+        "bytes": 260,
+        "path": "evidence-management/hardware-protocol-p0/module-alias-amendment/green01/output.log",
+        "root": "W",
+        "sha256": "ce0350dfb08d81566f1988a7a7901be42dcf0cb2da882b8a529fcab55018495f"
+      }
+    }
+  ],
+  "schema": "bac-bounded-adopted-tool-component-v1",
+  "scope": "P0 literal module aliases only; no full-chain/hardware acceptance",
+  "status": "ROOT-ADOPTED TOOL COMPONENT; PROPOSED EVIDENCE CLOSURE",
+  "unresolved": []
+}

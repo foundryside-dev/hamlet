@@ -1,0 +1,35 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________________ test_fork_claim_precedes_source_sampling ___________________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...claim_precedes_sourc0/freeze.json', 'sha256': 'c3075423e89a41c0019ed5cd028033784c302d63b9946a9975f6dffd446f141b'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f339b0f4b00>
+
+    def test_fork_claim_precedes_source_sampling(capsule,monkeypatch):
+        api,_=_owner(capsule,monkeypatch,'fork-guard');_fork_policy(capsule)
+        ref=capsule['job']['obligations'][-1]['contract'];launch=_launch(capsule,api,ref,monkeypatch,'fork')
+        (capsule['output']/'owner-claim-child-1.json').write_text('existing partial claim')
+        original=api._primitive_ref
+        def premature(path):
+            if path==str(capsule['blob']): raise AssertionError('source sampled before exclusive claim')
+            return original(path)
+        monkeypatch.setattr(api,'_primitive_ref',premature)
+        read,write=os.pipe();pid=os.fork()
+        if pid==0:
+            os.close(read)
+            try: api.record_fork_process(launch['handle'],'start');message=b'accepted'
+            except FileExistsError: message=b'claim-refused'
+            except BaseException as exc: message=str(exc).encode()
+            os.write(write,message);os._exit(0)
+        os.close(write);message=os.read(read,4096);os.close(read);os.waitpid(pid,0)
+>       assert message==b'claim-refused',message
+E       AssertionError: b'source sampled before exclusive claim'
+E       assert b'source samp...clusive claim' == b'claim-refused'
+E         
+E         At index 0 diff: b's' != b'c'
+E         Use -v to get more diff
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:931: AssertionError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_fork_claim_precedes_source_sampling
+1 failed, 92 deselected in 0.77s

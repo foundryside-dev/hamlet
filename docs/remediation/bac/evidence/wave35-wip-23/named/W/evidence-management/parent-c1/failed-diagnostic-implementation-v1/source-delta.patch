@@ -1,0 +1,93 @@
+--- src/townlet/config/exploration_policy.py (R126)
++++ src/townlet/config/exploration_policy.py (candidate)
+@@ -1128,6 +1128,15 @@
+             _runtime_require(payload.hex() == item[0], "parent outcome payload must be canonical hex")
+ 
+     def _parse(self, state: Any, *, initialization: bool) -> tuple[Any, dict[str, Any], _ParentCadence]:
++        if isinstance(state, Mapping):
++            _runtime_require(
++                state.get("schema") != "exploration-runtime-failure-diagnostic-v1", "failure diagnostics are not restore transport"
++            )
++            bank = state.get("bank")
++            if isinstance(bank, Mapping):
++                _runtime_require(
++                    bank.get("schema") != "curiosity-bank-failure-diagnostic-v1", "BANK failure diagnostics are not restore transport"
++                )
+         _runtime_keys(state, ("schema", "policy", "bank", "selector", "cadence"), "exploration runtime")
+         _runtime_require(state["schema"] == "exploration-runtime-state-v1", "unsupported exploration runtime schema")
+         policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+@@ -1173,11 +1182,22 @@
+ 
+     @_runtime_operation
+     def checkpoint_state(self) -> dict[str, Any]:
++        return self._checkpoint_payload("checkpoint_state")
++
++    @_runtime_operation
++    def failure_diagnostic_state(self) -> dict[str, Any]:
++        """Full current observation of local runtime failure; never a resume payload."""
++        state = self._checkpoint_payload("failure_diagnostic_state")
++        state["schema"] = "exploration-runtime-failure-diagnostic-v1"
++        state["failure_reason"] = "runtime_failure"
++        return state
++
++    def _checkpoint_payload(self, bank_method: str) -> dict[str, Any]:
+         selector, cadence = self._state
+         owned_cadence = self._codec.owned(cadence)
+         selector_state = selector.checkpoint_state()
+         self._validate_selector_cadence(self._policy, selector_state, owned_cadence)
+-        bank_state = self._bank_call("checkpoint_state")
++        bank_state = self._bank_call(bank_method)
+         return dict(
+             schema="exploration-runtime-state-v1",
+             policy=self._policy.to_dict(),
+--- src/townlet/exploration/scoped_curiosity.py (R126)
++++ src/townlet/exploration/scoped_curiosity.py (candidate)
+@@ -1022,9 +1022,29 @@
+     @_observation_boundary
+     def checkpoint_state(self) -> dict[str, Any]:
+         """Owned current transport; historical completion never transports authority."""
++        self._available()
++        return self._checkpoint_payload()
++
++    @_serialized
++    @_observation_boundary
++    def failure_diagnostic_state(self) -> dict[str, Any]:
++        """Full local-failure observation under unchanged child capture contracts."""
++        if self._completion_uncertain:
++            raise RuntimeError("curiosity bank completion uncertain")
++        quarantine = self._quarantine
++        _require(self._failed and quarantine is not None, "runtime failure quarantine required")
++        assert quarantine is not None
++        _require(quarantine[1] == "runtime_failure", "runtime failure quarantine required")
++        self._auth(quarantine[0])
++        _require(self._prepared is None, "completion transaction pending")
++        state = self._checkpoint_payload()
++        state["schema"] = "curiosity-bank-failure-diagnostic-v1"
++        state["failure_reason"] = "runtime_failure"
++        return state
++
++    def _checkpoint_payload(self) -> dict[str, Any]:
+         from townlet.exploration import curiosity_checkpoint as checkpoint
+ 
+-        self._available()
+         if self._initialization_origin is not None:
+             self._report_transport(self._initialization_origin, "checkpoint", None)
+         phase = self._checkpoint_phase()
+@@ -1215,6 +1235,8 @@
+         from townlet.exploration import curiosity_checkpoint as checkpoint
+ 
+         with self._admission("prepare"):
++            if isinstance(state, Mapping):
++                _require(state.get("schema") != "curiosity-bank-failure-diagnostic-v1", "failure diagnostics are not restore transport")
+             self._available()
+             _require(
+                 type(initialization) is str and initialization in ("fresh_private", "clone_learned_archive_pending"),
+@@ -1315,6 +1337,8 @@
+         from townlet.exploration import curiosity_checkpoint as checkpoint
+ 
+         with self._admission("prepare"):
++            if isinstance(state, Mapping):
++                _require(state.get("schema") != "curiosity-bank-failure-diagnostic-v1", "failure diagnostics are not restore transport")
+             _require(self._prepared is None, "completion transaction pending")
+             identity = self._preparation_identity()
+             checkpoint.preflight(state, policy=self.policy, descriptor=self.descriptor, device=self.device, mode=mode)

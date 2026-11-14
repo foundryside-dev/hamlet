@@ -1,0 +1,131 @@
+{
+  "attempt_id": "attempt",
+  "collected_ids": [
+    "test_bac_hardware_identity_v1.py::test_inert_job"
+  ],
+  "command": {
+    "bytes": 5771,
+    "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/command.json",
+    "sha256": "1a25807a80165af881e193792e8a2ba36e5aadbc63981cb1196890d8cc0048de"
+  },
+  "inventory": [
+    {
+      "bytes": 390,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/collection-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2.json",
+      "sha256": "086457dd7d5c625277d651d7f6c09134086fff2174511d2563a94e19e49551c3"
+    },
+    {
+      "bytes": 5771,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/command.json",
+      "sha256": "1a25807a80165af881e193792e8a2ba36e5aadbc63981cb1196890d8cc0048de"
+    },
+    {
+      "bytes": 8497,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/process-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-end.json",
+      "sha256": "21d16cd8afc921f213b6d2376e63db729f7678127cc21825fffbf843e1ce5fe8"
+    },
+    {
+      "bytes": 7577,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/process-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-observation-end.json",
+      "sha256": "6774721ba4cc5be6ef9eae12ad386c0306d7124af16317274151c2d1d071627f"
+    },
+    {
+      "bytes": 7579,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/process-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-observation-start.json",
+      "sha256": "b5064ed64a867cd5babcc6654d6135d44943dee5e6b6c01d7d2ea16e5ed4a5d2"
+    },
+    {
+      "bytes": 8542,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/process-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-start.json",
+      "sha256": "5b4b528a94ef4a42c23d1e4f601075654d65821925b289f6365681136d28a348"
+    },
+    {
+      "bytes": 483,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/report-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-0144412a4de75a43fa6ad6ac56f9e3cccbb722181d703302ac1e84434b50bd38.json",
+      "sha256": "0fdefbada720f5f26acbd18ae1fc66d8882e6a8deb282bb47ace28414e2b5cbb"
+    },
+    {
+      "bytes": 479,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/report-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-3719f99efa1d6fc0d28a6b15c44bf18498395da3bbdacaa924ba93e3d4529ee8.json",
+      "sha256": "ab46c668fe72c23f8c4ff806de8c72ee99e949f75ded1a44ffdaac1b58db9e79"
+    },
+    {
+      "bytes": 480,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/report-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-c261c3dab7ba50400ce4ef130cf2a77ab3c880974357aaa50f780e9983c00e06.json",
+      "sha256": "464006678d08a6336d0dd344af491f683d44744f265e74b53f6ea3ff6e19095c"
+    },
+    {
+      "bytes": 1598,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/runtime-context.json",
+      "sha256": "946bb460ce70b7ad1466e80facfa09701a42cbbcf00316bf651b01ccc3ad6e9f"
+    },
+    {
+      "bytes": 3001,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/source-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-end.json",
+      "sha256": "d0ea5e0627c1008ee591211791b77d07c186aa2833cea5db0448187a8e5eaa27"
+    },
+    {
+      "bytes": 3001,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/source-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-start.json",
+      "sha256": "2d93b9e4e422762db750260e6845149fde9382fffbfc8c6737e5e9e67beda33b"
+    }
+  ],
+  "job_id": "job",
+  "kind": "job-evidence",
+  "obligation_records": [],
+  "outcomes": [
+    {
+      "call": "passed",
+      "case_id": "test_bac_hardware_identity_v1.py::test_inert_job",
+      "evidence": [
+        {
+          "bytes": 483,
+          "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/report-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-0144412a4de75a43fa6ad6ac56f9e3cccbb722181d703302ac1e84434b50bd38.json",
+          "sha256": "0fdefbada720f5f26acbd18ae1fc66d8882e6a8deb282bb47ace28414e2b5cbb"
+        },
+        {
+          "bytes": 479,
+          "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/report-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-3719f99efa1d6fc0d28a6b15c44bf18498395da3bbdacaa924ba93e3d4529ee8.json",
+          "sha256": "ab46c668fe72c23f8c4ff806de8c72ee99e949f75ded1a44ffdaac1b58db9e79"
+        },
+        {
+          "bytes": 480,
+          "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/report-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-c261c3dab7ba50400ce4ef130cf2a77ab3c880974357aaa50f780e9983c00e06.json",
+          "sha256": "464006678d08a6336d0dd344af491f683d44744f265e74b53f6ea3ff6e19095c"
+        }
+      ],
+      "setup": "passed",
+      "teardown": "passed"
+    }
+  ],
+  "process_records": [
+    {
+      "bytes": 8497,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/process-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-end.json",
+      "sha256": "21d16cd8afc921f213b6d2376e63db729f7678127cc21825fffbf843e1ce5fe8"
+    },
+    {
+      "bytes": 8542,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/process-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-start.json",
+      "sha256": "5b4b528a94ef4a42c23d1e4f601075654d65821925b289f6365681136d28a348"
+    }
+  ],
+  "schema": "bac-hardware-v1",
+  "source_witnesses": [
+    {
+      "bytes": 3001,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/source-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-end.json",
+      "sha256": "d0ea5e0627c1008ee591211791b77d07c186aa2833cea5db0448187a8e5eaa27"
+    },
+    {
+      "bytes": 3001,
+      "path": "/tmp/bac-p3-inert-m__kguvg/output/attempt/job/source-p-a1018d0274edd5034010309989f5079eff7470c0f10a7ec9c5584dec80120be2-start.json",
+      "sha256": "2d93b9e4e422762db750260e6845149fde9382fffbfc8c6737e5e9e67beda33b"
+    }
+  ],
+  "spec": {
+    "bytes": 12271,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/tmp/test_pytest_controller_workers0/spec.json",
+    "sha256": "c3b0d8dc789f446f1f152b19771a3335bdd24797d7bcc95c01f5eba54bf4038c"
+  }
+}

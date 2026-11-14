@@ -1,0 +1,95 @@
+{
+  "competing": [
+    "    PID    PPID %CPU   RSS COMMAND",
+    " 213781  213778 71.4 10680 python",
+    "    176     125  0.4 21360 containerd",
+    "    474       0  0.3 41072 codex",
+    "    125       1  0.0 35744 dockerd",
+    "      1       0  0.0   880 tail",
+    " 213562       1  0.0     0 python",
+    " 213332       1  0.0     0 python",
+    " 189110       1  0.0     0 python",
+    " 136877       1  0.0     0 codex",
+    " 188837       1  0.0     0 python3.13",
+    " 188287       1  0.0     0 python3.13",
+    " 193782       1  0.0     0 python3.13",
+    " 192789       1  0.0     0 python3.13",
+    " 192606       1  0.0     0 python3.13",
+    " 136878       1  0.0     0 bash",
+    " 189786       1  0.0     0 python3.13",
+    " 181302       1  0.0     0 python",
+    " 187701       1  0.0     0 python3.13",
+    " 187044       1  0.0     0 python3.13"
+  ],
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red28/tmp",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "opaque_candidate_json"
+  ],
+  "actual_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red28/tmp",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "opaque_candidate_json"
+  ],
+  "pid": 213783,
+  "stat": "213783 (python) R 213781 213783 213783 0 -1 4194560 249 0 0 0 0 0 0 0 20 0 1 0 12736319 11087872 192 18446744073709551615 4325376 7599353 140727661718688 0 0 0 0 0 0 0 0 0 17 1 0 0 0 0 0 10436024 11028232 182910976 140727661724024 140727661724429 140727661724429 140727661727701 0\n",
+  "start": "2026-11-14T09:20:52.855935+00:00",
+  "end": "2026-11-14T09:20:54.024997+00:00",
+  "exit_code": 1,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "sha256": "37c43a6927dedd185ac6d319fa7d1abd7f8bced4335aa4669888e73f73ab5e00",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red28/bac_hardware_identity_v1.py.txt",
+      "lines": 1057
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "sha256": "20129c680aa03ad1fa67b121e6ace69c477b54d75e4da66b673b9fad10ae45f8",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red28/test_bac_hardware_identity_v1.py.txt",
+      "lines": 1054
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red28/bac_hardware_protocol_v1.py.txt",
+      "lines": 526
+    }
+  ],
+  "interpreter": "/usr/bin/python3.13",
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cpu_max": "400000 100000\n",
+  "memory_current": "2285289472\n"
+}

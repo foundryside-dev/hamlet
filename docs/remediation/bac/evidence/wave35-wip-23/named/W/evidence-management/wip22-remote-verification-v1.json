@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-14T08:44:33.285932+00:00",
+  "local_head": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "remote_ref": "refs/heads/project-recovery-bac-2026-11-01",
+  "observed_ls_remote_sha": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "publication_tree": "155b91888f4d2960cab7cb93fc2f0cb0cac39868",
+  "manifest_sha256": "760ce17502da0729b3c30b01e6f17844b17c9c97bd61db38c1ed82aeb085ffe0",
+  "status": "PUSHED AND EXACT REMOTE SHA VERIFIED; CI IN PROGRESS; NOT FULL ACCEPTANCE",
+  "ci_observation": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-ci-observation-1-native.json",
+  "worktree_clean_at_checkpoint": true,
+  "branch_or_worktree_created": false,
+  "merge_or_PR": false
+}

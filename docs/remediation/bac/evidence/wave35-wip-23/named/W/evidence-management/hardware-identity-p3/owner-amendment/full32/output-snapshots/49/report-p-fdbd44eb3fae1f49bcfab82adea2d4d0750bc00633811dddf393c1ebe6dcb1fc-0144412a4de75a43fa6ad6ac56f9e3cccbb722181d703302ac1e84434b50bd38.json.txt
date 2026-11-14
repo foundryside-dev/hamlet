@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-14T09:32:00.060647Z",
+  "case_id": "test_bac_hardware_identity_v1.py::test_inert_job",
+  "longrepr": "",
+  "outcome": "passed",
+  "phase": "teardown",
+  "process": {
+    "bytes": 8542,
+    "path": "/tmp/bac-p3-inert-khk_3b6b/output/attempt/job/process-p-fdbd44eb3fae1f49bcfab82adea2d4d0750bc00633811dddf393c1ebe6dcb1fc-start.json",
+    "sha256": "51c425cb64e8591ec607aac072062a12219b6bc2e8faf95ec3122e2f9dbfd375"
+  },
+  "schema": "bac-hardware-pytest-report-v1"
+}

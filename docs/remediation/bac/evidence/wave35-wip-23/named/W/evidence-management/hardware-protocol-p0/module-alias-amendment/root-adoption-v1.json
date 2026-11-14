@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-14T09:05:38.074406+00:00",
+  "status": "ROOT ADOPTS EXACT P0 MODULE-ALIAS AMENDMENT FOR BOUNDED CONSUMER USE",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/freeze-v5.json",
+    "bytes": 3407,
+    "sha256": "42e94b4f7f912bb94b2a5a9851fe89adb63c718a679458eb4232ded9c974a052"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/review.md",
+    "bytes": 3258,
+    "sha256": "a7c33b4b040671d91130721b8833a776b06d314a4cb65c44d9d8e73aba233459"
+  },
+  "independent_execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/independent-review/attempt02/execution.json",
+    "bytes": 7584,
+    "sha256": "f3d37ba2ffae849b7524778791395eab4b590e01518251d5cc9c7ddf9c596b02"
+  },
+  "rehash_count": 10,
+  "author_result": "179 PASS / 0 skips; preceding intended RED 10 FAIL / 169 PASS preserved",
+  "independent_result": "197 PASS / 0 skips; 179 overlap plus18 independent probes; prior incomplete argv capture retained, counts not summed",
+  "scope": "Named-reference literal aliases only. ID/path/toolset/source closure unchanged. No P3/full-chain/hardware qualification.",
+  "remaining": "P3 exact actual-Git fixture on root-frozen candidate, sampler timing review, P2/P4/P5 integration and hardware remain required"
+}

@@ -1,0 +1,18 @@
+{
+  "exact_retained": {
+    "bytes": 6534,
+    "path": "evidence-management/parent-c1/failed-diagnostic-independent/r127-independent-probe-original-149.py.txt",
+    "root": "W",
+    "sha256": "461213cb70ce1249015b4c2dc79f11777381f4607899b36b6b34f37be78272df"
+  },
+  "limitation": "Current mutable probe is extended36-case source; exact retained149-line old source belongs to R12712-case execution. No prior records rewritten.",
+  "old_logical_path": "evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py",
+  "old_sha256": "461213cb70ce1249015b4c2dc79f11777381f4607899b36b6b34f37be78272df",
+  "status": "EXACT OLD PROBE BYTES VERIFIED",
+  "superseded_reference_manifest": {
+    "bytes": 4148,
+    "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/ADDITIVE-FINAL-MANIFEST-v2.json",
+    "root": "W",
+    "sha256": "434bab404aec78b5d75ec798a9811d0554ed75365364364ef2bacbaacf106917"
+  }
+}

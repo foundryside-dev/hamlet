@@ -1,0 +1,22 @@
+# Failed diagnostic supplier correction v2
+
+This addendum supersedes v1's blanket native-local-failure refusal and healthy-child-only restriction. Preserve v1 SHA-256 `e573705337e7b755cbe49ad7f0166bce3930d5c8644e5b234962a2c0c5560f38` as historical evidence; do not use its incorrect native assumption to reduce diagnostic capability. All four C1 production/test pre-edit hashes in v1 remain the starting source inventory. This correction is based on the native owner's direct source-qualified clarification, not a new implementation-body read.
+
+Native supplier `/root/bac_parent_native_supplier` qualified `world_curiosity_state.py` SHA-256 `433b3563457fbf68d26d47d73dc375c1382e0cc77d0987a4c9d4f62f3cdfcce3` and core SHA-256 `6cb01ca77b58db5f4c4784dc36da566c06cf68c2a7c2ce227bb780549f3344f8`:
+
+Durable native source receipt: `T18e-R0-NATIVE-FAILED-DIAGNOSTIC-CAPTURE-FACTS-v1.md`, SHA-256 `1be66aa7f93495b6c0304fa22974af4abbe4804a740bb32536130283b8079611`.
+
+- Private `snapshot_with_capture(capture, *, lineage)` at 1032–1058 performs genuine checkpoint copying then the capture callback. Callback failure latches native local failure and advances revision; successful cleanup/completion preserves the original sentinel without poisoning the core. Subsequent snapshot/capture does not reject merely for local `_failed`; it truthfully emits `healthy=False`.
+- Private `snapshot` at 1015–1030 and shared `snapshot` at 1266–1278 likewise allow truthful local-failure envelopes. However BANK's shared checkpoint uses shared `call`, not shared `snapshot`.
+- Private `call(operation(provider, sources), *, lineage)` at 999–1013 and shared `call(operation(provider), *, lineage)` at 1252–1264 reject an already locally failed owner before invoking the callback. Callback failures inside their guarded regions latch local failure; successful completion never clears it.
+- Private activation retains private continuation and restores ambient state on unwind. Shared calls have no private ambient restoration wrapper. Completion uncertainty, broken RNG ownership, and common-domain poison remain authoritative refusal conditions. No raw-storage fallback is authorized.
+
+Therefore the new BANK diagnostic must preserve the exact existing capture contracts: its per-world `snapshot_with_capture` may successfully export native `healthy=False` inside a nonresumable BANK/runtime diagnostic; its shared `call` still refuses a failed shared owner. Do not replace either interface, impose a new blanket child-local-health restriction, clear health bits, or misstate successful snapshot as healthy training authority. All complete actual fields remain required. Existing domain admission, own completion, pending transaction refusal, authentication and local runtime-failure eligibility remain as specified in v1.
+
+Test injection may wrap the actual public class method seam, delegate the real original capture callback, discard its result without retaining provider/modules, then raise a sentinel. The genuine owner and original lineage pass through unchanged. No private BANK child extraction, synthetic owner, fabricated health bit, or raw provider inspection is needed. After removing this wrapper, private diagnostic capture must return `healthy=False`; shared diagnostic capture must refuse. Poison/uncertainty must still prevent new raw reads.
+
+Fixture supplier `T18e-R0-PARENT-C1-DIAGNOSTIC-FIXTURE-FACTS-v1.md`, SHA-256 `5b1b4f7c068669cd60e6d2edc41fa581c6fdd2b7ab1a984fa5d60f548f63add5`, qualifies actual POP step followed by `prepare_close` as the pending BANK completion control; `close(..., release=True)` then `begin(..., batch=1)` provides real next-acceptance history. These are supplier facts, not extra fixture/POP source reads.
+
+Precise BANK limitation: the next `begin_episode` explicitly clears `_history`, `_historical_step`, and `_committed`. It must not be claimed that old BANK completion survives the new acceptance. The test captures actual committed history during close after genuine runtime commit and before release/next begin, then stops the close with an explicit sentinel. Runtime cadence and native accumulated history are separately preserved according to actual source behavior.
+
+Root adopted this corrected capability boundary before RED execution or production implementation. No payload reduction is proposed or approved. The linked implementation mini-plan and RED tests use this corrected distinction; v1's other current C1 source facts remain applicable.

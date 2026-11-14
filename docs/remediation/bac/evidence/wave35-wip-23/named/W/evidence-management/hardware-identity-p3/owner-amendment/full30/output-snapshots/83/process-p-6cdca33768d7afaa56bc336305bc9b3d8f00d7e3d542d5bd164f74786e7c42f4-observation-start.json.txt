@@ -1,0 +1,175 @@
+{
+  "at": "2026-11-14T09:22:22.103672Z",
+  "context": {
+    "command": {
+      "bytes": 5817,
+      "path": "/tmp/bac-p3-inert-wab6nlyj/output/attempt/job/command.json",
+      "sha256": "e0a1e8f9107ec712e4ac8b65c72076fb7f311a6e2ef6f02442795864518e79f0"
+    },
+    "environment_delta": {
+      "common": {},
+      "worker": {}
+    },
+    "job_id": "job",
+    "lifecycle": [
+      {
+        "bytes": 7210,
+        "path": "/tmp/bac-p3-inert-wab6nlyj/output/attempt/job/owner-launch-actual-owner.json",
+        "sha256": "37fa4f0cfb328d6699f033422efa125198475f1aed7553b92d5665e2fd4a2e0f"
+      }
+    ],
+    "parent_start": [
+      {
+        "bytes": 8193,
+        "path": "/tmp/bac-p3-inert-wab6nlyj/output/attempt/job/process-p-3d5eb7b629a289f5909d2ed8191ba4205575ab36c0fab6cdd69798a821b4a30e-start.json",
+        "sha256": "71f5f0201816340cefd920c04980fadc4443043980b275096193a3c273fc95a5"
+      }
+    ],
+    "policy": [],
+    "replacement_start": [],
+    "required_imports": [
+      {
+        "name": "inert_module",
+        "phases": [
+          "end"
+        ],
+        "reference": {
+          "bytes": 19,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/tmp/test_pytest_controller_workers3/source/pkg/inert-module.txt",
+          "sha256": "68dbe2e07dc5305478dcf486a2597403d9a3f4fae0f35459655f69fedee57b99"
+        }
+      }
+    ],
+    "role_id": "spawn-child",
+    "runtime": [],
+    "schema": "bac-hardware-identity-context-v1",
+    "spec": {
+      "bytes": 14371,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/tmp/test_pytest_controller_workers3/spec.json",
+      "sha256": "55cec7594904651dcd3a1b16c4b701eaf28feaf58839453ba00658bfac6393e0"
+    },
+    "trusted_grant": {
+      "bytes": 3136,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/tmp/test_pytest_controller_workers3/grant.json",
+      "sha256": "24949a7cabc6e6b6e0a55057d402e16abe066f94e2b813e34f9d26b2227203d6"
+    },
+    "worker_identity": null,
+    "worker_roles": [
+      "workers"
+    ]
+  },
+  "cuda_marker": false,
+  "environment": {
+    "BAC_P3_INERT_SPEC": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/tmp/test_pytest_controller_workers3/spec.json",
+    "BROWSER_MANAGEMENT_SOCKET_PATH": "/home/agent/.local/run/browser-management/socket",
+    "CAAS_DIND_STORAGE_DRIVER": "vfs",
+    "CAAS_IMAGE_GIT_COMMIT_SHA": "969fca457cb91df54eb491d22bcaff20654139fe",
+    "CAAS_IMAGE_VERSION": "20261019221748-969fca457cb9",
+    "CLOUDSDK_CORE_CUSTOM_CA_CERTS_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS": "1",
+    "CODEX_BROWSER_DEFER_ACTIVATION": "1",
+    "CODEX_CAAS_SESSION_ID": "8b2c2c5624924e16852b25f75fe6149b",
+    "CODEX_CI": "1",
+    "CODEX_ENVIRONMENT_ID": "ccarenv_b64_Y2NhcmVudl9iNTE4NmVkNmE1NzQ4MTkxYTI4Njc1NDgxMTY2MDc3Yw",
+    "CODEX_EXEC_SERVER_PROXY_PRIVATE_IPS_VIA_UPSTREAM": "true",
+    "CODEX_EXEC_SERVER_REMOTE_BASE_URL": "https://codex-cloud-environments.chatgpt.com/api",
+    "CODEX_HOME": "/home/agent/.codex",
+    "CODEX_NO_UPDATE": "1",
+    "CODEX_PRIMARY_RUNTIME": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PRIMARY_RUNTIME_BUNDLE_VERSION": "26.1013.11914",
+    "CODEX_PRIMARY_RUNTIME_NODE": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "CODEX_PRIMARY_RUNTIME_NODE_MODULES": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "CODEX_PRIMARY_RUNTIME_PYTHON": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "CODEX_PRIMARY_RUNTIME_ROOT": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PROXY_CERT": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "CODEX_SANDBOX_NETWORK_DISABLED": "1",
+    "CODEX_SESSION_ID": "01a193e8-ae65-741d-9700-f53bdb72809b",
+    "CODEX_THREAD_ID": "6af803f8-22dc-8191-925e-3aa7f511d0b3",
+    "CODEX_TOOL_CALL_ID": "exec-68964511-9425-433e-a54a-cac329cb9f51",
+    "CODEX_VERSION": "0.0.0",
+    "COLORTERM": "",
+    "COLUMNS": "80",
+    "CUDA_VISIBLE_DEVICES": "",
+    "DEBIAN_FRONTEND": "noninteractive",
+    "DOCKER_IGNORE_BR_NETFILTER_ERROR": "1",
+    "DOCKER_TLS_CERTDIR": "",
+    "GH_PAGER": "cat",
+    "GH_TOKEN": "ghu_codex-cloud-github-proxy",
+    "GIT_PAGER": "cat",
+    "GRPC_DEFAULT_SSL_ROOTS_FILE_PATH": "/etc/ssl/certs/ca-certificates.crt",
+    "HOME": "/home/agent",
+    "HTTPS_PROXY": "http://proxy:8080",
+    "HTTP_PROXY": "http://proxy:8080",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "LINES": "24",
+    "MKL_NUM_THREADS": "1",
+    "NETWORK": "caas_neko_desktop",
+    "NODE_EXTRA_CA_CERTS": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "NODE_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "NO_COLOR": "1",
+    "NO_PROXY": "localhost,127.0.0.1,::1",
+    "NPM_CONFIG_AUDIT": "false",
+    "NPM_CONFIG_FUND": "false",
+    "NPM_CONFIG_PREFIX": "/home/agent/.local",
+    "OMP_NUM_THREADS": "1",
+    "OPENAI_CLUSTER": "applied-caas24",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PAGER": "cat",
+    "PATH": "/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "PLAYWRIGHT_NODEJS_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "PWD": "/workspace",
+    "PYTEST_CURRENT_TEST": "test_bac_hardware_identity_v1.py::test_inert_owner_job (call)",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTEST_VERSION": "8.4.2",
+    "PYTEST_XDIST_TESTRUNUID": "c18ec8b6c84b4bdab7627b1f84f905ba",
+    "PYTEST_XDIST_WORKER": "gw0",
+    "PYTEST_XDIST_WORKER_COUNT": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification",
+    "REMOTE_DESKTOP_H265_ENABLED": "0",
+    "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
+    "RUST_LOG": "codex_exec_server=info,codex_cli=info,error",
+    "SHELL": "/bin/bash",
+    "SHLVL": "1",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "TERM": "dumb",
+    "USER": "agent",
+    "_": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "http_proxy": "http://proxy:8080",
+    "https_proxy": "http://proxy:8080",
+    "no_proxy": "localhost,127.0.0.1,::1"
+  },
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 213924,
+    "ppid": 213917,
+    "start_identity": "12745208"
+  },
+  "module_names_after_sha256": "e516bf2f5c3998484ed7eaacc196b2b7cfcb4cb78724ac9da1dd15a828690969",
+  "module_names_before_sha256": "722609f3305efa7e11d9fc062e6220eebf779090f944ba874ef9cbadf4d207fb",
+  "observation_limit": "loaded Torch initialization state only, not independent proof of native device work",
+  "owner_claim": [
+    {
+      "bytes": 535,
+      "path": "/tmp/bac-p3-inert-wab6nlyj/output/attempt/job/owner-claim-actual-owner.json",
+      "sha256": "a319c7ad0a79e5b621417a88efe2f05348d832736657c1b09208f2202f61be42"
+    }
+  ],
+  "phase": "start",
+  "python_debug": true,
+  "python_optimize": 0,
+  "recorder_mode": "ordinary",
+  "sampler": [],
+  "schema": "bac-hardware-process-observation-v2",
+  "source_method": "direct-git",
+  "torch_anomaly": {
+    "reason": "",
+    "state": "measured",
+    "value": true
+  },
+  "torch_loaded": true,
+  "worker_identity": null
+}

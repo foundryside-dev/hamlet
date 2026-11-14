@@ -1,0 +1,648 @@
+{
+  "excluded": [
+    "__pycache__",
+    "future R130",
+    "hardware P3 adoption",
+    "live APP bodies",
+    "final seal",
+    "docs/current Spaces"
+  ],
+  "files": [
+    {
+      "bytes": 1426,
+      "path": "evidence-management/parent-c1/failed-diagnostic-implementation-v1/handoff.json",
+      "root": "W",
+      "sha256": "a9993a98f523664765235eec9498f3b42aca67802bc864b62678b26325e90452"
+    },
+    {
+      "bytes": 6958,
+      "path": "evidence-management/parent-c1/failed-diagnostic-implementation-v1/r127-capture.stdout",
+      "root": "W",
+      "sha256": "7480ebe4b7f6104b3bc28f7e20d4e8f205d410df65789a36975035b9b1656b01"
+    },
+    {
+      "bytes": 651,
+      "path": "evidence-management/parent-c1/failed-diagnostic-implementation-v1/r127-focused-postflight.stdout",
+      "root": "W",
+      "sha256": "57a4a98287a62c59685443815702491f2d56e7114b799aacde11119526cfa078"
+    },
+    {
+      "bytes": 4881,
+      "path": "evidence-management/parent-c1/failed-diagnostic-implementation-v1/source-delta.patch",
+      "root": "W",
+      "sha256": "00b496a0abd2d5cc1ac3277d89802200be67e4948757aeab3df6c581cfcbee3a"
+    },
+    {
+      "bytes": 872,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/r127-adversarial-source-inventory-v1.json",
+      "root": "W",
+      "sha256": "5184d3a94f8c591d44073ba84892a306420dbe9d62b15457656383b8727eec59"
+    },
+    {
+      "bytes": 4580,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/r127-adversarial-source-review-v1.md",
+      "root": "W",
+      "sha256": "519806e3731b940e62b59915a641243233505d75fbeec6567e59279a62922649"
+    },
+    {
+      "bytes": 2306,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/r127-independent-probe-authoring-v1.md",
+      "root": "W",
+      "sha256": "5e5fbb0b79e3ebc63fde731b45fdb606eae56a85ed73382c649bce0622259c9c"
+    },
+    {
+      "bytes": 655,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/root-independent-postflight-v1.stdout",
+      "root": "W",
+      "sha256": "fd6cb9852fce91464c87beac2732e23c9a9df3d6373c2eeac78f3d03799e0a8f"
+    },
+    {
+      "bytes": 787,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/root-probe-source-after-v1.json",
+      "root": "W",
+      "sha256": "50ae97a8fa78d532e69a0535d12d6b4ad607affb065823999b1d6a74e25b953f"
+    },
+    {
+      "bytes": 494,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/root-probe-source-before-v1.json",
+      "root": "W",
+      "sha256": "01349c30299df64ef473af1807283ef4055e20106f7ae1de40d48f0f006d880b"
+    },
+    {
+      "bytes": 6534,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py",
+      "root": "W",
+      "sha256": "461213cb70ce1249015b4c2dc79f11777381f4607899b36b6b34f37be78272df"
+    },
+    {
+      "bytes": 1423,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/before-inventory.json",
+      "root": "W",
+      "sha256": "4aa2fe1c96685261c50771409c646658cf2a83f483722ee18f988b1708cf4687"
+    },
+    {
+      "bytes": 63680,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/exploration_policy.py.before.txt",
+      "root": "W",
+      "sha256": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9"
+    },
+    {
+      "bytes": 8016,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/parent_custody.py.before.txt",
+      "root": "W",
+      "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"
+    },
+    {
+      "bytes": 6958,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-capture.stdout",
+      "root": "W",
+      "sha256": "3cb8bcbccc962064ea44b9f6be3b6ed74758141ec4790b8456fba04dae836809"
+    },
+    {
+      "bytes": 653,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-collection-postflight.stdout",
+      "root": "W",
+      "sha256": "ff391695b284d5c3e6f1fd930e617a6696a92102942cf7dcf2b32bc5c146b125"
+    },
+    {
+      "bytes": 63680,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-executed-source/exploration_policy.py.txt",
+      "root": "W",
+      "sha256": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9"
+    },
+    {
+      "bytes": 8016,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-executed-source/parent_custody.py.txt",
+      "root": "W",
+      "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"
+    },
+    {
+      "bytes": 68489,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-executed-source/scoped_curiosity.py.txt",
+      "root": "W",
+      "sha256": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4"
+    },
+    {
+      "bytes": 52506,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-executed-source/test_runtime_bank_parent_custody.py.txt",
+      "root": "W",
+      "sha256": "b968c943bafccfe2f6317464380a286fe3de3ae5efa7e0e32ae09e61ede1ee4b"
+    },
+    {
+      "bytes": 961,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/r126-red-postflight.stdout",
+      "root": "W",
+      "sha256": "2d13560be54d25c6838dbdb12992efef72b5f6459a6e164235f656b152977cd2"
+    },
+    {
+      "bytes": 6486,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/red-freeze-v1.json",
+      "root": "W",
+      "sha256": "05927727ccdda808e3f3b7b531d88ce21f137e350230f3a67fdb4372a893a490"
+    },
+    {
+      "bytes": 609,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/root-red-disposition-v1.json",
+      "root": "W",
+      "sha256": "9eb9b7ebb6a3dc2c560117f64a746693cadab7d3d592ba63e690cf4aca59d4cd"
+    },
+    {
+      "bytes": 68489,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/scoped_curiosity.py.before.txt",
+      "root": "W",
+      "sha256": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4"
+    },
+    {
+      "bytes": 3225937,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/tasks-before-r126-v1.json",
+      "root": "W",
+      "sha256": "05234b6272f4fc92acdf143fc48d87a989558a4349cfdb89fbd1ba68b5c6691e"
+    },
+    {
+      "bytes": 37523,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/test_runtime_bank_parent_custody.py.before.txt",
+      "root": "W",
+      "sha256": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc"
+    },
+    {
+      "bytes": 52506,
+      "path": "evidence-management/parent-c1/failed-diagnostic-red-v1/test_runtime_bank_parent_custody.py.r126.txt",
+      "root": "W",
+      "sha256": "b968c943bafccfe2f6317464380a286fe3de3ae5efa7e0e32ae09e61ede1ee4b"
+    },
+    {
+      "bytes": 5365,
+      "path": "evidence-management/parent-c1/run-r127-diagnostic-poison-v1.py",
+      "root": "W",
+      "sha256": "e3e197042721c4e704f882484ce0139da5e6e8dd4fd5bd05a0f8a9d836b461fc"
+    },
+    {
+      "bytes": 901,
+      "path": "evidence-management/parent-c1/wave35-r127-c1-poison-diagnostic-completion-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "d09cb507aaa4c706c7edd7db1cec8ff27dc4e71f0fda50418d58d642eb61dcec"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r127-c1-poison-diagnostic-completion-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 918,
+      "path": "evidence-management/parent-c1/wave35-r127-c1-poison-diagnostic-completion-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "727395715d2419edade30815526287a54701aa58323d668b9e4d2daea21b27e4"
+    },
+    {
+      "bytes": 7063,
+      "path": "evidence-management/pop-standalone-step/r128-capture-attempt-2.stdout",
+      "root": "W",
+      "sha256": "8df655de09066fb7b179c2713acc49d78f5795a5d8033b4505ba40ec771fb8e2"
+    },
+    {
+      "bytes": 2264,
+      "path": "evidence-management/pop-standalone-step/r128-capture-failure-v1.json",
+      "root": "W",
+      "sha256": "1f7b2464104b42cd598c3d9397f08774e4841ff791b18ce303bc6163240e7126"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/r128-capture.stdout",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 36758,
+      "path": "evidence-management/pop-standalone-step/r128-executed-source/test_initial_participation_population.py.txt",
+      "root": "W",
+      "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+    },
+    {
+      "bytes": 38548,
+      "path": "evidence-management/pop-standalone-step/r128-executed-source/test_parent_intrinsic_handoff.py.txt",
+      "root": "W",
+      "sha256": "8806af864533a94517e6f75ff87ef9b67a74d30cf2fc570736e0494e724b5e4d"
+    },
+    {
+      "bytes": 4534,
+      "path": "evidence-management/pop-standalone-step/r128-executed-source/test_population_standalone_step_cleanup.py.txt",
+      "root": "W",
+      "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+    },
+    {
+      "bytes": 161446,
+      "path": "evidence-management/pop-standalone-step/r128-executed-source/vectorized.py.txt",
+      "root": "W",
+      "sha256": "4cc490995fe34b17499030ec91de7bd1e4f19533a60fdb6338a92064a5c684e3"
+    },
+    {
+      "bytes": 654,
+      "path": "evidence-management/pop-standalone-step/r129-available-collection-postflight.stdout",
+      "root": "W",
+      "sha256": "b17b62009bbe9f819e839e79a54d33355aff672f114910b24e816fe961e78c1d"
+    },
+    {
+      "bytes": 1582,
+      "path": "evidence-management/pop-standalone-step/r129-bounded-scope-retirement-v1.json",
+      "root": "W",
+      "sha256": "967f62b100385b4467294406ece593d1cfce65b0d1bf3507eca42efb9ecf6c86"
+    },
+    {
+      "bytes": 7012,
+      "path": "evidence-management/pop-standalone-step/r129-capture.stdout",
+      "root": "W",
+      "sha256": "c7be1b14a00d42fbb7ff9b2d2807cb772bf621890209a2e953040f7bc4a71723"
+    },
+    {
+      "bytes": 36758,
+      "path": "evidence-management/pop-standalone-step/r129-executed-source/test_initial_participation_population.py.txt",
+      "root": "W",
+      "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+    },
+    {
+      "bytes": 42005,
+      "path": "evidence-management/pop-standalone-step/r129-executed-source/test_parent_intrinsic_handoff.py.txt",
+      "root": "W",
+      "sha256": "e0ee1b37d82c74ef70be19b62fb8a5b9aa736682880fa1e25822ebbcfcd8a035"
+    },
+    {
+      "bytes": 4534,
+      "path": "evidence-management/pop-standalone-step/r129-executed-source/test_population_standalone_step_cleanup.py.txt",
+      "root": "W",
+      "sha256": "d59505029082a518f888bdc5937a6e23fbb56aac1681d2ce901e504ed6b37509"
+    },
+    {
+      "bytes": 161446,
+      "path": "evidence-management/pop-standalone-step/r129-executed-source/vectorized.py.txt",
+      "root": "W",
+      "sha256": "4cc490995fe34b17499030ec91de7bd1e4f19533a60fdb6338a92064a5c684e3"
+    },
+    {
+      "bytes": 1881,
+      "path": "evidence-management/pop-standalone-step/r129-root-red-disposition-v1.json",
+      "root": "W",
+      "sha256": "15d294764393a7bb4f3a592182aef4a74b943e8c0aea660875321432ea373645"
+    },
+    {
+      "bytes": 3225938,
+      "path": "evidence-management/pop-standalone-step/tasks-before-r128-v1.json",
+      "root": "W",
+      "sha256": "9dfa7ee546208674d8e461d3629c2c797ba3b9bd63b6b38f8d52bf4af6c9922c"
+    },
+    {
+      "bytes": 3225938,
+      "path": "evidence-management/pop-standalone-step/tasks-before-r129-v1.json",
+      "root": "W",
+      "sha256": "2efaa73417b0136e1f674af9a14b088638e252683485696c5e360c18fb31fdc6"
+    },
+    {
+      "bytes": 925,
+      "path": "evidence-management/pop-standalone-step/wave35-r126-diagnostic-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "4764db275e571438522c3dce1c68417abe249a5d14d4717d09132ce4e62a9fbd"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r126-diagnostic-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 5285,
+      "path": "evidence-management/pop-standalone-step/wave35-r126-diagnostic-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "3af4cb6f2fd3ced998999d8580402a975c7164770caa3f2f74a10c5e6dbd5c52"
+    },
+    {
+      "bytes": 912,
+      "path": "evidence-management/pop-standalone-step/wave35-r126-diagnostic-red-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "a9aeef5b483cb7f5f1305aaa70834b99268f4eee365a2e3adac82d715e31b962"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r126-diagnostic-red-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 5126,
+      "path": "evidence-management/pop-standalone-step/wave35-r126-diagnostic-red-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "5242aa426ce9626f2155444d4092917c9ae247b7e7f49f565104f0d3fafca25e"
+    },
+    {
+      "bytes": 920,
+      "path": "evidence-management/pop-standalone-step/wave35-r127-diagnostic-focused-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "8e16c3c2a3cbe9cc88cb746591090a41c6abd7ee4264e8c43bb821e0fd34b01b"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r127-diagnostic-focused-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 5142,
+      "path": "evidence-management/pop-standalone-step/wave35-r127-diagnostic-focused-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "20683859f96b6bb56c2318978d1341d5a8d688baaae18ca9ac4fb5b9a605c1b0"
+    },
+    {
+      "bytes": 928,
+      "path": "evidence-management/pop-standalone-step/wave35-r127-diagnostic-independent-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "97916eff3288b11d113c74f0b6a5e36c97e320bc28912239bb254504afc32222"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r127-diagnostic-independent-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1029,
+      "path": "evidence-management/pop-standalone-step/wave35-r127-diagnostic-independent-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "de82e71167de88ee112f6ee878668c7634c28d3d38405ddecdd0605b0f413119"
+    },
+    {
+      "bytes": 930,
+      "path": "evidence-management/pop-standalone-step/wave35-r128-pop-diagnostic-original-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "26c9c5e498d8c1b2df0880f587631e170d48e8d36c9fee65ccfb7a9eeeb51782"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r128-pop-diagnostic-original-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1017,
+      "path": "evidence-management/pop-standalone-step/wave35-r128-pop-diagnostic-original-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "4be776635dde1cb7f27f53f583c57b15166bee4cd66898b44eaa3b3d64cf466b"
+    },
+    {
+      "bytes": 931,
+      "path": "evidence-management/pop-standalone-step/wave35-r129-pop-available-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "d09b6f54a5784c183a8cd9dcc69078131197081fd545a2677db5851e6e4968d9"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r129-pop-available-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1008,
+      "path": "evidence-management/pop-standalone-step/wave35-r129-pop-available-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "66b4903c5d00cb02a74d11c62fcf2cb539a200183c149132405aca1f0917b14b"
+    },
+    {
+      "bytes": 917,
+      "path": "evidence-management/pop-standalone-step/wave35-r129-pop-available-red-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "4a48d71e2bd0623d1965257776f587422120f0566870d1d76c63d62fbb34170a"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r129-pop-available-red-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 963,
+      "path": "evidence-management/pop-standalone-step/wave35-r129-pop-available-red-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "5ae3e2bcb7e12788116aa91d2c298cba788eccb386cf8b9ea3290b74d0c8f313"
+    },
+    {
+      "bytes": 8724,
+      "path": "wave35-preparation/T18e-R0-NATIVE-FAILED-DIAGNOSTIC-CAPTURE-FACTS-v1.md",
+      "root": "W",
+      "sha256": "1be66aa7f93495b6c0304fa22974af4abbe4804a740bb32536130283b8079611"
+    },
+    {
+      "bytes": 6432,
+      "path": "wave35-preparation/T18e-R0-PARENT-C1-FAILED-DIAGNOSTIC-IMPLEMENTATION-PLAN-v1.md",
+      "root": "W",
+      "sha256": "3137a53537a0561665dafccef940c9fe4ada035e1c0eaf2c9e351309a18bbf1a"
+    },
+    {
+      "bytes": 10613,
+      "path": "wave35-preparation/T18e-R0-PARENT-C1-FAILED-DIAGNOSTIC-SUPPLIER-v1.md",
+      "root": "W",
+      "sha256": "e573705337e7b755cbe49ad7f0166bce3930d5c8644e5b234962a2c0c5560f38"
+    },
+    {
+      "bytes": 4490,
+      "path": "wave35-preparation/T18e-R0-PARENT-C1-FAILED-DIAGNOSTIC-SUPPLIER-v2.md",
+      "root": "W",
+      "sha256": "b0d78028aaea09479d089646505c0b7b379fbc5c2cc2293161862f1b852d411f"
+    },
+    {
+      "bytes": 5542,
+      "path": "wave35-preparation/T18e-R0-POP-FAILED-DIAGNOSTIC-CALLER-HANDOFF-v1.md",
+      "root": "W",
+      "sha256": "0761c02061159952eb825ec2c1d9c5e09086a4e25d0a205043b902b3d1d7ef7c"
+    },
+    {
+      "bytes": 6797,
+      "path": "wave35-preparation/T18e-R0-POP-FAILED-DIAGNOSTIC-CALLER-PLAN-v1.md",
+      "root": "W",
+      "sha256": "cccf82e759fadf2163f81d9be236044328af1848882ab03f24eeac9ee17f189c"
+    }
+  ],
+  "helpers": [
+    {
+      "bytes": 4482,
+      "limitation": "Named helper dependency only; current hash alone is not proof of historical execution.",
+      "path": "run_bac_cold_checks_locked.py",
+      "required_by": [
+        "wave35-r126-collection-spec.json--unrun",
+        "wave35-r126-diagnostic-collection-attempt-1--diagnostic-collection",
+        "wave35-r126-diagnostic-red-attempt-1--diagnostic-red",
+        "wave35-r126-owned-spec.json--unrun",
+        "wave35-r127-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+        "wave35-r127-collection-spec.json--unrun",
+        "wave35-r127-diagnostic-focused-attempt-1--diagnostic-focused",
+        "wave35-r127-diagnostic-independent-attempt-1--diagnostic-independent",
+        "wave35-r127-owned-spec.json--unrun",
+        "wave35-r128-collection-spec.json--unrun",
+        "wave35-r128-owned-spec.json--unrun",
+        "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+        "wave35-r129-collection-spec.json--unrun",
+        "wave35-r129-owned-spec.json--unrun",
+        "wave35-r129-pop-available-collection-attempt-1--pop-available-collection",
+        "wave35-r129-pop-available-red-attempt-1--pop-available-red"
+      ],
+      "root": "Q",
+      "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+      "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+    },
+    {
+      "bytes": 2917,
+      "limitation": "Named helper dependency only; current hash alone is not proof of historical execution.",
+      "path": "bac_source_identity.py",
+      "required_by": [
+        "wave35-r126-collection-spec.json--unrun",
+        "wave35-r126-diagnostic-collection-attempt-1--diagnostic-collection",
+        "wave35-r126-diagnostic-red-attempt-1--diagnostic-red",
+        "wave35-r126-owned-spec.json--unrun",
+        "wave35-r127-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+        "wave35-r127-collection-spec.json--unrun",
+        "wave35-r127-diagnostic-focused-attempt-1--diagnostic-focused",
+        "wave35-r127-diagnostic-independent-attempt-1--diagnostic-independent",
+        "wave35-r127-owned-spec.json--unrun",
+        "wave35-r128-collection-spec.json--unrun",
+        "wave35-r128-owned-spec.json--unrun",
+        "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+        "wave35-r129-collection-spec.json--unrun",
+        "wave35-r129-owned-spec.json--unrun",
+        "wave35-r129-pop-available-collection-attempt-1--pop-available-collection",
+        "wave35-r129-pop-available-red-attempt-1--pop-available-red"
+      ],
+      "root": "Q",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+    },
+    {
+      "bytes": 3032,
+      "limitation": "Named helper dependency only; current hash alone is not proof of historical execution.",
+      "path": "verify_bac_run.py",
+      "required_by": [
+        "wave35-r126-collection-spec.json--unrun",
+        "wave35-r126-diagnostic-collection-attempt-1--diagnostic-collection",
+        "wave35-r126-diagnostic-red-attempt-1--diagnostic-red",
+        "wave35-r126-owned-spec.json--unrun",
+        "wave35-r127-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+        "wave35-r127-collection-spec.json--unrun",
+        "wave35-r127-diagnostic-focused-attempt-1--diagnostic-focused",
+        "wave35-r127-diagnostic-independent-attempt-1--diagnostic-independent",
+        "wave35-r127-owned-spec.json--unrun",
+        "wave35-r128-collection-spec.json--unrun",
+        "wave35-r128-owned-spec.json--unrun",
+        "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+        "wave35-r129-collection-spec.json--unrun",
+        "wave35-r129-owned-spec.json--unrun",
+        "wave35-r129-pop-available-collection-attempt-1--pop-available-collection",
+        "wave35-r129-pop-available-red-attempt-1--pop-available-red"
+      ],
+      "root": "Q",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+      "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+    },
+    {
+      "bytes": 4596,
+      "limitation": "Named helper dependency only; current hash alone is not proof of historical execution.",
+      "path": "verify_bac_failed_run.py",
+      "required_by": [
+        "wave35-r126-collection-spec.json--unrun",
+        "wave35-r126-diagnostic-collection-attempt-1--diagnostic-collection",
+        "wave35-r126-diagnostic-red-attempt-1--diagnostic-red",
+        "wave35-r126-owned-spec.json--unrun",
+        "wave35-r127-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+        "wave35-r127-collection-spec.json--unrun",
+        "wave35-r127-diagnostic-focused-attempt-1--diagnostic-focused",
+        "wave35-r127-diagnostic-independent-attempt-1--diagnostic-independent",
+        "wave35-r127-owned-spec.json--unrun",
+        "wave35-r128-collection-spec.json--unrun",
+        "wave35-r128-owned-spec.json--unrun",
+        "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+        "wave35-r129-collection-spec.json--unrun",
+        "wave35-r129-owned-spec.json--unrun",
+        "wave35-r129-pop-available-collection-attempt-1--pop-available-collection",
+        "wave35-r129-pop-available-red-attempt-1--pop-available-red"
+      ],
+      "root": "Q",
+      "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56",
+      "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+    },
+    {
+      "bytes": 6277,
+      "limitation": "Named helper dependency only; current hash alone is not proof of historical execution.",
+      "path": "capture_wave14_round.py",
+      "required_by": [
+        "wave35-r126-collection-spec.json--unrun",
+        "wave35-r126-diagnostic-collection-attempt-1--diagnostic-collection",
+        "wave35-r126-diagnostic-red-attempt-1--diagnostic-red",
+        "wave35-r126-owned-spec.json--unrun",
+        "wave35-r127-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+        "wave35-r127-collection-spec.json--unrun",
+        "wave35-r127-diagnostic-focused-attempt-1--diagnostic-focused",
+        "wave35-r127-diagnostic-independent-attempt-1--diagnostic-independent",
+        "wave35-r127-owned-spec.json--unrun",
+        "wave35-r128-collection-spec.json--unrun",
+        "wave35-r128-owned-spec.json--unrun",
+        "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+        "wave35-r129-collection-spec.json--unrun",
+        "wave35-r129-owned-spec.json--unrun",
+        "wave35-r129-pop-available-collection-attempt-1--pop-available-collection",
+        "wave35-r129-pop-available-red-attempt-1--pop-available-red"
+      ],
+      "root": "Q",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+    },
+    {
+      "bytes": 1664,
+      "limitation": "Named helper dependency only; current hash alone is not proof of historical execution.",
+      "path": "evidence-management/pop-standalone-step/run-observed-spec-v1.py",
+      "required_by": [
+        "wave35-r126-collection-spec.json--unrun",
+        "wave35-r126-diagnostic-collection-attempt-1--diagnostic-collection",
+        "wave35-r126-diagnostic-red-attempt-1--diagnostic-red",
+        "wave35-r126-owned-spec.json--unrun",
+        "wave35-r127-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+        "wave35-r127-collection-spec.json--unrun",
+        "wave35-r127-diagnostic-focused-attempt-1--diagnostic-focused",
+        "wave35-r127-diagnostic-independent-attempt-1--diagnostic-independent",
+        "wave35-r127-owned-spec.json--unrun",
+        "wave35-r128-collection-spec.json--unrun",
+        "wave35-r128-owned-spec.json--unrun",
+        "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+        "wave35-r129-collection-spec.json--unrun",
+        "wave35-r129-owned-spec.json--unrun",
+        "wave35-r129-pop-available-collection-attempt-1--pop-available-collection",
+        "wave35-r129-pop-available-red-attempt-1--pop-available-red"
+      ],
+      "root": "W",
+      "sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+      "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+    },
+    {
+      "bytes": 5365,
+      "limitation": "Named helper dependency only; current hash alone is not proof of historical execution.",
+      "path": "evidence-management/parent-c1/run-r127-diagnostic-poison-v1.py",
+      "required_by": [
+        "wave35-r126-collection-spec.json--unrun",
+        "wave35-r126-diagnostic-collection-attempt-1--diagnostic-collection",
+        "wave35-r126-diagnostic-red-attempt-1--diagnostic-red",
+        "wave35-r126-owned-spec.json--unrun",
+        "wave35-r127-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+        "wave35-r127-collection-spec.json--unrun",
+        "wave35-r127-diagnostic-focused-attempt-1--diagnostic-focused",
+        "wave35-r127-diagnostic-independent-attempt-1--diagnostic-independent",
+        "wave35-r127-owned-spec.json--unrun",
+        "wave35-r128-collection-spec.json--unrun",
+        "wave35-r128-owned-spec.json--unrun",
+        "wave35-r128-pop-diagnostic-original-attempt-1--pop-diagnostic-original",
+        "wave35-r129-collection-spec.json--unrun",
+        "wave35-r129-owned-spec.json--unrun",
+        "wave35-r129-pop-available-collection-attempt-1--pop-available-collection",
+        "wave35-r129-pop-available-red-attempt-1--pop-available-red"
+      ],
+      "root": "W",
+      "sha256": "e3e197042721c4e704f882484ce0139da5e6e8dd4fd5bd05a0f8a9d836b461fc",
+      "version_basis": "Observed exact helper bytes; execution hash binding stated per check where originally recorded."
+    }
+  ],
+  "schema": "bac-bounded-supporting-closure-v1",
+  "scope": "Closed R126-R129 supplier/caller evidence only; source bytes hashed, never interpreted or executed. No P3 or future R130 selection."
+}

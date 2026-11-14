@@ -1,0 +1,36 @@
+{
+  "after": {
+    "bytes": 67361,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/test_bac_hardware_identity_v1.py.r129-after.txt",
+    "sha256": "39b4513e3df308612924b2cd7c37111ebf91398645c1ebb57ec534af4e33bcf2"
+  },
+  "at": "2026-11-14T09:39:20.696645+00:00",
+  "authorization": "Root granted only _real_source expected tree R128 to R129; no execution/production/source logic change.",
+  "before": {
+    "bytes": 67361,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/test_bac_hardware_identity_v1.py.r129-before.txt",
+    "sha256": "8666dc0c6419e189f7dc00de83f932d4f8600a980cd43db32e8d7af3ec049cb8"
+  },
+  "candidate": {
+    "bytes": 207540,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r129-candidate.json",
+    "sha256": "ebbe60fb1ccf0ee3395dda839908c6f8c3b0db6b53c1b30eabd4b3ea66a61c36"
+  },
+  "diff": "--- frozen-v2-R128\n+++ rebound-v3-R129\n@@ -721,7 +721,7 @@\n \n def _real_source(capsule,api,monkeypatch):\n     root=Path('/workspace/hamlet');spec=capsule['spec'];c=capsule['context']\n-    head='23701174e5418aca5e8fc90cbe694f773d3ebff6';tree='21a27b7a12a2be09d704e45b6249c12f04a0fa9d'\n+    head='23701174e5418aca5e8fc90cbe694f773d3ebff6';tree='e3d2274b34a6c8a6620a803fdf041d05151b66a0'\n     assert subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=True).strip()==head\n     freeze=_read(spec['source_freeze']);freeze['authorized_root']=str(root)\n     candidate=_read(spec['candidate']);candidate.update(authorized_root=str(root),head=head,tree=tree,import_roots=[str(capsule['tmp']),str(root/'.venv')])\n",
+  "exact_inverse_equal": true,
+  "new_literal": "tree='e3d2274b34a6c8a6620a803fdf041d05151b66a0'",
+  "occurrences": 1,
+  "old_literal": "tree='21a27b7a12a2be09d704e45b6249c12f04a0fa9d'",
+  "schema": "bac-p3-test-literal-rebinding-v1",
+  "source": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "test": {
+    "bytes": 67361,
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "sha256": "39b4513e3df308612924b2cd7c37111ebf91398645c1ebb57ec534af4e33bcf2"
+  },
+  "validation": "Byte comparison only; author did not rerun tests. Independent reviewer will run15 affected actual cases. Prior100PASS remains on old R128 test bytes."
+}

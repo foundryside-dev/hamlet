@@ -1,0 +1,230 @@
+{
+  "body_inventory": [
+    {
+      "lines": 60,
+      "reference": {
+        "bytes": 2917,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      }
+    },
+    {
+      "lines": 526,
+      "reference": {
+        "bytes": 34654,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "lines": 1067,
+      "reference": {
+        "bytes": 65961,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+        "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+      }
+    },
+    {
+      "lines": 1054,
+      "reference": {
+        "bytes": 62678,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+        "sha256": "20129c680aa03ad1fa67b121e6ace69c477b54d75e4da66b673b9fad10ae45f8"
+      }
+    },
+    {
+      "lines": 998,
+      "reference": {
+        "bytes": 45937,
+        "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py",
+        "sha256": "452e427b945475e050b35273b6bb44effe3ade6ef96629c4382c2d68591ee727"
+      }
+    }
+  ],
+  "command_row": {
+    "diagnostic_path": "sampler-{process_id}-{phase}-{0|1}.json",
+    "fields": [
+      "argv",
+      "pid",
+      "start_ns",
+      "end_ns",
+      "exit_code",
+      "stdout",
+      "stderr",
+      "stdout_truncated",
+      "stderr_truncated"
+    ],
+    "note": "Same closed command row is retained separately as JSON diagnostics, with no schema/kind key. Successful rows also occur in sampler.commands; partial failures retain diagnostics without successful sampler/process-end."
+  },
+  "context_fields": [
+    "schema",
+    "spec",
+    "command",
+    "trusted_grant",
+    "job_id",
+    "role_id",
+    "required_imports",
+    "worker_roles",
+    "environment_delta",
+    "parent_start",
+    "replacement_start",
+    "lifecycle",
+    "worker_identity",
+    "policy",
+    "runtime"
+  ],
+  "design": {
+    "bytes": 35319,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-AMENDMENT-PROPOSAL-v2.md",
+    "sha256": "223951b0bbefb319892ecbd9c1b37b1cf686aea929546acffd652f9f68de57b3"
+  },
+  "filenames": [
+    "owner-launch-{instance_id}.json",
+    "owner-claim-{instance_id}.json",
+    "source-launch-{instance_id}.json",
+    "source-{process_id}-{phase}.json",
+    "process-{process_id}-observation-{phase}.json",
+    "process-{process_id}-{phase}.json",
+    "sampler-{process_id}-{phase}.json",
+    "sampler-emission-{process_id}-{phase}.json",
+    "sampler-{process_id}-{phase}-{0|1}.{stdout|stderr|json}"
+  ],
+  "observation_semantics": "Python __debug__ True and sys.flags.optimize0 are independent from Torch anomaly bool. Nonfork debug is measured without Torch; guard P0 runtime facts unavailable, raw Python facts actual. Observer/guard never call Torch; work getters only when loaded. Recorder never sets thread/RNG/anomaly state.",
+  "output_retention": {
+    "bytes": 364873,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/output-retention-v1.json",
+    "sha256": "8d5059c21ae4a4375d436837235663a7a96c99e5a9ed16989b3ee6facbb51883"
+  },
+  "predecessor": {
+    "bytes": 3756,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/interface-contract-v2.json",
+    "sha256": "51369fe91bd72a44eaf1f8526f22ff7692fb5a62247a870c05d699f341b0d798"
+  },
+  "prepared_metadata": "Only explicit spec/candidate/environment/grant/freeze/contract/CPU/policy and actual parent process/raw/source/delegation/lifecycle metadata are parsed. Opaque source/config/artifact JSON is hashed without guessing schema. All parsed refs are rehashed by child no-follow kernel.",
+  "private_records": {
+    "bac-hardware-owner-claim-v1": [
+      "schema",
+      "launch",
+      "identity",
+      "role_id",
+      "at",
+      "monotonic_ns"
+    ],
+    "bac-hardware-owner-launch-v1": [
+      "schema",
+      "spec",
+      "command",
+      "owner_contract",
+      "parent_process",
+      "source_witness",
+      "parent_identity",
+      "parent_argv",
+      "case_id",
+      "pytest_phase",
+      "child_role_id",
+      "instance_id",
+      "start_method",
+      "environment",
+      "python_assertions_enabled",
+      "inherited_imports",
+      "module_names_sha256",
+      "sampler_policy",
+      "owner_deadline_ns",
+      "sampler_cutoff_ns",
+      "at",
+      "monotonic_ns"
+    ],
+    "bac-hardware-owner-sampler-emission-v1": [
+      "schema",
+      "policy",
+      "launch",
+      "identity",
+      "phase",
+      "sampler",
+      "raw",
+      "process",
+      "emission_end_ns",
+      "module_names_after_sha256"
+    ],
+    "bac-hardware-owner-sampler-observation-v1": [
+      "schema",
+      "policy",
+      "launch",
+      "identity",
+      "phase",
+      "start_ns",
+      "end_ns",
+      "cumulative_ns",
+      "lock_acquired_ns",
+      "lock_released_ns",
+      "commands"
+    ],
+    "bac-hardware-process-observation-v2": [
+      "schema",
+      "context",
+      "identity",
+      "phase",
+      "environment",
+      "worker_identity",
+      "torch_loaded",
+      "cuda_marker",
+      "observation_limit",
+      "at",
+      "python_debug",
+      "python_optimize",
+      "torch_anomaly",
+      "source_method",
+      "recorder_mode",
+      "module_names_before_sha256",
+      "module_names_after_sha256",
+      "owner_claim",
+      "sampler"
+    ]
+  },
+  "protocol_adoption": {
+    "bytes": 1581,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/module-alias-amendment/root-adoption-v1.json",
+    "sha256": "8dc4be0d0d79d910a56163cdfef1b1097965657047c74ae1b3aabae91b4fd01e"
+  },
+  "public_api": {
+    "current_process_context()": "Deep copied {context,start} for actual current PID/start/host/boot, else None. None is no qualification.",
+    "prepare_owner_launch(parent_context,parent_start,owner_contract,case_id,child_role_id,instance_id,start_method)": "Returns exactly {reference,context,handle}. Actual active pytest call or nested authenticated owner required; handle None for spawn, opaque process-local object inherited by fork only.",
+    "record_fork_process(handle,phase)": "P0 process reference; prepared no-import kernel, own Git/source observations, exclusive claim, bounded sampler and post-process emission record. Does not certify its own future return.",
+    "record_process(context, phase)": "Actual controller/worker/spawn/work process P0 reference; fork-guard entry refuses. Current raw observation-v2 only."
+  },
+  "resource_binding": "Exact existing cpu-bound-v1 fields; sampler policy ref in justification; exact bound ref in grant.cpu_reservation_evidence; role/config/argv/env/cases/head/tree/fixed-order inputs match. Policy CPU/scratch <= accepted role/job reservation. Git executable exact ref in sealed environment.dependencies.",
+  "result": {
+    "bytes": 3828,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/execution.json",
+    "sha256": "dd7a2c7ef8fbea0eb1c06528df63e9d78fa1f9885b9b3186aeca13ccf10e8fdc"
+  },
+  "schema": "bac-hardware-identity-interface-v3",
+  "source": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "status": "FROZEN AUTHOR CANDIDATE; fresh independent review pending",
+  "tests": {
+    "bytes": 62678,
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "sha256": "20129c680aa03ad1fa67b121e6ace69c477b54d75e4da66b673b9fad10ae45f8"
+  },
+  "timing": {
+    "bytes": 9747,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-TIMING-AMENDMENT-v2.md",
+    "sha256": "2804f48102a6dc3a209fb75b9749a766ea535118aa383e7ab217b75f4948157e"
+  },
+  "timing_adoption": {
+    "bytes": 1105,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/root-timing-design-adoption-v1.json",
+    "sha256": "1a019c11daea587ef2e364105d2c861191bc930775079f1847e104817824788c"
+  },
+  "timing_scope": "Sampler end/cumulative cover source-sampling stage only. Internal prefix clock excludes its future return. Emission receipt observes completed raw/process writes, excludes its own later write. Actual source-qualified owner brackets prove3/6/8; actual parent ack/reap corroborates by original10. Exact timing-v2 is normative.",
+  "unrun": [
+    "Actual P2 owner/raw-v2/receipt correspondence integration",
+    "Actual P2 owned-process-group backstop after abrupt guard death with live sampler",
+    "Actual P4/P5 current strict payload/return/custody validation",
+    "APP producer qualification and real Torch/CUDA/server execution"
+  ]
+}

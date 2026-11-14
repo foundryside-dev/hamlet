@@ -1,0 +1,31 @@
+{
+  "status": "TWO DISTINCT SOURCE-BYTE GAPS RESOLVED; R128 POSTFLIGHT STILL MISSING",
+  "at": "2026-11-14T09:49:41.218995+00:00",
+  "basis": "Root explicitly authorized live-byte hash comparison after writer stopped. Bytes equal historical candidate hashes; retention observed now, not recreation of historical execution. Earlier manifest and handoff remain immutable.",
+  "aliases": [
+    {
+      "original": "/workspace/hamlet/src/townlet/config/exploration_policy.py",
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r127-exact-source-retention-v1/exploration_policy.py.txt",
+      "bytes": 64670,
+      "sha256": "e08309e0c55ca0d757fc33c926a21ee266b2935082826c14994208d6aebc3191",
+      "rounds": [
+        127,
+        128,
+        129
+      ]
+    },
+    {
+      "original": "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py",
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r127-exact-source-retention-v1/scoped_curiosity.py.txt",
+      "bytes": 69798,
+      "sha256": "8da80d4c87f666f6df7a4260ca16dd8feeb460ffa83e6713904e739598b667cc",
+      "rounds": [
+        127,
+        128,
+        129
+      ]
+    }
+  ]
+}

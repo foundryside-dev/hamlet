@@ -1,0 +1,83 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_opaque_candidate_json_is_not_private_metadata ______________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...e_candidate_json_is_0/freeze.json', 'sha256': '847a0d3a9a32bee3ff518eb7704b461c8e3de3da889f523410ed3568504a1979'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f0df4b04c30>
+
+    def test_opaque_candidate_json_is_not_private_metadata(capsule,monkeypatch):
+        api,_=_owner(capsule,monkeypatch,'fork-guard')
+        data=capsule['root']/'opaque.json'
+        data.write_text('{"path":"example-not-a-reference","bytes":0,"sha256":"example"}')
+        candidate=_read(capsule['spec']['candidate']);candidate['inventory']['artifacts']=[dict(path=str(data),reference=protocol.file_reference(data))]
+        capsule['spec']['candidate']=_write(capsule['tmp']/'candidate.json',candidate)
+        inputs=[item['reference'] for key in ['source','tests','configs','scripts','ratchet','artifacts'] for item in candidate['inventory'][key]]
+        _replace_grant(capsule,{'inputs':inputs});_fork_policy(capsule)
+>       launch=_launch(capsule,api,capsule['job']['obligations'][-1]['contract'],monkeypatch,'fork')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:946: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:658: in _launch
+    return api.prepare_owner_launch(capsule['context'],start,ref,'test_inert',
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:854: in prepare_owner_launch
+    prepared = _prepare_fork(context,spec,job,role,candidate,environment,owner_contract) if start_method=='fork' else None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:565: in _prepare_fork
+    collect([context,spec,job,candidate,environment,owner_contract])
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:556: in collect
+    for item in value: collect(item)
+                       ^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:564: in collect
+    for item in value.values(): collect(item)
+                                ^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:562: in collect
+    if value['path'].endswith('.json'): collect(_load(value))
+                                        ^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:564: in collect
+    for item in value.values(): collect(item)
+                                ^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:562: in collect
+    if value['path'].endswith('.json'): collect(_load(value))
+                                        ^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:564: in collect
+    for item in value.values(): collect(item)
+                                ^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:564: in collect
+    for item in value.values(): collect(item)
+                                ^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:556: in collect
+    for item in value: collect(item)
+                       ^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:564: in collect
+    for item in value.values(): collect(item)
+                                ^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:562: in collect
+    if value['path'].endswith('.json'): collect(_load(value))
+                                        ^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:561: in collect
+    protocol.validate_record('reference',value);refs[value['path']]=value
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:521: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:257: in _check
+    _path(value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:149: in _path
+    _require(type(value) is str and value.startswith("/") and "\x00" not in value and "\\" not in value, "absolute POSIX path required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'absolute POSIX path required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: absolute POSIX path required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_opaque_candidate_json_is_not_private_metadata
+1 failed, 98 deselected in 0.90s

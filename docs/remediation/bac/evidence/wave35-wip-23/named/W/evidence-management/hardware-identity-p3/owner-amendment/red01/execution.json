@@ -1,0 +1,63 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "preloaded_fork_recorder_zero_imports_baseline or python_debug_is_not_torch_anomaly"
+  ],
+  "actual_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "preloaded_fork_recorder_zero_imports_baseline or python_debug_is_not_torch_anomaly"
+  ],
+  "pid": 208744,
+  "stat": "208744 (python) R 208742 208738 208738 0 -1 4194560 25 0 0 0 0 0 0 0 20 0 1 0 12527835 7708672 0 18446744073709551615 4325376 7599353 140730022404512 0 0 0 0 0 0 0 0 0 17 4 0 0 0 0 0 10436024 11028232 1077768192 140730022412752 140730022413069 140730022413069 140730022416341 0\n",
+  "start": "2026-11-14T08:46:08.013255+00:00",
+  "end": "2026-11-14T08:46:09.132341+00:00",
+  "exit_code": 1,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "sha256": "938d44339e6c0fdc5b7763eb2b33031bf3794a66e97064cf3601e7b3dbf9b445",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red01/bac_hardware_identity_v1.py.txt",
+      "lines": 611
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "sha256": "52da2bdf3fc8b8fa59d0c1c8a1caa5aecd80a3f15bd8cd96c61887316bccb68b",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/red01/test_bac_hardware_identity_v1.py.txt",
+      "lines": 566
+    }
+  ],
+  "interpreter": "/usr/bin/python3.13",
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cpu_max": "400000 100000\n",
+  "memory_current": "2291273728\n"
+}

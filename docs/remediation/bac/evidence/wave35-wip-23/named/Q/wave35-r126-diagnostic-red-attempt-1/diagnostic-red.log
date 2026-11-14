@@ -1,0 +1,1003 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [30 items]
+
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                           [100%]
+=================================== FAILURES ===================================
+__ test_failure_diagnostic_requires_runtime_failure[empty_participation-bank] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b6fe15940>
+owner_name = 'bank', reason = 'empty_participation'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("reason", ["healthy", "empty_participation"])
+    def test_failure_diagnostic_requires_runtime_failure(compiled: Any, monkeypatch: Any, owner_name: str, reason: str) -> None:
+        """A broad allow-failed switch must not admit healthy or different quarantine states."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        if reason != "healthy":
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       method = diagnostic_api(getattr(rig, owner_name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:984: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4b70578af0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+__________ test_failure_diagnostic_full_current_payload[shared-none] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45ba819940>
+family = 'none', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45badf1400>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_____ test_failure_diagnostic_refuses_unauthenticated_quarantine[runtime] ______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b7008e780>
+owner_name = 'runtime'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_failure_diagnostic_refuses_unauthenticated_quarantine(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+        """Actual retained quarantine must still authenticate against the accepted producer."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       method = diagnostic_api(getattr(rig, owner_name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1002: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b6509b4d0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_______ test_failure_diagnostic_full_current_payload[shared-count_based] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45baa82650>
+family = 'count_based', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45afa9b610>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_______ test_failure_diagnostic_refuses_unauthenticated_quarantine[bank] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b706adfd0>
+owner_name = 'bank'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_failure_diagnostic_refuses_unauthenticated_quarantine(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+        """Actual retained quarantine must still authenticate against the accepted producer."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       method = diagnostic_api(getattr(rig, owner_name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1002: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4b64d6c5f0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+___________ test_failure_diagnostic_full_current_payload[shared-rnd] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45bb0b3d10>
+family = 'rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45af71f750>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+__ test_failure_diagnostic_is_not_restore_transport[prepare_restore-runtime] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64d249e0>
+owner_name = 'runtime', method = 'prepare_restore'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+    def test_failure_diagnostic_is_not_restore_transport(compiled: Any, monkeypatch: Any, owner_name: str, method: str) -> None:
+        """Unmodified diagnostics must refuse before candidate materialization or registration."""
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        diagnostic_step(source)
+        source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = diagnostic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1028: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b65001a70>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+______ test_failure_diagnostic_full_current_payload[shared-adaptive_rnd] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af78ce20>
+family = 'adaptive_rnd', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45afa07a80>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+____ test_failure_diagnostic_is_not_restore_transport[prepare_restore-bank] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64d317b0>
+owner_name = 'bank', method = 'prepare_restore'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+    def test_failure_diagnostic_is_not_restore_transport(compiled: Any, monkeypatch: Any, owner_name: str, method: str) -> None:
+        """Unmodified diagnostics must refuse before candidate materialization or registration."""
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        diagnostic_step(source)
+        source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = diagnostic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1028: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4b64dd2f30>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+___________ test_failure_diagnostic_full_current_payload[shared-icm] ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af78ee00>
+family = 'icm', scope = 'shared'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45af66a2c0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_ test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-runtime] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64bb1b50>
+owner_name = 'runtime', method = 'prepare_private_initialization'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+    def test_failure_diagnostic_is_not_restore_transport(compiled: Any, monkeypatch: Any, owner_name: str, method: str) -> None:
+        """Unmodified diagnostics must refuse before candidate materialization or registration."""
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        diagnostic_step(source)
+        source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = diagnostic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1028: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b706dc5a0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_________ test_failure_diagnostic_full_current_payload[per_world-none] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af654c50>
+family = 'none', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45af8ba7b0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_ test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-bank] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b6fca9550>
+owner_name = 'bank', method = 'prepare_private_initialization'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+    def test_failure_diagnostic_is_not_restore_transport(compiled: Any, monkeypatch: Any, owner_name: str, method: str) -> None:
+        """Unmodified diagnostics must refuse before candidate materialization or registration."""
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        diagnostic_step(source)
+        source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = diagnostic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1028: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4b648becb0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_____ test_failure_diagnostic_full_current_payload[per_world-count_based] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af659750>
+family = 'count_based', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45af9679b0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+__ test_failure_diagnostic_is_not_restore_transport[install_restore-runtime] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64d97c50>
+owner_name = 'runtime', method = 'install_restore'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+    def test_failure_diagnostic_is_not_restore_transport(compiled: Any, monkeypatch: Any, owner_name: str, method: str) -> None:
+        """Unmodified diagnostics must refuse before candidate materialization or registration."""
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        diagnostic_step(source)
+        source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = diagnostic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1028: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b649658b0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+____ test_failure_diagnostic_is_not_restore_transport[install_restore-bank] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64f54b90>
+owner_name = 'bank', method = 'install_restore'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+    def test_failure_diagnostic_is_not_restore_transport(compiled: Any, monkeypatch: Any, owner_name: str, method: str) -> None:
+        """Unmodified diagnostics must refuse before candidate materialization or registration."""
+        source, target = make_parent(compiled), make_parent(compiled)
+        begin(source, retired=IDS[1:])
+        diagnostic_step(source)
+        source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+>       state = diagnostic_api(getattr(source, owner_name))()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1028: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4b6470a030>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_______ test_failure_diagnostic_callbacks_cannot_borrow_authority[False] _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64b3e510>
+parent_bound = False
+
+    @pytest.mark.parametrize("parent_bound", [False, True])
+    def test_failure_diagnostic_callbacks_cannot_borrow_authority(compiled: Any, monkeypatch: Any, parent_bound: bool) -> None:
+        """The new diagnostic must not expose a forwarding permit to accepted callbacks."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       capture = diagnostic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1060: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b648dbf50>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_________ test_failure_diagnostic_full_current_payload[per_world-rnd] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af4cc140>
+family = 'rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45af487350>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_______ test_failure_diagnostic_callbacks_cannot_borrow_authority[True] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64eedef0>
+parent_bound = True
+
+    @pytest.mark.parametrize("parent_bound", [False, True])
+    def test_failure_diagnostic_callbacks_cannot_borrow_authority(compiled: Any, monkeypatch: Any, parent_bound: bool) -> None:
+        """The new diagnostic must not expose a forwarding permit to accepted callbacks."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       capture = diagnostic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1060: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b648dab10>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_____ test_failure_diagnostic_full_current_payload[per_world-adaptive_rnd] _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af4d3200>
+family = 'adaptive_rnd', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45af6f7050>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_________ test_failure_diagnostic_full_current_payload[per_world-icm] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af065a90>
+family = 'icm', scope = 'per_world'
+
+    @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+        rig = make_parent(compiled, family, scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["step"] is not None
+        assert reference["bank"]["bank_phase"] == "live_episode"
+        assert len(reference["bank"]["worlds"]) == len(IDS)
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:919: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45af3d6f50>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_________ test_failure_diagnostic_refuses_pending_completion[runtime] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64ee1090>
+owner_name = 'runtime'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_failure_diagnostic_refuses_pending_completion(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+        """A real uncommitted completion cannot be exported by bypassing local quarantine."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.population.step_population(rig.env)
+        prepared = prepare_close(rig)
+        assert prepared is not None and rig.bank._prepared is not None
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       capture = diagnostic_api(getattr(rig, owner_name))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b64d4e570>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+__________ test_failure_diagnostic_retains_completion_history[shared] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af259d30>
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_retains_completion_history(compiled: Any, monkeypatch: Any, scope: str) -> None:
+        """The diagnostic must retain real committed completion before the next begin clears it."""
+        rig = make_parent(compiled, "adaptive_rnd", scope)
+        begin(rig, retired=IDS[1:])
+        rig.population.step_population(rig.env)
+        prepared = prepare_close(rig)
+>       capture = diagnostic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:954: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45aef34f50>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+___________ test_failure_diagnostic_refuses_pending_completion[bank] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b648d9e50>
+owner_name = 'bank'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_failure_diagnostic_refuses_pending_completion(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+        """A real uncommitted completion cannot be exported by bypassing local quarantine."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        rig.population.step_population(rig.env)
+        prepared = prepare_close(rig)
+        assert prepared is not None and rig.bank._prepared is not None
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+>       capture = diagnostic_api(getattr(rig, owner_name))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4b70716d50>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+___ test_failure_diagnostic_preserves_native_local_failure_contract[shared] ____
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b648d9b50>
+scope = 'shared'
+
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_preserves_native_local_failure_contract(compiled: Any, monkeypatch: Any, scope: str) -> None:
+        """Private healthy=False snapshots remain exportable; failed shared calls still refuse."""
+        rig = make_parent(compiled, "rnd", scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        # Establish the new API before the deliberate failure, so RED is an absent API.
+>       capture = diagnostic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b64d4c470>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+________ test_failure_diagnostic_retains_completion_history[per_world] _________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45aeec8c80>
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_retains_completion_history(compiled: Any, monkeypatch: Any, scope: str) -> None:
+        """The diagnostic must retain real committed completion before the next begin clears it."""
+        rig = make_parent(compiled, "adaptive_rnd", scope)
+        begin(rig, retired=IDS[1:])
+        rig.population.step_population(rig.env)
+        prepared = prepare_close(rig)
+>       capture = diagnostic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:954: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45aef89220>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+______ test_failure_diagnostic_requires_runtime_failure[healthy-runtime] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af334f50>
+owner_name = 'runtime', reason = 'healthy'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("reason", ["healthy", "empty_participation"])
+    def test_failure_diagnostic_requires_runtime_failure(compiled: Any, monkeypatch: Any, owner_name: str, reason: str) -> None:
+        """A broad allow-failed switch must not admit healthy or different quarantine states."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        if reason != "healthy":
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       method = diagnostic_api(getattr(rig, owner_name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:984: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45aef96190>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+__ test_failure_diagnostic_preserves_native_local_failure_contract[per_world] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64d4c520>
+scope = 'per_world'
+
+    @pytest.mark.parametrize("scope", ["shared", "per_world"])
+    def test_failure_diagnostic_preserves_native_local_failure_contract(compiled: Any, monkeypatch: Any, scope: str) -> None:
+        """Private healthy=False snapshots remain exportable; failed shared calls still refuse."""
+        rig = make_parent(compiled, "rnd", scope)
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+        # Establish the new API before the deliberate failure, so RED is an absent API.
+>       capture = diagnostic_api(rig.runtime)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:1132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f4b64fdf960>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+_ test_failure_diagnostic_requires_runtime_failure[empty_participation-runtime] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f45af335850>
+owner_name = 'runtime', reason = 'empty_participation'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("reason", ["healthy", "empty_participation"])
+    def test_failure_diagnostic_requires_runtime_failure(compiled: Any, monkeypatch: Any, owner_name: str, reason: str) -> None:
+        """A broad allow-failed switch must not admit healthy or different quarantine states."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        if reason != "healthy":
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       method = diagnostic_api(getattr(rig, owner_name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:984: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f45a0de3850>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+________ test_failure_diagnostic_requires_runtime_failure[healthy-bank] ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4b64fdf6a0>
+owner_name = 'bank', reason = 'healthy'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    @pytest.mark.parametrize("reason", ["healthy", "empty_participation"])
+    def test_failure_diagnostic_requires_runtime_failure(compiled: Any, monkeypatch: Any, owner_name: str, reason: str) -> None:
+        """A broad allow-failed switch must not admit healthy or different quarantine states."""
+        rig = make_parent(compiled)
+        begin(rig, retired=IDS[1:])
+        if reason != "healthy":
+            rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+>       method = diagnostic_api(getattr(rig, owner_name))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:984: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owner = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f4b6492e4e0>
+
+    def diagnostic_api(owner: Any) -> Any:
+        method = getattr(owner, "failure_diagnostic_state", None)
+>       assert callable(method), "missing producer failure_diagnostic_state API"
+E       AssertionError: missing producer failure_diagnostic_state API
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:859: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[empty_participation-bank]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_unauthenticated_quarantine[runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_unauthenticated_quarantine[bank]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_restore-runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_restore-bank]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[shared-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-bank]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[install_restore-runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_is_not_restore_transport[install_restore-bank]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_callbacks_cannot_borrow_authority[False]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_callbacks_cannot_borrow_authority[True]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_full_current_payload[per_world-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_pending_completion[runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_retains_completion_history[shared]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_refuses_pending_completion[bank]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_preserves_native_local_failure_contract[shared]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_retains_completion_history[per_world]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[healthy-runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_preserves_native_local_failure_contract[per_world]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[empty_participation-runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_requires_runtime_failure[healthy-bank]
+============================= 30 failed in 11.11s ==============================

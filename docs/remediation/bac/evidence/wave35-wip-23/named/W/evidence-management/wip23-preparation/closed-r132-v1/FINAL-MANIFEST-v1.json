@@ -1,0 +1,33 @@
+{
+  "Q_members": 28,
+  "checks": 19,
+  "component": {
+    "bytes": 173738,
+    "path": "evidence-management/wip23-preparation/closed-r132-v1/r132-history-component-v1.json",
+    "root": "W",
+    "sha256": "0577bcd6d1061dafd59bf18d0f4335a73985399804ae4d7c4871a8a3a03d584c"
+  },
+  "files": [
+    {
+      "bytes": 7113,
+      "path": "evidence-management/wip23-preparation/closed-r132-v1/independent-probe-159.py.txt",
+      "root": "W",
+      "sha256": "127ef1d5bab81e0de8f3bc5fb2fdad5653717e7beb8b030c90747b229bf361f5"
+    },
+    {
+      "bytes": 173738,
+      "path": "evidence-management/wip23-preparation/closed-r132-v1/r132-history-component-v1.json",
+      "root": "W",
+      "sha256": "0577bcd6d1061dafd59bf18d0f4335a73985399804ae4d7c4871a8a3a03d584c"
+    },
+    {
+      "bytes": 41965,
+      "path": "evidence-management/wip23-preparation/closed-r132-v1/test_parent_intrinsic_handoff.py.txt",
+      "root": "W",
+      "sha256": "bbfdc1e8d60a609de6dacf7b68c0d6cb7e014df308dddddde5698ad2bf7fd673"
+    }
+  ],
+  "status": "CLOSED R132 MIXED HISTORY; NOT TERMINAL SEAL",
+  "unused_T21_UNRUN": 2,
+  "verification": "All selected reference hashes matched; exact Q membership observed. No APP/helper/Git execution."
+}

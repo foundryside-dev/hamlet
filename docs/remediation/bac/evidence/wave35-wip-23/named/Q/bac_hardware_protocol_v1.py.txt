@@ -1,0 +1,526 @@
+"""Closed BAC hardware transport v1; validation is never execution qualification.
+
+Only inert structural/reference validation lives here. P1-P5 must independently
+check bindings, resource arithmetic, actual observations and pinned case contracts.
+No application, subprocess, Torch, discovery or historical verifier imports.
+"""
+import datetime
+import hashlib
+import math
+import os
+from pathlib import Path
+import re
+import stat
+
+SCHEMA = "bac-hardware-v1"
+ROLES = ("controller", "worker", "spawn-child", "fork-guard", "discovery", "observer", "work-child")
+OBLIGATIONS = (
+    "process-custody", "source-freeze", "required-cases", "rng-custody", "strict-child-core",
+    "strict-child-producer", "fork-three-trials", "phase-pair", "cuda-fresh-initialization",
+    "cuda-nondefault-rng", "cuda-unindexed-switch", "cuda-cross-device", "cuda-async-completion",
+    "cuda-injected-failures", "b-route-leaf", "b-ten-poison-children", "parent-currentness",
+    "outer-completion", "recurrent-activation", "post-poison-b6",
+)
+TOOLS = ("protocol", "capture", "runner", "identity", "verifier", "children-verifier")
+DISPOSITIONS = ("successful", "completed-failed", "completed-unverified", "interrupted", "refused", "unrun")
+
+
+def enum(*values):
+    return ["enum", *values]
+
+
+def seq(item, minimum=0):
+    return ["list", item, minimum]
+
+
+def optional(item):
+    return ["nullable", item]
+
+
+def fact(item):
+    return ["fact", item]
+
+
+def observed(item):
+    return ["observed", item]
+
+
+def record(kind, **fields):
+    return {"schema": enum(SCHEMA), "kind": enum(kind), **fields}
+
+
+# This data is the exact field/type inventory exported into immutable metadata.
+TYPES = {
+    "reference": {"path": "path", "bytes": "uint", "sha256": "sha256"},
+    "budget": {"cpu_slots": "uint", "ram_bytes": "uint", "scratch_bytes": "uint", "scratch_inodes": "uint"},
+    "named-reference": {"name": "reference-name", "reference": "reference"},
+    "input": {"path": "path", "reference": "reference"},
+    "dependency": {"name": "text", "version": "text", "reference": "reference"},
+    "identity": {"pid": "positive-int", "ppid": "uint", "start_identity": "text", "host": "text", "boot_id": "text"},
+    "device": {"logical_index": "uint", "gpu_uuid": "text", "mig_uuid": optional("text"), "physical_parent_uuid": "text",
+               "model": "text", "vram_bytes": "positive-int", "isolation": enum("physical-exclusive", "shared-parent-exclusive"),
+               "mapping_provenance": "reference"},
+    "seed": {"policy": enum("explicit"), "python": "uint", "numpy": "uint", "torch": "uint", "cuda": seq("uint")},
+    "role": {"id": "id", "role": enum(*ROLES), "count": "positive-int", "replacement_limit": "uint",
+             "observer": enum("uninitialized", "guard-only", "work"), "intra_op": enum(1), "inter_op": "positive-int",
+             "debug": "bool", "torch_policy": enum("forbidden", "observe-loaded", "work"),
+             "cuda_policy": enum("forbidden", "no-initialize", "real-work"), "peak_cpu_slots": "positive-int",
+             "cpu_reservation_basis": enum("accepted-case-contract", "measured-bound"), "cpu_reservation_evidence": "reference"},
+    "obligation": {"id": "id", "kind": enum(*OBLIGATIONS), "required_cases": seq("text", 1), "contract": "reference",
+                   "validator": "reference", "evidence_class": enum("cpu", "cpu-standin", "real-cuda"), "minimum_devices": "uint"},
+    "job": {"id": "id", "profile": enum("cpu", "cuda"), "argv": seq("text", 1), "interpreter": "path", "cwd": "path",
+            "environment": "env", "seed": "seed", "required_collected_ids": seq("text", 1), "xdist_workers": "uint",
+            "roles": seq("role", 1), "budget": "budget", "devices": seq("device"), "serialization_domains": seq("text", 1),
+            "timeout_seconds": "positive-number", "termination_grace_seconds": "number",
+            "timing": enum("ordinary", "exclusive-host", "qualified-corunning"), "timing_contract": seq("reference"),
+            "prerequisites": seq("reference"), "obligations": seq("obligation", 1), "output": "path", "scratch": "path"},
+    "admission-request": record("admission-request", authorized_root="path", interpreter="reference", scratch_root="path",
+                                output_root="path", attempt_id="id", lease_root="path", profile=enum("cpu", "cuda"), requested_job_concurrency="positive-int",
+                                minimum="budget", reserve="budget", authorized_devices=seq("text"), requested_visibility="string",
+                                jobs=seq("job", 1), source_freeze="reference", tools=seq("named-reference", 6), dependencies="reference"),
+    "command": record("command", attempt_id="id", job_id="id", spec="reference", argv=seq("text", 1), cwd="path",
+                      environment="env", seed="seed", runner="reference", at="utc"),
+    "source-witness": record("source-witness", candidate="reference", source_freeze="reference", head="git-id", tree="git-id",
+                             inventory=seq("reference", 1), at="utc", process_identity="identity"),
+    "attempt-seal": record("attempt-seal", attempt_id="id", spec="reference", start="reference", disposition=enum(*DISPOSITIONS),
+                           job_results=seq("reference", 1), inventory=seq("reference", 1), at="utc", source_freeze="reference"),
+    "case-contract": record("case-contract", obligation_kind=enum(*OBLIGATIONS), required_cases=seq("text", 1), witness_schema="reference",
+                            validator="reference", roles=seq("role", 1), evidence_class=enum("cpu", "cpu-standin", "real-cuda"),
+                            minimum_devices="uint"),
+    "spec": record("spec", attempt_id="id", candidate="reference", tools=seq("named-reference", 6), dependencies="reference",
+                   admission="reference", profile=enum("cpu", "cuda"), authorized_root="path", output_root="path", scratch_root="path", lease_root="path",
+                   job_concurrency="positive-int", budget="budget", jobs=seq("job", 1), source_freeze="reference"),
+    "source-freeze": record("source-freeze", authorized_root="path", grant="reference", start="utc", end=observed("utc"),
+                            no_writer_barrier=enum(True), includes_untracked=enum(True), index_lock="path", retention="text"),
+    "candidate": record("candidate", head="git-id", tree="git-id", authorized_root="path", import_roots=seq("path", 1),
+                        inventory={name: seq("input", 1) for name in ("source", "tests", "configs", "scripts", "ratchet", "artifacts")},
+                        registry="reference", availability="reference", source_freeze="reference"),
+    "environment": record("environment", interpreter="reference", python_version="text", dependencies=seq("dependency", 1),
+                          environment="env", platform="text", torch_build=fact("text"), cuda_runtime=fact("text"), driver=fact("text")),
+    "cgroup": {"path": "path", "cpu_quota_us": fact("number"), "cpu_period_us": fact("number"),
+               "memory_limit_bytes": fact("uint"), "cpuset": fact(seq("uint"))},
+    "admission": record("admission", request="reference", discovery_process="reference", at="utc", profile=enum("cpu", "cuda"),
+                        disposition=enum("admitted", "refused"), reasons=seq("text"), cgroups=seq("cgroup", 1),
+                        affinity=fact(seq("uint", 1)), effective_cpu_capacity=fact("number"), host_ram_bytes=fact("uint"),
+                        limited_ram_bytes=fact("uint"), ram_current_bytes=fact("uint"), scratch_free_bytes=fact("uint"),
+                        scratch_free_inodes=fact("uint"), tmpdir="path", cpu_topology=fact("text"), numa_topology=fact("text"),
+                        gpu_topology=fact("text"), environment="reference", requested_visibility="string", effective_visibility="string",
+                        devices=seq("device"), competing_workloads=fact(seq("text")), probe_errors=seq("text"), minimum="budget",
+                        reserve="budget", admitted_budget="budget"),
+    "process": record("process", attempt_id="id", job_id="id", spec="reference", process_id="id", role_id="id", role=enum(*ROLES),
+                      phase=enum("start", "end"), identity="identity", parent_identity=seq("identity"), replacement_of=seq("identity"),
+                      interpreter="reference", argv=seq("text", 1), cwd="path", imports=seq("named-reference"), source_witness="reference",
+                      environment="env", devices=seq("device"), intra_op=fact("positive-int"), inter_op=fact("positive-int"), debug=fact("bool"),
+                      torch_observation=enum("not-loaded", "loaded-without-calls", "work", "forbidden-inherited-module-witness"),
+                      cuda_observation=enum("uninitialized", "initialized", "forbidden"), at="utc", monotonic_ns="uint",
+                      elapsed_ns=observed("uint")),
+    "attempt-start": record("attempt-start", attempt_id="id", spec="reference", at="utc", source_witness="reference",
+                            source_freeze="reference", retention="text"),
+    "outcome": {"case_id": "text", **{phase: enum("passed", "failed", "skipped", "xfailed", "xpassed", "not-run")
+                                      for phase in ("setup", "call", "teardown")}, "evidence": seq("reference", 1)},
+    "job-evidence": record("job-evidence", attempt_id="id", job_id="id", spec="reference", command="reference",
+                           collected_ids=seq("text"), outcomes=seq("outcome"), process_records=seq("reference"),
+                           obligation_records=seq("reference"), source_witnesses=seq("reference"), inventory=seq("reference", 1)),
+    "job-result": record("job-result", attempt_id="id", job_id="id", spec="reference", disposition=enum(*DISPOSITIONS),
+                         exit_code=optional("int"), signal="uint", reason="string", start="utc", end=observed("utc"),
+                         elapsed_ns=observed("uint"), command="reference", log="reference", collected_ids=seq("text"),
+                         outcomes=seq("outcome"), process_records=seq("reference"), obligation_records=seq("reference"),
+                         source_witnesses=seq("reference"), inventory=seq("reference", 1)),
+    "obligation-evidence": record("obligation-evidence", attempt_id="id", job_id="id", spec="reference", obligation_id="id",
+                                  obligation_kind=enum(*OBLIGATIONS), contract="reference", validator="reference", case_id="text",
+                                  evidence_class=enum("cpu", "cpu-standin", "real-cuda"), payload="reference",
+                                  producer_process="reference", related_attempts=seq("reference")),
+    "obligation-disposition": {"id": "id", "disposition": enum("satisfied", "unsatisfied", "unrun"), "reason": "string",
+                               "contract": "reference", "validator": "reference", "evidence": seq("reference"),
+                               "validator_receipt": seq("reference")},
+    "receipt": record("receipt", attempt_id="id", job_id="id", spec="reference", verifier="reference", at="utc", result="reference",
+                      custody=enum("satisfied", "unsatisfied"), test_outcome=enum(*DISPOSITIONS),
+                      hardware=enum("satisfied", "unsatisfied", "unrun"), obligations=seq("obligation-disposition", 1),
+                      reasons=seq("text"), inventory=seq("reference", 1)),
+}
+
+
+def _require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def _path(value):
+    _require(type(value) is str and value.startswith("/") and "\x00" not in value and "\\" not in value, "absolute POSIX path required")
+    _require(value == "/" or all(part not in ("", ".", "..") for part in value[1:].split("/")), "noncanonical or escaping path")
+
+
+def file_reference(path: Path) -> dict:
+    """Hash regular file via no-follow directory descriptors; never resolve aliases.
+
+    A stable opened inode and unchanged metadata are necessary, not a source-freeze
+    guarantee. Caller supplies the authorized no-writer interval and retention.
+    """
+    _require(isinstance(path, Path), "Path required")
+    raw = str(path)
+    _path(raw)
+    descriptors = []
+    try:
+        current = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+        descriptors.append(current)
+        parts = raw[1:].split("/")
+        for part in parts[:-1]:
+            current = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=current)
+            descriptors.append(current)
+        fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=current)
+        descriptors.append(fd)
+        before = os.fstat(fd)
+        _require(stat.S_ISREG(before.st_mode), "reference must be regular file")
+        digest = hashlib.sha256()
+        length = 0
+        while True:
+            chunk = os.read(fd, 1024 * 1024)
+            if not chunk:
+                break
+            length += len(chunk)
+            digest.update(chunk)
+        after = os.fstat(fd)
+        fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+        _require(all(getattr(before, key) == getattr(after, key) for key in fields) and length == after.st_size,
+                 "file changed while hashing")
+        # Rewalk from the namespace root: a retained parent fd alone can keep
+        # referring to a renamed directory after the raw path was substituted.
+        original_directories = descriptors[:-1]
+        check = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+        descriptors.append(check)
+        for index, part in enumerate(parts[:-1], 1):
+            check = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=check)
+            descriptors.append(check)
+            original_stat, current_stat = os.fstat(original_directories[index]), os.fstat(check)
+            _require((original_stat.st_dev, original_stat.st_ino) == (current_stat.st_dev, current_stat.st_ino),
+                     "reference ancestor replaced while hashing")
+        live = os.stat(parts[-1], dir_fd=check, follow_symlinks=False)
+        _require(all(getattr(after, key) == getattr(live, key) for key in fields), "reference replaced while hashing")
+        return {"path": raw, "bytes": length, "sha256": digest.hexdigest()}
+    except (OSError, OverflowError) as exc:
+        raise ValueError(f"unreadable/unsafe reference: {raw}") from exc
+    finally:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+
+
+def _check(rule, value, location):
+    if type(rule) is dict:
+        _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+        for key, child in rule.items():
+            _check(child, value[key], f"{location}.{key}")
+    elif type(rule) is list:
+        tag = rule[0]
+        if tag == "enum":
+            _require(any(type(value) is type(option) and value == option for option in rule[1:]), f"{location}: invalid enum")
+        elif tag == "list":
+            _require(type(value) is list and len(value) >= rule[2], f"{location}: list cardinality")
+            for index, item in enumerate(value):
+                _check(rule[1], item, f"{location}[{index}]")
+        elif tag == "nullable":
+            if value is not None:
+                _check(rule[1], value, location)
+        else:
+            fields = {"state", "value", "reason"} | ({"provenance"} if tag == "fact" else set())
+            _require(type(value) is dict and set(value) == fields, f"{location}: exact measurement fields")
+            allowed = ("measured", "unavailable", "unsupported", "unlimited") if tag == "fact" else ("measured", "unavailable")
+            _check(enum(*allowed), value["state"], location)
+            if value["state"] == "unlimited":
+                _require(location.endswith((".cpu_quota_us", ".memory_limit_bytes")), "unlimited only applies to cgroup limits")
+            _check("string", value["reason"], location)
+            if tag == "fact":
+                _check("reference", value["provenance"], location)
+            if value["state"] == "measured":
+                _check(rule[1], value["value"], location)
+                _require(value["reason"] == "", f"{location}: measured reason must be empty")
+            else:
+                _require(value["value"] is None and bool(value["reason"].strip()), f"{location}: missing fact requires reason and null")
+    elif rule in TYPES:
+        _check(TYPES[rule], value, location)
+        _semantic(rule, value)
+    elif rule in ("int", "uint", "positive-int"):
+        _require(type(value) is int, f"{location}: exact integer required")
+        _require(rule == "int" or value >= (1 if rule == "positive-int" else 0), f"{location}: integer range")
+    elif rule in ("number", "positive-number"):
+        _require(type(value) in (int, float) and 0 <= value <= 1.7976931348623157e308 and math.isfinite(value), f"{location}: finite nonnegative number required")
+        _require(rule != "positive-number" or value > 0, f"{location}: positive number required")
+    elif rule == "bool":
+        _require(type(value) is bool, f"{location}: exact bool required")
+    elif rule == "env":
+        _require(type(value) is dict, f"{location}: environment mapping required")
+        for key, item in value.items():
+            _require(type(key) is str and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key) is not None, "invalid environment key")
+            _check("string", item, location)
+    else:
+        _require(type(value) is str and "\x00" not in value, f"{location}: string required")
+        if rule == "path":
+            _path(value)
+        elif rule == "utc":
+            _require(re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z", value) is not None, "UTC microsecond timestamp required")
+            try:
+                datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+            except ValueError as exc:
+                raise ValueError("invalid UTC timestamp") from exc
+        elif rule in ("sha256", "git-id"):
+            _require(re.fullmatch("[0-9a-f]{64}" if rule == "sha256" else "[0-9a-f]{40}", value) is not None, "invalid digest")
+        elif rule == "id":
+            _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+        elif rule == "reference-name":
+            # Shared by generic tool labels and literal observed module aliases.
+            _require(1 <= len(value) <= 128 and (
+                re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None or
+                re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*", value) is not None),
+                "unsafe reference name")
+        elif rule == "text":
+            _require(bool(value.strip()), f"{location}: nonempty text required")
+        else:
+            _require(rule == "string", "unknown internal type")
+
+
+def _unique(items, key=None):
+    values = [item[key] for item in items] if key else items
+    _require(len(values) == len(set(values)), f"duplicate {key or 'value'}")
+
+
+def _within(path, root):
+    return path != root and Path(path).is_relative_to(Path(root))
+
+
+def _overlaps(first, second):
+    return first == second or _within(first, second) or _within(second, first)
+
+
+def _existing_directories(path):
+    descriptors = []
+    try:
+        current = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+        descriptors.append(current)
+        for part in Path(path).parts[1:]:
+            try:
+                current = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=current)
+            except FileNotFoundError:
+                return
+            descriptors.append(current)
+    except OSError as exc:
+        raise ValueError("existing layout component is not a no-follow directory") from exc
+    finally:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+
+
+def _layout(value):
+    roots = [value[key] for key in ("authorized_root", "output_root", "scratch_root", "lease_root")]
+    for index, root in enumerate(roots):
+        _existing_directories(root)
+        _require(not any(_overlaps(root, other) for other in roots[index + 1:]), "source/output/scratch/lease roots overlap")
+    for field, root_field in (("output", "output_root"), ("scratch", "scratch_root")):
+        attempt = str(Path(value[root_field]) / value["attempt_id"])
+        paths = [job[field] for job in value["jobs"]]
+        for index, path in enumerate(paths):
+            _existing_directories(path)
+            _require(path == str(Path(attempt) / value["jobs"][index]["id"]), "job destination must equal root/attempt_id/job_id")
+            _require(not any(_overlaps(path, other) for other in paths[index + 1:]), "job destinations overlap")
+    for job in value["jobs"]:
+        _require(job["cwd"] == value["authorized_root"] or _within(job["cwd"], value["authorized_root"]), "cwd outside authorized root")
+        _require(value["profile"] == "cuda" or job["profile"] == "cpu", "CUDA job in CPU request/spec")
+
+
+def _planned_budget(jobs, concurrency, budget):
+    _require(concurrency <= len(jobs), "job concurrency exceeds plan")
+    for key in budget:
+        reservations = sorted((job["budget"][key] for job in jobs), reverse=True)
+        required = sum(reservations[:concurrency]) if key in ("cpu_slots", "ram_bytes") else sum(reservations)
+        _require(required <= budget[key], f"planned {key} exceeds budget")
+
+
+def _devices(devices):
+    _unique(devices, "logical_index")
+    _unique(devices, "gpu_uuid")
+    for device in devices:
+        if device["mig_uuid"] is None:
+            _require(device["gpu_uuid"] == device["physical_parent_uuid"] and device["isolation"] == "physical-exclusive",
+                     "whole-device mapping must name physical parent")
+        else:
+            _require(device["isolation"] == "shared-parent-exclusive", "MIG parent lease required")
+
+
+def _semantic(kind, value):
+    if kind == "reference":
+        _require(file_reference(Path(value["path"])) == value, "reference digest/length mismatch")
+    elif kind == "role":
+        if value["role"] == "fork-guard":
+            _require(value["observer"] == "guard-only" and value["torch_policy"] == value["cuda_policy"] == "forbidden",
+                     "fork guard prohibits Torch and CUDA")
+        if value["observer"] == "uninitialized":
+            _require(value["cuda_policy"] == "no-initialize" and value["torch_policy"] != "work", "observer must not initialize")
+    elif kind == "obligation":
+        _unique(value["required_cases"])
+        if value["kind"].startswith("cuda-") or value["kind"] == "post-poison-b6":
+            minimum = 2 if value["kind"] in ("cuda-unindexed-switch", "cuda-cross-device") else 1
+            _require(value["evidence_class"] == "real-cuda" and value["minimum_devices"] >= minimum, "real CUDA obligation required")
+        elif value["evidence_class"] != "real-cuda":
+            _require(value["minimum_devices"] == 0, "CPU evidence has no hardware minimum")
+    elif kind == "job":
+        _require(value["argv"][0] == value["interpreter"], "argv interpreter differs")
+        for key in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
+            _require(value["environment"].get(key) == "1", "one-thread environment required")
+        _unique(value["required_collected_ids"])
+        _unique(value["roles"], "id")
+        _unique(value["obligations"], "id")
+        kinds = {obligation["kind"] for obligation in value["obligations"]}
+        _require({"process-custody", "source-freeze", "required-cases"} <= kinds, "mandatory common obligations missing")
+        for role in value["roles"]:
+            if role["role"] in ("spawn-child", "work-child", "fork-guard"):
+                required = {"fork-three-trials"} if role["role"] == "fork-guard" else {"strict-child-core", "strict-child-producer"}
+                _require(bool(kinds & required), "child role requires owned strict contract")
+                _require(role["inter_op"] == 5 and role["debug"] is True, "strict child inter-op/debug contract")
+        _unique(value["serialization_domains"])
+        _devices(value["devices"])
+        workers = sum(role["count"] for role in value["roles"] if role["role"] == "worker")
+        controllers = sum(role["count"] for role in value["roles"] if role["role"] == "controller")
+        _require(workers == value["xdist_workers"] and controllers == 1, "controller/worker inventory mismatch")
+        _require(value["budget"]["cpu_slots"] >= sum((role["count"] + role["replacement_limit"]) * role["peak_cpu_slots"]
+                                                   for role in value["roles"]), "nested peak CPU reservations missing")
+        if value["profile"] == "cpu":
+            _require(value["environment"].get("CUDA_VISIBLE_DEVICES") == "" and not value["devices"], "CPU profile must hide CUDA")
+            _require(not any(o["evidence_class"] == "real-cuda" for o in value["obligations"]), "CPU cannot discharge real CUDA")
+        else:
+            _require(bool(value["devices"]) and bool(value["environment"].get("CUDA_VISIBLE_DEVICES")), "CUDA allocation/visibility missing")
+        for obligation in value["obligations"]:
+            _require(set(obligation["required_cases"]) <= set(value["required_collected_ids"]), "obligation case missing from selection")
+            _require(obligation["minimum_devices"] <= len(value["devices"]), "hardware minimum not met")
+        _require(len(value["timing_contract"]) == (1 if value["timing"] == "qualified-corunning" else 0), "timing contract cardinality")
+    elif kind == "case-contract":
+        _unique(value["required_cases"])
+        _unique(value["roles"], "id")
+        if value["obligation_kind"].startswith("cuda-") or value["obligation_kind"] == "post-poison-b6":
+            minimum = 2 if value["obligation_kind"] in ("cuda-unindexed-switch", "cuda-cross-device") else 1
+            _require(value["evidence_class"] == "real-cuda" and value["minimum_devices"] >= minimum, "real CUDA contract required")
+    elif kind == "admission-request":
+        _layout(value)
+        _planned_budget(value["jobs"], value["requested_job_concurrency"], value["minimum"])
+        _unique(value["authorized_devices"])
+        _unique(value["jobs"], "id")
+        _unique(value["tools"], "name")
+        _require({tool["name"] for tool in value["tools"]} == set(TOOLS), "required tools missing")
+        if value["profile"] == "cuda":
+            _require(bool(value["authorized_devices"]) and bool(value["requested_visibility"]), "CUDA request requires authorization")
+        else:
+            _require(not value["authorized_devices"] and value["requested_visibility"] == "", "CPU request must hide CUDA")
+    elif kind == "spec":
+        _unique(value["jobs"], "id")
+        _unique(value["tools"], "name")
+        _require({tool["name"] for tool in value["tools"]} == set(TOOLS), "missing/unknown pinned tool")
+        _layout(value)
+        _planned_budget(value["jobs"], value["job_concurrency"], value["budget"])
+        if value["profile"] == "cuda":
+            _require(any(job["profile"] == "cuda" for job in value["jobs"]), "CUDA spec has no CUDA jobs")
+    elif kind == "source-freeze":
+        if value["end"]["state"] == "measured":
+            _require(value["end"]["value"] >= value["start"], "source-freeze end precedes start")
+    elif kind == "candidate":
+        _unique(value["import_roots"])
+        for root in value["import_roots"]:
+            _require(_within(root, value["authorized_root"]), "import root escape")
+        for entries in value["inventory"].values():
+            _unique(entries, "path")
+            for entry in entries:
+                _require(_within(entry["path"], value["authorized_root"]), "candidate input escape")
+                _require(entry["path"] == entry["reference"]["path"], "candidate reference must bind actual inventory input")
+    elif kind == "environment":
+        _unique(value["dependencies"], "name")
+    elif kind == "admission":
+        _devices(value["devices"])
+        _unique(value["cgroups"], "path")
+        for key in ("affinity",):
+            if value[key]["state"] == "measured":
+                _unique(value[key]["value"])
+        if value["disposition"] == "admitted":
+            _require(not value["reasons"] and not value["probe_errors"], "admission errors cannot admit")
+            required = ("affinity", "effective_cpu_capacity", "host_ram_bytes", "limited_ram_bytes", "ram_current_bytes",
+                        "scratch_free_bytes", "scratch_free_inodes", "competing_workloads")
+            _require(all(value[key]["state"] == "measured" for key in required), "required admission fact unavailable")
+            _require(value["effective_cpu_capacity"]["value"] > 0, "zero CPU capacity")
+            if value["profile"] == "cuda":
+                _require(bool(value["devices"]) and bool(value["effective_visibility"]), "CUDA admission lacks mapped devices")
+        else:
+            _require(bool(value["reasons"]), "refusal requires reasons")
+        if value["profile"] == "cpu":
+            _require(not value["devices"] and value["effective_visibility"] == "", "CPU admission visibility")
+    elif kind == "process":
+        _devices(value["devices"])
+        _unique(value["imports"], "name")
+        _require(len(value["parent_identity"]) <= 1 and len(value["replacement_of"]) <= 1, "identity cardinality")
+        if value["phase"] == "start":
+            _require(value["elapsed_ns"]["state"] == "unavailable", "start cannot invent elapsed")
+        else:
+            _require(value["elapsed_ns"]["state"] == "measured", "end witness requires observed elapsed")
+        if value["intra_op"]["state"] == "measured":
+            _require(value["intra_op"]["value"] == 1, "one-thread process baseline")
+        if value["role"] == "fork-guard":
+            _require(value["torch_observation"] == "forbidden-inherited-module-witness" and value["cuda_observation"] == "forbidden",
+                     "fork observer cannot call Torch/CUDA")
+            _require(all(value[key]["state"] == "unavailable" for key in ("intra_op", "inter_op", "debug")), "guard facts cannot be probed")
+    elif kind == "job-evidence":
+        _unique(value["collected_ids"])
+        _unique(value["outcomes"], "case_id")
+        _require({outcome["case_id"] for outcome in value["outcomes"]} <= set(value["collected_ids"]), "uncollected evidence outcome")
+    elif kind == "job-result":
+        _unique(value["collected_ids"])
+        _unique(value["outcomes"], "case_id")
+        _require({outcome["case_id"] for outcome in value["outcomes"]} <= set(value["collected_ids"]), "uncollected outcome")
+        if value["end"]["state"] == "measured":
+            _require(value["end"]["value"] >= value["start"], "end precedes start")
+        completed = value["disposition"] in ("successful", "completed-failed", "completed-unverified")
+        if completed:
+            _require(type(value["exit_code"]) is int and value["end"]["state"] == value["elapsed_ns"]["state"] == "measured",
+                     "completed result requires exit/end/elapsed")
+        if value["disposition"] == "successful":
+            _require(value["exit_code"] == 0 and value["signal"] == 0 and value["reason"] == "", "success status inconsistent")
+            _require(bool(value["outcomes"]) and len(value["outcomes"]) == len(value["collected_ids"]), "success missing required outcomes")
+            _require(all(outcome[phase] == "passed" for outcome in value["outcomes"] for phase in ("setup", "call", "teardown")),
+                     "nonpassing required phase")
+            _require(bool(value["process_records"]) and bool(value["source_witnesses"]) and bool(value["obligation_records"]),
+                     "success missing mandatory witnesses")
+        else:
+            _require(bool(value["reason"].strip()), "non-success requires reason")
+        if value["disposition"] in ("refused", "unrun"):
+            _require(value["exit_code"] is None and value["signal"] == 0, "nonexecution cannot have process exit/signal")
+            _require(value["end"]["state"] == value["elapsed_ns"]["state"] == "unavailable", "nonexecution cannot invent finish/duration")
+            _require(not any(value[key] for key in ("collected_ids", "outcomes", "process_records", "obligation_records")),
+                     "nonexecution cannot carry job execution observations")
+        if value["disposition"] == "completed-failed":
+            _require(value["exit_code"] > 0 and value["signal"] == 0, "ordinary nonzero exit required for completed-failed")
+        if value["disposition"] == "completed-unverified":
+            _require(value["exit_code"] == 0 and value["signal"] == 0, "completed-unverified requires ordinary zero exit")
+    elif kind == "obligation-evidence":
+        if value["obligation_kind"].startswith("cuda-") or value["obligation_kind"] == "post-poison-b6":
+            _require(value["evidence_class"] == "real-cuda", "CPU stand-in cannot be hardware evidence")
+        _require(len(value["related_attempts"]) == (2 if value["obligation_kind"] == "phase-pair" else 0), "phase pair requires two references")
+        if value["related_attempts"]:
+            _unique(value["related_attempts"], "path")
+    elif kind == "obligation-disposition":
+        if value["disposition"] == "satisfied":
+            _require(bool(value["evidence"]) and len(value["validator_receipt"]) == 1 and value["reason"] == "",
+                     "satisfaction requires case evidence and independent validator receipt")
+        else:
+            _require(bool(value["reason"].strip()) and not value["validator_receipt"], "unsatisfied/unrun must state reason")
+    elif kind == "receipt":
+        _unique(value["obligations"], "id")
+        if value["custody"] == "satisfied" or value["hardware"] == "satisfied":
+            _require(all(item["disposition"] == "satisfied" for item in value["obligations"]), "receipt cannot hide unmet obligations")
+
+
+def validate_record(kind: str, value: dict) -> None:
+    """Validate exact shape and referenced bytes, not case evidence truth.
+
+    ValueError is the public rejection type. Referential correspondence, receipt
+    authenticity and accepted per-case validators remain mandatory P1-P5 work.
+    """
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+    _check(kind, value, kind)
+
+
+def validate_spec(spec: dict) -> None:
+    """Validate normalized launch contract; never launch or certify it."""
+    validate_record("spec", spec)

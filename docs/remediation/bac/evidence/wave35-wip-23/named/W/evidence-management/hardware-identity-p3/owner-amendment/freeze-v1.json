@@ -1,0 +1,101 @@
+{
+  "actual_git_identity": {
+    "candidate": {
+      "bytes": 208716,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r127-candidate.json",
+      "sha256": "14576e4568e86ee6f9cbc86d3da44d1f55693ba1eea8a572a78e2bf9350fc069"
+    },
+    "head": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+    "tree": "60c786588781251f5dcadff6067ecbbf3cfe4cfb"
+  },
+  "at": "2026-11-14T09:24:37.269580+00:00",
+  "attempt_inventory": {
+    "bytes": 44152,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/attempt-inventory-v1.json",
+    "sha256": "3a0538d8bcdddb3cd980238749765da07fec4477215fce4decebe7a1636250a6"
+  },
+  "body_inventory": [
+    {
+      "lines": 60,
+      "reference": {
+        "bytes": 2917,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      }
+    },
+    {
+      "lines": 526,
+      "reference": {
+        "bytes": 34654,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "lines": 1067,
+      "reference": {
+        "bytes": 65961,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+        "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+      }
+    },
+    {
+      "lines": 1054,
+      "reference": {
+        "bytes": 62678,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+        "sha256": "20129c680aa03ad1fa67b121e6ace69c477b54d75e4da66b673b9fad10ae45f8"
+      }
+    },
+    {
+      "lines": 998,
+      "reference": {
+        "bytes": 45937,
+        "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py",
+        "sha256": "452e427b945475e050b35273b6bb44effe3ade6ef96629c4382c2d68591ee727"
+      }
+    }
+  ],
+  "ceiling": 3878,
+  "final_execution": {
+    "bytes": 3828,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/execution.json",
+    "sha256": "dd7a2c7ef8fbea0eb1c06528df63e9d78fa1f9885b9b3186aeca13ccf10e8fdc"
+  },
+  "final_log": {
+    "bytes": 194,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/output.log",
+    "sha256": "ff8dd2742138828614639de84b059074ea30d3fd7d11afbc50c6895e9fac1164"
+  },
+  "interface": {
+    "bytes": 9320,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/interface-contract-v3.json",
+    "sha256": "653bfae00ddc615ee4532c612a8e34cbeb8a01809f75488a268ae1cf7d0825d1"
+  },
+  "output_retention": {
+    "bytes": 364873,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/output-retention-v1.json",
+    "sha256": "8d5059c21ae4a4375d436837235663a7a96c99e5a9ed16989b3ee6facbb51883"
+  },
+  "predecessor": {
+    "bytes": 4013,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/freeze-v2.json",
+    "sha256": "536efffcd437970d8e6831100cb5697e3a9f3c606b60154cf7829f6dbba1b8af"
+  },
+  "result": {
+    "deselected": 3,
+    "exit_code": 0,
+    "passed": 96,
+    "pid": 213822
+  },
+  "schema": "bac-p3-owner-amendment-freeze-v1",
+  "status": "FROZEN; independent source/acceptance review required; not root adopted",
+  "unrun": [
+    "Actual P2 owner/raw-v2/receipt correspondence integration",
+    "Actual P2 owned-process-group backstop after abrupt guard death with live sampler",
+    "Actual P4/P5 current strict payload/return/custody validation",
+    "APP producer qualification and real Torch/CUDA/server execution"
+  ],
+  "whole_body_count": 5,
+  "whole_body_lines": 3705
+}

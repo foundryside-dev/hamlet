@@ -1,0 +1,59 @@
+{
+  "accounting": "16 Q-derived check/attempt records, including8 UNRUN templates, plus1 separately retained failed capture check. Q top-level set24. Counts across rounds/selections are not summed. Original package28/38/66 unchanged.",
+  "finite_next_work": [
+    "Root repeat original pace case on final repaired candidate with full postflight.",
+    "Root retain R126 and R129 failures and assess repaired caller/supplier evidence independently.",
+    "Root provide any missing exact execution-subtree/helper invocation provenance required by the eventual finite seal.",
+    "Root integrate P3 separately, freeze finite contract/subject/independent review/receipt, then run bounded selector; no final seal produced here."
+  ],
+  "prior_manifest": {
+    "bytes": 1902,
+    "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/FINAL-MANIFEST-v1.json",
+    "root": "W",
+    "sha256": "1727127fa5cb3b77a86077b67ae29e32915da1bf069a1f461bf69092e085c468"
+  },
+  "provenance_limitations": [
+    "Historical job results lack absolute UTC; outer launcher UTC retained separately.",
+    "Execution subtree Git identities not extracted: no Git commands authorized. Own candidate manifests and their source_files hashes bind each attempt; root must retain or supply exact recorded subtree identities before any seal requiring them.",
+    "Original process identity witnesses lack literal attempt_id and PID; no synthetic PID/attempt assertions added.",
+    "Helper dependencies retain observed hashes and original recorded harness/script hashes. Observation alone does not establish historical invocation of each helper; root reviews named closure before terminal seal.",
+    "R128 original pace1 PASS retains in-run identity and source/result witness but lacks root postflight. No historical rerun or retrospective custody assertion."
+  ],
+  "r129_root_disposition": {
+    "bytes": 1881,
+    "path": "evidence-management/pop-standalone-step/r129-root-red-disposition-v1.json",
+    "root": "W",
+    "sha256": "15d294764393a7bb4f3a592182aef4a74b943e8c0aea660875321432ea373645"
+  },
+  "source_resolution": {
+    "bytes": 1221,
+    "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/SOURCE-ALIAS-GAP-RESOLUTION-v1.json",
+    "root": "W",
+    "sha256": "d00e8a02b8165ca89a65c85422f6cc5169af028d1b1cfb849cc7f0a1ec673b51"
+  },
+  "status": "ADDITIVE CLOSED-HISTORY SUPPLEMENT",
+  "supplemental_checks": [
+    {
+      "absolute_time_unavailable_reason": "Disposition at field is observation time, not command start/end.",
+      "candidate_manifest": null,
+      "candidate_unavailable_reason": "Failed before candidate capture; successful later R128 manifest cannot substitute.",
+      "check": "r128-capture-attempt-1",
+      "check_kind": "capture",
+      "counts": null,
+      "duration_seconds": null,
+      "ended_at": null,
+      "exit_code": null,
+      "qualifying": false,
+      "record": {
+        "bytes": 2264,
+        "path": "evidence-management/pop-standalone-step/r128-capture-failure-v1.json",
+        "root": "W",
+        "sha256": "1f7b2464104b42cd598c3d9397f08774e4841ff791b18ce303bc6163240e7126"
+      },
+      "scope": "Original failed capture retained without fabricating absent process facts; later successful capture stdout remains supporting evidence.",
+      "started_at": null,
+      "status": "FAILED",
+      "terminal_attempt": "r128-capture-attempt-1"
+    }
+  ]
+}

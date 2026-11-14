@@ -1,0 +1,181 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_tree": "c1d97d11ba34a87357da67d1f506040fd1d3c9f3",
+  "unique_node_phase_failures": 41,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where False = callable(None)",
+      "count": 41,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[auth]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[pending]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[empty_participation]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-count_based]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

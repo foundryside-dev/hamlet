@@ -1,0 +1,85 @@
+{
+  "status": "TEST-ONLY frozen; no APP execution or collection",
+  "plan_sha256": "babab7675f4463b66ff6a6ed5d0496997588280d675e0446c7b1bd1dad5f13b6",
+  "files": [
+    {
+      "path": "src/townlet/config/exploration_policy.py",
+      "sha256": "e08309e0c55ca0d757fc33c926a21ee266b2935082826c14994208d6aebc3191",
+      "lines": 1333
+    },
+    {
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "sha256": "8da80d4c87f666f6df7a4260ca16dd8feeb460ffa83e6713904e739598b667cc",
+      "lines": 1467
+    },
+    {
+      "path": "src/townlet/exploration/parent_custody.py",
+      "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f",
+      "lines": 239
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872",
+      "lines": 1348
+    }
+  ],
+  "ordinary_nodes": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-shared-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[initial-per_world-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-shared-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[available-per_world-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-shared-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_full_payload[runtime_failure-per_world-icm]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-False]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[runtime-True]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-False]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_restore_refusal[bank-True]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[pending]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[empty_participation]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_refusal_controls[auth]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[False]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_callback_guard[True]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[shared]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_native_failure_contract[per_world]"
+  ],
+  "isolated_poison_nodes": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_completion_uncertainty"
+  ],
+  "poison_environment": {
+    "BAC_PARENT_C1_POISON_CASE": "generic_diagnostic_completion"
+  },
+  "poison_witness": "parent-c1-generic_diagnostic_completion.json",
+  "original_1165_lines_unchanged": true,
+  "body_lines_with_probe": 4451,
+  "body_count": 5,
+  "validation": [
+    "AST parse PASS",
+    "Ruff PASS",
+    "Black formatted only appended tests; original prefix byte-identical"
+  ],
+  "note": "AST-derived parameter ids; root must bind actual collection. Prior six poison roles unchanged and require separate isolated schedules."
+}

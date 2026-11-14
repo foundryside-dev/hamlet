@@ -1,0 +1,25 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_tree": "e3d2274b34a6c8a6620a803fdf041d05151b66a0",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: runtime failure quarantine required",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_failed_step_diagnostic_preserves_available_bank[cleanup-before-quarantine]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_failed_step_diagnostic_preserves_available_bank[prepared]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

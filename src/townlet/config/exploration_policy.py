@@ -1128,6 +1128,17 @@ class ExplorationRuntime:
             _runtime_require(payload.hex() == item[0], "parent outcome payload must be canonical hex")
 
     def _parse(self, state: Any, *, initialization: bool) -> tuple[Any, dict[str, Any], _ParentCadence]:
+        if isinstance(state, Mapping):
+            _runtime_require(
+                state.get("schema") not in ("exploration-runtime-failure-diagnostic-v1", "exploration-runtime-diagnostic-v1"),
+                "diagnostics are not restore transport",
+            )
+            bank = state.get("bank")
+            if isinstance(bank, Mapping):
+                _runtime_require(
+                    bank.get("schema") not in ("curiosity-bank-failure-diagnostic-v1", "curiosity-bank-diagnostic-v1"),
+                    "BANK diagnostics are not restore transport",
+                )
         _runtime_keys(state, ("schema", "policy", "bank", "selector", "cadence"), "exploration runtime")
         _runtime_require(state["schema"] == "exploration-runtime-state-v1", "unsupported exploration runtime schema")
         policy = ResolvedExplorationPolicy.from_dict(state["policy"])
@@ -1173,11 +1184,30 @@ class ExplorationRuntime:
 
     @_runtime_operation
     def checkpoint_state(self) -> dict[str, Any]:
+        return self._checkpoint_payload("checkpoint_state")
+
+    @_runtime_operation
+    def failure_diagnostic_state(self) -> dict[str, Any]:
+        """Full current observation of local runtime failure; never a resume payload."""
+        state = self._checkpoint_payload("failure_diagnostic_state")
+        state["schema"] = "exploration-runtime-failure-diagnostic-v1"
+        state["failure_reason"] = "runtime_failure"
+        return state
+
+    @_runtime_operation
+    def diagnostic_state(self) -> dict[str, Any]:
+        """Full nonresumable observation; BANK availability does not assert child health."""
+        state = self._checkpoint_payload("diagnostic_state")
+        state["schema"] = "exploration-runtime-diagnostic-v1"
+        state["failure_reason"] = state["bank"]["failure_reason"]
+        return state
+
+    def _checkpoint_payload(self, bank_method: str) -> dict[str, Any]:
         selector, cadence = self._state
         owned_cadence = self._codec.owned(cadence)
         selector_state = selector.checkpoint_state()
         self._validate_selector_cadence(self._policy, selector_state, owned_cadence)
-        bank_state = self._bank_call("checkpoint_state")
+        bank_state = self._bank_call(bank_method)
         return dict(
             schema="exploration-runtime-state-v1",
             policy=self._policy.to_dict(),

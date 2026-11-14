@@ -1,0 +1,53 @@
+import copy
+import itertools
+import string
+import pytest
+from test_bac_hardware_protocol_v1 import protocol, records
+
+LETTERS = string.ascii_letters
+DIGITS = string.digits
+
+def expected(name):
+    if type(name) is not str or not 1 <= len(name) <= 128:
+        return False
+    generic = name[0] in LETTERS + DIGITS and all(c in LETTERS + DIGITS + "_.-" for c in name)
+    segments = name.split(".")
+    module = all(s and s[0] in LETTERS + "_" and all(c in LETTERS + DIGITS + "_" for c in s) for s in segments)
+    return generic or module
+
+def test_exhaustive_short_scalar_language(protocol):
+    count = 0
+    for length in range(5):
+        for parts in itertools.product("aZ0_.-/é\n", repeat=length):
+            name = "".join(parts)
+            try:
+                protocol._check("reference-name", name, "independent")
+                accepted = True
+            except ValueError:
+                accepted = False
+            assert accepted == expected(name), repr(name)
+            count += 1
+    assert count == 7381
+
+@pytest.mark.parametrize("name", ["_a._B0", "_A", "_a", "_" * 128, "_" * 129, "a" * 129,
+    "_a.0", "_a.-b", "_a..b", "_a.é", "_a\t", "_a\r", "_a\x00", b"_a", False, 1.0])
+def test_public_domain_and_exact_preservation(protocol, records, name):
+    value = records["process"]
+    value["imports"] = [{"name": name, "reference": records["reference"]}]
+    before = copy.deepcopy(value)
+    if expected(name):
+        protocol.validate_record("process", value)
+    else:
+        with pytest.raises(ValueError):
+            protocol.validate_record("process", value)
+    assert value == before
+
+def test_case_sensitive_alias_identity(protocol, records):
+    value = records["process"]
+    value["imports"] = [{"name": n, "reference": records["reference"]} for n in ("_a", "_A", "a")]
+    before = copy.deepcopy(value)
+    protocol.validate_record("process", value)
+    assert value == before
+    value["imports"].append(copy.deepcopy(value["imports"][0]))
+    with pytest.raises(ValueError, match="duplicate name"):
+        protocol.validate_record("process", value)

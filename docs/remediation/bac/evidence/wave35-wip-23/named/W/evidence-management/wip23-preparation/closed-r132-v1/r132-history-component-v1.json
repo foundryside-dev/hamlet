@@ -1,0 +1,4133 @@
+{
+  "accounting": "25POP PASS;133ordinary PASS;7 isolated poison PASS;36independent PASS/12warnings; collections25/133/36. Overlapping selections not summed. Ruff/Black/defaults PASS; mypy14FAIL (12prior+2POP helper).",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "collected_count": 140,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-k",
+            "not test_body_and_completion_failure_identity and not test_child_false_outer_true_preserves_bank_health and not test_child_true_outer_false_retains_bank_uncertainty and not test_install_completion_failure_cannot_restore_healthy_latch and not test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection and not test_generic_diagnostic_completion_uncertainty",
+            "--collect-only",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-ordinary-collection-attempt-1"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 653,
+              "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection-custody.json",
+              "root": "Q",
+              "sha256": "1bbdffb660fb97357c25f7aacbe6f89f925950f1abc79d6fcb67d275a85e9416",
+              "type": "file"
+            },
+            {
+              "bytes": 1418,
+              "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection-result.json",
+              "root": "Q",
+              "sha256": "5fc9a6cc214bb0fa07666d5219aa5c42a536307310289f97c7d646fca61fd80f",
+              "type": "file"
+            },
+            {
+              "bytes": 12086,
+              "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection.log",
+              "root": "Q",
+              "sha256": "02a2da5b1ed08c67e0fc154d468f1f145bcaa7ff32aa7ecb67528dc99a1d556e",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.960659842996392,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-ordinary-collection-attempt-1--c1-ordinary-collection",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-ordinary-collection-attempt-1--c1-ordinary-collection",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-ordinary-collection-attempt-1--c1-ordinary-collection",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-ordinary-collection-attempt-1--c1-ordinary-collection",
+          "log_paths": [
+            {
+              "bytes": 12086,
+              "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection.log",
+              "root": "Q",
+              "sha256": "02a2da5b1ed08c67e0fc154d468f1f145bcaa7ff32aa7ecb67528dc99a1d556e"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 927,
+            "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "649fd3851c4a07151649bea3e515afaeea2915a524465303a7228071a75a4eec"
+          },
+          "path": "wave35-r132-c1-ordinary-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1418,
+            "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection-result.json",
+            "root": "Q",
+            "sha256": "5fc9a6cc214bb0fa07666d5219aa5c42a536307310289f97c7d646fca61fd80f"
+          },
+          "record_id": "c1-ordinary-collection",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 653,
+            "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection-custody.json",
+            "root": "Q",
+            "sha256": "1bbdffb660fb97357c25f7aacbe6f89f925950f1abc79d6fcb67d275a85e9416"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-ordinary-collection-attempt-1--c1-ordinary-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-ordinary-collection-attempt-1--c1-ordinary-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 2,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "-k",
+            "not test_body_and_completion_failure_identity and not test_child_false_outer_true_preserves_bank_health and not test_child_true_outer_false_retains_bank_uncertainty and not test_install_completion_failure_cannot_restore_healthy_latch and not test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection and not test_generic_diagnostic_completion_uncertainty",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-ordinary-runtime-attempt-1"
+          ],
+          "counts": {
+            "passed": 133,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c",
+              "type": "file"
+            },
+            {
+              "bytes": 651,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime-custody.json",
+              "root": "Q",
+              "sha256": "2962ea071147c7ac7ec14860e5dd44edce10b1c67d97e8fff7c00a1921260801",
+              "type": "file"
+            },
+            {
+              "bytes": 1433,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime-result.json",
+              "root": "Q",
+              "sha256": "955afe4bccce05e5d0ca360b2471ce1eca2544e348c25379a03d144bc441d996",
+              "type": "file"
+            },
+            {
+              "bytes": 683,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime.log",
+              "root": "Q",
+              "sha256": "16cf61daa84ad82573a8cb813ed5150b3e28f4c6c29c95a95ab77575ea1fbe85",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 35.2028681160009,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-ordinary-runtime-attempt-1--c1-ordinary-runtime",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-ordinary-runtime-attempt-1--c1-ordinary-runtime",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-ordinary-runtime-attempt-1--c1-ordinary-runtime",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-ordinary-runtime-attempt-1--c1-ordinary-runtime",
+          "log_paths": [
+            {
+              "bytes": 683,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime.log",
+              "root": "Q",
+              "sha256": "16cf61daa84ad82573a8cb813ed5150b3e28f4c6c29c95a95ab77575ea1fbe85"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 921,
+            "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-runtime-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "8a7b1aa5456600f8abfe3c6a819eee35e47642b8f08885e1f5ef2759a54aeda2"
+          },
+          "path": "wave35-r132-c1-ordinary-runtime-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 1433,
+            "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime-result.json",
+            "root": "Q",
+            "sha256": "955afe4bccce05e5d0ca360b2471ce1eca2544e348c25379a03d144bc441d996"
+          },
+          "record_id": "c1-ordinary-runtime",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 651,
+            "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime-custody.json",
+            "root": "Q",
+            "sha256": "2962ea071147c7ac7ec14860e5dd44edce10b1c67d97e8fff7c00a1921260801"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-ordinary-runtime-attempt-1--c1-ordinary-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-ordinary-runtime-attempt-1--c1-ordinary-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[distinct]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-poison-body-distinct-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 2661,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/parent-c1-body_distinct.json",
+              "root": "Q",
+              "sha256": "e5f894cbd1ffb68571d7ad79157bce8f4ed83e164b60c99e058c51b03bcf52f1",
+              "type": "file"
+            },
+            {
+              "bytes": 655,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json",
+              "root": "Q",
+              "sha256": "8a509c3a00935281ab95c1552e340fa1053f7253fd391d55858c85dffeb4914b",
+              "type": "file"
+            },
+            {
+              "bytes": 1068,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+              "root": "Q",
+              "sha256": "9a77f262c2be7e482556476d95acc0f1f6b1ee03f24be429eccd60ffc46fc8f0",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct.log",
+              "root": "Q",
+              "sha256": "7aefd4ddbeaaf804c459e37c2130c473d0f5920b7aefdfb939b47dc1a2621192",
+              "type": "file"
+            },
+            {
+              "bytes": 1329,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "5c6bcd2e4a581b08e05d5456452321309e008ebb376f7efb345c77bba189a947",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 655,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "8a509c3a00935281ab95c1552e340fa1053f7253fd391d55858c85dffeb4914b",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 10.218363872991176,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct.log",
+              "root": "Q",
+              "sha256": "7aefd4ddbeaaf804c459e37c2130c473d0f5920b7aefdfb939b47dc1a2621192"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 869,
+            "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-distinct-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "1fc12b200c6985cf07b122698f95cce798c129206d2f974c02b84ad9504e637d"
+          },
+          "path": "wave35-r132-c1-poison-body-distinct-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1068,
+            "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+            "root": "Q",
+            "sha256": "9a77f262c2be7e482556476d95acc0f1f6b1ee03f24be429eccd60ffc46fc8f0"
+          },
+          "record_id": "c1-poison-body-distinct",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 655,
+            "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json",
+            "root": "Q",
+            "sha256": "8a509c3a00935281ab95c1552e340fa1053f7253fd391d55858c85dffeb4914b"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[same]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-poison-body-same-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 2636,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same/parent-c1-body_same.json",
+              "root": "Q",
+              "sha256": "d3b61e626e916f44b062873e8702b8022186d25a5ec97f176baedcd162add7fa",
+              "type": "file"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+              "root": "Q",
+              "sha256": "ab65bec7eecf526a8b5e97ce965200b75f8e45e2abaab972e856ff62c0ab946c",
+              "type": "file"
+            },
+            {
+              "bytes": 1047,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+              "root": "Q",
+              "sha256": "14b87b469cf8fc1aa98e12e3fcff355975b6fc4ba0a2f900be32d256d885eb4f",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same.log",
+              "root": "Q",
+              "sha256": "ead20e395b66cb7bdbe9f884e6fd623058a118d9539ffd84e058b4a852026fcb",
+              "type": "file"
+            },
+            {
+              "bytes": 1301,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "a8a26a3a72692cac40f71e67684a852077c9db67b8fbe9c34d73ed2f5f8a64b1",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "ab65bec7eecf526a8b5e97ce965200b75f8e45e2abaab972e856ff62c0ab946c",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 11.03153971300344,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-poison-body-same-attempt-1--c1-poison-body-same",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-poison-body-same-attempt-1--c1-poison-body-same",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-poison-body-same-attempt-1--c1-poison-body-same",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-poison-body-same-attempt-1--c1-poison-body-same",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same.log",
+              "root": "Q",
+              "sha256": "ead20e395b66cb7bdbe9f884e6fd623058a118d9539ffd84e058b4a852026fcb"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 853,
+            "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-same-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "3da4a4119e2ac075a4bc03e078e95fa6f0bd858bc9d64aea487bec537915cb48"
+          },
+          "path": "wave35-r132-c1-poison-body-same-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1047,
+            "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+            "root": "Q",
+            "sha256": "14b87b469cf8fc1aa98e12e3fcff355975b6fc4ba0a2f900be32d256d885eb4f"
+          },
+          "record_id": "c1-poison-body-same",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 650,
+            "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+            "root": "Q",
+            "sha256": "ab65bec7eecf526a8b5e97ce965200b75f8e45e2abaab972e856ff62c0ab946c"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-poison-body-same-attempt-1--c1-poison-body-same",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-poison-body-same-attempt-1--c1-poison-body-same"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_child_false_outer_true_preserves_bank_health",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-poison-child-false-parent-true-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 2776,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/parent-c1-child_false_parent_true.json",
+              "root": "Q",
+              "sha256": "5257b2b6328cb0565e1706512fb5fc7d78210c2b9ccddf668873af1e4de8a4b6",
+              "type": "file"
+            },
+            {
+              "bytes": 664,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json",
+              "root": "Q",
+              "sha256": "cc8822b3f73472c79ef24d337e01f0a2c497ec54c79fcc56cf95e871c02fca87",
+              "type": "file"
+            },
+            {
+              "bytes": 1105,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+              "root": "Q",
+              "sha256": "85efa63758dbf61dfd6ce722ccd979b853b6f2d5048da584677bea15dc28ae12",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true.log",
+              "root": "Q",
+              "sha256": "f1d811f44674dcde9c7833a7c3ad4e977a3d1f38c1fbd282fdfc66c07e3fd989",
+              "type": "file"
+            },
+            {
+              "bytes": 1399,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "e3c18cd8884f5143cbe8ccba0abad7a5891080f436af9bc15364738e232a8eba",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 664,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "cc8822b3f73472c79ef24d337e01f0a2c497ec54c79fcc56cf95e871c02fca87",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.905758351000259,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true.log",
+              "root": "Q",
+              "sha256": "f1d811f44674dcde9c7833a7c3ad4e977a3d1f38c1fbd282fdfc66c07e3fd989"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 909,
+            "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-false-parent-true-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "9d9df960f90caf57f388cc743bd64fda87691084e36b7f8e44dba2251e42b00a"
+          },
+          "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1105,
+            "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+            "root": "Q",
+            "sha256": "85efa63758dbf61dfd6ce722ccd979b853b6f2d5048da584677bea15dc28ae12"
+          },
+          "record_id": "c1-poison-child-false-parent-true",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 664,
+            "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json",
+            "root": "Q",
+            "sha256": "cc8822b3f73472c79ef24d337e01f0a2c497ec54c79fcc56cf95e871c02fca87"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_child_true_outer_false_retains_bank_uncertainty",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-poison-child-true-parent-false-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 2710,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/parent-c1-child_true_parent_false.json",
+              "root": "Q",
+              "sha256": "de4f4d40f39d87d4cacb194a430ef07ccbb5a4e6c3483e6205e45159fa06f5da",
+              "type": "file"
+            },
+            {
+              "bytes": 664,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json",
+              "root": "Q",
+              "sha256": "935ace15e22960a394efbba56598fc9c4e8521b84438cf039bd1b266ac32684a",
+              "type": "file"
+            },
+            {
+              "bytes": 1108,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+              "root": "Q",
+              "sha256": "2c8eba64d90e40f95e860919f87293d83cf5055b2ea90af1ae6e57f4383e3027",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false.log",
+              "root": "Q",
+              "sha256": "eba3a34937e090a165408120f6f5cf3a8bbf7c6bc8f753d1116f6e6885c95f7f",
+              "type": "file"
+            },
+            {
+              "bytes": 1399,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "6b82680c2175362ba822d55779701ac68b86eac3d3b25f70b7fbdb7746718544",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 664,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "935ace15e22960a394efbba56598fc9c4e8521b84438cf039bd1b266ac32684a",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 8.967107966003823,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false.log",
+              "root": "Q",
+              "sha256": "eba3a34937e090a165408120f6f5cf3a8bbf7c6bc8f753d1116f6e6885c95f7f"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 909,
+            "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-true-parent-false-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "a13be41d159c6295c3a18deaf26fc01ae64355d14743098107f0fb0429e35e0a"
+          },
+          "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1108,
+            "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+            "root": "Q",
+            "sha256": "2c8eba64d90e40f95e860919f87293d83cf5055b2ea90af1ae6e57f4383e3027"
+          },
+          "record_id": "c1-poison-child-true-parent-false",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 664,
+            "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json",
+            "root": "Q",
+            "sha256": "935ace15e22960a394efbba56598fc9c4e8521b84438cf039bd1b266ac32684a"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-poison-diagnostic-completion-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 3000,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion/parent-c1-diagnostic_completion.json",
+              "root": "Q",
+              "sha256": "543877781e7a860f1ca12804c4d59f062749cfb33946f25591e88790d87b1756",
+              "type": "file"
+            },
+            {
+              "bytes": 662,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion-custody.json",
+              "root": "Q",
+              "sha256": "c7fca5b798f8cbcfb56cc58c1711e9afaa4818c063c7124f0966303381f991f2",
+              "type": "file"
+            },
+            {
+              "bytes": 1119,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion-result.json",
+              "root": "Q",
+              "sha256": "e4506cde31b424bd22fd48246675223c5ab0eca14cdc921c3b8c4559555b44a0",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion.log",
+              "root": "Q",
+              "sha256": "35f66b9f7d67d1887efe1e450dce249f5403b2ec1183078c74e6624883e12308",
+              "type": "file"
+            },
+            {
+              "bytes": 1385,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "d2a174225208c2ccc87e19fa50be12d4fd094146e253f7eb823fc67092c0efc1",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 662,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "c7fca5b798f8cbcfb56cc58c1711e9afaa4818c063c7124f0966303381f991f2",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 8.110834888997488,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion.log",
+              "root": "Q",
+              "sha256": "35f66b9f7d67d1887efe1e450dce249f5403b2ec1183078c74e6624883e12308"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 901,
+            "path": "evidence-management/parent-c1/wave35-r132-c1-poison-diagnostic-completion-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "c72d536e048d58709adbb9b2b4a1ac61298aa4f9864469438934deb1a24d12a7"
+          },
+          "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1119,
+            "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion-result.json",
+            "root": "Q",
+            "sha256": "e4506cde31b424bd22fd48246675223c5ab0eca14cdc921c3b8c4559555b44a0"
+          },
+          "record_id": "c1-poison-diagnostic-completion",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 662,
+            "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion-custody.json",
+            "root": "Q",
+            "sha256": "c7fca5b798f8cbcfb56cc58c1711e9afaa4818c063c7124f0966303381f991f2"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-poison-diagnostic-completion-attempt-1--c1-poison-diagnostic-completion"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_generic_diagnostic_completion_uncertainty",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 2709,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/parent-c1-generic_diagnostic_completion.json",
+              "root": "Q",
+              "sha256": "f436187b4659cc8050d613abac9c49d297918d85edc37a31b2e93742a8788e50",
+              "type": "file"
+            },
+            {
+              "bytes": 670,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-custody.json",
+              "root": "Q",
+              "sha256": "ba24a4ccb8a5ad34626195beb499fc589142ff73a7bdbdb66bc0d6e471632e11",
+              "type": "file"
+            },
+            {
+              "bytes": 1126,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-result.json",
+              "root": "Q",
+              "sha256": "f64a9c27e83b7ed01d2683dc1ce4d0fd0b2ba252bb1a32df5fcc6ff3d70395de",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion.log",
+              "root": "Q",
+              "sha256": "55c6282bfcf73dcf9a7b3e6c0a36148b50fa0b446e6acfcb554de5c2a2f67f0f",
+              "type": "file"
+            },
+            {
+              "bytes": 1441,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "9a222c9c5ef7fe607d60bc01950b42053b5b77a90936bda5208322903e26fa3b",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 670,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "ba24a4ccb8a5ad34626195beb499fc589142ff73a7bdbdb66bc0d6e471632e11",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 6.933271374000469,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion.log",
+              "root": "Q",
+              "sha256": "55c6282bfcf73dcf9a7b3e6c0a36148b50fa0b446e6acfcb554de5c2a2f67f0f"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 933,
+            "path": "evidence-management/parent-c1/wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "856989d360f1bf43333734876846b319543be985ae34b9250e268628257acd98"
+          },
+          "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1126,
+            "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-result.json",
+            "root": "Q",
+            "sha256": "f64a9c27e83b7ed01d2683dc1ce4d0fd0b2ba252bb1a32df5fcc6ff3d70395de"
+          },
+          "record_id": "c1-poison-generic-diagnostic-completion",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 670,
+            "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-custody.json",
+            "root": "Q",
+            "sha256": "ba24a4ccb8a5ad34626195beb499fc589142ff73a7bdbdb66bc0d6e471632e11"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1--c1-poison-generic-diagnostic-completion"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_install_completion_failure_cannot_restore_healthy_latch",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-c1-poison-install-completion-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 2702,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion/parent-c1-install_completion.json",
+              "root": "Q",
+              "sha256": "26cd19bd5f20d7ac08ebf92d07aea6bff6206c07aa5985e81d396cd0eba61246",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json",
+              "root": "Q",
+              "sha256": "8b16583f5e4a71b8a4784a19a1faaa458dd711f2b2c48f95454b5151033271fd",
+              "type": "file"
+            },
+            {
+              "bytes": 1096,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+              "root": "Q",
+              "sha256": "2d9395f875b3422ddba4859454506c1b04eef611fef536f94503b3d911f4e7cf",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion.log",
+              "root": "Q",
+              "sha256": "77582f5b34901e18b28a7c7a12a33d5557f8b5c2098b228e917edddfdef4d373",
+              "type": "file"
+            },
+            {
+              "bytes": 1364,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/root-poison-witness-verification.json",
+              "root": "Q",
+              "sha256": "8933d86f10d9c426eb7ea9455aeb1e3b77f7a2d1b53b264feea1606723aac520",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/root-postflight.stderr",
+              "root": "Q",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/root-postflight.stdout",
+              "root": "Q",
+              "sha256": "8b16583f5e4a71b8a4784a19a1faaa458dd711f2b2c48f95454b5151033271fd",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 8.354722609990858,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-c1-poison-install-completion-attempt-1--c1-poison-install-completion",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-c1-poison-install-completion-attempt-1--c1-poison-install-completion",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-c1-poison-install-completion-attempt-1--c1-poison-install-completion",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-c1-poison-install-completion-attempt-1--c1-poison-install-completion",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion.log",
+              "root": "Q",
+              "sha256": "77582f5b34901e18b28a7c7a12a33d5557f8b5c2098b228e917edddfdef4d373"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 889,
+            "path": "evidence-management/parent-c1/wave35-r132-c1-poison-install-completion-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "41cb63197256018c95f33d9a99bb163e5333cbfb079483b1e50158d6ebc4fc3b"
+          },
+          "path": "wave35-r132-c1-poison-install-completion-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1096,
+            "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+            "root": "Q",
+            "sha256": "2d9395f875b3422ddba4859454506c1b04eef611fef536f94503b3d911f4e7cf"
+          },
+          "record_id": "c1-poison-install-completion",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 659,
+            "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json",
+            "root": "Q",
+            "sha256": "8b16583f5e4a71b8a4784a19a1faaa458dd711f2b2c48f95454b5151033271fd"
+          }
+        }
+      ],
+      "check": "wave35-r132-c1-poison-install-completion-attempt-1--c1-poison-install-completion",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-c1-poison-install-completion-attempt-1--c1-poison-install-completion"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r132-collection-spec.json",
+              "root": "Q",
+              "sha256": "3af45c84372fb2b2be17822382a95ef63eb100253db0cd0a92518d46df8dfd95",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": null,
+          "id": "wave35-r132-collection-spec.json--unrun",
+          "path": "wave35-r132-collection-spec.json",
+          "record_id": "unrun",
+          "round": 132,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 template; actual named R132 attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r132-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r132-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "collected_count": 36,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-diagnostic-independent-collection-attempt-1"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 664,
+              "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection-custody.json",
+              "root": "Q",
+              "sha256": "84ece8413908c0273127a2606787ed0e83757dbe60872b723e7adcc95cfe487d",
+              "type": "file"
+            },
+            {
+              "bytes": 1172,
+              "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection-result.json",
+              "root": "Q",
+              "sha256": "b08cbde9f7d1e42674601948f0a9cfaf4f2420f4c99442abcbb3fc54a7f3fd55",
+              "type": "file"
+            },
+            {
+              "bytes": 4651,
+              "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection.log",
+              "root": "Q",
+              "sha256": "7a544cebf827e15304da3eda9d3288fcfad079ecb77615de0c3914a83ae6fe4f",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.712811799996416,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-diagnostic-independent-collection-attempt-1--diagnostic-independent-collection",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-diagnostic-independent-collection-attempt-1--diagnostic-independent-collection",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-diagnostic-independent-collection-attempt-1--diagnostic-independent-collection",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-diagnostic-independent-collection-attempt-1--diagnostic-independent-collection",
+          "log_paths": [
+            {
+              "bytes": 4651,
+              "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection.log",
+              "root": "Q",
+              "sha256": "7a544cebf827e15304da3eda9d3288fcfad079ecb77615de0c3914a83ae6fe4f"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 949,
+            "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "6705a8bfd6c7dbb763e8bcae5ee10f4c08dc1b378d669463068f409057d155ff"
+          },
+          "path": "wave35-r132-diagnostic-independent-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1172,
+            "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection-result.json",
+            "root": "Q",
+            "sha256": "b08cbde9f7d1e42674601948f0a9cfaf4f2420f4c99442abcbb3fc54a7f3fd55"
+          },
+          "record_id": "diagnostic-independent-collection",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 664,
+            "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection-custody.json",
+            "root": "Q",
+            "sha256": "84ece8413908c0273127a2606787ed0e83757dbe60872b723e7adcc95cfe487d"
+          }
+        }
+      ],
+      "check": "wave35-r132-diagnostic-independent-collection-attempt-1--diagnostic-independent-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-diagnostic-independent-collection-attempt-1--diagnostic-independent-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 2,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-diagnostic-independent-runtime-attempt-1"
+          ],
+          "counts": {
+            "passed": 36,
+            "skipped": 0,
+            "warnings": 12,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c",
+              "type": "file"
+            },
+            {
+              "bytes": 663,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime-custody.json",
+              "root": "Q",
+              "sha256": "aa582f6ebe6db1fc98c7830f6e03c58a661bce410e24ae26610b555c57a33f55",
+              "type": "file"
+            },
+            {
+              "bytes": 1188,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime-result.json",
+              "root": "Q",
+              "sha256": "c6a97df4463dcd8d2ac2d5133e7cfdc8c6486e42768cf18da58aa0cfa673dd5d",
+              "type": "file"
+            },
+            {
+              "bytes": 1772,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime.log",
+              "root": "Q",
+              "sha256": "df0bae7b6d0fed969eb0740b86005455e6a65648076cd14c8dc4ea6f14e9bd3c",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 23.76876207400346,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-diagnostic-independent-runtime-attempt-1--diagnostic-independent-runtime",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-diagnostic-independent-runtime-attempt-1--diagnostic-independent-runtime",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-diagnostic-independent-runtime-attempt-1--diagnostic-independent-runtime",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-diagnostic-independent-runtime-attempt-1--diagnostic-independent-runtime",
+          "log_paths": [
+            {
+              "bytes": 1772,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime.log",
+              "root": "Q",
+              "sha256": "df0bae7b6d0fed969eb0740b86005455e6a65648076cd14c8dc4ea6f14e9bd3c"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 944,
+            "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-runtime-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "197eed15b3deb5b3d839011457ecb69b734b39dbf73f95fbaeccf76c110773e3"
+          },
+          "path": "wave35-r132-diagnostic-independent-runtime-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 1188,
+            "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime-result.json",
+            "root": "Q",
+            "sha256": "c6a97df4463dcd8d2ac2d5133e7cfdc8c6486e42768cf18da58aa0cfa673dd5d"
+          },
+          "record_id": "diagnostic-independent-runtime",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 663,
+            "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime-custody.json",
+            "root": "Q",
+            "sha256": "aa582f6ebe6db1fc98c7830f6e03c58a661bce410e24ae26610b555c57a33f55"
+          },
+          "warning_disposition": "12 actual multithread os.fork DeprecationWarnings retained from intentional fork-refusal cases; not hidden or subtracted."
+        }
+      ],
+      "check": "wave35-r132-diagnostic-independent-runtime-attempt-1--diagnostic-independent-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-diagnostic-independent-runtime-attempt-1--diagnostic-independent-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r132-owned-spec.json",
+              "root": "Q",
+              "sha256": "9a3fce3cb8bfe08f84ac9023f3db9cd376e80585c0859eb895fcd321dfe7d042",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": null,
+          "id": "wave35-r132-owned-spec.json--unrun",
+          "path": "wave35-r132-owned-spec.json",
+          "record_id": "unrun",
+          "round": 132,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 template; actual named R132 attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r132-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r132-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "collected_count": 25,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_failed_step_diagnostic_preserves_available_bank",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--collect-only",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-pop-owners-collection-attempt-1"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 653,
+              "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection-custody.json",
+              "root": "Q",
+              "sha256": "23b04868912db8beae3c3b03a00551f343780169c1de4f5aaf64a8a23d82cddd",
+              "type": "file"
+            },
+            {
+              "bytes": 1581,
+              "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection-result.json",
+              "root": "Q",
+              "sha256": "722e6ac3e342ade01f51d904f7498b3452c7dc2597f9913f7ff32689ca57a699",
+              "type": "file"
+            },
+            {
+              "bytes": 3434,
+              "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection.log",
+              "root": "Q",
+              "sha256": "dee30341e2c24a49752e0bcbf07c8b602bf8ca1af6ca5cf7a2aeecf51072b5e1",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.5153865330066765,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-pop-owners-collection-attempt-1--pop-owners-collection",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-pop-owners-collection-attempt-1--pop-owners-collection",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-pop-owners-collection-attempt-1--pop-owners-collection",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-pop-owners-collection-attempt-1--pop-owners-collection",
+          "log_paths": [
+            {
+              "bytes": 3434,
+              "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection.log",
+              "root": "Q",
+              "sha256": "dee30341e2c24a49752e0bcbf07c8b602bf8ca1af6ca5cf7a2aeecf51072b5e1"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 925,
+            "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "d7e9cc52e58b3e85dc4cf32195dba3853e9c3aae05d8725993cfa114158b872c"
+          },
+          "path": "wave35-r132-pop-owners-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1581,
+            "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection-result.json",
+            "root": "Q",
+            "sha256": "722e6ac3e342ade01f51d904f7498b3452c7dc2597f9913f7ff32689ca57a699"
+          },
+          "record_id": "pop-owners-collection",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 653,
+            "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection-custody.json",
+            "root": "Q",
+            "sha256": "23b04868912db8beae3c3b03a00551f343780169c1de4f5aaf64a8a23d82cddd"
+          }
+        }
+      ],
+      "check": "wave35-r132-pop-owners-collection-attempt-1--pop-owners-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-pop-owners-collection-attempt-1--pop-owners-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 2,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_failed_step_diagnostic_preserves_available_bank",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r132-pop-owners-runtime-attempt-1"
+          ],
+          "counts": {
+            "passed": 25,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c",
+              "type": "file"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime-custody.json",
+              "root": "Q",
+              "sha256": "907812c133c6a99516a274f33a9e8dec55760ae7153dc02c0315ae3da7bc8f91",
+              "type": "file"
+            },
+            {
+              "bytes": 1596,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime-result.json",
+              "root": "Q",
+              "sha256": "e4b09636b34390873f13ef02539899b411e12ab1be71211dcdcafd730ea03ce1",
+              "type": "file"
+            },
+            {
+              "bytes": 602,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime.log",
+              "root": "Q",
+              "sha256": "ada7bfcc0266a9af86ddd8cfb2f9816aa9d2a915405ee849bbff4b9fae3f675d",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 26.35448373798863,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r132-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r132-pop-owners-runtime-attempt-1--pop-owners-runtime",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r132-pop-owners-runtime-attempt-1--pop-owners-runtime",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r132-pop-owners-runtime-attempt-1--pop-owners-runtime",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r132-pop-owners-runtime-attempt-1--pop-owners-runtime",
+          "log_paths": [
+            {
+              "bytes": 602,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime.log",
+              "root": "Q",
+              "sha256": "ada7bfcc0266a9af86ddd8cfb2f9816aa9d2a915405ee849bbff4b9fae3f675d"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 920,
+            "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-runtime-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "a8790c605d88497c7ab01eb28c87e62a4cc6e7897d7e6a25b5e88ee950280481"
+          },
+          "path": "wave35-r132-pop-owners-runtime-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 1596,
+            "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime-result.json",
+            "root": "Q",
+            "sha256": "e4b09636b34390873f13ef02539899b411e12ab1be71211dcdcafd730ea03ce1"
+          },
+          "record_id": "pop-owners-runtime",
+          "round": 132,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 650,
+            "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime-custody.json",
+            "root": "Q",
+            "sha256": "907812c133c6a99516a274f33a9e8dec55760ae7153dc02c0315ae3da7bc8f91"
+          }
+        }
+      ],
+      "check": "wave35-r132-pop-owners-runtime-attempt-1--pop-owners-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r132-pop-owners-runtime-attempt-1--pop-owners-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "src/townlet/config/exploration_policy.py",
+            "src/townlet/exploration/scoped_curiosity.py",
+            "src/townlet/population/vectorized.py",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+            "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "6ed02bdd04d7191260b8b1d179c0fd797ec9e042a2c9d40d69b3f5c8267d0614",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7db926d3ab829a11e0b10d50423d5031c195ab91193b0c175b17b5283267480c",
+              "type": "file"
+            },
+            {
+              "bytes": 3459,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "74e12f2b7af7064426ea505bddb1fc3bef3416216c3b983cace7b3a0518fd0dc",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "ae65ced639fd5239898a11580ff9d48ea4faedb14dfd8770d76b37bf7e7f76e1",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "a9a5d286957de5b498874763c61009f53aa204e25144af4fe3d5fe555f67c783",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "a274b149a14986eaf9e2499d4cd4d866e1866faa4ed5cc01f054d498bcfd8efb",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:57:34.056701+00:00",
+          "exit_code": 0,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r132-static-v1.py",
+            "root": "W",
+            "sha256": "3992706d818f101cea7646cfad82f3c56618203415f7c0a3195d85bbfa50b9d3"
+          },
+          "id": "r132-static-attempt-1--black-changed",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219577,
+            "pid": 219673
+          },
+          "record": {
+            "bytes": 1381,
+            "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.json",
+            "root": "W",
+            "sha256": "6ed02bdd04d7191260b8b1d179c0fd797ec9e042a2c9d40d69b3f5c8267d0614"
+          },
+          "record_id": "black-changed",
+          "round": 132,
+          "started_at": "2026-11-14T09:57:33.080263+00:00",
+          "status": "PASSED"
+        }
+      ],
+      "check": "r132-static-attempt-1--black-changed",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "r132-static-attempt-1--black-changed"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "src/townlet",
+            "--show-error-codes",
+            "--no-incremental"
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "6ed02bdd04d7191260b8b1d179c0fd797ec9e042a2c9d40d69b3f5c8267d0614",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7db926d3ab829a11e0b10d50423d5031c195ab91193b0c175b17b5283267480c",
+              "type": "file"
+            },
+            {
+              "bytes": 3459,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "74e12f2b7af7064426ea505bddb1fc3bef3416216c3b983cace7b3a0518fd0dc",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "ae65ced639fd5239898a11580ff9d48ea4faedb14dfd8770d76b37bf7e7f76e1",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "a9a5d286957de5b498874763c61009f53aa204e25144af4fe3d5fe555f67c783",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "a274b149a14986eaf9e2499d4cd4d866e1866faa4ed5cc01f054d498bcfd8efb",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:57:32.222162+00:00",
+          "exit_code": 1,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r132-static-v1.py",
+            "root": "W",
+            "sha256": "3992706d818f101cea7646cfad82f3c56618203415f7c0a3195d85bbfa50b9d3"
+          },
+          "id": "r132-static-attempt-1--mypy",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 3459,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "74e12f2b7af7064426ea505bddb1fc3bef3416216c3b983cace7b3a0518fd0dc"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219577,
+            "pid": 219617
+          },
+          "record": {
+            "bytes": 952,
+            "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.json",
+            "root": "W",
+            "sha256": "7db926d3ab829a11e0b10d50423d5031c195ab91193b0c175b17b5283267480c"
+          },
+          "record_id": "mypy",
+          "round": 132,
+          "started_at": "2026-11-14T09:57:00.036709+00:00",
+          "status": "FAILED"
+        }
+      ],
+      "check": "r132-static-attempt-1--mypy",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "FAILED",
+      "terminal_attempt": "r132-static-attempt-1--mypy"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet"
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "6ed02bdd04d7191260b8b1d179c0fd797ec9e042a2c9d40d69b3f5c8267d0614",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7db926d3ab829a11e0b10d50423d5031c195ab91193b0c175b17b5283267480c",
+              "type": "file"
+            },
+            {
+              "bytes": 3459,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "74e12f2b7af7064426ea505bddb1fc3bef3416216c3b983cace7b3a0518fd0dc",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "ae65ced639fd5239898a11580ff9d48ea4faedb14dfd8770d76b37bf7e7f76e1",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "a9a5d286957de5b498874763c61009f53aa204e25144af4fe3d5fe555f67c783",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "a274b149a14986eaf9e2499d4cd4d866e1866faa4ed5cc01f054d498bcfd8efb",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:57:33.079832+00:00",
+          "exit_code": 0,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r132-static-v1.py",
+            "root": "W",
+            "sha256": "3992706d818f101cea7646cfad82f3c56618203415f7c0a3195d85bbfa50b9d3"
+          },
+          "id": "r132-static-attempt-1--no-defaults",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219577,
+            "pid": 219672
+          },
+          "record": {
+            "bytes": 1022,
+            "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.json",
+            "root": "W",
+            "sha256": "ae65ced639fd5239898a11580ff9d48ea4faedb14dfd8770d76b37bf7e7f76e1"
+          },
+          "record_id": "no-defaults",
+          "round": 132,
+          "started_at": "2026-11-14T09:57:32.222979+00:00",
+          "status": "PASSED"
+        }
+      ],
+      "check": "r132-static-attempt-1--no-defaults",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "r132-static-attempt-1--no-defaults"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r132-candidate.json",
+            "root": "W",
+            "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+          },
+          "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "."
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "6ed02bdd04d7191260b8b1d179c0fd797ec9e042a2c9d40d69b3f5c8267d0614",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7db926d3ab829a11e0b10d50423d5031c195ab91193b0c175b17b5283267480c",
+              "type": "file"
+            },
+            {
+              "bytes": 3459,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "74e12f2b7af7064426ea505bddb1fc3bef3416216c3b983cace7b3a0518fd0dc",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "ae65ced639fd5239898a11580ff9d48ea4faedb14dfd8770d76b37bf7e7f76e1",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "a9a5d286957de5b498874763c61009f53aa204e25144af4fe3d5fe555f67c783",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "a274b149a14986eaf9e2499d4cd4d866e1866faa4ed5cc01f054d498bcfd8efb",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:57:00.036439+00:00",
+          "exit_code": 0,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r132-static-v1.py",
+            "root": "W",
+            "sha256": "3992706d818f101cea7646cfad82f3c56618203415f7c0a3195d85bbfa50b9d3"
+          },
+          "id": "r132-static-attempt-1--ruff",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219577,
+            "pid": 219608
+          },
+          "record": {
+            "bytes": 905,
+            "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.json",
+            "root": "W",
+            "sha256": "a9a5d286957de5b498874763c61009f53aa204e25144af4fe3d5fe555f67c783"
+          },
+          "record_id": "ruff",
+          "round": 132,
+          "started_at": "2026-11-14T09:56:59.888436+00:00",
+          "status": "PASSED"
+        }
+      ],
+      "check": "r132-static-attempt-1--ruff",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "r132-static-attempt-1--ruff"
+    }
+  ],
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 207540,
+    "path": "wave35/r132-candidate.json",
+    "root": "W",
+    "sha256": "145d7723b0fb9696e0e054e55eaadc672b5fbee0982c24fbf8cc2bdd46948b0a"
+  },
+  "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+  "fixture_preflight": {
+    "bytes": 4983,
+    "path": "wave35/r132-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "bedce5152ccfdae052da74b60d94b2723a7baa2691b7411961864459baf76c9b"
+  },
+  "interval_inventory": {
+    "wave35-r132-c1-ordinary-collection-attempt-1": [
+      {
+        "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 653,
+        "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection-custody.json",
+        "root": "Q",
+        "sha256": "1bbdffb660fb97357c25f7aacbe6f89f925950f1abc79d6fcb67d275a85e9416",
+        "type": "file"
+      },
+      {
+        "bytes": 1418,
+        "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection-result.json",
+        "root": "Q",
+        "sha256": "5fc9a6cc214bb0fa07666d5219aa5c42a536307310289f97c7d646fca61fd80f",
+        "type": "file"
+      },
+      {
+        "bytes": 12086,
+        "path": "wave35-r132-c1-ordinary-collection-attempt-1/c1-ordinary-collection.log",
+        "root": "Q",
+        "sha256": "02a2da5b1ed08c67e0fc154d468f1f145bcaa7ff32aa7ecb67528dc99a1d556e",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-ordinary-collection-attempt-1-spec.json": [
+      {
+        "bytes": 1179,
+        "path": "wave35-r132-c1-ordinary-collection-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "9188ab103704e50ebcd2ab2b5cb15b336f45152b1a39f38beb41434a371f91c8",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-ordinary-runtime-attempt-1": [
+      {
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-gw0.json",
+        "root": "Q",
+        "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime/identity-gw1.json",
+        "root": "Q",
+        "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c",
+        "type": "file"
+      },
+      {
+        "bytes": 651,
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime-custody.json",
+        "root": "Q",
+        "sha256": "2962ea071147c7ac7ec14860e5dd44edce10b1c67d97e8fff7c00a1921260801",
+        "type": "file"
+      },
+      {
+        "bytes": 1433,
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime-result.json",
+        "root": "Q",
+        "sha256": "955afe4bccce05e5d0ca360b2471ce1eca2544e348c25379a03d144bc441d996",
+        "type": "file"
+      },
+      {
+        "bytes": 683,
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1/c1-ordinary-runtime.log",
+        "root": "Q",
+        "sha256": "16cf61daa84ad82573a8cb813ed5150b3e28f4c6c29c95a95ab77575ea1fbe85",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-ordinary-runtime-attempt-1-spec.json": [
+      {
+        "bytes": 1210,
+        "path": "wave35-r132-c1-ordinary-runtime-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "6432dbd0a0b341afef3c377ceeb8a1cb2cffe8cc812fad70c36c053c56d2f898",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-body-distinct-attempt-1": [
+      {
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 2661,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/parent-c1-body_distinct.json",
+        "root": "Q",
+        "sha256": "e5f894cbd1ffb68571d7ad79157bce8f4ed83e164b60c99e058c51b03bcf52f1",
+        "type": "file"
+      },
+      {
+        "bytes": 655,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json",
+        "root": "Q",
+        "sha256": "8a509c3a00935281ab95c1552e340fa1053f7253fd391d55858c85dffeb4914b",
+        "type": "file"
+      },
+      {
+        "bytes": 1068,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+        "root": "Q",
+        "sha256": "9a77f262c2be7e482556476d95acc0f1f6b1ee03f24be429eccd60ffc46fc8f0",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct.log",
+        "root": "Q",
+        "sha256": "7aefd4ddbeaaf804c459e37c2130c473d0f5920b7aefdfb939b47dc1a2621192",
+        "type": "file"
+      },
+      {
+        "bytes": 1329,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "5c6bcd2e4a581b08e05d5456452321309e008ebb376f7efb345c77bba189a947",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 655,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "8a509c3a00935281ab95c1552e340fa1053f7253fd391d55858c85dffeb4914b",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-body-distinct-attempt-1-spec.json": [
+      {
+        "bytes": 815,
+        "path": "wave35-r132-c1-poison-body-distinct-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "a8ae27dd8c0ebafed6847242030b62c722e800e11584f4fe85b1cbf47163a008",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-body-same-attempt-1": [
+      {
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 2636,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same/parent-c1-body_same.json",
+        "root": "Q",
+        "sha256": "d3b61e626e916f44b062873e8702b8022186d25a5ec97f176baedcd162add7fa",
+        "type": "file"
+      },
+      {
+        "bytes": 650,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+        "root": "Q",
+        "sha256": "ab65bec7eecf526a8b5e97ce965200b75f8e45e2abaab972e856ff62c0ab946c",
+        "type": "file"
+      },
+      {
+        "bytes": 1047,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+        "root": "Q",
+        "sha256": "14b87b469cf8fc1aa98e12e3fcff355975b6fc4ba0a2f900be32d256d885eb4f",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/c1-poison-body-same.log",
+        "root": "Q",
+        "sha256": "ead20e395b66cb7bdbe9f884e6fd623058a118d9539ffd84e058b4a852026fcb",
+        "type": "file"
+      },
+      {
+        "bytes": 1301,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "a8a26a3a72692cac40f71e67684a852077c9db67b8fbe9c34d73ed2f5f8a64b1",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 650,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "ab65bec7eecf526a8b5e97ce965200b75f8e45e2abaab972e856ff62c0ab946c",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-body-same-attempt-1-spec.json": [
+      {
+        "bytes": 799,
+        "path": "wave35-r132-c1-poison-body-same-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "b6596aed6613e3c69b6b855b93a9c342bab7386ea4702eb68d9fc281188a711c",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-child-false-parent-true-attempt-1": [
+      {
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 2776,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/parent-c1-child_false_parent_true.json",
+        "root": "Q",
+        "sha256": "5257b2b6328cb0565e1706512fb5fc7d78210c2b9ccddf668873af1e4de8a4b6",
+        "type": "file"
+      },
+      {
+        "bytes": 664,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json",
+        "root": "Q",
+        "sha256": "cc8822b3f73472c79ef24d337e01f0a2c497ec54c79fcc56cf95e871c02fca87",
+        "type": "file"
+      },
+      {
+        "bytes": 1105,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+        "root": "Q",
+        "sha256": "85efa63758dbf61dfd6ce722ccd979b853b6f2d5048da584677bea15dc28ae12",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true.log",
+        "root": "Q",
+        "sha256": "f1d811f44674dcde9c7833a7c3ad4e977a3d1f38c1fbd282fdfc66c07e3fd989",
+        "type": "file"
+      },
+      {
+        "bytes": 1399,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "e3c18cd8884f5143cbe8ccba0abad7a5891080f436af9bc15364738e232a8eba",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 664,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "cc8822b3f73472c79ef24d337e01f0a2c497ec54c79fcc56cf95e871c02fca87",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-child-false-parent-true-attempt-1-spec.json": [
+      {
+        "bytes": 843,
+        "path": "wave35-r132-c1-poison-child-false-parent-true-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "dfee491910362fd4991b62c9eae27cedc9f7d878480c93004a29a5fc5e354cb0",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-child-true-parent-false-attempt-1": [
+      {
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 2710,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/parent-c1-child_true_parent_false.json",
+        "root": "Q",
+        "sha256": "de4f4d40f39d87d4cacb194a430ef07ccbb5a4e6c3483e6205e45159fa06f5da",
+        "type": "file"
+      },
+      {
+        "bytes": 664,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json",
+        "root": "Q",
+        "sha256": "935ace15e22960a394efbba56598fc9c4e8521b84438cf039bd1b266ac32684a",
+        "type": "file"
+      },
+      {
+        "bytes": 1108,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+        "root": "Q",
+        "sha256": "2c8eba64d90e40f95e860919f87293d83cf5055b2ea90af1ae6e57f4383e3027",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false.log",
+        "root": "Q",
+        "sha256": "eba3a34937e090a165408120f6f5cf3a8bbf7c6bc8f753d1116f6e6885c95f7f",
+        "type": "file"
+      },
+      {
+        "bytes": 1399,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "6b82680c2175362ba822d55779701ac68b86eac3d3b25f70b7fbdb7746718544",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 664,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "935ace15e22960a394efbba56598fc9c4e8521b84438cf039bd1b266ac32684a",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-child-true-parent-false-attempt-1-spec.json": [
+      {
+        "bytes": 846,
+        "path": "wave35-r132-c1-poison-child-true-parent-false-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "483751ffe6ee9f912a46bd6085ebd4a3a069be67bc09cf99d4f668023e37dbea",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-diagnostic-completion-attempt-1": [
+      {
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 3000,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion/parent-c1-diagnostic_completion.json",
+        "root": "Q",
+        "sha256": "543877781e7a860f1ca12804c4d59f062749cfb33946f25591e88790d87b1756",
+        "type": "file"
+      },
+      {
+        "bytes": 662,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion-custody.json",
+        "root": "Q",
+        "sha256": "c7fca5b798f8cbcfb56cc58c1711e9afaa4818c063c7124f0966303381f991f2",
+        "type": "file"
+      },
+      {
+        "bytes": 1119,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion-result.json",
+        "root": "Q",
+        "sha256": "e4506cde31b424bd22fd48246675223c5ab0eca14cdc921c3b8c4559555b44a0",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion.log",
+        "root": "Q",
+        "sha256": "35f66b9f7d67d1887efe1e450dce249f5403b2ec1183078c74e6624883e12308",
+        "type": "file"
+      },
+      {
+        "bytes": 1385,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "d2a174225208c2ccc87e19fa50be12d4fd094146e253f7eb823fc67092c0efc1",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 662,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "c7fca5b798f8cbcfb56cc58c1711e9afaa4818c063c7124f0966303381f991f2",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-diagnostic-completion-attempt-1-spec.json": [
+      {
+        "bytes": 859,
+        "path": "wave35-r132-c1-poison-diagnostic-completion-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "dfa258c9458b68eb222e2c902488e3f1b88844e4c0cdca778deaedefe94b8f7e",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1": [
+      {
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 2709,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion/parent-c1-generic_diagnostic_completion.json",
+        "root": "Q",
+        "sha256": "f436187b4659cc8050d613abac9c49d297918d85edc37a31b2e93742a8788e50",
+        "type": "file"
+      },
+      {
+        "bytes": 670,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-custody.json",
+        "root": "Q",
+        "sha256": "ba24a4ccb8a5ad34626195beb499fc589142ff73a7bdbdb66bc0d6e471632e11",
+        "type": "file"
+      },
+      {
+        "bytes": 1126,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion-result.json",
+        "root": "Q",
+        "sha256": "f64a9c27e83b7ed01d2683dc1ce4d0fd0b2ba252bb1a32df5fcc6ff3d70395de",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/c1-poison-generic-diagnostic-completion.log",
+        "root": "Q",
+        "sha256": "55c6282bfcf73dcf9a7b3e6c0a36148b50fa0b446e6acfcb554de5c2a2f67f0f",
+        "type": "file"
+      },
+      {
+        "bytes": 1441,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "9a222c9c5ef7fe607d60bc01950b42053b5b77a90936bda5208322903e26fa3b",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 670,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "ba24a4ccb8a5ad34626195beb499fc589142ff73a7bdbdb66bc0d6e471632e11",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1-spec.json": [
+      {
+        "bytes": 858,
+        "path": "wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "8554d50691f3452b3ca9db260c55d280eacccd2fbe2f33deb788ca811ff533f0",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-install-completion-attempt-1": [
+      {
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 2702,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion/parent-c1-install_completion.json",
+        "root": "Q",
+        "sha256": "26cd19bd5f20d7ac08ebf92d07aea6bff6206c07aa5985e81d396cd0eba61246",
+        "type": "file"
+      },
+      {
+        "bytes": 659,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json",
+        "root": "Q",
+        "sha256": "8b16583f5e4a71b8a4784a19a1faaa458dd711f2b2c48f95454b5151033271fd",
+        "type": "file"
+      },
+      {
+        "bytes": 1096,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+        "root": "Q",
+        "sha256": "2d9395f875b3422ddba4859454506c1b04eef611fef536f94503b3d911f4e7cf",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/c1-poison-install-completion.log",
+        "root": "Q",
+        "sha256": "77582f5b34901e18b28a7c7a12a33d5557f8b5c2098b228e917edddfdef4d373",
+        "type": "file"
+      },
+      {
+        "bytes": 1364,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/root-poison-witness-verification.json",
+        "root": "Q",
+        "sha256": "8933d86f10d9c426eb7ea9455aeb1e3b77f7a2d1b53b264feea1606723aac520",
+        "type": "file"
+      },
+      {
+        "bytes": 0,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/root-postflight.stderr",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "type": "file"
+      },
+      {
+        "bytes": 659,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1/root-postflight.stdout",
+        "root": "Q",
+        "sha256": "8b16583f5e4a71b8a4784a19a1faaa458dd711f2b2c48f95454b5151033271fd",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-c1-poison-install-completion-attempt-1-spec.json": [
+      {
+        "bytes": 839,
+        "path": "wave35-r132-c1-poison-install-completion-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "8ab5ec9193bb8974c31726ad2eccb3a4432f714d37b4186a7648540d53592d5d",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r132-collection-spec.json",
+        "root": "Q",
+        "sha256": "3af45c84372fb2b2be17822382a95ef63eb100253db0cd0a92518d46df8dfd95",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-diagnostic-independent-collection-attempt-1": [
+      {
+        "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 664,
+        "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection-custody.json",
+        "root": "Q",
+        "sha256": "84ece8413908c0273127a2606787ed0e83757dbe60872b723e7adcc95cfe487d",
+        "type": "file"
+      },
+      {
+        "bytes": 1172,
+        "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection-result.json",
+        "root": "Q",
+        "sha256": "b08cbde9f7d1e42674601948f0a9cfaf4f2420f4c99442abcbb3fc54a7f3fd55",
+        "type": "file"
+      },
+      {
+        "bytes": 4651,
+        "path": "wave35-r132-diagnostic-independent-collection-attempt-1/diagnostic-independent-collection.log",
+        "root": "Q",
+        "sha256": "7a544cebf827e15304da3eda9d3288fcfad079ecb77615de0c3914a83ae6fe4f",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-diagnostic-independent-collection-attempt-1-spec.json": [
+      {
+        "bytes": 914,
+        "path": "wave35-r132-diagnostic-independent-collection-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "d0de4bd3c604647e024eee6edb520c9930334505de0610b487c765c693166996",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-diagnostic-independent-runtime-attempt-1": [
+      {
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-gw0.json",
+        "root": "Q",
+        "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime/identity-gw1.json",
+        "root": "Q",
+        "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c",
+        "type": "file"
+      },
+      {
+        "bytes": 663,
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime-custody.json",
+        "root": "Q",
+        "sha256": "aa582f6ebe6db1fc98c7830f6e03c58a661bce410e24ae26610b555c57a33f55",
+        "type": "file"
+      },
+      {
+        "bytes": 1188,
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime-result.json",
+        "root": "Q",
+        "sha256": "c6a97df4463dcd8d2ac2d5133e7cfdc8c6486e42768cf18da58aa0cfa673dd5d",
+        "type": "file"
+      },
+      {
+        "bytes": 1772,
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1/diagnostic-independent-runtime.log",
+        "root": "Q",
+        "sha256": "df0bae7b6d0fed969eb0740b86005455e6a65648076cd14c8dc4ea6f14e9bd3c",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-diagnostic-independent-runtime-attempt-1-spec.json": [
+      {
+        "bytes": 945,
+        "path": "wave35-r132-diagnostic-independent-runtime-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "c5500a2a2253ba29f6694c83f5ab378d9d51af52639d1d7b6a14073597533909",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r132-owned-spec.json",
+        "root": "Q",
+        "sha256": "9a3fce3cb8bfe08f84ac9023f3db9cd376e80585c0859eb895fcd321dfe7d042",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-pop-owners-collection-attempt-1": [
+      {
+        "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 653,
+        "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection-custody.json",
+        "root": "Q",
+        "sha256": "23b04868912db8beae3c3b03a00551f343780169c1de4f5aaf64a8a23d82cddd",
+        "type": "file"
+      },
+      {
+        "bytes": 1581,
+        "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection-result.json",
+        "root": "Q",
+        "sha256": "722e6ac3e342ade01f51d904f7498b3452c7dc2597f9913f7ff32689ca57a699",
+        "type": "file"
+      },
+      {
+        "bytes": 3434,
+        "path": "wave35-r132-pop-owners-collection-attempt-1/pop-owners-collection.log",
+        "root": "Q",
+        "sha256": "dee30341e2c24a49752e0bcbf07c8b602bf8ca1af6ca5cf7a2aeecf51072b5e1",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-pop-owners-collection-attempt-1-spec.json": [
+      {
+        "bytes": 1350,
+        "path": "wave35-r132-pop-owners-collection-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "d36d60f68c6b4211e7657228947fcdbf39136f7bf0e791075342d27b13f175c7",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-pop-owners-runtime-attempt-1": [
+      {
+        "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-controller.json",
+        "root": "Q",
+        "sha256": "4cb254284b0cc9e9460acfc4788a7b80f6e681c29ca0043aa0f854b74a9a47b3",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw0.json",
+        "root": "Q",
+        "sha256": "5f1de621f62c67c326085e69cf5555d1ba26fe90afa570b416cf230a4ef5d489",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw1.json",
+        "root": "Q",
+        "sha256": "4da17944d0582b4efb3f9e2ad976f3eb081df218f612ca5abf6863da39ead63c",
+        "type": "file"
+      },
+      {
+        "bytes": 650,
+        "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime-custody.json",
+        "root": "Q",
+        "sha256": "907812c133c6a99516a274f33a9e8dec55760ae7153dc02c0315ae3da7bc8f91",
+        "type": "file"
+      },
+      {
+        "bytes": 1596,
+        "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime-result.json",
+        "root": "Q",
+        "sha256": "e4b09636b34390873f13ef02539899b411e12ab1be71211dcdcafd730ea03ce1",
+        "type": "file"
+      },
+      {
+        "bytes": 602,
+        "path": "wave35-r132-pop-owners-runtime-attempt-1/pop-owners-runtime.log",
+        "root": "Q",
+        "sha256": "ada7bfcc0266a9af86ddd8cfb2f9816aa9d2a915405ee849bbff4b9fae3f675d",
+        "type": "file"
+      }
+    ],
+    "wave35-r132-pop-owners-runtime-attempt-1-spec.json": [
+      {
+        "bytes": 1381,
+        "path": "wave35-r132-pop-owners-runtime-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "7a2952d4260ea9d7dd6ca99ecb511f2c2a6ace345ac1aee6c7f91657ace43952",
+        "type": "file"
+      }
+    ]
+  },
+  "limitations": [
+    "Original runtime UTC absent; outer launcher times not substituted.",
+    "Original process witnesses lack literal attempt_id/PID; retain genuine source/spec/result linkage.",
+    "Exact execution subtrees not extracted; no Git calls authorized.",
+    "Actual CUDA UNRUN; original package28/38/66 unchanged."
+  ],
+  "next_work": "R133 typing-only repair and affected checks pending. No terminal seal or publication.",
+  "round": 132,
+  "schema": "bac-closed-round-history-component-v1",
+  "source_aliases": [
+    {
+      "exact_retained": {
+        "bytes": 161438,
+        "path": "wave35-preparation/T18e-R0-R132-POP-TYPING-BEFORE-v1.py.txt",
+        "root": "W",
+        "sha256": "e7179da32789c18d72a6017f95d7fae70e0b2e551e9e78eab4421fffc1d5957a"
+      },
+      "original": "src/townlet/population/vectorized.py"
+    },
+    {
+      "exact_retained": {
+        "bytes": 41965,
+        "path": "evidence-management/wip23-preparation/closed-r132-v1/test_parent_intrinsic_handoff.py.txt",
+        "root": "W",
+        "sha256": "bbfdc1e8d60a609de6dacf7b68c0d6cb7e014df308dddddde5698ad2bf7fd673"
+      },
+      "original": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py"
+    },
+    {
+      "exact_retained": {
+        "bytes": 7113,
+        "path": "evidence-management/wip23-preparation/closed-r132-v1/independent-probe-159.py.txt",
+        "root": "W",
+        "sha256": "127ef1d5bab81e0de8f3bc5fb2fdad5653717e7beb8b030c90747b229bf361f5"
+      },
+      "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py"
+    }
+  ],
+  "source_dependencies": [
+    {
+      "bytes": 3303,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/FINAL-MANIFEST-v1.json",
+      "root": "W",
+      "sha256": "65e0500b283d7049cb32563b1d77ba8d4963332d12de67c1761bdfbed834a0bc"
+    }
+  ],
+  "static_directory_inventory": [
+    {
+      "bytes": 1381,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.json",
+      "root": "W",
+      "sha256": "6ed02bdd04d7191260b8b1d179c0fd797ec9e042a2c9d40d69b3f5c8267d0614",
+      "type": "file"
+    },
+    {
+      "bytes": 56,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/black-changed.log",
+      "root": "W",
+      "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+      "type": "file"
+    },
+    {
+      "bytes": 952,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.json",
+      "root": "W",
+      "sha256": "7db926d3ab829a11e0b10d50423d5031c195ab91193b0c175b17b5283267480c",
+      "type": "file"
+    },
+    {
+      "bytes": 3459,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/mypy.log",
+      "root": "W",
+      "sha256": "74e12f2b7af7064426ea505bddb1fc3bef3416216c3b983cace7b3a0518fd0dc",
+      "type": "file"
+    },
+    {
+      "bytes": 1022,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.json",
+      "root": "W",
+      "sha256": "ae65ced639fd5239898a11580ff9d48ea4faedb14dfd8770d76b37bf7e7f76e1",
+      "type": "file"
+    },
+    {
+      "bytes": 926,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/no-defaults.log",
+      "root": "W",
+      "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+      "type": "file"
+    },
+    {
+      "bytes": 905,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.json",
+      "root": "W",
+      "sha256": "a9a5d286957de5b498874763c61009f53aa204e25144af4fe3d5fe555f67c783",
+      "type": "file"
+    },
+    {
+      "bytes": 19,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/ruff.log",
+      "root": "W",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "type": "file"
+    },
+    {
+      "bytes": 4773,
+      "path": "evidence-management/pop-standalone-step/r132-static-attempt-1/summary.json",
+      "root": "W",
+      "sha256": "a274b149a14986eaf9e2499d4cd4d866e1866faa4ed5cc01f054d498bcfd8efb",
+      "type": "file"
+    }
+  ],
+  "status": "MIXED CLOSED HISTORY; MYPY FAILED14",
+  "supporting_files": [
+    {
+      "bytes": 7047,
+      "path": "evidence-management/pop-standalone-step/r132-capture.stdout",
+      "root": "W",
+      "sha256": "a3aa4aa0426170ba759fbec8fe8bfe44e806e6f1ed18c2197a846d0342335cbd"
+    },
+    {
+      "bytes": 2357,
+      "path": "evidence-management/pop-standalone-step/run-r132-static-v1.py",
+      "root": "W",
+      "sha256": "3992706d818f101cea7646cfad82f3c56618203415f7c0a3195d85bbfa50b9d3"
+    },
+    {
+      "bytes": 927,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "649fd3851c4a07151649bea3e515afaeea2915a524465303a7228071a75a4eec"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1328,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "e23d56fcab158d7f8da511ca5a42b0c6db27f89bd70e9ef752b4c7143aae183a"
+    },
+    {
+      "bytes": 921,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "8a7b1aa5456600f8abfe3c6a819eee35e47642b8f08885e1f5ef2759a54aeda2"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1331,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-c1-ordinary-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "c1680b60fc72c170ad672dbac4767bdcfeeb0369380639ade471e0b4717ffef0"
+    },
+    {
+      "bytes": 949,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "6705a8bfd6c7dbb763e8bcae5ee10f4c08dc1b378d669463068f409057d155ff"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1090,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "50e42c45bff8c8c78c8d9140eb2be20ba5193166192b25d9cefa58bd7fa8be47"
+    },
+    {
+      "bytes": 944,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "197eed15b3deb5b3d839011457ecb69b734b39dbf73f95fbaeccf76c110773e3"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1094,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-diagnostic-independent-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "1e2090edcbd286ea51e58a2553d8a9cd8dea7afa09309e562bc8bfdf31c611f1"
+    },
+    {
+      "bytes": 925,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "d7e9cc52e58b3e85dc4cf32195dba3853e9c3aae05d8725993cfa114158b872c"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1483,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "f2d123a168d46b04a132d75870dbee3d64d94f719ebae1adf3026f7aaa8e42bf"
+    },
+    {
+      "bytes": 920,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "a8790c605d88497c7ab01eb28c87e62a4cc6e7897d7e6a25b5e88ee950280481"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1486,
+      "path": "evidence-management/pop-standalone-step/wave35-r132-pop-owners-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "2a008392c77cf5f2925bbc3abcefae4a19f5ef4da9875798258ca8983aa88868"
+    },
+    {
+      "bytes": 5937,
+      "path": "evidence-management/parent-c1/run-r132-poison-v1.py",
+      "root": "W",
+      "sha256": "cb7579d7e686048e1397e483ef2fa12b6b1854a558d85878c9ee81c6bc3192c9"
+    },
+    {
+      "bytes": 869,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-distinct-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "1fc12b200c6985cf07b122698f95cce798c129206d2f974c02b84ad9504e637d"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-distinct-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 990,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-distinct-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "884dff49f125f25d96b6745583a254ce5d5e94389e91f3c7d69aba71c9d26d6a"
+    },
+    {
+      "bytes": 853,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-same-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "3da4a4119e2ac075a4bc03e078e95fa6f0bd858bc9d64aea487bec537915cb48"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-same-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 969,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-body-same-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "7d8cf307ab4e71fd02fed5ea6ed92324c928c933a678435a31134621258203dd"
+    },
+    {
+      "bytes": 909,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-false-parent-true-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "9d9df960f90caf57f388cc743bd64fda87691084e36b7f8e44dba2251e42b00a"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-false-parent-true-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1027,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-false-parent-true-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "28ab4dbb49a97cae588ab09f6fd7c04fe8f1dbf164ed456dfb124a07fc70a255"
+    },
+    {
+      "bytes": 909,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-true-parent-false-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "a13be41d159c6295c3a18deaf26fc01ae64355d14743098107f0fb0429e35e0a"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-true-parent-false-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1030,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-child-true-parent-false-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "a3aa373aa16bcf7bf4bfae4cd4bb48aaab5efc4a34e050f5a91ed67b978662a6"
+    },
+    {
+      "bytes": 901,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-diagnostic-completion-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "c72d536e048d58709adbb9b2b4a1ac61298aa4f9864469438934deb1a24d12a7"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-diagnostic-completion-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1041,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-diagnostic-completion-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "98afe894426a91824fcdd8b09763c0c73e14b483578f0ad6fa2e750bf0c27a72"
+    },
+    {
+      "bytes": 933,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "856989d360f1bf43333734876846b319543be985ae34b9250e268628257acd98"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1048,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-generic-diagnostic-completion-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "f44501ed6006b0456ab58ef06f313ed2d122dce55069675e68c96b25775ba73b"
+    },
+    {
+      "bytes": 889,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-install-completion-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "41cb63197256018c95f33d9a99bb163e5333cbfb079483b1e50158d6ebc4fc3b"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-install-completion-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1018,
+      "path": "evidence-management/parent-c1/wave35-r132-c1-poison-install-completion-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "968a2a9c48016324f88345070024943b2579124d88f5f8217b964aec1c6d316d"
+    },
+    {
+      "bytes": 10190,
+      "path": "evidence-management/pop-standalone-step/independent-review/r132-fresh/review.md",
+      "root": "W",
+      "sha256": "4123e8a6337c4edc852d185a69533bb7e234a242a8fc33bc1394bbefe4b8500c"
+    },
+    {
+      "bytes": 394,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/r132-probe-source-before-v1.json",
+      "root": "W",
+      "sha256": "56f73a94cadc08c7310a4aa995d71f45393473831313773e1d2a7a83566ee3e4"
+    },
+    {
+      "bytes": 384,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/r132-probe-source-after-v1.json",
+      "root": "W",
+      "sha256": "3c9a41e8a41f7c143b1f9f40bdcd67f4adec7fe34cd92bdaf47f4be9b35e1d7f"
+    },
+    {
+      "bytes": 5764,
+      "path": "evidence-management/parent-c1/failed-diagnostic-independent/r131-adversarial-source-review-v1.md",
+      "root": "W",
+      "sha256": "245f090945f240a57122ed404979761e524681261394efe42dd55ea62bc8a6e8"
+    },
+    {
+      "bytes": 4028,
+      "path": "wave35-preparation/T18e-R0-POP-GENERIC-DIAGNOSTIC-CALLER-HANDOFF-v1.md",
+      "root": "W",
+      "sha256": "5424c573137de908a9670fdabd982603cb931c3102defb7e49e562fb5eb053ed"
+    }
+  ]
+}

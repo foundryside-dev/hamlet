@@ -1,0 +1,34 @@
+{
+  "recorder_returns": [
+    {
+      "emission": {
+        "bytes": 1731,
+        "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/sampler-emission-p-ef352dad020bf3b9ab0de78c84b1df5f8bce73c123ef466fd35f5facba686fa0-start.json",
+        "sha256": "1266a657a9a392b1f4bf6b5c8149283f5d42fd4e822a0f3391d5a7c24ad3a375"
+      },
+      "entry_ns": 127454023889954,
+      "phase": "start",
+      "process": {
+        "bytes": 37475,
+        "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/process-p-ef352dad020bf3b9ab0de78c84b1df5f8bce73c123ef466fd35f5facba686fa0-start.json",
+        "sha256": "c37eff02dfdb353d62e99fa23b48ee257557703091d9ee8c1e48287e05a65c52"
+      },
+      "return_ns": 127454117081397
+    },
+    {
+      "emission": {
+        "bytes": 1723,
+        "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/sampler-emission-p-ef352dad020bf3b9ab0de78c84b1df5f8bce73c123ef466fd35f5facba686fa0-end.json",
+        "sha256": "369936065183e8bc27d7c5f2f5c49b0e14f3db8a8a9bcc5b6560d077fca74c8e"
+      },
+      "entry_ns": 127454117134935,
+      "phase": "end",
+      "process": {
+        "bytes": 37429,
+        "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/process-p-ef352dad020bf3b9ab0de78c84b1df5f8bce73c123ef466fd35f5facba686fa0-end.json",
+        "sha256": "cf8745b908645f4b15dffc50a4a05e87fb003e77aee20204f283798926dec43b"
+      },
+      "return_ns": 127454201866934
+    }
+  ]
+}

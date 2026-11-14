@@ -1,0 +1,51 @@
+{
+  "schema": "bac-p2-owner-integration-plan-independent-review-v2",
+  "at": "2026-11-14T09:54:45.114134+00:00",
+  "reviewer": "/root/bac_astra_p2_integration_review",
+  "independence": "Separate reviewer; no authorship of plan or source changes.",
+  "plan": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-OWNER-INTEGRATION-PLAN-v2.md",
+    "bytes": 22095,
+    "sha256": "ed0e4a19fe2c27106d9ef32a86ffa4d6c1678c0e96b565413efc64b30019b56e"
+  },
+  "authenticated_input_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration-plan/input-inventory-v2.json",
+    "bytes": 13648,
+    "sha256": "fd525bba54d0eda2c37c579bd71e5955e284b359999f949337065d948229c134"
+  },
+  "predecessor_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration-plan/independent-review/review-v1.json",
+    "bytes": 11251,
+    "sha256": "208823a16c3821daac1e188e04ac7a0fa3ae424d51b20bbc15eb29a0b0cbd663"
+  },
+  "disposition": "APPROVE",
+  "scope": "Finite P2 owner transport and actual owned-process-group backstop implementation plan; no implementation/runtime/full-chain/hardware acceptance. Root retains execution/source/resource grant authority.",
+  "resolved": [
+    {
+      "id": "P2-PLAN-1",
+      "resolution": "v2 moves whole-call arithmetic vectors explicitly to required P4/P5 supplier test scope, UNRUN until adopted validator API and implementation. P2 retains sampler transport arithmetic and actual cleanup. All negative vectors, inclusive3/6/8/10, valid7.9/8.1, reap-before-ack and clock-domain restrictions preserved."
+    }
+  ],
+  "unresolved_p1_p2": [],
+  "verification": "Reviewed full v1-to-v2 textual diff. Exact v2 plan/inventory hashes match supplied pins; original input, body and verified-reference inventories unchanged. Prior static assessment remains applicable.",
+  "read_inventory": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-OWNER-INTEGRATION-PLAN-v2.md",
+      "bytes": 22095,
+      "sha256": "ed0e4a19fe2c27106d9ef32a86ffa4d6c1678c0e96b565413efc64b30019b56e"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration-plan/input-inventory-v2.json",
+      "bytes": 13648,
+      "sha256": "fd525bba54d0eda2c37c579bd71e5955e284b359999f949337065d948229c134"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration-plan/independent-review/review-v1.json",
+      "bytes": 11251,
+      "sha256": "208823a16c3821daac1e188e04ac7a0fa3ae424d51b20bbc15eb29a0b0cbd663"
+    }
+  ],
+  "body_budget": "No additional body inspection; review total remains one charged 1249-line runner body.",
+  "execution": "UNRUN: no project imports, tests, Git/index, branches/worktrees or source copies/edits.",
+  "remaining_prerequisites": "Current root source lease with APP writer quiescent for source-dependent execution; exact live-Git stall recipe/handshake and owned reaper custody sealed before backstop execution; explicit resource envelope. Actual P4/P5 and source-qualified owner instrumentation remain full-chain prerequisites, not blockers to independent bounded P2 work."
+}

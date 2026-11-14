@@ -1,0 +1,34 @@
+{
+  "recorder_returns": [
+    {
+      "emission": {
+        "bytes": 1731,
+        "path": "/tmp/bac-p3-inert-hl07_pak/output/attempt/job/sampler-emission-p-c785c11040243a66b891aaf295f6b6e8901b47dd62059d70e00c1319df1121d2-start.json",
+        "sha256": "fd7c03e8d40437f7a5083bdb286190586a6dd7288fbd761a2f48f5e3bfd44e61"
+      },
+      "entry_ns": 128037502567211,
+      "phase": "start",
+      "process": {
+        "bytes": 37475,
+        "path": "/tmp/bac-p3-inert-hl07_pak/output/attempt/job/process-p-c785c11040243a66b891aaf295f6b6e8901b47dd62059d70e00c1319df1121d2-start.json",
+        "sha256": "5ae355e68f2d4e752069d2a6e4127ce2cc0ef56fda8acc8699cf949b5c8fbd51"
+      },
+      "return_ns": 128037582696103
+    },
+    {
+      "emission": {
+        "bytes": 1723,
+        "path": "/tmp/bac-p3-inert-hl07_pak/output/attempt/job/sampler-emission-p-c785c11040243a66b891aaf295f6b6e8901b47dd62059d70e00c1319df1121d2-end.json",
+        "sha256": "8cc8a626ef0d349d046b018554fdd729417b830e5a845faee87eca055f0f810c"
+      },
+      "entry_ns": 128037582747938,
+      "phase": "end",
+      "process": {
+        "bytes": 37429,
+        "path": "/tmp/bac-p3-inert-hl07_pak/output/attempt/job/process-p-c785c11040243a66b891aaf295f6b6e8901b47dd62059d70e00c1319df1121d2-end.json",
+        "sha256": "3edf49a701a69e3327c00a62073b3e65c19229ed3e723b911ceafbedb3daa571"
+      },
+      "return_ns": 128037660873555
+    }
+  ]
+}

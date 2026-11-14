@@ -1,0 +1,119 @@
+{
+  "actual_git_identity": {
+    "candidate": {
+      "bytes": 208716,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r128-candidate.json",
+      "sha256": "89e36ada06c18b39c28fc74e1e85e08f87e4ea74c48410816e9da7c13104a982"
+    },
+    "head": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+    "tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d"
+  },
+  "at": "2026-11-14T09:34:15.754937+00:00",
+  "attempt_inventory": {
+    "bytes": 47959,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/attempt-inventory-v2.json",
+    "sha256": "1ca432c1bcf4a607d454d4fe82f3205c34561fb745375f795c4c38f071b28cec"
+  },
+  "body_inventory": [
+    {
+      "lines": 60,
+      "reference": {
+        "bytes": 2917,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      }
+    },
+    {
+      "lines": 526,
+      "reference": {
+        "bytes": 34654,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "lines": 1067,
+      "reference": {
+        "bytes": 65961,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+        "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+      }
+    },
+    {
+      "lines": 1126,
+      "reference": {
+        "bytes": 67361,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+        "sha256": "8666dc0c6419e189f7dc00de83f932d4f8600a980cd43db32e8d7af3ec049cb8"
+      }
+    },
+    {
+      "lines": 998,
+      "reference": {
+        "bytes": 45937,
+        "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py",
+        "sha256": "452e427b945475e050b35273b6bb44effe3ade6ef96629c4382c2d68591ee727"
+      }
+    }
+  ],
+  "ceiling": 3878,
+  "final_execution": {
+    "bytes": 3832,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/execution.json",
+    "sha256": "a760d0c7aa0f9aba5a3454074dfb22a5da8cdc51d044a76929533275e9ea12ee"
+  },
+  "final_log": {
+    "bytes": 195,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/output.log",
+    "sha256": "7cf043455402a30b7c416d1ea820d4ee94e14a2be10ec8205630c262f2715ff9"
+  },
+  "interface": {
+    "bytes": 10188,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/interface-contract-v4.json",
+    "sha256": "73c859f7fd6a09835eeae6a6b2cd594ab1982be63ec934edb1f296fd33ac34a3"
+  },
+  "output_retention": [
+    {
+      "bytes": 82618,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/negative31/output-retention-v1.json",
+      "sha256": "f33fbab8368fc91be058ba2c59fea0ecc94a789258534114a3c5cd363485cb5b"
+    },
+    {
+      "bytes": 447069,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/output-retention-v1.json",
+      "sha256": "2b68114e3da25f358308101e198f5109dbb25d3d1a90f545bd5865a35235a3b5"
+    }
+  ],
+  "predecessor": {
+    "bytes": 4147,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/freeze-v1.json",
+    "sha256": "1d3b4d5a10f978b5060cb5025af4abd3466b5e52239f1e4a989e07d25f9240e4"
+  },
+  "producer_negative_execution": {
+    "bytes": 3820,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/negative31/execution.json",
+    "sha256": "23a29fb655c77e337dd4b3d085062a32a27d34ef26489d1af603adcc3c55a3e7"
+  },
+  "result": {
+    "deselected": 3,
+    "exit_code": 0,
+    "passed": 100,
+    "pid": 214949
+  },
+  "review_gap_disposition": {
+    "bytes": 6100,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/review-gap-disposition-v2.json",
+    "sha256": "eb21f82883dcbaf9de5d780145da474b02c3c61f68ff07511e85e8cd89e1b31d"
+  },
+  "schema": "bac-p3-owner-amendment-freeze-v2",
+  "source_change": "NONE: exact source dee985 remains unchanged; test-only coverage repair.",
+  "status": "FROZEN AUTHOR CANDIDATE; independent actual-source review required",
+  "unrun": [
+    "Actual P2 owner/raw-v2/receipt correspondence integration",
+    "Actual P2 owned-process-group backstop after abrupt guard death with live sampler",
+    "Actual P4/P5 current strict payload/return/custody validation",
+    "APP producer qualification and real Torch/CUDA/server execution"
+  ],
+  "whole_body_count": 5,
+  "whole_body_lines": 3777
+}

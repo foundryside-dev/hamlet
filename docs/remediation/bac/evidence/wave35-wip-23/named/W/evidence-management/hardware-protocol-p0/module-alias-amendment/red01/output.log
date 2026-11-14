@@ -1,0 +1,410 @@
+........................................................................ [ 40%]
+...........................................................FFFFFFF...... [ 80%]
+...........................F.....FF                                      [100%]
+=================================== FAILURES ===================================
+_______ test_named_reference_module_aliases_preserve_exact_name[_pytest] _______
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+name = '_pytest'
+
+    @pytest.mark.parametrize("name", ["_pytest", "_pytest.config", "_pytest._code.code", "__main__", "__mp_main__", "_", "_" + "a" * 127])
+    def test_named_reference_module_aliases_preserve_exact_name(protocol, records, name):
+        named = {"name": name, "reference": records["reference"]}
+        records["process"]["imports"] = [named]
+        before = copy.deepcopy(records["process"])
+>       protocol.validate_record("named-reference", named)
+
+test_bac_hardware_protocol_v1.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+___ test_named_reference_module_aliases_preserve_exact_name[_pytest.config] ____
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+name = '_pytest.config'
+
+    @pytest.mark.parametrize("name", ["_pytest", "_pytest.config", "_pytest._code.code", "__main__", "__mp_main__", "_", "_" + "a" * 127])
+    def test_named_reference_module_aliases_preserve_exact_name(protocol, records, name):
+        named = {"name": name, "reference": records["reference"]}
+        records["process"]["imports"] = [named]
+        before = copy.deepcopy(records["process"])
+>       protocol.validate_record("named-reference", named)
+
+test_bac_hardware_protocol_v1.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+_ test_named_reference_module_aliases_preserve_exact_name[_pytest._code.code] __
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+name = '_pytest._code.code'
+
+    @pytest.mark.parametrize("name", ["_pytest", "_pytest.config", "_pytest._code.code", "__main__", "__mp_main__", "_", "_" + "a" * 127])
+    def test_named_reference_module_aliases_preserve_exact_name(protocol, records, name):
+        named = {"name": name, "reference": records["reference"]}
+        records["process"]["imports"] = [named]
+        before = copy.deepcopy(records["process"])
+>       protocol.validate_record("named-reference", named)
+
+test_bac_hardware_protocol_v1.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+______ test_named_reference_module_aliases_preserve_exact_name[__main__] _______
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+name = '__main__'
+
+    @pytest.mark.parametrize("name", ["_pytest", "_pytest.config", "_pytest._code.code", "__main__", "__mp_main__", "_", "_" + "a" * 127])
+    def test_named_reference_module_aliases_preserve_exact_name(protocol, records, name):
+        named = {"name": name, "reference": records["reference"]}
+        records["process"]["imports"] = [named]
+        before = copy.deepcopy(records["process"])
+>       protocol.validate_record("named-reference", named)
+
+test_bac_hardware_protocol_v1.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+_____ test_named_reference_module_aliases_preserve_exact_name[__mp_main__] _____
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+name = '__mp_main__'
+
+    @pytest.mark.parametrize("name", ["_pytest", "_pytest.config", "_pytest._code.code", "__main__", "__mp_main__", "_", "_" + "a" * 127])
+    def test_named_reference_module_aliases_preserve_exact_name(protocol, records, name):
+        named = {"name": name, "reference": records["reference"]}
+        records["process"]["imports"] = [named]
+        before = copy.deepcopy(records["process"])
+>       protocol.validate_record("named-reference", named)
+
+test_bac_hardware_protocol_v1.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+__________ test_named_reference_module_aliases_preserve_exact_name[_] __________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+name = '_'
+
+    @pytest.mark.parametrize("name", ["_pytest", "_pytest.config", "_pytest._code.code", "__main__", "__mp_main__", "_", "_" + "a" * 127])
+    def test_named_reference_module_aliases_preserve_exact_name(protocol, records, name):
+        named = {"name": name, "reference": records["reference"]}
+        records["process"]["imports"] = [named]
+        before = copy.deepcopy(records["process"])
+>       protocol.validate_record("named-reference", named)
+
+test_bac_hardware_protocol_v1.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+_ test_named_reference_module_aliases_preserve_exact_name[_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] _
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+name = '_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    @pytest.mark.parametrize("name", ["_pytest", "_pytest.config", "_pytest._code.code", "__main__", "__mp_main__", "_", "_" + "a" * 127])
+    def test_named_reference_module_aliases_preserve_exact_name(protocol, records, name):
+        named = {"name": name, "reference": records["reference"]}
+        records["process"]["imports"] = [named]
+        before = copy.deepcopy(records["process"])
+>       protocol.validate_record("named-reference", named)
+
+test_bac_hardware_protocol_v1.py:619: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+_____________________ test_module_alias_duplicates_refuse ______________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_module_alias_duplicates_refuse(protocol, records):
+        named = {"name": "_pytest", "reference": records["reference"]}
+        records["process"]["imports"] = [named, copy.deepcopy(named)]
+        with pytest.raises(ValueError, match="duplicate name"):
+>           protocol.validate_record("process", records["process"])
+
+test_bac_hardware_protocol_v1.py:659: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_module_alias_duplicates_refuse(protocol, records):
+        named = {"name": "_pytest", "reference": records["reference"]}
+        records["process"]["imports"] = [named, copy.deepcopy(named)]
+>       with pytest.raises(ValueError, match="duplicate name"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'duplicate name'
+E        Input: 'unsafe ID'
+
+test_bac_hardware_protocol_v1.py:658: AssertionError
+______________ test_module_alias_cannot_replace_pinned_tool[spec] ______________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+kind = 'spec'
+
+    @pytest.mark.parametrize("kind", ["spec", "admission-request"])
+    def test_module_alias_cannot_replace_pinned_tool(protocol, records, kind):
+        records[kind]["tools"][0]["name"] = "_pytest"
+        with pytest.raises(ValueError, match="required tools missing|missing/unknown pinned tool"):
+>           protocol.validate_record(kind, records[kind])
+
+test_bac_hardware_protocol_v1.py:686: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+kind = 'spec'
+
+    @pytest.mark.parametrize("kind", ["spec", "admission-request"])
+    def test_module_alias_cannot_replace_pinned_tool(protocol, records, kind):
+        records[kind]["tools"][0]["name"] = "_pytest"
+>       with pytest.raises(ValueError, match="required tools missing|missing/unknown pinned tool"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'required tools missing|missing/unknown pinned tool'
+E        Input: 'unsafe ID'
+
+test_bac_hardware_protocol_v1.py:685: AssertionError
+_______ test_module_alias_cannot_replace_pinned_tool[admission-request] ________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+kind = 'admission-request'
+
+    @pytest.mark.parametrize("kind", ["spec", "admission-request"])
+    def test_module_alias_cannot_replace_pinned_tool(protocol, records, kind):
+        records[kind]["tools"][0]["name"] = "_pytest"
+        with pytest.raises(ValueError, match="required tools missing|missing/unknown pinned tool"):
+>           protocol.validate_record(kind, records[kind])
+
+test_bac_hardware_protocol_v1.py:686: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac_hardware_protocol_v1.py:267: in _check
+    _require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value) is not None and value not in (".", ".."), "unsafe ID")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unsafe ID'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unsafe ID
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+kind = 'admission-request'
+
+    @pytest.mark.parametrize("kind", ["spec", "admission-request"])
+    def test_module_alias_cannot_replace_pinned_tool(protocol, records, kind):
+        records[kind]["tools"][0]["name"] = "_pytest"
+>       with pytest.raises(ValueError, match="required tools missing|missing/unknown pinned tool"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'required tools missing|missing/unknown pinned tool'
+E        Input: 'unsafe ID'
+
+test_bac_hardware_protocol_v1.py:685: AssertionError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_protocol_v1.py::test_named_reference_module_aliases_preserve_exact_name[_pytest]
+FAILED test_bac_hardware_protocol_v1.py::test_named_reference_module_aliases_preserve_exact_name[_pytest.config]
+FAILED test_bac_hardware_protocol_v1.py::test_named_reference_module_aliases_preserve_exact_name[_pytest._code.code]
+FAILED test_bac_hardware_protocol_v1.py::test_named_reference_module_aliases_preserve_exact_name[__main__]
+FAILED test_bac_hardware_protocol_v1.py::test_named_reference_module_aliases_preserve_exact_name[__mp_main__]
+FAILED test_bac_hardware_protocol_v1.py::test_named_reference_module_aliases_preserve_exact_name[_]
+FAILED test_bac_hardware_protocol_v1.py::test_named_reference_module_aliases_preserve_exact_name[_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+FAILED test_bac_hardware_protocol_v1.py::test_module_alias_duplicates_refuse
+FAILED test_bac_hardware_protocol_v1.py::test_module_alias_cannot_replace_pinned_tool[spec]
+FAILED test_bac_hardware_protocol_v1.py::test_module_alias_cannot_replace_pinned_tool[admission-request]
+10 failed, 169 passed in 2.72s

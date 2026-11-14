@@ -1,0 +1,50 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/green25/tmp",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "prepared_reference_size or primitive_reference_rejects_namespace or fork_claim_precedes_source"
+  ],
+  "actual_argv": [],
+  "pid": 213046,
+  "stat": "213046 (python) R 213045 213046 213046 0 -1 4194560 6 0 0 0 0 0 0 0 20 0 1 0 12713164 7671808 0 18446744073709551615 0 0 140731015389485 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 140731015389485 0 0 0 0\n",
+  "start": "2026-11-14T09:17:01.305999+00:00",
+  "end": "2026-11-14T09:17:13.340125+00:00",
+  "exit_code": 0,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "sha256": "37c43a6927dedd185ac6d319fa7d1abd7f8bced4335aa4669888e73f73ab5e00",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/green25/bac_hardware_identity_v1.py.txt",
+      "lines": 1057
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "sha256": "6293b96265f7a246756aaadc374592446408e2b6ad7a063b57b5bb69c58e8962",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/green25/test_bac_hardware_identity_v1.py.txt",
+      "lines": 1019
+    }
+  ],
+  "interpreter": "/usr/bin/python3.13",
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "cpu_max": "400000 100000\n",
+  "memory_current": "2012553216\n"
+}

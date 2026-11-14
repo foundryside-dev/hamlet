@@ -1,0 +1,223 @@
+{
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 207540,
+    "path": "wave35/r133-candidate.json",
+    "root": "W",
+    "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+  },
+  "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+  "checkpoint_id": "wave35-wip-23",
+  "contract": {
+    "root": "W",
+    "path": "evidence-management/wip23-preparation/root-checkpoint-contract-v1.json",
+    "bytes": 11808,
+    "sha256": "1af66eae6d628f84373fbe835a5c37b35b13bbf3b5d1f6ae1c2289ed8ef7a70f"
+  },
+  "document_approval": {
+    "bytes": 2355,
+    "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/ROOT-DOCUMENT-REVIEW-v1.json",
+    "root": "W",
+    "sha256": "a54c70ef0a896925a8944e7518566e8ce8934e9a8cc357b199870b035974283a"
+  },
+  "documents": [
+    {
+      "bytes": 9158,
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "root": "W",
+      "sha256": "80389141f88757ec09b5503aca379248e018aa6b3724bb8c1edf26edef764206"
+    },
+    {
+      "bytes": 24746,
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/EVIDENCE-INDEX.md",
+      "root": "W",
+      "sha256": "68e427f83864e3b463e48565b820cce8debbe73976589ccd3491b6472cb7fafd"
+    },
+    {
+      "bytes": 33433,
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/README.md",
+      "root": "W",
+      "sha256": "a055986ffc6f1901bce6819cb759b48e0b92fd940d2d347e97e8e02d6f06214f"
+    },
+    {
+      "bytes": 113723,
+      "path": "evidence-management/wip23-preparation/root-reviewed-document-postimages-v1/STATUS.md",
+      "root": "W",
+      "sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371"
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "98e9c3d4ba485e4e819b652999f731e66076dda6",
+    "tests": "a37d56a71779e4e2054ea102d87a25d84c47f4c5"
+  },
+  "interval": [
+    123,
+    133
+  ],
+  "overlap_accounting": {
+    "R121_owner_failed_historical": 215,
+    "R132_C1_fresh_poison_passed": 7,
+    "R132_C1_ordinary_passed": 133,
+    "R132_POP_repeat_not_added": 25,
+    "R132_independent_passed": 36,
+    "R132_independent_warnings": 12,
+    "R133_POP_passed": 25,
+    "R133_global_mypy_errors": 12,
+    "collection_is_runtime": false,
+    "same_byte_supplier_not_R133_execution": true,
+    "sum_selections": false
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "pending_inputs": [
+    "Genuine independent terminal review of this frozen subject, R133 candidate, component evidence and root-reviewed receipt draft.",
+    "Root final receipt seal and neutral selection/materialization; then exact publication/remote verification."
+  ],
+  "qualifying_checks": [
+    "wave35-r133-pop-owners-runtime-attempt-1--pop-owners-runtime"
+  ],
+  "required_components": [
+    {
+      "bytes": 38885,
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r123-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "178907fafc9a586c47b359e3d29e155d31e4369669e32cedd96d00c0f5f9a0f8"
+    },
+    {
+      "bytes": 31108,
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r124-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "ab3b534c9bdd04f6614c407b0c37ccf329600d9c18ca5f10f0ccaa311319e2bf"
+    },
+    {
+      "bytes": 18208,
+      "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r125-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "f0834656bef379bd0a6ae40a3ba155d8ac8fede5c54ed15a645b1ad77794f70d"
+    },
+    {
+      "bytes": 83569,
+      "candidate_tree": "c02a3aa45c487a74d8b4e1ed408df786f69f304e",
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r126-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "d7f0d34674d38705051f60b670ee9a53c7b18d0d2f13f181c214ab28e32fb150"
+    },
+    {
+      "bytes": 52853,
+      "candidate_tree": "60c786588781251f5dcadff6067ecbbf3cfe4cfb",
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r127-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "e24f54d16c0bdb1510f348fcc6f064947e61544bbb0278302901215e161d4ae3"
+    },
+    {
+      "bytes": 22349,
+      "candidate_tree": "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r128-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "ff9a59da81be05002843bf09e6c941f3595969f7692796d23f479fcfb563acbe"
+    },
+    {
+      "bytes": 34953,
+      "candidate_tree": "e3d2274b34a6c8a6620a803fdf041d05151b66a0",
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r129-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "23370d7113a887a12aa44cdad9fa0f5429d0a6c786eae34784e870f06ba0d76f"
+    },
+    {
+      "bytes": 89425,
+      "candidate_tree": "c1d97d11ba34a87357da67d1f506040fd1d3c9f3",
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r130-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "a7d47b4241c3e0a818f4178a3e432bc4d3392808c124f68b7af10b4534c0274f"
+    },
+    {
+      "bytes": 34059,
+      "candidate_tree": "f672f656e43c2965a0637227e23c1297197fdf8c",
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "3760f75cfc4a566ed1e1fb27f723e63d9b5b7fab15d09e496ab48b92c05f63a3"
+    },
+    {
+      "bytes": 173738,
+      "candidate_tree": "87390af4872bfd734a9d71a228faac5b4d98672a",
+      "path": "evidence-management/wip23-preparation/closed-r132-v1/r132-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "0577bcd6d1061dafd59bf18d0f4335a73985399804ae4d7c4871a8a3a03d584c"
+    },
+    {
+      "bytes": 39370,
+      "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+      "path": "evidence-management/wip23-preparation/closed-r133-v1/r133-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed own-source history; retain failures/UNRUNs, not full programme acceptance.",
+      "sha256": "a0c29aa7fa8501c80df87973f472e6a57ee68d7fc5ce9fde0af9f2f7be8d21f5"
+    },
+    {
+      "bytes": 34579,
+      "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+      "path": "evidence-management/wip23-preparation/packet-v3/p0-adopted-component-proposal-v2.json",
+      "root": "W",
+      "scope": "P0 literal module aliases only; no full-chain/hardware acceptance Checkpoint inclusion anchor only; P0 synthetic tool checks do not claim APP execution.",
+      "sha256": "42d2ccb0297492f5f8945ce21a3fa2b8e4b9449c54a2362afb02ef7ed374aab5"
+    },
+    {
+      "bytes": 2931666,
+      "candidate_tree": "e3d2274b34a6c8a6620a803fdf041d05151b66a0",
+      "path": "evidence-management/wip23-preparation/packet-v3/p3-adopted-component-proposal-v2.json",
+      "root": "W",
+      "scope": "P3 owner amendment only; author100 onR128 and independent15 onR129 plus retained85 Q-only earlier checks; no new same-source100 or hardware claim Actual adopted P3 R129 source lease; R128/R129 test executions remain separately attributed.",
+      "sha256": "3e53e8398dff777afa2694673b412a585215c502b69b0f4a0c9b4d54d73268a0"
+    }
+  ],
+  "required_next": [
+    "P2 approved v2 owner integration remains required next work; Task1 implementation is IN PROGRESS and excluded.",
+    "Remaining owner/ENV/restore/cohort/recurrent/runner, mypy12, full/default suites, coverage\u226570%, slow/learning, actual CUDA/B6 gates remain open."
+  ],
+  "root_component_qualification": {
+    "bytes": 8106,
+    "path": "evidence-management/wip23-preparation/root-r133-component-qualification-v1.json",
+    "root": "W",
+    "sha256": "65794f87735b8aec272061513ef34eb8173840bf748fd1ee53b2466c8d385979"
+  },
+  "root_historical_source_attestation": {
+    "bytes": 11280,
+    "path": "evidence-management/wip23-preparation/root-historical-source-attestation-v1.json",
+    "root": "W",
+    "sha256": "72bae1c346fd428137a53cfc9d008a952b59258e2043b8a5ea30e3bbf91b0d95"
+  },
+  "root_identity": {
+    "bytes": 906,
+    "path": "evidence-management/wip23-preparation/root-r133-execution-identity-v1.json",
+    "root": "W",
+    "sha256": "006d590ac278419c9a56f219514234d3bc26130fd004b3f16dfe9f7ac5b82bd6"
+  },
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "scope": "Finite evidence checkpoint; own-source component results, no fullBAC/hardware acceptance.",
+  "series": "wave35",
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "supporting_closure": {
+    "bytes": 930564,
+    "path": "evidence-management/wip23-preparation/packet-v1/supporting-closure-proposal-v1.json",
+    "root": "W",
+    "sha256": "da94735d07655e0846d006ec079280c4647b545667e2b4364e6c05f3a08fff49"
+  }
+}

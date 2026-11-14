@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-14T09:56:49.140823+00:00",
+  "status": "EXACT R131 SOURCE BYTES RETAINED",
+  "basis": "Root-authorized hash match of existing bytes; observed now, no historical execution recreation. R132 not sealed.",
+  "files": [
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-exact-source-retention-v1/exploration_policy.py.txt",
+      "bytes": 65151,
+      "sha256": "5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363",
+      "original": "/workspace/hamlet/src/townlet/config/exploration_policy.py"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-exact-source-retention-v1/scoped_curiosity.py.txt",
+      "bytes": 70651,
+      "sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c",
+      "original": "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py"
+    }
+  ]
+}

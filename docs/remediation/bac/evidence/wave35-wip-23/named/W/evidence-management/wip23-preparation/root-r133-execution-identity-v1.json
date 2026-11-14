@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-14T10:01:23.985340+00:00",
+  "candidate_manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r133-candidate.json",
+    "bytes": 207540,
+    "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+  },
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+  "execution_subtrees": {
+    "src": "98e9c3d4ba485e4e819b652999f731e66076dda6",
+    "tests": "a37d56a71779e4e2054ea102d87a25d84c47f4c5",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+  },
+  "source_index_guards": "PASS; actual observed R133 index/source equality before publication",
+  "worktree_registry_records": 14,
+  "available_worktrees": 1
+}

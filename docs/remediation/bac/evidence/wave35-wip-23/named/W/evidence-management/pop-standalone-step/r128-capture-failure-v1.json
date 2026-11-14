@@ -1,0 +1,62 @@
+{
+  "at": "2026-11-14T09:29:55.709082+00:00",
+  "status": "R128 CAPTURE ATTEMPT1 FAILED BEFORE MANIFEST/EXECUTION",
+  "cause": "Duplicate historical maintenance inventory retained parent-handoff ceiling800 but current reviewed source832; activePOPscope had already832-compatible ceiling.",
+  "old_scope": [
+    {
+      "path": "src/townlet/population/vectorized.py",
+      "projected_lines": 3200,
+      "access": "modify_only_after_genuine_RED_and_authored_review"
+    },
+    {
+      "path": "src/townlet/training/episode.py",
+      "projected_lines": 176,
+      "access": "read_only"
+    },
+    {
+      "path": "src/townlet/training/clock_ledger.py",
+      "projected_lines": 48,
+      "access": "read_only"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "projected_lines": 800,
+      "access": "only_bounded_current_caller_and_true_participant_helper_adaptation_on_baton"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "projected_lines": 775,
+      "access": "new_original_focused_regression"
+    }
+  ],
+  "current_inventory_only": [
+    {
+      "path": "src/townlet/population/vectorized.py",
+      "projected_lines": 3169,
+      "access": "modify_only_after_genuine_RED_and_authored_review"
+    },
+    {
+      "path": "src/townlet/training/episode.py",
+      "projected_lines": 176,
+      "access": "read_only"
+    },
+    {
+      "path": "src/townlet/training/clock_ledger.py",
+      "projected_lines": 48,
+      "access": "read_only"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "projected_lines": 832,
+      "access": "only_bounded_current_caller_and_true_participant_helper_adaptation_on_baton"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "projected_lines": 775,
+      "access": "new_original_focused_regression"
+    }
+  ],
+  "scope": "Tighten each entry to exact current body lengths, aggregate5000/5; this inventory does not claim fresh historical reviewer acceptance. Current actual POP independent review includes4bodies4878 + priorhelper115 =4993/5.",
+  "source_changes": false,
+  "tests_run": false
+}

@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-14T09:14:44.008001+00:00",
+  "candidate_tree": "c02a3aa45c487a74d8b4e1ed408df786f69f304e",
+  "collection": 31,
+  "ordinary_red": {
+    "failed": 30,
+    "passed": 0,
+    "skipped": 0,
+    "cause": "All30 assert missing callable failure_diagnostic_state; exact negative custody verified"
+  },
+  "isolated_poison_red": {
+    "status": "UNRUN",
+    "reason": "Same absent API already established; fresh isolated completion case remains required after implementation"
+  },
+  "disposition": "Release bounded runtime/BANK producer implementation; tests/helper frozen; no completion acceptance"
+}

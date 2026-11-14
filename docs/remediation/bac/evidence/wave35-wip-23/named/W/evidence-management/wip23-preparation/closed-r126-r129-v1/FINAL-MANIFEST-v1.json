@@ -1,0 +1,53 @@
+{
+  "accounting": {
+    "Q_members": 24,
+    "attempts": 16,
+    "checks": 16,
+    "unrun": 8
+  },
+  "files": [
+    {
+      "bytes": 5760,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/HANDOFF-v1.json",
+      "root": "W",
+      "sha256": "e80e383f6a3ab635174adc7c4bc01c7325c912b2c9d92ec6072dabac3d47078a"
+    },
+    {
+      "bytes": 83569,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r126-history-component-v1.json",
+      "root": "W",
+      "sha256": "d7f0d34674d38705051f60b670ee9a53c7b18d0d2f13f181c214ab28e32fb150"
+    },
+    {
+      "bytes": 52853,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r127-history-component-v1.json",
+      "root": "W",
+      "sha256": "e24f54d16c0bdb1510f348fcc6f064947e61544bbb0278302901215e161d4ae3"
+    },
+    {
+      "bytes": 22349,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r128-history-component-v1.json",
+      "root": "W",
+      "sha256": "ff9a59da81be05002843bf09e6c941f3595969f7692796d23f479fcfb563acbe"
+    },
+    {
+      "bytes": 34953,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r129-history-component-v1.json",
+      "root": "W",
+      "sha256": "23370d7113a887a12aa44cdad9fa0f5429d0a6c786eae34784e870f06ba0d76f"
+    },
+    {
+      "bytes": 28765,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/supporting-closure-v1.json",
+      "root": "W",
+      "sha256": "cb830bccdecd52481931c7ff5c3e66e3d90ecf0f01e46dbec0eb45a2ad788199"
+    }
+  ],
+  "interval": [
+    126,
+    129
+  ],
+  "schema": "bac-closed-history-preparation-manifest-v1",
+  "status": "IMMUTABLE ADDITIVE INVENTORY; OPEN OBLIGATIONS IN HANDOFF",
+  "verification": "All selected reference bytes rehashed and matched before manifest; exact Q member and descendant inventories retained. No APP/helper execution or Git calls."
+}

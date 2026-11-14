@@ -1,0 +1,638 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [10 items]
+
+FF.FFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+_ test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-raises-per_world] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f113011e780>
+scope = 'per_world', cleanup_raises = True, seam = 'physics'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+        assert raised.value is primary
+        assert len(physical_calls) == rig.env.global_tick == 1
+        assert [owner for owner, _, _ in cleanup_calls] == ["runtime", "env"]
+>       assert all(token is accepted and reason == "runtime_failure" for _, token, reason in cleanup_calls)
+E       assert False
+E        +  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f1124b0b1f0>)
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:74: AssertionError
+___ test_actual_parent_handoff_single_reward_service_and_replay[shared-none] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f9e8c01e780>
+family = 'none', scope = 'shared'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    def test_actual_parent_handoff_single_reward_service_and_replay(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+        """Actual ENV/composer/replay; requires the separately implemented ENV handoff consumer."""
+        rig = make_parent(compiled, family, scope)
+        rig.enter()
+        before = rig.population.current_obs.clone()
+        calls = observe_runtime(monkeypatch, rig)
+        inserted: list[dict[str, Any]] = []
+        original_push = rig.population.replay_buffer.push_recorded
+    
+        def push(**kwargs: Any) -> None:
+            original_push(**kwargs)
+            inserted.append(copy.deepcopy(kwargs))
+    
+        monkeypatch.setattr(rig.population.replay_buffer, "push_recorded", push)
+>       state = rig.population.step_population(rig.env)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py:409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:2092: in step_population
+    state = self._execute_population_step(envs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:2363: in _execute_population_step
+    self._learn()
+src/townlet/population/vectorized.py:800: in _learn
+    batch = self.replay_buffer.sample_batch(request)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:617: in guarded
+    with self._device_operation("sample", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=True):
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+arguments = {}
+
+    def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+        try:
+            lineage = arguments["lineage"]
+        except KeyError:
+>           raise TypeError("Missing required keyword-only argument: 'lineage'") from None
+E           TypeError: Missing required keyword-only argument: 'lineage'
+E           Quarantine failure retained with original step error: ValueError('unsupported quarantine reason')
+
+src/townlet/training/replay_contract.py:566: TypeError
+_ test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-ok-shared] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f113011ec40>
+scope = 'shared', cleanup_raises = False, seam = 'sample'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+>       assert raised.value is primary
+E       assert TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") is RuntimeError('injected standalone failure after actual sample')
+E        +  where TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") = <ExceptionInfo TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") tblen=4>.value
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:71: AssertionError
+_ test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-ok-per_world] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1124a62690>
+scope = 'per_world', cleanup_raises = False, seam = 'sample'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+>       assert raised.value is primary
+E       assert TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") is RuntimeError('injected standalone failure after actual sample')
+E        +  where TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") = <ExceptionInfo TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") tblen=4>.value
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:71: AssertionError
+_ test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-raises-shared] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f1124099260>
+scope = 'shared', cleanup_raises = True, seam = 'sample'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+>       assert raised.value is primary
+E       assert TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") is RuntimeError('injected standalone failure after actual sample')
+E        +  where TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") = <ExceptionInfo TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") tblen=4>.value
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:71: AssertionError
+_ test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-raises-per_world] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f11240c0f30>
+scope = 'per_world', cleanup_raises = True, seam = 'sample'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+>       assert raised.value is primary
+E       assert TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") is RuntimeError('injected standalone failure after actual sample')
+E        +  where TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") = <ExceptionInfo TypeError("test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'") tblen=4>.value
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:71: AssertionError
+_ test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-raises-shared] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f11240eed50>
+scope = 'shared', cleanup_raises = True, seam = 'physics'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+        assert raised.value is primary
+        assert len(physical_calls) == rig.env.global_tick == 1
+        assert [owner for owner, _, _ in cleanup_calls] == ["runtime", "env"]
+>       assert all(token is accepted and reason == "runtime_failure" for _, token, reason in cleanup_calls)
+E       assert False
+E        +  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f1108d38220>)
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:74: AssertionError
+_ test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-ok-shared] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f9e791fab10>
+scope = 'shared', cleanup_raises = False, seam = 'physics'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+        assert raised.value is primary
+        assert len(physical_calls) == rig.env.global_tick == 1
+        assert [owner for owner, _, _ in cleanup_calls] == ["runtime", "env"]
+>       assert all(token is accepted and reason == "runtime_failure" for _, token, reason in cleanup_calls)
+E       assert False
+E        +  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f9e793e48b0>)
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:74: AssertionError
+_ test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-ok-per_world] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f9e7918f130>
+scope = 'per_world', cleanup_raises = False, seam = 'physics'
+
+    @pytest.mark.parametrize("scope", ("shared", "per_world"))
+    @pytest.mark.parametrize("cleanup_raises", (False, True), ids=("cleanup-ok", "cleanup-raises"))
+    @pytest.mark.parametrize("seam", ("physics", "sample"))
+    def test_standalone_failure_quarantines_without_replacing_cause(
+        compiled: Any, monkeypatch: Any, scope: str, cleanup_raises: bool, seam: str
+    ) -> None:
+        """Catch missing sample lineage, rejected quarantine reasons, and lost primary errors."""
+        rig = make_parent(compiled, "rnd", scope)
+        rig.enter()
+        rig.runtime.checkpoint_state()  # Establish healthy public access before the failure.
+        pop, accepted = rig.population, rig.record.accepted
+        primary = RuntimeError(f"injected standalone failure after actual {seam}")
+        secondary = RuntimeError("injected after actual runtime and BANK quarantine")
+        before_parameters = tuple(parameter.detach().clone() for parameter in pop.q_network.parameters())
+        physical_calls: list[None] = []
+        sampled: list[Any] = []
+        sample_lineages: list[Any] = []
+        cleanup_calls: list[tuple[str, Any, str]] = []
+        completed_cleanup: list[str] = []
+        physical_step = rig.env.step
+        sample = pop.replay_buffer.sample_batch
+        quarantine = rig.runtime.quarantine_episode
+        abandon = rig.env.abandon_episode
+    
+        def physical_step_then_fail(*args: Any, **kwargs: Any) -> Any:
+            physical_calls.append(None)
+            result = physical_step(*args, **kwargs)
+            if seam == "physics":
+                raise primary
+            return result
+    
+        def sample_then_fail(request: Any, *, lineage: Any) -> Any:
+            sample_lineages.append(lineage)
+            assert lineage is None
+            sampled.append(sample(request, lineage=lineage))
+            raise primary
+    
+        def quarantine_then_maybe_fail(*, accepted: Any, reason: str) -> None:
+            cleanup_calls.append(("runtime", accepted, reason))
+            quarantine(accepted=accepted, reason=reason)
+            completed_cleanup.append("runtime")
+            if cleanup_raises:
+                raise secondary
+    
+        def observe_abandon(*, accepted: Any, reason: str) -> Any:
+            cleanup_calls.append(("env", accepted, reason))
+            result = abandon(accepted=accepted, reason=reason)
+            completed_cleanup.append("env")
+            return result
+    
+        monkeypatch.setattr(rig.env, "step", physical_step_then_fail)
+        monkeypatch.setattr(pop.replay_buffer, "sample_batch", sample_then_fail)
+        monkeypatch.setattr(rig.runtime, "quarantine_episode", quarantine_then_maybe_fail)
+        monkeypatch.setattr(rig.env, "abandon_episode", observe_abandon)
+    
+        with pytest.raises(Exception) as raised:
+            pop.step_population(rig.env)
+        assert raised.value is primary
+        assert len(physical_calls) == rig.env.global_tick == 1
+        assert [owner for owner, _, _ in cleanup_calls] == ["runtime", "env"]
+>       assert all(token is accepted and reason == "runtime_failure" for _, token, reason in cleanup_calls)
+E       assert False
+E        +  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f9e792af2e0>)
+
+tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py:74: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-raises-per_world]
+FAILED tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay[shared-none]
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-ok-shared]
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-ok-per_world]
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-raises-shared]
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-raises-per_world]
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-raises-shared]
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-ok-shared]
+FAILED tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-ok-per_world]
+========================= 9 failed, 1 passed in 15.16s =========================

@@ -1,0 +1,20 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_prepared_reference_size_refuses_before_read _______________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...red_reference_size_r0/freeze.json', 'sha256': 'ce45ee89134004137d5c94182b34a65fb7edd557dea76783a64721d6b8c0c9fb'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f028ace4c30>
+
+    def test_prepared_reference_size_refuses_before_read(capsule,monkeypatch):
+        api=_api();reference=capsule['blobref'];capsule['blob'].write_bytes(b'x'*100000)
+        reads=[];read=api.os.read
+        def observe(fd,size): reads.append(fd);return read(fd,size)
+        monkeypatch.setattr(api.os,'read',observe)
+>       with pytest.raises(ValueError):api._primitive_ref(str(capsule['blob']),reference)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: _primitive_ref() takes 1 positional argument but 2 were given
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:940: TypeError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_prepared_reference_size_refuses_before_read
+1 failed, 95 deselected in 0.54s

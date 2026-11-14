@@ -1,0 +1,28 @@
+{
+  "argv": [
+    "/usr/local/bin/git",
+    "-C",
+    "/workspace/hamlet",
+    "diff-index",
+    "--cached",
+    "--quiet",
+    "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+    "--"
+  ],
+  "end_ns": 127990685836389,
+  "exit_code": 0,
+  "pid": 214918,
+  "start_ns": 127990676858472,
+  "stderr": {
+    "bytes": 0,
+    "path": "/tmp/bac-p3-inert-q811q2n7/output/attempt/job/sampler-p-abae3b08d95f95fcc1ba724d51e0a19e261bc6fadcb570ff68a59470b41c77a9-end-1.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr_truncated": false,
+  "stdout": {
+    "bytes": 0,
+    "path": "/tmp/bac-p3-inert-q811q2n7/output/attempt/job/sampler-p-abae3b08d95f95fcc1ba724d51e0a19e261bc6fadcb570ff68a59470b41c77a9-end-1.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout_truncated": false
+}

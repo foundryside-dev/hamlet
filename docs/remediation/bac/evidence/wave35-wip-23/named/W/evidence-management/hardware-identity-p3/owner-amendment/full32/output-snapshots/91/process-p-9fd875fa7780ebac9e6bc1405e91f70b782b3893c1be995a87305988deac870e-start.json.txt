@@ -1,0 +1,898 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-c",
+    "from multiprocessing.spawn import spawn_main; spawn_main(tracker_fd=14, pipe_handle=16)",
+    "--multiprocessing-fork"
+  ],
+  "at": "2026-11-14T09:32:17.792870Z",
+  "attempt_id": "attempt",
+  "cuda_observation": "forbidden",
+  "cwd": "/workspace/hamlet",
+  "debug": {
+    "provenance": {
+      "bytes": 7822,
+      "path": "/tmp/bac-p3-inert-y5ptiui5/output/attempt/job/process-p-9fd875fa7780ebac9e6bc1405e91f70b782b3893c1be995a87305988deac870e-observation-start.json",
+      "sha256": "b84dda3decb9e171ca924738aa0e1b071d75ab9219695d509565c468f2d33f11"
+    },
+    "reason": "guard-only: no Torch/CUDA calls permitted",
+    "state": "unavailable",
+    "value": null
+  },
+  "devices": [],
+  "elapsed_ns": {
+    "reason": "process start has no elapsed interval",
+    "state": "unavailable",
+    "value": null
+  },
+  "environment": {
+    "BROWSER_MANAGEMENT_SOCKET_PATH": "/home/agent/.local/run/browser-management/socket",
+    "CAAS_DIND_STORAGE_DRIVER": "vfs",
+    "CAAS_IMAGE_GIT_COMMIT_SHA": "969fca457cb91df54eb491d22bcaff20654139fe",
+    "CAAS_IMAGE_VERSION": "20261019221748-969fca457cb9",
+    "CLOUDSDK_CORE_CUSTOM_CA_CERTS_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS": "1",
+    "CODEX_BROWSER_DEFER_ACTIVATION": "1",
+    "CODEX_CAAS_SESSION_ID": "8b2c2c5624924e16852b25f75fe6149b",
+    "CODEX_CI": "1",
+    "CODEX_ENVIRONMENT_ID": "ccarenv_b64_Y2NhcmVudl9iNTE4NmVkNmE1NzQ4MTkxYTI4Njc1NDgxMTY2MDc3Yw",
+    "CODEX_EXEC_SERVER_PROXY_PRIVATE_IPS_VIA_UPSTREAM": "true",
+    "CODEX_EXEC_SERVER_REMOTE_BASE_URL": "https://codex-cloud-environments.chatgpt.com/api",
+    "CODEX_HOME": "/home/agent/.codex",
+    "CODEX_NO_UPDATE": "1",
+    "CODEX_PRIMARY_RUNTIME": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PRIMARY_RUNTIME_BUNDLE_VERSION": "26.1013.11914",
+    "CODEX_PRIMARY_RUNTIME_NODE": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "CODEX_PRIMARY_RUNTIME_NODE_MODULES": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "CODEX_PRIMARY_RUNTIME_PYTHON": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "CODEX_PRIMARY_RUNTIME_ROOT": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PROXY_CERT": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "CODEX_SANDBOX_NETWORK_DISABLED": "1",
+    "CODEX_SESSION_ID": "01a193e8-ae65-741d-9700-f53bdb72809b",
+    "CODEX_THREAD_ID": "6af803f8-22dc-8191-925e-3aa7f511d0b3",
+    "CODEX_TOOL_CALL_ID": "exec-b3c64b2d-ee74-4129-b4f4-017f6767279c",
+    "CODEX_VERSION": "0.0.0",
+    "COLORTERM": "",
+    "COLUMNS": "80",
+    "CUDA_VISIBLE_DEVICES": "",
+    "DEBIAN_FRONTEND": "noninteractive",
+    "DOCKER_IGNORE_BR_NETFILTER_ERROR": "1",
+    "DOCKER_TLS_CERTDIR": "",
+    "GH_PAGER": "cat",
+    "GH_TOKEN": "ghu_codex-cloud-github-proxy",
+    "GIT_PAGER": "cat",
+    "GRPC_DEFAULT_SSL_ROOTS_FILE_PATH": "/etc/ssl/certs/ca-certificates.crt",
+    "HOME": "/home/agent",
+    "HTTPS_PROXY": "http://proxy:8080",
+    "HTTP_PROXY": "http://proxy:8080",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "LINES": "24",
+    "MKL_NUM_THREADS": "1",
+    "NETWORK": "caas_neko_desktop",
+    "NODE_EXTRA_CA_CERTS": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "NODE_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "NO_COLOR": "1",
+    "NO_PROXY": "localhost,127.0.0.1,::1",
+    "NPM_CONFIG_AUDIT": "false",
+    "NPM_CONFIG_FUND": "false",
+    "NPM_CONFIG_PREFIX": "/home/agent/.local",
+    "OMP_NUM_THREADS": "1",
+    "OPENAI_CLUSTER": "applied-caas24",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PAGER": "cat",
+    "PATH": "/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "PLAYWRIGHT_NODEJS_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "PWD": "/workspace",
+    "PYTEST_CURRENT_TEST": "test_inert (call)",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTEST_VERSION": "8.4.2",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification",
+    "REMOTE_DESKTOP_H265_ENABLED": "0",
+    "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
+    "RUST_LOG": "codex_exec_server=info,codex_cli=info,error",
+    "SHELL": "/bin/bash",
+    "SHLVL": "1",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "TERM": "dumb",
+    "USER": "agent",
+    "_": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "http_proxy": "http://proxy:8080",
+    "https_proxy": "http://proxy:8080",
+    "no_proxy": "localhost,127.0.0.1,::1"
+  },
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 215097,
+    "ppid": 215092,
+    "start_identity": "12804805"
+  },
+  "imports": [
+    {
+      "name": "inert_module",
+      "reference": {
+        "bytes": 19,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_nested_spawn_fork_actual_1/source/pkg/inert-module.txt",
+        "sha256": "68dbe2e07dc5305478dcf486a2597403d9a3f4fae0f35459655f69fedee57b99"
+      }
+    },
+    {
+      "name": "_virtualenv",
+      "reference": {
+        "bytes": 5246,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_virtualenv.py",
+        "sha256": "cfb3db86aaa53bb62b5ff764970bec2d71c9228590a0ebec57f6ec926cc0bf1a"
+      }
+    },
+    {
+      "name": "_distutils_hack",
+      "reference": {
+        "bytes": 6755,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_distutils_hack/__init__.py",
+        "sha256": "df81e6bcba34ee3e3952f776551fb669143b9490fdd6c4caeb32609f97e985b4"
+      }
+    },
+    {
+      "name": "_pytest._version",
+      "reference": {
+        "bytes": 704,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_version.py",
+        "sha256": "d4f4c97b5ed3883c26d6b3b3b195533a347441bb00261b34df1af95545889203"
+      }
+    },
+    {
+      "name": "_pytest",
+      "reference": {
+        "bytes": 391,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/__init__.py",
+        "sha256": "e087512619d6e571b62a568990ec67e7f4c2f56790e6d5c3485eed6dbe2f12ca"
+      }
+    },
+    {
+      "name": "pluggy._result",
+      "reference": {
+        "bytes": 3098,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/_result.py",
+        "sha256": "dd77f2ec3ae35db61bee9b91aaec98d956e274858daba3e9ed09ee12531d8fc4"
+      }
+    },
+    {
+      "name": "pluggy._hooks",
+      "reference": {
+        "bytes": 25218,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/_hooks.py",
+        "sha256": "13a7f79d8708e9d6c4b8ed069b2eb5a3380653fe7dfdeebd902d3c6b4e8406ea"
+      }
+    },
+    {
+      "name": "pluggy._tracing",
+      "reference": {
+        "bytes": 2073,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/_tracing.py",
+        "sha256": "9d777604298381ff2327157e1cedcfab147e595e777969c5f01e001759c91a0a"
+      }
+    },
+    {
+      "name": "pluggy._warnings",
+      "reference": {
+        "bytes": 828,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/_warnings.py",
+        "sha256": "b5dd00bd90697da9ab8820b73aab0bc31321f92cc03237e399ce7c4f9bcfde5c"
+      }
+    },
+    {
+      "name": "pluggy._callers",
+      "reference": {
+        "bytes": 5991,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/_callers.py",
+        "sha256": "804665946692615b2c676526a4d7e6602d1b755821da361b0057982afb913236"
+      }
+    },
+    {
+      "name": "pluggy._manager",
+      "reference": {
+        "bytes": 20219,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/_manager.py",
+        "sha256": "2b8229fe99048ef4f6a0e21f40fa7c0b0016a1756710d81045ccbdb651a28b4a"
+      }
+    },
+    {
+      "name": "pluggy._version",
+      "reference": {
+        "bytes": 511,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/_version.py",
+        "sha256": "e45189369f4b924f6e3b17828d7a68086045efd02be8b18f391efe6ad06a6ffe"
+      }
+    },
+    {
+      "name": "pluggy",
+      "reference": {
+        "bytes": 811,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pluggy/__init__.py",
+        "sha256": "0fa769d609840e3b43a7c840c1073eaab81aba59cbe2296daea90b0ddfa0f6d8"
+      }
+    },
+    {
+      "name": "_pytest._code.source",
+      "reference": {
+        "bytes": 7773,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_code/source.py",
+        "sha256": "b6cb300ffd6b61df05ecff729683b53aa596118330dff9b967c1ebdd29c0ee91"
+      }
+    },
+    {
+      "name": "pygments",
+      "reference": {
+        "bytes": 2962,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/__init__.py",
+        "sha256": "673a675e9be7bf473baff3884bc87b51e6844aa60d28ccbffe957b2828965f1c"
+      }
+    },
+    {
+      "name": "pygments.formatters._mapping",
+      "reference": {
+        "bytes": 4176,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/formatters/_mapping.py",
+        "sha256": "d42c37ec5b9094d69c9f144a9ad94f5f89f22e85fdfedb64a39670b1c354659e"
+      }
+    },
+    {
+      "name": "pygments.plugin",
+      "reference": {
+        "bytes": 1928,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/plugin.py",
+        "sha256": "3facc8c3ebe4490d24d56287af36c14e3a7094264f6d1fba41efdd3bd06376ed"
+      }
+    },
+    {
+      "name": "pygments.util",
+      "reference": {
+        "bytes": 10046,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/util.py",
+        "sha256": "ce4f77e6d252a70480f73c4d995d53ba17043f431f6e85e24594864272cf12a9"
+      }
+    },
+    {
+      "name": "pygments.styles._mapping",
+      "reference": {
+        "bytes": 3312,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/styles/_mapping.py",
+        "sha256": "ea5a2f154136f6dcfa12c5775d8638860a3327bab524bedc7cedd43a58274bcc"
+      }
+    },
+    {
+      "name": "pygments.styles",
+      "reference": {
+        "bytes": 2009,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/styles/__init__.py",
+        "sha256": "daf8062a76f2b749dffc248312d3211f1a693d200faf68da7f39791625c5b86b"
+      }
+    },
+    {
+      "name": "pygments.formatter",
+      "reference": {
+        "bytes": 4369,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/formatter.py",
+        "sha256": "3d30674d6d041e47b6bf39402aebc72648f7fbf08c8fc76e231fb7c955227bea"
+      }
+    },
+    {
+      "name": "pygments.token",
+      "reference": {
+        "bytes": 6229,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/token.py",
+        "sha256": "0d58a5e53da5b479138104d4632d5d32d8328a08dabc2b35ca913841fd82ac6a"
+      }
+    },
+    {
+      "name": "pygments.console",
+      "reference": {
+        "bytes": 1721,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/console.py",
+        "sha256": "0b5f3d240c210b5421d002a0b21cdbd70543cc5a819efd55678e644c40c83b7d"
+      }
+    },
+    {
+      "name": "pygments.formatters.terminal",
+      "reference": {
+        "bytes": 4629,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/formatters/terminal.py",
+        "sha256": "abb8cb2da9e57b7dde099903af80a81c037e7470457f50c1862e0570143cff51"
+      }
+    },
+    {
+      "name": "pygments.filter",
+      "reference": {
+        "bytes": 1913,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/filter.py",
+        "sha256": "d5d9db92ad80742dc0907b770da5f09ce91304b0a1975911ea76922f09ebfed7"
+      }
+    },
+    {
+      "name": "pygments.filters",
+      "reference": {
+        "bytes": 40349,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/filters/__init__.py",
+        "sha256": "d37658748626c6758287b80d5c3ee5110f3af437f89331e7386338e222716a7f"
+      }
+    },
+    {
+      "name": "pygments.regexopt",
+      "reference": {
+        "bytes": 3308,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/regexopt.py",
+        "sha256": "776853bdace5a30e73cd920e0959df7841b6098d06ad8fe2807d6409249fee8c"
+      }
+    },
+    {
+      "name": "pygments.lexer",
+      "reference": {
+        "bytes": 35154,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/lexer.py",
+        "sha256": "80d318ce675291337259faa22c9dfba147752ab37f74c5edb0fc9a5f6fa7f440"
+      }
+    },
+    {
+      "name": "pygments.lexers._mapping",
+      "reference": {
+        "bytes": 70758,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/lexers/_mapping.py",
+        "sha256": "61b4090757aa78693ba25e4d80c30f2eb0f7546753c204029774ef2f0b71c310"
+      }
+    },
+    {
+      "name": "pygments.modeline",
+      "reference": {
+        "bytes": 1008,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/modeline.py",
+        "sha256": "99ef20e6bc9289dbcfb4c04eac3cb63b5b0ca99774da5047318e4a0d979f530b"
+      }
+    },
+    {
+      "name": "pygments.lexers.diff",
+      "reference": {
+        "bytes": 5385,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/lexers/diff.py",
+        "sha256": "fbadbb966b98a49dae51550cfe8ad51a05c91972011925476e696a7e508479a3"
+      }
+    },
+    {
+      "name": "pygments.unistring",
+      "reference": {
+        "bytes": 63211,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/unistring.py",
+        "sha256": "678c381df395521b9e09445191f840a90d9bfbaf54ce4858e31b877af604cb98"
+      }
+    },
+    {
+      "name": "pygments.lexers.python",
+      "reference": {
+        "bytes": 54202,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pygments/lexers/python.py",
+        "sha256": "efd03fc89aa3547a7f65e4b5ad8f0f71ce1cc19ffbfb323659691e52666052b0"
+      }
+    },
+    {
+      "name": "_pytest._py",
+      "reference": {
+        "bytes": 0,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_py/__init__.py",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "_pytest._py.error",
+      "reference": {
+        "bytes": 3475,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_py/error.py",
+        "sha256": "90643b17cfdf67a615061031faef669134014f1d2a231c6754c0b40a088e77bd"
+      }
+    },
+    {
+      "name": "_pytest._py.path",
+      "reference": {
+        "bytes": 49220,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_py/path.py",
+        "sha256": "3a7c6dce12bc7d38ae0dd3b548416078f78a36d715c7b47613a094d24d3c400a"
+      }
+    },
+    {
+      "name": "py.error",
+      "reference": {
+        "bytes": 3475,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_py/error.py",
+        "sha256": "90643b17cfdf67a615061031faef669134014f1d2a231c6754c0b40a088e77bd"
+      }
+    },
+    {
+      "name": "py.path",
+      "reference": {
+        "bytes": 49220,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_py/path.py",
+        "sha256": "3a7c6dce12bc7d38ae0dd3b548416078f78a36d715c7b47613a094d24d3c400a"
+      }
+    },
+    {
+      "name": "py",
+      "reference": {
+        "bytes": 329,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/py.py",
+        "sha256": "b71675b5d9845ba0814e9e88767f88dac3b3cc0d3128da028bd45edbb523e871"
+      }
+    },
+    {
+      "name": "_pytest.compat",
+      "reference": {
+        "bytes": 10662,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/compat.py",
+        "sha256": "2f941a4e516816bced282a7b9e45c076729d5552a6443369184d5219ae8dcc8b"
+      }
+    },
+    {
+      "name": "_pytest._io.wcwidth",
+      "reference": {
+        "bytes": 1289,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_io/wcwidth.py",
+        "sha256": "714109ef8521c1e202c1b2af536aba9e865c3600f442504407d09f6a41986aa0"
+      }
+    },
+    {
+      "name": "_pytest._io.terminalwriter",
+      "reference": {
+        "bytes": 8849,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_io/terminalwriter.py",
+        "sha256": "4faed984761221a38fdd1b5073110b927c8c6d59750ce67f6ee0cf1868802446"
+      }
+    },
+    {
+      "name": "_pytest._io",
+      "reference": {
+        "bytes": 190,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_io/__init__.py",
+        "sha256": "a642c5dbd54416be8396bdde3ad24bf2c7f8ed12c5b7525fe17d436413e56267"
+      }
+    },
+    {
+      "name": "_pytest._io.saferepr",
+      "reference": {
+        "bytes": 4082,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_io/saferepr.py",
+        "sha256": "1e1c7917eef98b3d3785d93e58ef3a066cbd441b911ecb898fe614ce8cdfae0a"
+      }
+    },
+    {
+      "name": "_pytest.warning_types",
+      "reference": {
+        "bytes": 4239,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/warning_types.py",
+        "sha256": "e1b3539b2c95bead67a62a54e19fe2ad28263d0ba628e88cca5bc09fb83c317f"
+      }
+    },
+    {
+      "name": "_pytest.deprecated",
+      "reference": {
+        "bytes": 3147,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/deprecated.py",
+        "sha256": "b0ef548aa11dcbd67e342bc3a18600d10b5a7d8a2001bee53f933d37f1e99da9"
+      }
+    },
+    {
+      "name": "_pytest.outcomes",
+      "reference": {
+        "bytes": 10502,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/outcomes.py",
+        "sha256": "0cf472a92cec467fb4c9c32f6f52cbee41282f56f134f739464e210bdc689abc"
+      }
+    },
+    {
+      "name": "_pytest.pathlib",
+      "reference": {
+        "bytes": 37622,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/pathlib.py",
+        "sha256": "8127808359baaa711775862b32bfbe0a7e5c16a2e8c9923d60ddd45f031b66fa"
+      }
+    },
+    {
+      "name": "_pytest._code.code",
+      "reference": {
+        "bytes": 55913,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_code/code.py",
+        "sha256": "dd65e749e715745d53814ee845057a6f745f7ba5ee5cf356c6c29d6c10dea78d"
+      }
+    },
+    {
+      "name": "_pytest._code",
+      "reference": {
+        "bytes": 521,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_code/__init__.py",
+        "sha256": "04a6e8c286100032a300999359d43c49240b6c106c874f9d663dd31a3b67eb23"
+      }
+    },
+    {
+      "name": "_pytest._io.pprint",
+      "reference": {
+        "bytes": 19622,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/_io/pprint.py",
+        "sha256": "18b04a2fa7669d1afdd869d53243733242aac74f0ea7bb5d2527a1dc07b0a276"
+      }
+    },
+    {
+      "name": "_pytest.config.compat",
+      "reference": {
+        "bytes": 2947,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/config/compat.py",
+        "sha256": "7630edfd74cfc170c88279e8a6d8b6655aeab70ccee6115688c86053976020ce"
+      }
+    },
+    {
+      "name": "_pytest.config.exceptions",
+      "reference": {
+        "bytes": 288,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/config/exceptions.py",
+        "sha256": "9542a73ada51a8afaa34be897ce3fef2d46aa661d4df8095c60b91e72d107dbc"
+      }
+    },
+    {
+      "name": "iniconfig.exceptions",
+      "reference": {
+        "bytes": 399,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/iniconfig/exceptions.py",
+        "sha256": "9a2a50fda3310fd0af4af156375a135d8e10b919ca00c6757f7b027668c34d4d"
+      }
+    },
+    {
+      "name": "iniconfig._parse",
+      "reference": {
+        "bytes": 5223,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/iniconfig/_parse.py",
+        "sha256": "e6770197b30042268f367a51aecf45478b7a1ba0e480e52ce39f0e63fd42476f"
+      }
+    },
+    {
+      "name": "iniconfig",
+      "reference": {
+        "bytes": 7497,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/iniconfig/__init__.py",
+        "sha256": "5cbe5ea94623e26b2400ea2b6798df4408a726f2734c8f9f271a4fe317d7b5ac"
+      }
+    },
+    {
+      "name": "_pytest.config.findpaths",
+      "reference": {
+        "bytes": 8404,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/config/findpaths.py",
+        "sha256": "e3bbb530cc5d160d60f88b177e2d8f6baed6db507c639af0d8ba0c42650a61be"
+      }
+    },
+    {
+      "name": "_pytest.config.argparsing",
+      "reference": {
+        "bytes": 19102,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/config/argparsing.py",
+        "sha256": "93984fb88d1969e32a22d4b4c513ba75eb89c95ee600a1f5d1ca0d64baf8f15b"
+      }
+    },
+    {
+      "name": "_pytest.hookspec",
+      "reference": {
+        "bytes": 42849,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/hookspec.py",
+        "sha256": "ca5ce6d785970ed31a20bd5134bac4715892fcc8528eab2158276df93ef11e72"
+      }
+    },
+    {
+      "name": "_pytest.stash",
+      "reference": {
+        "bytes": 3090,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/stash.py",
+        "sha256": "e69137903c78abce794d6f5a56f61376b9242a530353afb1897e25b8aa491202"
+      }
+    },
+    {
+      "name": "_pytest.config",
+      "reference": {
+        "bytes": 72712,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/config/__init__.py",
+        "sha256": "9a0857d7dec27c5389986a98aecf61f5ab869e46e72dabb8e54695a4b9641eda"
+      }
+    },
+    {
+      "name": "_pytest.assertion.util",
+      "reference": {
+        "bytes": 20713,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/assertion/util.py",
+        "sha256": "ddf80fa6b54357bb82682e7ec89ea3bf1ce9d90a97c5eed3c5e925770b8997ed"
+      }
+    },
+    {
+      "name": "_pytest.mark.expression",
+      "reference": {
+        "bytes": 10154,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/mark/expression.py",
+        "sha256": "479294ca4b54891406267817a2cbe4b206e430b581998a842e149157fe9e5f1d"
+      }
+    },
+    {
+      "name": "_pytest.raises",
+      "reference": {
+        "bytes": 60196,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/raises.py",
+        "sha256": "22e1d3740ad3abaa4edf886334510768a67de59509124f60592d14c54248dc5c"
+      }
+    },
+    {
+      "name": "_pytest.scope",
+      "reference": {
+        "bytes": 2738,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/scope.py",
+        "sha256": "a41ee3b228acb61d7a3c115a715d58c5ddcf8f7600c767669529866c6e26c3a0"
+      }
+    },
+    {
+      "name": "_pytest.mark.structures",
+      "reference": {
+        "bytes": 22972,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/mark/structures.py",
+        "sha256": "e3d48717cd5125017f48833f33d277eed0d3a8d04042f7fba6cd7d45f5544632"
+      }
+    },
+    {
+      "name": "_pytest.mark",
+      "reference": {
+        "bytes": 9885,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/mark/__init__.py",
+        "sha256": "9c10b7314f9f297389f3f4042d39796323ad15cdfa79fff9f656ca5c3298ea2b"
+      }
+    },
+    {
+      "name": "_pytest.nodes",
+      "reference": {
+        "bytes": 26540,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/nodes.py",
+        "sha256": "693b0385b2c45646767200bc517416e776c10c3e58ee5ed937007491be4d868e"
+      }
+    },
+    {
+      "name": "_pytest.reports",
+      "reference": {
+        "bytes": 21406,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/reports.py",
+        "sha256": "ca2213f977ab6e01e8bbc0fb7527282fd62fa41af206575b262b574977d63910"
+      }
+    },
+    {
+      "name": "_pytest.timing",
+      "reference": {
+        "bytes": 3065,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/timing.py",
+        "sha256": "d3c7253f93c900be15cf34ea970f3f7f847d98bfcc9f336acfb262e7a2083ef0"
+      }
+    },
+    {
+      "name": "_pytest.runner",
+      "reference": {
+        "bytes": 19543,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/runner.py",
+        "sha256": "10f2433cca73efa0f9772c6cc190119a6e85d67f5ac61f181549c14e4e6438cf"
+      }
+    },
+    {
+      "name": "_pytest.main",
+      "reference": {
+        "bytes": 37689,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/main.py",
+        "sha256": "1cfc8743fd192849d2309353de3eb8b42dcd83801e1d11b1169dbc75198333d7"
+      }
+    },
+    {
+      "name": "_pytest.fixtures",
+      "reference": {
+        "bytes": 77746,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/fixtures.py",
+        "sha256": "41dfd72c1e6da619906bf84945694c1cb9b919bad18303278fac35630c8c7748"
+      }
+    },
+    {
+      "name": "_pytest.assertion.rewrite",
+      "reference": {
+        "bytes": 48636,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/assertion/rewrite.py",
+        "sha256": "f231048ab925ef8585f309a1022470438ae2c77ffab1de0e98693e65547c316c"
+      }
+    },
+    {
+      "name": "_pytest.assertion.truncate",
+      "reference": {
+        "bytes": 5437,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/assertion/truncate.py",
+        "sha256": "5b82328464f47ea754c206532d69f0df8febe1a16bb48e0175a75c81bb3e56b8"
+      }
+    },
+    {
+      "name": "_pytest.assertion",
+      "reference": {
+        "bytes": 7120,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/assertion/__init__.py",
+        "sha256": "3a39c99b88fa5478306232af5bc77e28579f8c474e48e345178cf5d28f6bede8"
+      }
+    },
+    {
+      "name": "_pytest.cacheprovider",
+      "reference": {
+        "bytes": 22375,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/cacheprovider.py",
+        "sha256": "ae00499f39afb1f266423f8ab431b58269b30ae3f353da996dff9c62fbab6030"
+      }
+    },
+    {
+      "name": "_pytest.capture",
+      "reference": {
+        "bytes": 36829,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/capture.py",
+        "sha256": "92e96e989751747bbbce8a2c3abe257c747471ee8bb0eb616aef41cabc3cc55e"
+      }
+    },
+    {
+      "name": "_pytest.debugging",
+      "reference": {
+        "bytes": 13947,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/debugging.py",
+        "sha256": "26457b39bef0439dd3146910d136bdea300c606b9b81d5e212cdfd4fb14fcc74"
+      }
+    },
+    {
+      "name": "_pytest.python",
+      "reference": {
+        "bytes": 66627,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/python.py",
+        "sha256": "ebf31a8738065ad418c354ceeed99562926055587c664501e9f8d194e4078202"
+      }
+    },
+    {
+      "name": "_pytest.python_api",
+      "reference": {
+        "bytes": 31323,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/python_api.py",
+        "sha256": "a81cd75fce62fee5e50eab99567bdc19118c3f5b29a452eaeff1411ba051bbfd"
+      }
+    },
+    {
+      "name": "_pytest.doctest",
+      "reference": {
+        "bytes": 26259,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/doctest.py",
+        "sha256": "4cb4a02707763cfe7dbd2e16baed6153571a5fea33b170fd466aa3fac6f55df9"
+      }
+    },
+    {
+      "name": "_pytest.freeze_support",
+      "reference": {
+        "bytes": 1300,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/freeze_support.py",
+        "sha256": "5fde08c62a6a79b780fc7833261f1d6e3a869ebb44405b8c202e612bb486597c"
+      }
+    },
+    {
+      "name": "_pytest.monkeypatch",
+      "reference": {
+        "bytes": 14625,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/monkeypatch.py",
+        "sha256": "9df03b926213009d706e3cbe451d22079d97c623da42982caa720419abadd5c5"
+      }
+    },
+    {
+      "name": "_pytest.tmpdir",
+      "reference": {
+        "bytes": 11263,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/tmpdir.py",
+        "sha256": "236918c090160c1f6b935e162ff44ab273a700221d5f40ac15892be75e4503ee"
+      }
+    },
+    {
+      "name": "_pytest.pytester",
+      "reference": {
+        "bytes": 61960,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/pytester.py",
+        "sha256": "cd662381ffb9e9a3e6ada74ef54838c2784b6ba4912f9681dcaff43bfbb2a217"
+      }
+    },
+    {
+      "name": "_pytest.terminal",
+      "reference": {
+        "bytes": 60419,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/terminal.py",
+        "sha256": "abdf73bd6dc01710f53857e4d10bcbec07a11d655b3cc59fee4e4413bdd69b19"
+      }
+    },
+    {
+      "name": "_pytest.legacypath",
+      "reference": {
+        "bytes": 16588,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/legacypath.py",
+        "sha256": "fe5eaff1a90d31f4dce53023bdb73a33efedd79ee9f5013afb5d7c58cd0346df"
+      }
+    },
+    {
+      "name": "_pytest.logging",
+      "reference": {
+        "bytes": 35234,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/logging.py",
+        "sha256": "4d9ebb2503ffdd896dd29d750f627af0bfe8b3d825b2e82032f79cd07963b5bf"
+      }
+    },
+    {
+      "name": "_pytest.recwarn",
+      "reference": {
+        "bytes": 13245,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/_pytest/recwarn.py",
+        "sha256": "94d46cf8aade4cd06be47a1922a5a3e26e9544eeffd457fe81c061998860fe52"
+      }
+    },
+    {
+      "name": "pytest",
+      "reference": {
+        "bytes": 5373,
+        "path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest/__init__.py",
+        "sha256": "66993a5e3905005e0981159b4794d10b1adacf341a58a44d696ad2c4442dcdc6"
+      }
+    }
+  ],
+  "inter_op": {
+    "provenance": {
+      "bytes": 7822,
+      "path": "/tmp/bac-p3-inert-y5ptiui5/output/attempt/job/process-p-9fd875fa7780ebac9e6bc1405e91f70b782b3893c1be995a87305988deac870e-observation-start.json",
+      "sha256": "b84dda3decb9e171ca924738aa0e1b071d75ab9219695d509565c468f2d33f11"
+    },
+    "reason": "guard-only: no Torch/CUDA calls permitted",
+    "state": "unavailable",
+    "value": null
+  },
+  "interpreter": {
+    "bytes": 6832784,
+    "path": "/usr/bin/python3.13",
+    "sha256": "889c603f0d17cb54060951bcf4c4f9b8c9ebd9e52b392c70209bbb9755d797d9"
+  },
+  "intra_op": {
+    "provenance": {
+      "bytes": 7822,
+      "path": "/tmp/bac-p3-inert-y5ptiui5/output/attempt/job/process-p-9fd875fa7780ebac9e6bc1405e91f70b782b3893c1be995a87305988deac870e-observation-start.json",
+      "sha256": "b84dda3decb9e171ca924738aa0e1b071d75ab9219695d509565c468f2d33f11"
+    },
+    "reason": "guard-only: no Torch/CUDA calls permitted",
+    "state": "unavailable",
+    "value": null
+  },
+  "job_id": "job",
+  "kind": "process",
+  "monotonic_ns": 128048057500273,
+  "parent_identity": [
+    {
+      "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+      "host": "51d55c80f0b0",
+      "pid": 215092,
+      "ppid": 214949,
+      "start_identity": "12804737"
+    }
+  ],
+  "phase": "start",
+  "process_id": "p-9fd875fa7780ebac9e6bc1405e91f70b782b3893c1be995a87305988deac870e",
+  "replacement_of": [],
+  "role": "fork-guard",
+  "role_id": "fork-guard",
+  "schema": "bac-hardware-v1",
+  "source_witness": {
+    "bytes": 3001,
+    "path": "/tmp/bac-p3-inert-y5ptiui5/output/attempt/job/source-p-9fd875fa7780ebac9e6bc1405e91f70b782b3893c1be995a87305988deac870e-start.json",
+    "sha256": "57fa0253afff1d23f1361be085867bb554931f7cdfc0773973b5845a02a740df"
+  },
+  "spec": {
+    "bytes": 14274,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_nested_spawn_fork_actual_1/spec.json",
+    "sha256": "4aa21805bf7736ab316b211423672595022c3ee163f9005d3037150f18a42273"
+  },
+  "torch_observation": "forbidden-inherited-module-witness"
+}

@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r127-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r127-diagnostic-independent-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "diagnostic-independent",
+      "args": [
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r127-diagnostic-independent-attempt-1"
+      ]
+    }
+  ],
+  "auxiliary_sources": {
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py": "461213cb70ce1249015b4c2dc79f11777381f4607899b36b6b34f37be78272df"
+  }
+}

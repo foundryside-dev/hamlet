@@ -1,0 +1,72 @@
+{
+  "Q_members": 16,
+  "attempts": 11,
+  "checks": 11,
+  "components": [
+    {
+      "bytes": 38885,
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r123-history-component-v1.json",
+      "root": "W",
+      "scope": "Retain all actual failures/UNRUNs and own candidate identities. Cross-round and overlapping counts not summed. R124 REQUEST CHANGES remains; R125 repairs A-only witness only; full failed diagnostic export P2 remains pending.",
+      "sha256": "178907fafc9a586c47b359e3d29e155d31e4369669e32cedd96d00c0f5f9a0f8"
+    },
+    {
+      "bytes": 31108,
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r124-history-component-v1.json",
+      "root": "W",
+      "scope": "Retain all actual failures/UNRUNs and own candidate identities. Cross-round and overlapping counts not summed. R124 REQUEST CHANGES remains; R125 repairs A-only witness only; full failed diagnostic export P2 remains pending.",
+      "sha256": "ab3b534c9bdd04f6614c407b0c37ccf329600d9c18ca5f10f0ccaa311319e2bf"
+    },
+    {
+      "bytes": 18208,
+      "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+      "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/r125-history-component-v1.json",
+      "root": "W",
+      "scope": "Retain all actual failures/UNRUNs and own candidate identities. Cross-round and overlapping counts not summed. R124 REQUEST CHANGES remains; R125 repairs A-only witness only; full failed diagnostic export P2 remains pending.",
+      "sha256": "f0834656bef379bd0a6ae40a3ba155d8ac8fede5c54ed15a645b1ad77794f70d"
+    }
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "remaining": [
+    "Full failed POP diagnostic export preservation P2 remains pending.",
+    "R125 one target PASS does not qualify or rerun the prior23 selection.",
+    "Future terminal interval/contract/subject/review/seal/document/page/publication decisions are root-owned.",
+    "Moving P3 amendment not selected."
+  ],
+  "source_body_interpretation": "None; APP and tool source bytes only hashed. No selector, runtime, Git writes, source copies or public page/doc changes.",
+  "status": "CLOSED R123-R125 HISTORY PREPARATION COMPLETE; ROOT SEAL NOT CREATED",
+  "supporting_closure": {
+    "bytes": 699512,
+    "path": "evidence-management/wip23-preparation/closed-r123-r125-v1/supporting-closure-v1.json",
+    "root": "W",
+    "sha256": "ab6e918a9db174a03c8d71af3b2e4163b09943dd6522bf244d34a57aa31b134c"
+  },
+  "unresolved": [
+    {
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "live_hash_matches": false,
+      "missing_exact_snapshot": true,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "round": 123,
+      "sha256": "9186a953f79cd8b4cf2a4fea47c6ff24197ae53764b6d2e6fa33267f78000bd5"
+    },
+    {
+      "candidate_tree": "dcca172ecf66991adab06ae2ea7e7c5c1714cf87",
+      "live_hash_matches": false,
+      "missing_exact_snapshot": true,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "round": 124,
+      "sha256": "9186a953f79cd8b4cf2a4fea47c6ff24197ae53764b6d2e6fa33267f78000bd5"
+    }
+  ],
+  "unrun_templates": 6,
+  "verified_supporting_refs": 829
+}

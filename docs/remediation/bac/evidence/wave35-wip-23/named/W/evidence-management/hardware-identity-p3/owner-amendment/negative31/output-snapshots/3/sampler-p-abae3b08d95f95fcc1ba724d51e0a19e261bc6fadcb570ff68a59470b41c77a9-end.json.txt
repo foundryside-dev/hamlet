@@ -1,0 +1,81 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/usr/local/bin/git",
+        "-C",
+        "/workspace/hamlet",
+        "rev-parse",
+        "HEAD"
+      ],
+      "end_ns": 127990676556926,
+      "exit_code": 0,
+      "pid": 214917,
+      "start_ns": 127990673248791,
+      "stderr": {
+        "bytes": 0,
+        "path": "/tmp/bac-p3-inert-q811q2n7/output/attempt/job/sampler-p-abae3b08d95f95fcc1ba724d51e0a19e261bc6fadcb570ff68a59470b41c77a9-end-0.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr_truncated": false,
+      "stdout": {
+        "bytes": 41,
+        "path": "/tmp/bac-p3-inert-q811q2n7/output/attempt/job/sampler-p-abae3b08d95f95fcc1ba724d51e0a19e261bc6fadcb570ff68a59470b41c77a9-end-0.stdout",
+        "sha256": "44bb24b603769e3319d1cac7fe914a7ce0c50f9ec5190f48450c7b453c585419"
+      },
+      "stdout_truncated": false
+    },
+    {
+      "argv": [
+        "/usr/local/bin/git",
+        "-C",
+        "/workspace/hamlet",
+        "diff-index",
+        "--cached",
+        "--quiet",
+        "21a27b7a12a2be09d704e45b6249c12f04a0fa9d",
+        "--"
+      ],
+      "end_ns": 127990685836389,
+      "exit_code": 0,
+      "pid": 214918,
+      "start_ns": 127990676858472,
+      "stderr": {
+        "bytes": 0,
+        "path": "/tmp/bac-p3-inert-q811q2n7/output/attempt/job/sampler-p-abae3b08d95f95fcc1ba724d51e0a19e261bc6fadcb570ff68a59470b41c77a9-end-1.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr_truncated": false,
+      "stdout": {
+        "bytes": 0,
+        "path": "/tmp/bac-p3-inert-q811q2n7/output/attempt/job/sampler-p-abae3b08d95f95fcc1ba724d51e0a19e261bc6fadcb570ff68a59470b41c77a9-end-1.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout_truncated": false
+    }
+  ],
+  "cumulative_ns": 151501238,
+  "end_ns": 127990712065147,
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 214914,
+    "ppid": 214875,
+    "start_identity": "12799055"
+  },
+  "launch": {
+    "bytes": 36554,
+    "path": "/tmp/bac-p3-inert-q811q2n7/output/attempt/job/owner-launch-child-1.json",
+    "sha256": "b9a29b1694e083399bdd3cbd9099f174d1b82e9b4b266ad550059de9cfe99bec"
+  },
+  "lock_acquired_ns": 127990673243956,
+  "lock_released_ns": 127990686183415,
+  "phase": "end",
+  "policy": {
+    "bytes": 499,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/negative31/tmp/test_fork_failed_emission_has_3/sampler-policy.json",
+    "sha256": "114939729fd0e17e64636c3c5c042867b0c09fc7f313dd49940ebf4f6ca3abb7"
+  },
+  "schema": "bac-hardware-owner-sampler-observation-v1",
+  "start_ns": 127990644572187
+}

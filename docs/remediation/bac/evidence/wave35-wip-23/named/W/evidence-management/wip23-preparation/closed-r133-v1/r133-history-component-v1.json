@@ -1,0 +1,961 @@
+{
+  "accounting": "R133 POP25 PASS0SKIP with full postflight; Ruff/Black/defaults PASS; mypy12FAIL in2files. R132 C1 ordinary133+7poison+36independent retained at own source; no R133 C1 execution claimed.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r133-candidate.json",
+            "root": "W",
+            "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+          },
+          "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r133-collection-spec.json",
+              "root": "Q",
+              "sha256": "461d1fc6ada07ba11a4eff19bdeefbf16130331e0ce13505d07e434b5ed9bcf9",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r133-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+          },
+          "exit_code": null,
+          "id": "wave35-r133-collection-spec.json--unrun",
+          "path": "wave35-r133-collection-spec.json",
+          "record_id": "unrun",
+          "round": 133,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 template; actual named R132 attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r133-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r133-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r133-candidate.json",
+            "root": "W",
+            "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+          },
+          "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r133-owned-spec.json",
+              "root": "Q",
+              "sha256": "05e844b07336591b135574c7cea9913c62d3703367af5572e5321df95f273bee",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r133-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+          },
+          "exit_code": null,
+          "id": "wave35-r133-owned-spec.json--unrun",
+          "path": "wave35-r133-owned-spec.json",
+          "record_id": "unrun",
+          "round": 133,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic T21 template; actual named R132 attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r133-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r133-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result omits absolute UTC; outer launcher record retained separately.",
+          "actual_worker_count": 2,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r133-candidate.json",
+            "root": "W",
+            "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+          },
+          "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_failed_step_diagnostic_preserves_available_bank",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r133-pop-owners-runtime-attempt-1"
+          ],
+          "counts": {
+            "passed": 25,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime",
+              "root": "Q",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "42aa99516c58111db2b03c9a584a9531a3a920c90ae4932a0c77984ed3ca0a16",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "ab866125e4b500acb3db08a41e001842a6a4e47627cda98dfc2038c5f12b4ae2",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "8c33ce97496cb67e4835fd37abd0df22433114814269ad203e50c4771f83f492",
+              "type": "file"
+            },
+            {
+              "bytes": 651,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime-custody.json",
+              "root": "Q",
+              "sha256": "09ee6bcd15714464cd95a7fb9c9827bd576624ff791cda22011d193eaacf21c1",
+              "type": "file"
+            },
+            {
+              "bytes": 1597,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime-result.json",
+              "root": "Q",
+              "sha256": "9902f878e51b1c84b5da59174ca2d5d2d35146003c90b8da6f571ce5f4cdfee5",
+              "type": "file"
+            },
+            {
+              "bytes": 602,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime.log",
+              "root": "Q",
+              "sha256": "8057966bb0e581d963c260f34950704fae8d403c7106070011318576a9d9c183",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 22.284614578005858,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r133-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+          },
+          "exit_code": 0,
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "helper_dependencies": [
+            {
+              "bytes": 4482,
+              "path": "run_bac_cold_checks_locked.py",
+              "required_by": "wave35-r133-pop-owners-runtime-attempt-1--pop-owners-runtime",
+              "root": "Q",
+              "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+            },
+            {
+              "bytes": 2917,
+              "path": "bac_source_identity.py",
+              "required_by": "wave35-r133-pop-owners-runtime-attempt-1--pop-owners-runtime",
+              "root": "Q",
+              "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+            },
+            {
+              "bytes": 3032,
+              "path": "verify_bac_run.py",
+              "required_by": "wave35-r133-pop-owners-runtime-attempt-1--pop-owners-runtime",
+              "root": "Q",
+              "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+            }
+          ],
+          "id": "wave35-r133-pop-owners-runtime-attempt-1--pop-owners-runtime",
+          "log_paths": [
+            {
+              "bytes": 602,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime.log",
+              "root": "Q",
+              "sha256": "8057966bb0e581d963c260f34950704fae8d403c7106070011318576a9d9c183"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 919,
+            "path": "evidence-management/pop-standalone-step/wave35-r133-pop-owners-runtime-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "26643f5d616827095d164c4ff22c58c4f80fe3d2021dfa25c71fe20cf64705ca"
+          },
+          "path": "wave35-r133-pop-owners-runtime-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-controller.json",
+              "root": "Q",
+              "sha256": "42aa99516c58111db2b03c9a584a9531a3a920c90ae4932a0c77984ed3ca0a16"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw0.json",
+              "root": "Q",
+              "sha256": "ab866125e4b500acb3db08a41e001842a6a4e47627cda98dfc2038c5f12b4ae2"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw1.json",
+              "root": "Q",
+              "sha256": "8c33ce97496cb67e4835fd37abd0df22433114814269ad203e50c4771f83f492"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 1597,
+            "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime-result.json",
+            "root": "Q",
+            "sha256": "9902f878e51b1c84b5da59174ca2d5d2d35146003c90b8da6f571ce5f4cdfee5"
+          },
+          "record_id": "pop-owners-runtime",
+          "round": 133,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 651,
+            "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime-custody.json",
+            "root": "Q",
+            "sha256": "09ee6bcd15714464cd95a7fb9c9827bd576624ff791cda22011d193eaacf21c1"
+          }
+        }
+      ],
+      "check": "wave35-r133-pop-owners-runtime-attempt-1--pop-owners-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r133-pop-owners-runtime-attempt-1--pop-owners-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r133-candidate.json",
+            "root": "W",
+            "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+          },
+          "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "src/townlet/config/exploration_policy.py",
+            "src/townlet/exploration/scoped_curiosity.py",
+            "src/townlet/population/vectorized.py",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+            "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "5982e9088a5219f35303073d57dbed88b7be388cf3a324c13f9ae59afa639dd0",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7cfb06d8bfcff78576ed1fb3cece6f5c93d0f2ee48ffdb74c3880217296c1f48",
+              "type": "file"
+            },
+            {
+              "bytes": 3197,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "90beffcbb49d6e1912778793cc427ccaf3765f19d8477554982e414d17eaaf9a",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "79541ece90383187e090c15f643847d462a943ed42d94217ffe9af28f55baf85",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "60fa6a175718329154c7d6120c8bded22c44562527bad006d7fc07c61ba46adb",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "3b5363c9b5f484a54a76e78419a928a96863b753e0859a86dc22c5eeeb1a88a8",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:59:28.015662+00:00",
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r133-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+          },
+          "exit_code": 0,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r133-static-v1.py",
+            "root": "W",
+            "sha256": "515295be7550165b0ba12cfd6ef3008c98ddcdc62d5a7149cc8c6f680639a9c8"
+          },
+          "id": "r133-static-attempt-1--black-changed",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219922,
+            "pid": 220136
+          },
+          "record": {
+            "bytes": 1381,
+            "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.json",
+            "root": "W",
+            "sha256": "5982e9088a5219f35303073d57dbed88b7be388cf3a324c13f9ae59afa639dd0"
+          },
+          "record_id": "black-changed",
+          "round": 133,
+          "started_at": "2026-11-14T09:59:27.079932+00:00",
+          "status": "PASSED"
+        }
+      ],
+      "check": "r133-static-attempt-1--black-changed",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "r133-static-attempt-1--black-changed"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r133-candidate.json",
+            "root": "W",
+            "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+          },
+          "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "mypy",
+            "src/townlet",
+            "--show-error-codes",
+            "--no-incremental"
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "5982e9088a5219f35303073d57dbed88b7be388cf3a324c13f9ae59afa639dd0",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7cfb06d8bfcff78576ed1fb3cece6f5c93d0f2ee48ffdb74c3880217296c1f48",
+              "type": "file"
+            },
+            {
+              "bytes": 3197,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "90beffcbb49d6e1912778793cc427ccaf3765f19d8477554982e414d17eaaf9a",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "79541ece90383187e090c15f643847d462a943ed42d94217ffe9af28f55baf85",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "60fa6a175718329154c7d6120c8bded22c44562527bad006d7fc07c61ba46adb",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "3b5363c9b5f484a54a76e78419a928a96863b753e0859a86dc22c5eeeb1a88a8",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:59:26.248737+00:00",
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r133-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+          },
+          "exit_code": 1,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r133-static-v1.py",
+            "root": "W",
+            "sha256": "515295be7550165b0ba12cfd6ef3008c98ddcdc62d5a7149cc8c6f680639a9c8"
+          },
+          "id": "r133-static-attempt-1--mypy",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 3197,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "90beffcbb49d6e1912778793cc427ccaf3765f19d8477554982e414d17eaaf9a"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219922,
+            "pid": 219960
+          },
+          "record": {
+            "bytes": 952,
+            "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.json",
+            "root": "W",
+            "sha256": "7cfb06d8bfcff78576ed1fb3cece6f5c93d0f2ee48ffdb74c3880217296c1f48"
+          },
+          "record_id": "mypy",
+          "round": 133,
+          "started_at": "2026-11-14T09:58:51.203038+00:00",
+          "status": "FAILED"
+        }
+      ],
+      "check": "r133-static-attempt-1--mypy",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "FAILED",
+      "terminal_attempt": "r133-static-attempt-1--mypy"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r133-candidate.json",
+            "root": "W",
+            "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+          },
+          "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "scripts/no_defaults_lint.py",
+            "src/townlet/",
+            "--whitelist",
+            ".defaults-whitelist.txt",
+            "--ratchet",
+            ".defaults-ratchet"
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "5982e9088a5219f35303073d57dbed88b7be388cf3a324c13f9ae59afa639dd0",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7cfb06d8bfcff78576ed1fb3cece6f5c93d0f2ee48ffdb74c3880217296c1f48",
+              "type": "file"
+            },
+            {
+              "bytes": 3197,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "90beffcbb49d6e1912778793cc427ccaf3765f19d8477554982e414d17eaaf9a",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "79541ece90383187e090c15f643847d462a943ed42d94217ffe9af28f55baf85",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "60fa6a175718329154c7d6120c8bded22c44562527bad006d7fc07c61ba46adb",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "3b5363c9b5f484a54a76e78419a928a96863b753e0859a86dc22c5eeeb1a88a8",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:59:27.079526+00:00",
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r133-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+          },
+          "exit_code": 0,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r133-static-v1.py",
+            "root": "W",
+            "sha256": "515295be7550165b0ba12cfd6ef3008c98ddcdc62d5a7149cc8c6f680639a9c8"
+          },
+          "id": "r133-static-attempt-1--no-defaults",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219922,
+            "pid": 220135
+          },
+          "record": {
+            "bytes": 1022,
+            "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.json",
+            "root": "W",
+            "sha256": "79541ece90383187e090c15f643847d462a943ed42d94217ffe9af28f55baf85"
+          },
+          "record_id": "no-defaults",
+          "round": 133,
+          "started_at": "2026-11-14T09:59:26.249836+00:00",
+          "status": "PASSED"
+        }
+      ],
+      "check": "r133-static-attempt-1--no-defaults",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "r133-static-attempt-1--no-defaults"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 207540,
+            "path": "wave35/r133-candidate.json",
+            "root": "W",
+            "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+          },
+          "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "."
+          ],
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 1381,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.json",
+              "root": "W",
+              "sha256": "5982e9088a5219f35303073d57dbed88b7be388cf3a324c13f9ae59afa639dd0",
+              "type": "file"
+            },
+            {
+              "bytes": 56,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/black-changed.log",
+              "root": "W",
+              "sha256": "0b479fee9c3c70313b9c5c7a6339ecd413b78bbea93f1ad5050f49bdd3a655af",
+              "type": "file"
+            },
+            {
+              "bytes": 952,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.json",
+              "root": "W",
+              "sha256": "7cfb06d8bfcff78576ed1fb3cece6f5c93d0f2ee48ffdb74c3880217296c1f48",
+              "type": "file"
+            },
+            {
+              "bytes": 3197,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/mypy.log",
+              "root": "W",
+              "sha256": "90beffcbb49d6e1912778793cc427ccaf3765f19d8477554982e414d17eaaf9a",
+              "type": "file"
+            },
+            {
+              "bytes": 1022,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.json",
+              "root": "W",
+              "sha256": "79541ece90383187e090c15f643847d462a943ed42d94217ffe9af28f55baf85",
+              "type": "file"
+            },
+            {
+              "bytes": 926,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/no-defaults.log",
+              "root": "W",
+              "sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0",
+              "type": "file"
+            },
+            {
+              "bytes": 905,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.json",
+              "root": "W",
+              "sha256": "60fa6a175718329154c7d6120c8bded22c44562527bad006d7fc07c61ba46adb",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            },
+            {
+              "bytes": 4773,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/summary.json",
+              "root": "W",
+              "sha256": "3b5363c9b5f484a54a76e78419a928a96863b753e0859a86dc22c5eeeb1a88a8",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "duration_unavailable_reason": "Native static record has absolute UTC but no measured duration; not inferred.",
+          "ended_at": "2026-11-14T09:58:51.202789+00:00",
+          "environment": {
+            "bytes": 4983,
+            "path": "wave35/r133-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+          },
+          "exit_code": 0,
+          "helper": {
+            "bytes": 2357,
+            "path": "evidence-management/pop-standalone-step/run-r133-static-v1.py",
+            "root": "W",
+            "sha256": "515295be7550165b0ba12cfd6ef3008c98ddcdc62d5a7149cc8c6f680639a9c8"
+          },
+          "id": "r133-static-attempt-1--ruff",
+          "import_custody_unavailable_reason": "Nonruntime static check; no application import-thread custody claimed.",
+          "log_paths": [
+            {
+              "bytes": 19,
+              "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.log",
+              "root": "W",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            }
+          ],
+          "process_observation": {
+            "parent_pid": 219922,
+            "pid": 219930
+          },
+          "record": {
+            "bytes": 905,
+            "path": "evidence-management/pop-standalone-step/r133-static-attempt-1/ruff.json",
+            "root": "W",
+            "sha256": "60fa6a175718329154c7d6120c8bded22c44562527bad006d7fc07c61ba46adb"
+          },
+          "record_id": "ruff",
+          "round": 133,
+          "started_at": "2026-11-14T09:58:51.079270+00:00",
+          "status": "PASSED"
+        }
+      ],
+      "check": "r133-static-attempt-1--ruff",
+      "check_kind": "static",
+      "qualifying": false,
+      "status": "PASSED",
+      "terminal_attempt": "r133-static-attempt-1--ruff"
+    }
+  ],
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 207540,
+    "path": "wave35/r133-candidate.json",
+    "root": "W",
+    "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+  },
+  "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+  "fixture_preflight": {
+    "bytes": 4983,
+    "path": "wave35/r133-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "ec13f035d0ba8f11c6f6eccfb74a0e51db13a11194b38677b7de0671251a6af6"
+  },
+  "interval_inventory": {
+    "wave35-r133-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r133-collection-spec.json",
+        "root": "Q",
+        "sha256": "461d1fc6ada07ba11a4eff19bdeefbf16130331e0ce13505d07e434b5ed9bcf9",
+        "type": "file"
+      }
+    ],
+    "wave35-r133-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r133-owned-spec.json",
+        "root": "Q",
+        "sha256": "05e844b07336591b135574c7cea9913c62d3703367af5572e5321df95f273bee",
+        "type": "file"
+      }
+    ],
+    "wave35-r133-pop-owners-runtime-attempt-1": [
+      {
+        "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime",
+        "root": "Q",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-controller.json",
+        "root": "Q",
+        "sha256": "42aa99516c58111db2b03c9a584a9531a3a920c90ae4932a0c77984ed3ca0a16",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw0.json",
+        "root": "Q",
+        "sha256": "ab866125e4b500acb3db08a41e001842a6a4e47627cda98dfc2038c5f12b4ae2",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime/identity-gw1.json",
+        "root": "Q",
+        "sha256": "8c33ce97496cb67e4835fd37abd0df22433114814269ad203e50c4771f83f492",
+        "type": "file"
+      },
+      {
+        "bytes": 651,
+        "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime-custody.json",
+        "root": "Q",
+        "sha256": "09ee6bcd15714464cd95a7fb9c9827bd576624ff791cda22011d193eaacf21c1",
+        "type": "file"
+      },
+      {
+        "bytes": 1597,
+        "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime-result.json",
+        "root": "Q",
+        "sha256": "9902f878e51b1c84b5da59174ca2d5d2d35146003c90b8da6f571ce5f4cdfee5",
+        "type": "file"
+      },
+      {
+        "bytes": 602,
+        "path": "wave35-r133-pop-owners-runtime-attempt-1/pop-owners-runtime.log",
+        "root": "Q",
+        "sha256": "8057966bb0e581d963c260f34950704fae8d403c7106070011318576a9d9c183",
+        "type": "file"
+      }
+    ],
+    "wave35-r133-pop-owners-runtime-attempt-1-spec.json": [
+      {
+        "bytes": 1381,
+        "path": "wave35-r133-pop-owners-runtime-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "099936a431de861b74a34a71542ecd8f0ee3c5e687406b729ddec3910e8f3443",
+        "type": "file"
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "bytes": 3032,
+      "path": "evidence-management/pop-standalone-step/independent-review/r132-fresh/r133-typing-addendum.md",
+      "root": "W",
+      "sha256": "ecdb4e5098ae04d3e98e0d2d610b39149722467d298ab942d94c521f9b12fdeb"
+    },
+    {
+      "bytes": 10190,
+      "path": "evidence-management/pop-standalone-step/independent-review/r132-fresh/review.md",
+      "root": "W",
+      "sha256": "4123e8a6337c4edc852d185a69533bb7e234a242a8fc33bc1394bbefe4b8500c"
+    }
+  ],
+  "round": 133,
+  "same_byte_C1_source_comparison": {
+    "src/townlet/config/exploration_policy.py": {
+      "r132_sha256": "5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363",
+      "r133_sha256": "5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363"
+    },
+    "src/townlet/exploration/parent_custody.py": {
+      "r132_sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f",
+      "r133_sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"
+    },
+    "src/townlet/exploration/scoped_curiosity.py": {
+      "r132_sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c",
+      "r133_sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c"
+    },
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": {
+      "r132_sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872",
+      "r133_sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872"
+    }
+  },
+  "schema": "bac-closed-round-history-component-v1",
+  "scope": "Closed exact APP execution evidence; no terminal seal, fullBAC/hardware claim or package count change.",
+  "source_aliases": [
+    {
+      "exact_retained": {
+        "bytes": 161482,
+        "path": "evidence-management/wip23-preparation/closed-r133-v1/vectorized.py.txt",
+        "root": "W",
+        "sha256": "7f02f08359fa15aaa713e8e7221142d130f560cd96cea13334c64c54b088ee8a"
+      },
+      "original": "src/townlet/population/vectorized.py"
+    }
+  ],
+  "status": "MIXED; POP25 PASS; GLOBAL MYPY12 FAIL"
+}

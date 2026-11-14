@@ -1022,9 +1022,48 @@ class CuriosityBank:
     @_observation_boundary
     def checkpoint_state(self) -> dict[str, Any]:
         """Owned current transport; historical completion never transports authority."""
+        self._available()
+        return self._checkpoint_payload()
+
+    @_serialized
+    @_observation_boundary
+    def failure_diagnostic_state(self) -> dict[str, Any]:
+        """Full local-failure observation under unchanged child capture contracts."""
+        state = self._runtime_failure_payload()
+        state["schema"] = "curiosity-bank-failure-diagnostic-v1"
+        state["failure_reason"] = "runtime_failure"
+        return state
+
+    @_serialized
+    @_observation_boundary
+    def diagnostic_state(self) -> dict[str, Any]:
+        """Capture available or authenticated local-failure state without resume authority."""
+        reason: str | None
+        if self._failed:
+            state = self._runtime_failure_payload()
+            reason = "runtime_failure"
+        else:
+            self._available()
+            state = self._checkpoint_payload()
+            reason = None
+        state["schema"] = "curiosity-bank-diagnostic-v1"
+        state["failure_reason"] = reason
+        return state
+
+    def _runtime_failure_payload(self) -> dict[str, Any]:
+        if self._completion_uncertain:
+            raise RuntimeError("curiosity bank completion uncertain")
+        quarantine = self._quarantine
+        _require(self._failed and quarantine is not None, "runtime failure quarantine required")
+        assert quarantine is not None
+        _require(quarantine[1] == "runtime_failure", "runtime failure quarantine required")
+        self._auth(quarantine[0])
+        _require(self._prepared is None, "completion transaction pending")
+        return self._checkpoint_payload()
+
+    def _checkpoint_payload(self) -> dict[str, Any]:
         from townlet.exploration import curiosity_checkpoint as checkpoint
 
-        self._available()
         if self._initialization_origin is not None:
             self._report_transport(self._initialization_origin, "checkpoint", None)
         phase = self._checkpoint_phase()
@@ -1215,6 +1254,11 @@ class CuriosityBank:
         from townlet.exploration import curiosity_checkpoint as checkpoint
 
         with self._admission("prepare"):
+            if isinstance(state, Mapping):
+                _require(
+                    state.get("schema") not in ("curiosity-bank-failure-diagnostic-v1", "curiosity-bank-diagnostic-v1"),
+                    "diagnostics are not restore transport",
+                )
             self._available()
             _require(
                 type(initialization) is str and initialization in ("fresh_private", "clone_learned_archive_pending"),
@@ -1315,6 +1359,11 @@ class CuriosityBank:
         from townlet.exploration import curiosity_checkpoint as checkpoint
 
         with self._admission("prepare"):
+            if isinstance(state, Mapping):
+                _require(
+                    state.get("schema") not in ("curiosity-bank-failure-diagnostic-v1", "curiosity-bank-diagnostic-v1"),
+                    "diagnostics are not restore transport",
+                )
             _require(self._prepared is None, "completion transaction pending")
             identity = self._preparation_identity()
             checkpoint.preflight(state, policy=self.policy, descriptor=self.descriptor, device=self.device, mode=mode)

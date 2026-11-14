@@ -1,0 +1,56 @@
+{
+  "at": "2026-11-14T09:32:08.068092Z",
+  "candidate": {
+    "bytes": 4667,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/candidate.json",
+    "sha256": "781a3bcace6e4ba4bb56e841e9568c50f733e74b8548f109b97afed82e7c4c4b"
+  },
+  "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "inventory": [
+    {
+      "bytes": 19,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/source/pkg/inert-module.txt",
+      "sha256": "68dbe2e07dc5305478dcf486a2597403d9a3f4fae0f35459655f69fedee57b99"
+    },
+    {
+      "bytes": 11,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/source/tests.txt",
+      "sha256": "c4d165a8606037d3f65d65bd4595190cc0db6c710ba4543b34c6e63775b463ff"
+    },
+    {
+      "bytes": 13,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/source/configs.txt",
+      "sha256": "6de8a7af7eff1b4c009db029305f33f4b0d3c60105584440df87cc0ea671e553"
+    },
+    {
+      "bytes": 13,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/source/scripts.txt",
+      "sha256": "cdeb9600eefd666b9a33ddbeb76c611d168166e16e833d34106d6937e3790091"
+    },
+    {
+      "bytes": 13,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/source/ratchet.txt",
+      "sha256": "dba79329f9b37fa90e67b47a8110e0b6b91c35fae4cc311bad3fc04298635029"
+    },
+    {
+      "bytes": 15,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/source/artifacts.txt",
+      "sha256": "932a033288cf1badfb4d34d003dc1e5819522189c7320d3edd9d7bfcdaf9df16"
+    }
+  ],
+  "kind": "source-witness",
+  "process_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 214949,
+    "ppid": 214947,
+    "start_identity": "12801790"
+  },
+  "schema": "bac-hardware-v1",
+  "source_freeze": {
+    "bytes": 962,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_owner_environment_and_ref2/freeze.json",
+    "sha256": "55726aac530d3324975a003735a5c086d36c9201370c1def9abbea0a397018ad"
+  },
+  "tree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+}

@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-14T09:25:19.956623+00:00",
+  "probe": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py",
+  "sha256": "461213cb70ce1249015b4c2dc79f11777381f4607899b36b6b34f37be78272df",
+  "source_before_after": "PASS",
+  "candidate_tree": "60c786588781251f5dcadff6067ecbbf3cfe4cfb",
+  "actual_counts": {
+    "passed": 12,
+    "skipped": 0
+  },
+  "scope": "Other-model independent probe; actualstolenbinding/legitimatecontenderwait/forkPID contracts, bothownerclasses/scopes. Separate from30focusedand1completion cases.",
+  "custody": "/workspace/bac-review-2026-11-01/qualification/wave35-r127-diagnostic-independent-attempt-1/diagnostic-independent-custody.json"
+}

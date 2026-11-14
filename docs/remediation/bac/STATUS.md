@@ -1,5 +1,21 @@
 # BAC implementation status
 
+## 2026-11-14 — WIP23 checkpoint: R123–R133 diagnostics and POP cleanup
+
+The [authoritative record](evidence/wave35-wip-23.json) and [selection plan](evidence/wave35-wip-23/selection-plan.json) bind the finite interval and retained evidence.
+
+R133 executed tree is `0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592`, based on `23701174e5418aca5e8fc90cbe694f773d3ebff6`; candidate-manifest SHA256 is `6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58`. R133 records **25 POP cases passed / 0 skipped with full postflight custody**, following two typing-only return casts. Global Ruff, scoped Black and defaults pass; global mypy still fails with **12 diagnostics in two files**. R132's two additional POP helper no-any-return errors are repaired; its 14-error failure remains retained.
+
+The exact R132 supplier/test source records **133 ordinary C1 PASS**, **seven fresh isolated poison PASS** and **36 independent PASS with 12 retained multithreaded fork DeprecationWarnings**. Those supplier/test bytes match R133, but no R133 C1 execution is claimed. The R132 POP 25 result overlaps the R133 repeat. Collections of 25, 133 and 36 cases are not runtime executions, and historical/repeated selections are not summed into a full-suite total.
+
+POP's actual failed route exports generic diagnostic runtime/BANK state while preserving all twelve outer fields and the healthy checkpoint route. Locally available BANK is truthfully classified with `failure_reason=None`; authenticated ordinary runtime quarantine remains `runtime_failure`. Neither grants whole-run health or resume authority. Standalone step cleanup, complete current payload comparison and failed-progress receiver refusal are covered by the bounded POP checks. See the parent custody component contract for ownership and native-state limits.
+
+R126: 30 FAIL, R129: 2 FAIL and R130: 41 FAIL remain preserved; R129 retains intended failure-only healthy-BANK refusal. R128 original pace case: 1 PASS lacks its original postflight; later R132/R133 checks do not retroactively provide that record. R121's broader owner suite: 215 FAIL / 266 PASS remains historical evidence, not a new current owner-suite execution. Remaining owner/ENV/restore/cohort/recurrent/runner integration and full C1 acceptance remain open.
+
+P0 module-alias and P3 owner-amendment closures have separate bounded root adoptions. P0's 179 author and 197 independent results overlap; P3's 100 author checks use the R128 test version, while 15 affected independent checks use R129, retaining 85 earlier Q-only checks at their own source. None is APP or hardware qualification. The approved P2 owner-integration v2 plan is required next work; its live Task 1 implementation is excluded from this checkpoint's closure.
+
+The latest recorded WIP22 remote observation at `23701174e5418aca5e8fc90cbe694f773d3ebff6` reports Config Validation success, Lint failure and Tests in progress (observation 3); it is not final WIP23 CI. Actual CUDA is UNRUN. B6, full/default suites, coverage ≥70%, slow/learning work, global typing and exact final review/remote CI remain required. **28 qualified / 38 remaining / 66 original packages** is unchanged. No WIP23 remote identity or CI result has yet been observed.
+
 ## 2026-11-14 — WIP22 checkpoint: R117–R122 bounded parent custody component
 
 Terminal R122 executed tree is `7d3be1eeda87015e939f1dd90275b05a1586676b`, based on `2f579092eae2b67eb3efd514aa7b61c909efa9f1`; candidate-manifest SHA256 is `6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e`. This finite R117–R122 checkpoint preserves earlier failed, intermediate and unrun attempts, including the failed R117 capture and all 12 automatic T21 templates. Execution and publication identities remain separate.

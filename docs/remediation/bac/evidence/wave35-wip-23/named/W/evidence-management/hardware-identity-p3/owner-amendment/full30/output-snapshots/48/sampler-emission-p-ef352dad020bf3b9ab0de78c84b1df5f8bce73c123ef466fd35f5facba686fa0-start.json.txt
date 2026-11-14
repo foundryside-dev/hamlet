@@ -1,0 +1,38 @@
+{
+  "emission_end_ns": 127454116724618,
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 213955,
+    "ppid": 213822,
+    "start_identity": "12745402"
+  },
+  "launch": {
+    "bytes": 36817,
+    "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/owner-launch-child-1.json",
+    "sha256": "be87b389b64441ceedc06a3e362b0a30cc8b263f77b7a15f20235b35abc492fc"
+  },
+  "module_names_after_sha256": "5f4be022a3307d3b0b0a34bd3b5a4b753392d9987c1f5e47a0eb5edef26055b3",
+  "phase": "start",
+  "policy": {
+    "bytes": 499,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/tmp/test_preloaded_fork_recorder_z0/sampler-policy.json",
+    "sha256": "114939729fd0e17e64636c3c5c042867b0c09fc7f313dd49940ebf4f6ca3abb7"
+  },
+  "process": {
+    "bytes": 37475,
+    "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/process-p-ef352dad020bf3b9ab0de78c84b1df5f8bce73c123ef466fd35f5facba686fa0-start.json",
+    "sha256": "c37eff02dfdb353d62e99fa23b48ee257557703091d9ee8c1e48287e05a65c52"
+  },
+  "raw": {
+    "bytes": 7812,
+    "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/process-p-ef352dad020bf3b9ab0de78c84b1df5f8bce73c123ef466fd35f5facba686fa0-observation-start.json",
+    "sha256": "5fbda8ae0ee80e69583c0e79a4f4ada985e628c7387f030412c9833f1960eec8"
+  },
+  "sampler": {
+    "bytes": 2859,
+    "path": "/tmp/bac-p3-inert-inoa7lnj/output/attempt/job/sampler-p-ef352dad020bf3b9ab0de78c84b1df5f8bce73c123ef466fd35f5facba686fa0-start.json",
+    "sha256": "7f1b6a0d0cde607b973edde619058bcbdeceed0b93ccb507722595cd7aee7a99"
+  },
+  "schema": "bac-hardware-owner-sampler-emission-v1"
+}

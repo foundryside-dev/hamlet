@@ -1,0 +1,9 @@
+{
+  "status": "PASS; root final receipt agrees with frozen independently reviewed subject",
+  "receipt_sha256": "725a9b8722cda83dca736da58d6ce4fec32770328071bf3105d387127ebcd22d",
+  "subject_sha256": "07c1ffa1d4d8a09437d95005aaae61860621fb92b34fe9edf8750612e8e89bea",
+  "review_sha256": "413fa4af50cf09b3549a3eb880af6795c8834a30091fb9478013742e12134ded",
+  "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+  "selected_input_rehash_count": 3718,
+  "selected_object_rehash_count": 2252
+}

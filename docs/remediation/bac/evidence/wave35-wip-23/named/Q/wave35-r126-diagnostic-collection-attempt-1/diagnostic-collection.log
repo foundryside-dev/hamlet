@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 31 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_runtime_bank_parent_custody.py>
+            <Function test_failure_diagnostic_full_current_payload[shared-none]>
+            <Function test_failure_diagnostic_full_current_payload[shared-count_based]>
+            <Function test_failure_diagnostic_full_current_payload[shared-rnd]>
+            <Function test_failure_diagnostic_full_current_payload[shared-adaptive_rnd]>
+            <Function test_failure_diagnostic_full_current_payload[shared-icm]>
+            <Function test_failure_diagnostic_full_current_payload[per_world-none]>
+            <Function test_failure_diagnostic_full_current_payload[per_world-count_based]>
+            <Function test_failure_diagnostic_full_current_payload[per_world-rnd]>
+            <Function test_failure_diagnostic_full_current_payload[per_world-adaptive_rnd]>
+            <Function test_failure_diagnostic_full_current_payload[per_world-icm]>
+            <Function test_failure_diagnostic_retains_completion_history[shared]>
+            <Function test_failure_diagnostic_retains_completion_history[per_world]>
+            <Function test_failure_diagnostic_requires_runtime_failure[healthy-runtime]>
+            <Function test_failure_diagnostic_requires_runtime_failure[healthy-bank]>
+            <Function test_failure_diagnostic_requires_runtime_failure[empty_participation-runtime]>
+            <Function test_failure_diagnostic_requires_runtime_failure[empty_participation-bank]>
+            <Function test_failure_diagnostic_refuses_unauthenticated_quarantine[runtime]>
+            <Function test_failure_diagnostic_refuses_unauthenticated_quarantine[bank]>
+            <Function test_failure_diagnostic_is_not_restore_transport[prepare_restore-runtime]>
+            <Function test_failure_diagnostic_is_not_restore_transport[prepare_restore-bank]>
+            <Function test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-runtime]>
+            <Function test_failure_diagnostic_is_not_restore_transport[prepare_private_initialization-bank]>
+            <Function test_failure_diagnostic_is_not_restore_transport[install_restore-runtime]>
+            <Function test_failure_diagnostic_is_not_restore_transport[install_restore-bank]>
+            <Function test_failure_diagnostic_callbacks_cannot_borrow_authority[False]>
+            <Function test_failure_diagnostic_callbacks_cannot_borrow_authority[True]>
+            <Function test_failure_diagnostic_refuses_pending_completion[runtime]>
+            <Function test_failure_diagnostic_refuses_pending_completion[bank]>
+            <Function test_failure_diagnostic_preserves_native_local_failure_contract[shared]>
+            <Function test_failure_diagnostic_preserves_native_local_failure_contract[per_world]>
+            <Function test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection>
+
+========================= 31 tests collected in 0.21s ==========================

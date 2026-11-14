@@ -1,0 +1,84 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+  "unique_node_phase_failures": 9,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where TypeError(\"test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'\") = <ExceptionInfo TypeError(\"test_standalone_failure_quarantines_without_replacing_cause.<locals>.sample_then_fail() missing 1 required keyword-only argument: 'lineage'\") tblen=4>.value",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-raises-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-raises-shared]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-ok-per_world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[sample-cleanup-ok-shared]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f9e792af2e0>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-ok-per_world]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f1108d38220>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-raises-shared]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f1124b0b1f0>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-raises-per_world]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Quarantine failure retained with original step error: ValueError('unsupported quarantine reason')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay[shared-none]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = all(<generator object test_standalone_failure_quarantines_without_replacing_cause.<locals>.<genexpr> at 0x7f9e793e48b0>)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py::test_standalone_failure_quarantines_without_replacing_cause[physics-cleanup-ok-shared]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

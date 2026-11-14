@@ -1,0 +1,58 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 42 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_runtime_bank_parent_custody.py>
+            <Function test_generic_diagnostic_full_payload[initial-shared-none]>
+            <Function test_generic_diagnostic_full_payload[initial-shared-count_based]>
+            <Function test_generic_diagnostic_full_payload[initial-shared-rnd]>
+            <Function test_generic_diagnostic_full_payload[initial-shared-adaptive_rnd]>
+            <Function test_generic_diagnostic_full_payload[initial-shared-icm]>
+            <Function test_generic_diagnostic_full_payload[initial-per_world-none]>
+            <Function test_generic_diagnostic_full_payload[initial-per_world-count_based]>
+            <Function test_generic_diagnostic_full_payload[initial-per_world-rnd]>
+            <Function test_generic_diagnostic_full_payload[initial-per_world-adaptive_rnd]>
+            <Function test_generic_diagnostic_full_payload[initial-per_world-icm]>
+            <Function test_generic_diagnostic_full_payload[available-shared-none]>
+            <Function test_generic_diagnostic_full_payload[available-shared-count_based]>
+            <Function test_generic_diagnostic_full_payload[available-shared-rnd]>
+            <Function test_generic_diagnostic_full_payload[available-shared-adaptive_rnd]>
+            <Function test_generic_diagnostic_full_payload[available-shared-icm]>
+            <Function test_generic_diagnostic_full_payload[available-per_world-none]>
+            <Function test_generic_diagnostic_full_payload[available-per_world-count_based]>
+            <Function test_generic_diagnostic_full_payload[available-per_world-rnd]>
+            <Function test_generic_diagnostic_full_payload[available-per_world-adaptive_rnd]>
+            <Function test_generic_diagnostic_full_payload[available-per_world-icm]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-shared-none]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-shared-count_based]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-shared-rnd]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-shared-adaptive_rnd]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-shared-icm]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-per_world-none]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-per_world-count_based]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-per_world-rnd]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-per_world-adaptive_rnd]>
+            <Function test_generic_diagnostic_full_payload[runtime_failure-per_world-icm]>
+            <Function test_generic_diagnostic_restore_refusal[runtime-False]>
+            <Function test_generic_diagnostic_restore_refusal[runtime-True]>
+            <Function test_generic_diagnostic_restore_refusal[bank-False]>
+            <Function test_generic_diagnostic_restore_refusal[bank-True]>
+            <Function test_generic_diagnostic_refusal_controls[pending]>
+            <Function test_generic_diagnostic_refusal_controls[empty_participation]>
+            <Function test_generic_diagnostic_refusal_controls[auth]>
+            <Function test_generic_diagnostic_callback_guard[False]>
+            <Function test_generic_diagnostic_callback_guard[True]>
+            <Function test_generic_diagnostic_native_failure_contract[shared]>
+            <Function test_generic_diagnostic_native_failure_contract[per_world]>
+            <Function test_generic_diagnostic_completion_uncertainty>
+
+========================= 42 tests collected in 0.24s ==========================

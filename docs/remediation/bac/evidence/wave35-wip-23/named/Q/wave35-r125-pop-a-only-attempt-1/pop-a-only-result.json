@@ -1,0 +1,26 @@
+{
+  "name": "pop-a-only",
+  "exit_code": 0,
+  "seconds": 9.236408761003986,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r125-pop-a-only-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r125-pop-a-only-attempt-1/pop-a-only.log",
+  "sha256": "c07f362b6e888ee3e6f0b6d47ad735c2e997215ef34abf62be7c8a58cc58b4a9",
+  "candidate_tree": "3b1d62e0be95a29139f33b663fbd0b0fd427f4c7",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "manifest_sha256": "3417e5b7697747aa2c830958d04933f08e9ab8acdbf4b5f54cbe292bc7ec9411",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

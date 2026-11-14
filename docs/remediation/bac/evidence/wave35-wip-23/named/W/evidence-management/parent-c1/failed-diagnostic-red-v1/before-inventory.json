@@ -1,0 +1,26 @@
+[
+  {
+    "source": "src/townlet/config/exploration_policy.py",
+    "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-red-v1/exploration_policy.py.before.txt",
+    "sha256": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9",
+    "lines": 1313
+  },
+  {
+    "source": "src/townlet/exploration/scoped_curiosity.py",
+    "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-red-v1/scoped_curiosity.py.before.txt",
+    "sha256": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4",
+    "lines": 1443
+  },
+  {
+    "source": "src/townlet/exploration/parent_custody.py",
+    "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-red-v1/parent_custody.py.before.txt",
+    "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f",
+    "lines": 239
+  },
+  {
+    "source": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+    "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-red-v1/test_runtime_bank_parent_custody.py.before.txt",
+    "sha256": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc",
+    "lines": 854
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r133-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r133-pop-owners-runtime-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "pop-owners-runtime",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution",
+        "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_failed_step_diagnostic_preserves_available_bank",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r133-pop-owners-runtime-attempt-1"
+      ]
+    }
+  ]
+}

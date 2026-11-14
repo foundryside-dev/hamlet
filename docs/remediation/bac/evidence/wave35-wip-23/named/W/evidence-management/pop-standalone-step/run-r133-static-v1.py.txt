@@ -1,0 +1,47 @@
+"""Root current-source static gates with exact output and source provenance."""
+from datetime import datetime, timezone
+from pathlib import Path
+import hashlib
+import json
+import os
+import subprocess
+
+R = Path('/workspace/hamlet')
+E = Path(__file__).parent
+MP = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r133-candidate.json'
+M = json.loads(MP.read_text())
+PY = str(R / '.venv/bin/python')
+def now():
+    return datetime.now(timezone.utc).isoformat()
+def sha(p):
+    return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def guard():
+    assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=R,text=True).strip() == M['base_commit']
+    assert subprocess.check_output(['git','write-tree'],cwd=R,text=True).strip() == M['candidate_tree']
+    for group in ('source_files','configs','artifacts'):
+        for path, digest in M[group].items():
+            assert sha(R/path) == digest, path
+guard()
+out = E / 'r133-static-attempt-1'
+out.mkdir()
+commands = [('ruff', [PY,'-m','ruff','check','.']),
+            ('mypy', [PY,'-m','mypy','src/townlet','--show-error-codes','--no-incremental']),
+            ('no-defaults', [PY,'scripts/no_defaults_lint.py','src/townlet/','--whitelist','.defaults-whitelist.txt','--ratchet','.defaults-ratchet'])]
+commands.append(('black-changed', [PY,'-m','black','--check',*[p for p in M['changed_paths'] if p.endswith('.py')]]))
+records=[]
+for name, argv in commands:
+    record=dict(name=name,argv=argv,cwd=str(R),start_utc=now(),parent_pid=os.getpid(),
+                manifest=str(MP),manifest_sha256=sha(MP),candidate_tree=M['candidate_tree'],script_sha256=sha(__file__))
+    log=out/(name+'.log')
+    with log.open('x') as stream:
+        process=subprocess.Popen(argv,cwd=R,stdout=stream,stderr=subprocess.STDOUT)
+        record['pid']=process.pid
+        record['exit_code']=process.wait()
+    record.update(end_utc=now(),log=str(log),log_sha256=sha(log))
+    with (out/(name+'.json')).open('x') as stream:
+        stream.write(json.dumps(record,indent=2)+'\n')
+    records.append(record)
+guard()
+with (out/'summary.json').open('x') as stream:
+    stream.write(json.dumps(dict(records=records,source_before_after='PASS',scope='Static gates only; failures retained, no acceptance'),indent=2)+'\n')
+print(json.dumps([dict(name=r['name'],exit_code=r['exit_code']) for r in records],indent=2))

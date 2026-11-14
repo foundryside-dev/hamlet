@@ -1,0 +1,118 @@
+{
+  "schema": "bac-independent-terminal-metadata-check-summary-v1",
+  "status": "PASS",
+  "at": "2026-11-14T10:17:00.282784+00:00",
+  "reviewed_subject": {
+    "contract": {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-checkpoint-contract-v1.json",
+      "bytes": 11808,
+      "sha256": "1af66eae6d628f84373fbe835a5c37b35b13bbf3b5d1f6ae1c2289ed8ef7a70f"
+    },
+    "qualification_subject": {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-qualification-subject-v1.json",
+      "bytes": 10246,
+      "sha256": "07c1ffa1d4d8a09437d95005aaae61860621fb92b34fe9edf8750612e8e89bea"
+    },
+    "receipt_draft": {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-reviewed-receipt-draft-v1.json",
+      "bytes": 2452331,
+      "sha256": "95dfd9dad721c66c974958bf326b7aecb726b6467b0ed17290028541bfdcb8d2"
+    },
+    "candidate_manifest": {
+      "root": "W",
+      "path": "wave35/r133-candidate.json",
+      "bytes": 207540,
+      "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+    }
+  },
+  "rooted_and_absolute_reference_rehashes": 3310,
+  "catalog_manifest_plan_references_included": 20,
+  "reference_mismatches": [],
+  "actual_and_declared_interval_top_level_members": 84,
+  "checks": 53,
+  "attempts": 53,
+  "status_counts": {
+    "PASSED": 26,
+    "FAILED": 5,
+    "UNRUN": 22
+  },
+  "executed_descendant_files": 350,
+  "executed_descendant_directories": 31,
+  "descendant_mismatches": [],
+  "result_command_exit_duration_identity_log_mismatches": [],
+  "available_custody_count_identity_mismatches": [],
+  "helper_required_by_closure_mismatches": [],
+  "terminal_current_byte_inventories": {
+    "source_files": 822,
+    "configs": 573,
+    "artifacts": 13
+  },
+  "terminal_inventory_mismatches": [],
+  "r132_r133_source_inventory_difference": [
+    "src/townlet/population/vectorized.py"
+  ],
+  "child_associations": [
+    {
+      "role": "body_distinct",
+      "pid": 218649,
+      "ppid": 218613
+    },
+    {
+      "role": "body_same",
+      "pid": 218667,
+      "ppid": 218612
+    },
+    {
+      "role": "child_false_parent_true",
+      "pid": 218882,
+      "ppid": 218857
+    },
+    {
+      "role": "child_true_parent_false",
+      "pid": 218931,
+      "ppid": 218906
+    },
+    {
+      "role": "diagnostic_completion",
+      "pid": 219113,
+      "ppid": 219088
+    },
+    {
+      "role": "generic_diagnostic_completion",
+      "pid": 219239,
+      "ppid": 219214
+    },
+    {
+      "role": "install_completion",
+      "pid": 219057,
+      "ppid": 219032
+    }
+  ],
+  "child_linkage": "Original witness vs exact outer/spec/result: PPID, start-tick order, role, expected_tree/base, argv/node, one spec job/output, spec hash and original witness source hashes all matched. Scheduler capacity1; actual zero xdist workers.",
+  "draft_plan": {
+    "root": "W",
+    "path": "evidence-management/wip23-preparation/root-selection-draft-v1.json",
+    "bytes": 3146722,
+    "sha256": "6e17457e50d7ec9521ad52713e751ccd56bb1bc33353f709630f9863083cf1ee"
+  },
+  "draft_object_rehash": {
+    "total": 2248,
+    "new_source_objects": 2215,
+    "existing_destination_objects": 33,
+    "mismatches": [],
+    "qualification_inference": false
+  },
+  "p0_component_files": 25,
+  "p3_component_files": 1849,
+  "component_files_missing_from_dependencies": [],
+  "approved_document_preimages_match": true,
+  "subject_receipt_component_and_accounting_agreement": true,
+  "limitations": [
+    "No APP/helper body read, application execution, selector invocation or Git operation.",
+    "Historical Git byte validation attributed to authenticated root attestation; reviewer checked all11 candidate identities/counts against it, not Git objects.",
+    "Metadata check initially assumed every draft object carried source and stopped at reference-existing; corrected to actual tagged object schema and completed all2248. No frozen input was altered."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-14T09:39:53.100812Z",
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 215622,
+    "ppid": 215489,
+    "start_identity": "12850343"
+  },
+  "launch": {
+    "bytes": 37054,
+    "path": "/tmp/bac-p3-inert-_ghqfah3/output/attempt/job/owner-launch-child-1.json",
+    "sha256": "a188c68c5f195684dee6086af5e04127aee9e10b21770be9f700178e14822f14"
+  },
+  "monotonic_ns": 128503441324318,
+  "role_id": "fork-guard",
+  "schema": "bac-hardware-owner-claim-v1"
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "bac-p3-owner-review-gap-disposition-v1",
+  "status": "Coverage gaps confirmed; frozen candidate unchanged; no waiver",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/freeze-v1.json",
+    "bytes": 4147,
+    "sha256": "1d3b4d5a10f978b5060cb5025af4abd3466b5e52239f1e4a989e07d25f9240e4"
+  },
+  "actual_evidence": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/execution.json",
+    "bytes": 3828,
+    "sha256": "dd7a2c7ef8fbea0eb1c06528df63e9d78fa1f9885b9b3186aeca13ccf10e8fdc"
+  },
+  "covered": [
+    {
+      "test": "test_preloaded_fork_recorder_zero_imports",
+      "scope": "Successful actual caller entry/return rows, own Git/source/raw/process/emission records, actual parent pipe receive/reap; module/import/Torch/NumPy/Queue/RNG traps. Positive chronology only."
+    },
+    {
+      "test": "test_fork_refuses_changed_preparation[deadline]",
+      "scope": "Already-expired in-memory absolute cutoff supplied before recorder entry. Refusal; NOT late source/emission/return coverage."
+    },
+    {
+      "test": "test_sampler_deadline_and_output_caps[stall|stdout|stderr|both|exit]",
+      "scope": "Actual command deadline/output caps/nonzero exit with actual process reaping and retained command diagnostics. NOT interruption after P0 process write."
+    },
+    {
+      "test": "test_nested_spawn_fork_actual_ancestry[True]",
+      "scope": "Actual spawn parent exits after guard start; guard end refuses changed real ancestry. NOT post-process receipt interruption."
+    },
+    {
+      "test": "test_two_actual_forks_cannot_reuse_one_handle",
+      "scope": "Two real fork children contend for exclusive launch claim; only one completes. NOT endpoint corruption validation."
+    }
+  ],
+  "missing_producer_owned": [
+    {
+      "gate": "Interruption between completed P0 process write and emission receipt/actual return",
+      "owner": "P3 existing identity/test packet",
+      "disposition": "Required bounded repair after separate root changed-subject grant. Exercise actual fork fault cut; retain partial process/raw/source, prove no successful API return/owner return row, no invented receipt or terminal success."
+    },
+    {
+      "gate": "Failed emission receipt writer",
+      "owner": "P3 existing identity/test packet",
+      "disposition": "Required fault-injection execution through real prepared kernel; failure must propagate, partial evidence retained, no successful return claimed."
+    },
+    {
+      "gate": "Late final recorder emission/deadline with no successful return",
+      "owner": "P3 existing identity/test packet",
+      "disposition": "Required actual tail-delay/deadline test, distinct from already-expired entry. Preserve exact measured intervals and partial artifacts; no source-qualified whole-call claim from internal prefix."
+    },
+    {
+      "gate": "Qualified APP caller brackets and parent acknowledgement/reap instrumentation",
+      "owner": "Source owners/P5 integration",
+      "disposition": "Required later actual producer implementation and source-qualified execution; inert P3 test caller is not the APP producer."
+    }
+  ],
+  "missing_consumer_owned": [
+    {
+      "gate": "Missing or cross-wired emission/return/ack/reap links",
+      "owner": "P4/P5 independently, P2 where correspondence belongs",
+      "disposition": "Required source-qualified consumer mutation tests. P3 emits observations and has no acceptance oracle for these externally written records."
+    },
+    {
+      "gate": "Actual owner return beyond3s/combined6s/absolute8s",
+      "owner": "Qualified source owner observations plus P4/P5",
+      "disposition": "Required rejection using actual measured caller brackets; do not infer return from P3 prefix or sampler record."
+    },
+    {
+      "gate": "Parent acknowledgement/reap beyond original10s deadline",
+      "owner": "Source-owner wait supervision and P4/P5, P2 outer custody",
+      "disposition": "Required observed deadline/custody rejection. Parent endpoint is not an earlier8s proof."
+    },
+    {
+      "gate": "Valid7.9s owner return /8.1s parent acknowledgement",
+      "owner": "P4/P5 current endpoint acceptance with qualified source-owner fixtures",
+      "disposition": "Required positive boundary case preserving original10s parent margin; NOT executed in this P3 freeze."
+    },
+    {
+      "gate": "Abrupt guard death leaving live sampler; actual owned-group cleanup",
+      "owner": "P2/source owner integration",
+      "disposition": "Required actual runner backstop test under its own source grant; not exercised or emulated as actual P2 by P3."
+    }
+  ],
+  "custody": "All listed missing gates remain required. No code edits/imports/tests performed for this disposition. Root will reconcile repair/partial-adoption boundaries; author does not self-adopt.",
+  "scope": "96PASS is only the exact full30 selection. It is not evidence for any missing timing-negative or consumer/APP/hardware gate."
+}

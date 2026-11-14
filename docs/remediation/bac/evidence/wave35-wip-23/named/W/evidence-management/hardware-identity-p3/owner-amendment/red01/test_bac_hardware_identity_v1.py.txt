@@ -1,0 +1,566 @@
+"""Inert P3 qualification; no application, Torch, CUDA or server imports."""
+import json
+import os
+from pathlib import Path
+import sys
+
+import pytest
+
+
+def test_xdist_environment_probe(request):
+    """Discovery only: persist actual framework environment for root contract."""
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if not destination:
+        pytest.skip('explicit inert environment discovery only')
+    worker = getattr(request.config, 'workerinput', {})
+    output = Path(destination) / (worker.get('workerid', 'controller') + '.json')
+    with output.open('x') as stream:
+        json.dump({'environment': dict(os.environ), 'workerinput': worker,
+                   'pid': os.getpid(), 'ppid': os.getppid(), 'argv': sys.argv}, stream, indent=2)
+
+
+def _probe_hook(config, phase):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if destination:
+        worker = getattr(config, 'workerinput', {})
+        with (Path(destination) / (worker.get('workerid', 'controller') + '-' + phase + '.json')).open('x') as stream:
+            json.dump({'environment': dict(os.environ), 'workerinput': worker,
+                       'pid': os.getpid(), 'ppid': os.getppid(), 'argv': sys.argv}, stream, indent=2)
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config):
+    if os.environ.get('BAC_P3_INERT_SPEC'):
+        _install_inert_runtime(os.environ['BAC_P3_INERT_SPEC'])
+    _probe_hook(config, 'configure')
+
+
+def pytest_sessionfinish(session, exitstatus):
+    _probe_hook(session.config, 'finish')
+
+
+def pytest_configure_node(node):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if destination:
+        with (Path(destination) / ('node-' + node.gateway.id + '-configure.json')).open('x') as stream:
+            json.dump({'workerinput': node.workerinput, 'gateway': node.gateway.id}, stream, indent=2)
+
+
+def pytest_testnodedown(node, error):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if destination:
+        with (Path(destination) / ('node-' + node.gateway.id + '-down.json')).open('x') as stream:
+            json.dump({'workerinput': node.workerinput, 'gateway': node.gateway.id,
+                       'error': str(error), 'workeroutput': getattr(node, 'workeroutput', None)}, stream, indent=2)
+
+
+@pytest.mark.parametrize('part', [1, 2])
+def test_xdist_replacement_probe(part):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if not destination:
+        pytest.skip('explicit inert replacement discovery only')
+    try:
+        fd = os.open(str(Path(destination) / 'crash-once'), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        return
+    os.close(fd)
+    os._exit(17)
+
+# Production regressions below use inert bytes and a read-only Git metadata double.
+import copy
+import hashlib
+import importlib
+import subprocess
+import types
+
+import bac_hardware_protocol_v1 as protocol
+
+
+def _api():
+    spec = importlib.util.find_spec('bac_hardware_identity_v1')
+    assert spec is not None, 'actual process identity implementation is missing'
+    return importlib.import_module('bac_hardware_identity_v1')
+
+
+def _write(path, value):
+    path.write_text(json.dumps(value, sort_keys=True) + '\n')
+    return protocol.file_reference(path)
+
+
+def _read(reference):
+    return json.loads(Path(reference['path']).read_text())
+
+
+@pytest.fixture
+def capsule(tmp_path, monkeypatch):
+    root = tmp_path / 'source'; root.mkdir()
+    out = tmp_path / 'output'; out.mkdir()
+    scratch = tmp_path / 'scratch'; scratch.mkdir()
+    leases = tmp_path / 'leases'; leases.mkdir()
+    output = out / 'attempt' / 'job'; output.mkdir(parents=True)
+    scratch_job = scratch / 'attempt' / 'job'; scratch_job.mkdir(parents=True)
+    index_lock = root / 'index.lock'; index_lock.touch()
+    (root/'pkg').mkdir()
+    blob = root / 'pkg' / 'inert-module.txt'; blob.write_text('inert source bytes\n')
+    blobref = protocol.file_reference(blob)
+    inputs = []
+    inventory = {}
+    for name in ['source', 'tests', 'configs', 'scripts', 'ratchet', 'artifacts']:
+        p = blob if name == 'source' else root / (name + '.txt')
+        if p != blob: p.write_text('inert ' + name)
+        ref = protocol.file_reference(p); inputs.append(ref)
+        inventory[name] = [{'path': str(p), 'reference': ref}]
+    grant = _write(tmp_path / 'grant.json', dict(schema='bac-hardware-source-grant-v1',
+        authorized_root=str(root), head='a'*40, tree='b'*40, import_roots=[str(root/'pkg')],
+        inputs=inputs, start='2026-01-01T00:00:00.000000Z', end=None,
+        no_writer_barrier=True, includes_untracked=True, authority='inert root authority',allocation_grant=blobref,cpu_reservation_evidence=[blobref]))
+    freeze = _write(tmp_path / 'freeze.json', dict(schema='bac-hardware-v1', kind='source-freeze',
+        authorized_root=str(root), grant=grant, start='2026-01-01T00:00:00.000000Z',
+        end={'state':'unavailable','value':None,'reason':'root maintains barrier'},
+        no_writer_barrier=True, includes_untracked=True, index_lock=str(index_lock), retention='retained'))
+    candidate = _write(tmp_path / 'candidate.json', dict(schema='bac-hardware-v1', kind='candidate',
+        head='a'*40, tree='b'*40, authorized_root=str(root), import_roots=[str(root/'pkg')],
+        inventory=inventory, registry=blobref, availability=blobref, source_freeze=freeze))
+    env = {k:v for k,v in os.environ.items() if k != 'PYTEST_CURRENT_TEST'}
+    env.update(COLUMNS='80',LINES='24',CUDA_VISIBLE_DEVICES='', OMP_NUM_THREADS='1', MKL_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
+    for key,value in env.items(): monkeypatch.setenv(key,value)
+    role = dict(id='controller', role='controller', count=1, replacement_limit=0,
+        observer='uninitialized', intra_op=1, inter_op=1, debug=False,
+        torch_policy='observe-loaded', cuda_policy='no-initialize',peak_cpu_slots=1,
+        cpu_reservation_basis='accepted-case-contract',cpu_reservation_evidence=blobref)
+    obligations = [dict(id=k,kind=k,required_cases=['test_inert'],contract=blobref,
+        validator=blobref,evidence_class='cpu',minimum_devices=0)
+        for k in ['process-custody','source-freeze','required-cases']]
+    job = dict(id='job', profile='cpu', argv=[str(Path(sys.executable).resolve()), '-m', 'pytest'],
+        interpreter=str(Path(sys.executable).resolve()), cwd=str(root),environment=env,
+        seed=dict(policy='explicit',python=1,numpy=1,torch=1,cuda=[]),
+        required_collected_ids=['test_inert'],xdist_workers=0,roles=[role],
+        budget=dict(cpu_slots=1,ram_bytes=1024,scratch_bytes=1024,scratch_inodes=50),devices=[],
+        serialization_domains=['domain'],timeout_seconds=10,termination_grace_seconds=1,
+        timing='ordinary',timing_contract=[],prerequisites=[],obligations=obligations,
+        output=str(output),scratch=str(scratch_job))
+    environment = _write(tmp_path/'environment.json',dict(schema='bac-hardware-v1',kind='environment',
+        interpreter=protocol.file_reference(Path(sys.executable).resolve()),python_version=sys.version,
+        dependencies=[dict(name='inert',version='1',reference=blobref)],environment=env,
+        platform='inert-linux',**{k:dict(state='unavailable',value=None,reason='inert',provenance=blobref)
+        for k in ['torch_build','cuda_runtime','driver']}))
+    proto=protocol.file_reference(Path(protocol.__file__))
+    identity_path=Path(__file__).with_name('bac_hardware_identity_v1.py')
+    identity_ref=protocol.file_reference(identity_path) if identity_path.exists() else blobref
+    tools=[dict(name=n,reference=proto if n=='protocol' else identity_ref if n=='identity' else blobref)
+        for n in ['protocol','capture','runner','identity','verifier','children-verifier']]
+    spec=dict(schema='bac-hardware-v1',kind='spec',attempt_id='attempt',candidate=candidate,
+        tools=tools,dependencies=environment,admission=blobref,profile='cpu',authorized_root=str(root),
+        output_root=str(out),scratch_root=str(scratch),lease_root=str(leases),job_concurrency=1,
+        budget=job['budget'],jobs=[job],source_freeze=freeze)
+    protocol.validate_spec(spec)
+    protocol.validate_record('candidate',_read(candidate))
+    protocol.validate_record('environment',_read(environment))
+    spec_ref=_write(tmp_path/'spec.json',spec)
+    command=_write(output/'command.json',dict(schema='bac-hardware-v1',kind='command',attempt_id='attempt',
+        job_id='job',spec=spec_ref,argv=job['argv'],cwd=job['cwd'],environment=env,seed=job['seed'],
+        runner=blobref,at='2026-01-01T00:00:00.000000Z'))
+    context=dict(schema='bac-hardware-identity-context-v1',spec=spec_ref,command=command,
+        trusted_grant=grant,job_id='job',role_id='controller',required_imports=[dict(name='inert_module',
+        reference=blobref,phases=['end'])],worker_roles=[],environment_delta=dict(common={},worker={}),
+        parent_start=[],replacement_start=[],lifecycle=[],worker_identity=None,policy=[],runtime=[])
+    module=types.ModuleType('inert_module');module.__file__=str(blob)
+    monkeypatch.setitem(sys.modules,'inert_module',module)
+    monkeypatch.chdir(root)
+    return dict(context=context,spec=spec,job=job,role=role,root=root,output=output,
+        tmp=tmp_path,blob=blob,grant=grant,freeze=freeze,blobref=blobref)
+
+
+def _prepare(capsule, monkeypatch):
+    api=_api()
+    monkeypatch.delenv('PYTEST_CURRENT_TEST',raising=False)
+    def git(argv, **kwargs):
+        assert kwargs['cwd'] == capsule['root'] or str(kwargs['cwd']) == str(capsule['root'])
+        assert argv in [['git','rev-parse','HEAD'],['git','diff-index','--cached','--quiet','b'*40,'--']]
+        return subprocess.CompletedProcess(argv,0,stdout='a'*40+'\n' if 'rev-parse' in argv else '',stderr='')
+    monkeypatch.setattr(api,'subprocess',types.SimpleNamespace(run=git))
+    return api
+
+
+def test_process_custody(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch); c=capsule['context']
+    start=_read(api.record_process(c,'start')); end=_read(api.record_process(c,'end'))
+    assert start['identity']['pid']==os.getpid()
+    assert start['identity']['ppid']==os.getppid()
+    assert start['identity']['start_identity']==Path('/proc/self/stat').read_text().rsplit(')',1)[1].split()[19]
+    assert start['identity']==end['identity']
+    assert start['argv']==[v.decode() for v in Path('/proc/self/cmdline').read_bytes().split(b'\0') if v]
+    assert end['elapsed_ns']['value']==end['monotonic_ns']-start['monotonic_ns']
+    assert end['imports']==[{'name':'inert_module','reference':capsule['blobref']}]
+    assert start['environment']==dict(os.environ)
+    assert start['interpreter']==protocol.file_reference(Path(sys.executable).resolve())
+    assert len(list(capsule['output'].glob('process-*-start.json'))) == 2  # raw and P0 start
+    with pytest.raises(ValueError): api.record_process(c,'end')
+
+
+@pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+def test_source_freeze_witness(capsule,monkeypatch,change):
+    api=_prepare(capsule,monkeypatch);c=capsule['context']
+    if change=='missing_barrier':
+        grant=_read(c['trusted_grant']);grant['no_writer_barrier']=False
+        c['trusted_grant']=_write(capsule['tmp']/'badgrant.json',grant)
+    elif change=='wrong_grant': c['trusted_grant']=capsule['blobref']
+    elif change=='expired_grant':
+        grant=_read(c['trusted_grant']);grant['end']='2026-01-02T00:00:00.000000Z'
+        c['trusted_grant']=_write(capsule['tmp']/'badgrant.json',grant)
+    elif change=='source': capsule['blob'].write_text('mutation')
+    elif change=='index': monkeypatch.setattr(api.subprocess,'run',lambda argv,**kwargs:subprocess.CompletedProcess(argv,1,stdout='a'*40+'\n'))
+    elif change=='interpreter': monkeypatch.setattr(sys,'executable','/bin/false')
+    elif change=='import': sys.modules['inert_module'].__file__=str(Path(__file__))
+    elif change=='env': monkeypatch.setenv('UNSEALED_MUTATION','1')
+    elif change=='context_extra': c['guess']=True
+    elif change=='tool': monkeypatch.setattr(api,'__file__',str(Path(__file__)))
+    with pytest.raises(ValueError): api.record_process(c,'start')
+
+
+def test_end_requires_actual_same_process_start(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    with pytest.raises(ValueError): api.record_process(capsule['context'],'end')
+    start=api.record_process(capsule['context'],'start')
+    payload=_read(start);payload['identity']['start_identity']='not-the-current-start'
+    Path(start['path']).write_text(json.dumps(payload))
+    with pytest.raises(ValueError): api.record_process(capsule['context'],'end')
+
+
+def test_phase_specific_import(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch);monkeypatch.delitem(sys.modules,'inert_module')
+    api.record_process(capsule['context'],'start')
+    with pytest.raises(ValueError): api.record_process(capsule['context'],'end')
+
+
+def test_missing_end_remains_missing(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch);api.record_process(capsule['context'],'start')
+    assert not list(capsule['output'].glob('*-end.json'))
+
+
+def test_nonperturbing_observer(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda');cuda._initialized=False
+    def forbidden(*a,**k): raise AssertionError('observer called Torch or CUDA')
+    torch.__getattr__=forbidden;cuda.__getattr__=forbidden
+    for name in ['get_num_threads','get_num_interop_threads','is_anomaly_enabled']:setattr(torch,name,forbidden)
+    torch.cuda=cuda;monkeypatch.setitem(sys.modules,'torch',torch);monkeypatch.setitem(sys.modules,'torch.cuda',cuda)
+    value=_read(api.record_process(capsule['context'],'start'))
+    assert value['torch_observation']=='loaded-without-calls'
+    assert value['cuda_observation']=='uninitialized'
+    assert all(value[k]['state']=='unavailable' for k in ['intra_op','inter_op','debug'])
+    raw=_read(value['intra_op']['provenance'])
+    assert raw['cuda_marker'] is False and 'native' in raw['observation_limit']
+
+
+@pytest.mark.parametrize('marker',[None,1,True])
+def test_uninitialized_refuses_missing_unknown_or_initialized_marker(capsule,monkeypatch,marker):
+    api=_prepare(capsule,monkeypatch);torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda')
+    if marker is not None: cuda._initialized=marker
+    torch.cuda=cuda;monkeypatch.setitem(sys.modules,'torch',torch);monkeypatch.setitem(sys.modules,'torch.cuda',cuda)
+    with pytest.raises(ValueError): api.record_process(capsule['context'],'start')
+
+
+def test_symlink_destination_refused(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    old=capsule['output'];old.rename(old.with_name('moved'));old.symlink_to(old.with_name('moved'),target_is_directory=True)
+    with pytest.raises(ValueError): api.record_process(capsule['context'],'start')
+
+
+def _reseal(capsule):
+    c=capsule['context'];spec=capsule['spec'];job=capsule['job']
+    protocol.validate_spec(spec)
+    c['spec']=_write(capsule['tmp']/'spec.json',spec)
+    command=_read(c['command']);command.update(spec=c['spec'],argv=job['argv'],environment=job['environment'],cwd=job['cwd'])
+    c['command']=_write(capsule['output']/'command.json',command)
+
+
+def _strict_role(capsule,kind):
+    role=dict(capsule['role'],id=kind,role=kind,inter_op=5,debug=True,
+        observer='guard-only' if kind=='fork-guard' else 'work',
+        torch_policy='forbidden' if kind=='fork-guard' else 'work',
+        cuda_policy='forbidden' if kind=='fork-guard' else 'no-initialize')
+    capsule['job']['roles'].append(role)
+    capsule['job']['budget']['cpu_slots']=2
+    obligation='fork-three-trials' if kind=='fork-guard' else 'strict-child-core'
+    capsule['job']['obligations'].append(dict(capsule['job']['obligations'][0],id=obligation,kind=obligation))
+    _reseal(capsule)
+    return role
+
+
+def _child_emit(context,connection,crash):
+    import bac_hardware_identity_v1 as api
+    def git(argv,**kwargs):
+        if argv==['git','rev-parse','HEAD']: return subprocess.CompletedProcess(argv,0,stdout='a'*40+'\n')
+        assert argv==['git','diff-index','--cached','--quiet','b'*40,'--']
+        return subprocess.CompletedProcess(argv,0,stdout='')
+    api.subprocess=types.SimpleNamespace(run=git)
+    module=types.ModuleType('inert_module');module.__file__=context['required_imports'][0]['reference']['path']
+    sys.modules['inert_module']=module
+    torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda');cuda._initialized=False
+    def forbidden(): raise AssertionError('fork guard called Torch')
+    torch.get_num_threads=forbidden if context['role_id']=='fork-guard' else lambda:1
+    torch.get_num_interop_threads=forbidden if context['role_id']=='fork-guard' else lambda:5
+    torch.is_anomaly_enabled=forbidden if context['role_id']=='fork-guard' else lambda:True
+    cuda.is_initialized=forbidden if context['role_id']=='fork-guard' else lambda:False
+    sys.modules['torch']=torch;sys.modules['torch.cuda']=cuda
+    try:
+        start=api.record_process(context,'start');connection.send(start)
+        if crash: os._exit(17)
+        connection.send(api.record_process(context,'end'))
+    except BaseException as exc:
+        expected=_read(context['spec'])['jobs'][0]['environment']
+        connection.send({'error':repr(exc),'env_diff':{k:[expected.get(k),os.environ.get(k)] for k in set(expected)|set(os.environ) if expected.get(k)!=os.environ.get(k)}})
+        raise
+    finally:
+        connection.close()
+
+
+@pytest.mark.parametrize('kind,method,crash',[('spawn-child','spawn',False),('fork-guard','fork',False),('spawn-child','spawn',True)])
+def test_actual_child_process_custody(capsule,monkeypatch,kind,method,crash):
+    import multiprocessing
+    api=_prepare(capsule,monkeypatch);_strict_role(capsule,kind)
+    parent=api.record_process(capsule['context'],'start')
+    context=copy.deepcopy(capsule['context']);context['role_id']=kind;context['parent_start']=[parent]
+    mp=multiprocessing.get_context(method);receiver,sender=mp.Pipe(duplex=False)
+    process=mp.Process(target=_child_emit,args=(context,sender,crash));process.start();sender.close()
+    assert receiver.poll(10), 'child never emitted actual start'
+    start=receiver.recv();assert 'error' not in start,start
+    first=_read(start)
+    assert first['identity']['pid']==process.pid and first['identity']['ppid']==os.getpid()
+    assert first['identity']!=_read(parent)['identity'] and first['parent_identity']==[_read(parent)['identity']]
+    if crash:
+        process.join(10);assert process.exitcode==17
+        assert not Path(start['path'].replace('-start.json','-end.json')).exists()
+    else:
+        assert receiver.poll(10);end=receiver.recv();assert 'error' not in end,end
+        last=_read(end);process.join(10);assert process.exitcode==0
+        assert first['identity']==last['identity']
+        if kind=='fork-guard':
+            assert last['torch_observation']=='forbidden-inherited-module-witness'
+            assert last['cuda_observation']=='forbidden'
+        else:
+            assert [last[k]['value'] for k in ['intra_op','inter_op','debug']]==[1,5,True]
+    receiver.close()
+
+
+@pytest.mark.parametrize('bad_field,bad_value',[('get_num_threads',2),('get_num_interop_threads',4),('is_anomaly_enabled',False)])
+def test_role_runtime_configuration_refuses_drift(capsule,monkeypatch,bad_field,bad_value):
+    api=_prepare(capsule,monkeypatch)
+    capsule['role'].update(observer='work',torch_policy='work',inter_op=5,debug=True);_reseal(capsule)
+    torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda')
+    for name,value in [('get_num_threads',1),('get_num_interop_threads',5),('is_anomaly_enabled',True)]:
+        setattr(torch,name,lambda value=value:value)
+    setattr(torch,bad_field,lambda:bad_value);cuda.is_initialized=lambda:False
+    monkeypatch.setitem(sys.modules,'torch',torch);monkeypatch.setitem(sys.modules,'torch.cuda',cuda)
+    with pytest.raises(ValueError,match='configuration mismatch'):api.record_process(capsule['context'],'start')
+
+
+def test_work_end_requires_runtime_facts(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch);capsule['role'].update(observer='work',torch_policy='work');_reseal(capsule)
+    api.record_process(capsule['context'],'start')
+    with pytest.raises(ValueError,match='work end'):api.record_process(capsule['context'],'end')
+
+
+def test_framework_environment_additions_are_not_arbitrary(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    capsule['context']['environment_delta']['common']['DANGEROUS']='yes'
+    monkeypatch.setenv('DANGEROUS','yes')
+    with pytest.raises(ValueError,match='unaccepted'):api.record_process(capsule['context'],'start')
+
+
+def test_pytest_hooks_are_available():
+    api=_api()
+    for name in ['pytest_addoption','pytest_configure','pytest_configure_node','pytest_testnodedown',
+                 'pytest_collection_finish','pytest_runtest_logreport','pytest_sessionfinish']:
+        assert callable(getattr(api,name,None)), 'missing actual pytest hook '+name
+
+
+def _install_inert_runtime(spec_path):
+    import bac_hardware_identity_v1 as api
+    def git(argv,**kwargs):
+        assert argv in [['git','rev-parse','HEAD'],['git','diff-index','--cached','--quiet','b'*40,'--']]
+        return subprocess.CompletedProcess(argv,0,stdout='a'*40+'\n' if 'rev-parse' in argv else '')
+    api.subprocess=types.SimpleNamespace(run=git)
+    spec=json.loads(Path(spec_path).read_text());candidate=_read(spec['candidate'])
+    module=types.ModuleType('inert_module');module.__file__=candidate['inventory']['source'][0]['path']
+    sys.modules['inert_module']=module
+
+
+def test_inert_job():
+    assert 'torch' not in sys.modules
+
+
+@pytest.mark.parametrize('workers,replacement',[(0,False),(2,False),(1,True)])
+def test_pytest_controller_workers_emit_closed_completion(capsule,monkeypatch,workers,replacement):
+    api=_prepare(capsule,monkeypatch)
+    q=Path(__file__).parent;job=capsule['job'];context=capsule['context']
+    policy=dict(schema='bac-hardware-identity-policy-v1',spec_path=str(capsule['tmp']/'spec.json'),
+        command_path=str(capsule['output']/'command.json'),runtime_path=str(capsule['output']/'runtime-context.json'),
+        **{k:copy.deepcopy(context[k]) for k in ['job_id','role_id','required_imports','worker_roles','environment_delta']})
+    job['environment']['BAC_P3_INERT_SPEC']=policy['spec_path']
+    job['environment']['PYTHONPATH']=str(q)
+    if workers:
+        job['xdist_workers']=workers
+        job['roles'].append(dict(capsule['role'],id='workers',role='worker',count=workers,replacement_limit=int(replacement)))
+        job['budget']['cpu_slots']=1+workers+int(replacement)
+        policy['worker_roles']=['workers']*workers
+    policy_ref=_write(capsule['tmp']/'policy.json',policy)
+    selection='test_inert_replacement' if replacement else 'test_inert_job'
+    case='test_bac_hardware_identity_v1.py::'+selection
+    cases=[case+'[1]',case+'[2]'] if replacement else [case]
+    job['required_collected_ids']=cases
+    for obligation in job['obligations']:obligation['required_cases']=cases
+    argv=[sys.executable,'-m','pytest','-c','/dev/null','--rootdir',str(q),'--noconftest','-p','no:cacheprovider',
+          '-p','xdist.plugin','-p','test_bac_hardware_identity_v1','-p','bac_hardware_identity_v1',
+          '--bac-identity-policy',policy_ref['path'],'--bac-identity-policy-sha256',policy_ref['sha256'],
+          '-q',str(q/'test_bac_hardware_identity_v1.py')+'::'+selection]
+    if workers:argv+=['-n',str(workers),'--max-worker-restart','1']
+    job['argv']=argv;job['interpreter']=sys.executable
+    _reseal(capsule)
+    source=_write(capsule['tmp']/'runner-source.json',dict(schema='bac-hardware-v1',kind='source-witness',
+        candidate=capsule['spec']['candidate'],source_freeze=capsule['spec']['source_freeze'],head='a'*40,tree='b'*40,
+        inventory=_read(capsule['grant'])['inputs'],at='2026-11-14T00:00:00.000000Z',process_identity=api._identity()))
+    _write(capsule['output']/'runtime-context.json',dict(schema='bac-hardware-identity-runtime-v1',
+        spec=context['spec'],command=context['command'],trusted_grant=context['trusted_grant'],policy=policy_ref,
+        runner_identity=api._identity(),runner_source_start=source))
+    with (capsule['tmp']/'pytest.log').open('wb') as log:
+        proc=subprocess.Popen(argv,cwd=capsule['root'],env=job['environment'],stdout=log,stderr=subprocess.STDOUT)
+        rc=proc.wait(timeout=20)
+    assert rc==(1 if replacement else 0),(capsule['tmp']/'pytest.log').read_text()
+    completion=_read(protocol.file_reference(capsule['output']/'completion.json'))
+    protocol.validate_record('job-evidence',completion)
+    assert completion['collected_ids']==cases
+    if not replacement:
+        assert [[row[p] for p in ['setup','call','teardown']] for row in completion['outcomes']]==[['passed']*3]
+    assert not {'exit_code','end','log','signal','disposition'} & set(completion)
+    processes=[_read(r) for r in completion['process_records']]
+    controllers=[p for p in processes if p['role']=='controller']; worker_rows=[p for p in processes if p['role']=='worker']
+    assert len(controllers)==2 and len(worker_rows)==(3 if replacement else workers*2)
+    assert controllers[0]['identity']['pid']==proc.pid
+    assert len({p['identity']['pid'] for p in processes})==1+workers+int(replacement)
+    if replacement:
+        replacement_start=next(p for p in worker_rows if p['phase']=='start' and p['replacement_of'])
+        predecessor=next(p for p in worker_rows if p['phase']=='start' and not p['replacement_of'])
+        assert replacement_start['replacement_of']==[predecessor['identity']]
+        assert not any(p['phase']=='end' and p['identity']==predecessor['identity'] for p in worker_rows)
+
+
+@pytest.mark.parametrize('part',[1,2])
+def test_inert_replacement(part):
+    if 'BAC_P3_INERT_SPEC' not in os.environ:
+        return
+    spec=json.loads(Path(os.environ['BAC_P3_INERT_SPEC']).read_text())
+    try:
+        fd=os.open(str(Path(spec['jobs'][0]['output'])/'crashed-once'),os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+    except FileExistsError:
+        return
+    os.close(fd);os._exit(17)
+
+
+def test_required_import_from_wrong_root_is_refused(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    outside=capsule['tmp']/'outside.txt';outside.write_text('inert outside')
+    module=types.ModuleType('inert_module');module.__file__=str(outside)
+    monkeypatch.setitem(sys.modules,'inert_module',module)
+    with pytest.raises(ValueError,match='origin mismatch'):api.record_process(capsule['context'],'start')
+
+
+def test_uninitialized_start_does_not_draw_rng(capsule,monkeypatch):
+    import random
+    api=_prepare(capsule,monkeypatch);before=random.getstate()
+    api.record_process(capsule['context'],'start')
+    assert random.getstate()==before
+
+
+def test_parent_start_cannot_fabricate_child_observation(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch);parent=api.record_process(capsule['context'],'start')
+    c=copy.deepcopy(capsule['context']);c['parent_start']=[parent]
+    with pytest.raises(ValueError):api.record_process(c,'end')
+
+
+def test_candidate_file_outside_authorized_import_root_refused(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    outside=_read(capsule['spec']['candidate'])['inventory']['configs'][0]['reference']
+    capsule['context']['required_imports'][0]['reference']=outside
+    sys.modules['inert_module'].__file__=outside['path']
+    with pytest.raises(ValueError,match='import root'):api.record_process(capsule['context'],'start')
+
+
+def test_unrequested_loaded_source_import_is_recorded(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    module=types.ModuleType('extra_inert');module.__file__=str(capsule['blob'])
+    monkeypatch.setitem(sys.modules,'extra_inert',module)
+    record=_read(api.record_process(capsule['context'],'start'))
+    assert {'name':'extra_inert','reference':capsule['blobref']} in record['imports']
+
+
+def _replace_grant(capsule,update):
+    grant=_read(capsule['context']['trusted_grant']);grant.update(update)
+    grant_ref=_write(capsule['tmp']/'grant.json',grant)
+    freeze=_read(capsule['freeze']);freeze['grant']=grant_ref
+    freeze_ref=_write(capsule['tmp']/'freeze.json',freeze)
+    candidate=_read(capsule['spec']['candidate']);candidate['source_freeze']=freeze_ref
+    capsule['spec']['candidate']=_write(capsule['tmp']/'candidate.json',candidate)
+    capsule['spec']['source_freeze']=freeze_ref;capsule['context']['trusted_grant']=grant_ref
+    _reseal(capsule)
+
+
+@pytest.mark.parametrize('update',[{'no_writer_barrier':False},{'end':'2026-01-02T00:00:00.000000Z'},
+                                   {'start':'0'},{'includes_untracked':False}])
+def test_root_grant_semantics_not_just_reference(capsule,monkeypatch,update):
+    api=_prepare(capsule,monkeypatch);_replace_grant(capsule,update)
+    with pytest.raises(ValueError):api.record_process(capsule['context'],'start')
+
+
+def test_grant_must_cover_last_source_observation(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    _replace_grant(capsule,{'end':'2026-11-14T12:00:01.000000Z'})
+    stamps=iter(['2026-11-14T12:00:00.000000Z','2026-11-14T12:00:02.000000Z'])
+    monkeypatch.setattr(api,'_utc',lambda:next(stamps))
+    with pytest.raises(ValueError,match='interval'):api.record_process(capsule['context'],'start')
+
+
+def test_p1_fixed_category_order_ignores_json_object_key_order(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    candidate=_read(capsule['spec']['candidate'])
+    categories=['source','tests','configs','scripts','ratchet','artifacts']
+    inputs=[entry['reference'] for name in categories for entry in candidate['inventory'][name]]
+    # The candidate is serialized with alphabetical keys, deliberately unlike P1's fixed order.
+    assert list(candidate['inventory']) != categories
+    _replace_grant(capsule,{'inputs':inputs})
+    start=_read(api.record_process(capsule['context'],'start'))
+    witness=_read(start['source_witness'])
+    assert witness['inventory']==inputs
+
+
+def test_preloaded_fork_recorder_zero_imports_baseline(capsule,monkeypatch):
+    import builtins
+    api=_prepare(capsule,monkeypatch);_strict_role(capsule,'fork-guard')
+    parent=api.record_process(capsule['context'],'start')
+    context=dict(capsule['context'],role_id='fork-guard',parent_start=[parent])
+    read,write=os.pipe();pid=os.fork()
+    if pid==0:
+        os.close(read)
+        def forbidden(name,*args,**kwargs): raise AssertionError('forbidden import: '+name)
+        builtins.__import__=forbidden
+        try:
+            api.record_process(context,'start');api.record_process(context,'end');message=b'OK'
+        except BaseException as exc: message=str(exc).encode()
+        os.write(write,message);os._exit(0)
+    os.close(write);message=os.read(read,4096);os.close(read);os.waitpid(pid,0)
+    assert message==b'OK',message.decode()
+
+
+def test_python_debug_is_not_torch_anomaly(capsule,monkeypatch):
+    api=_prepare(capsule,monkeypatch)
+    capsule['role'].update(observer='work',torch_policy='work',debug=True);_reseal(capsule)
+    torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda')
+    torch.get_num_threads=lambda:1;torch.get_num_interop_threads=lambda:1
+    torch.is_anomaly_enabled=lambda:False;cuda.is_initialized=lambda:False
+    monkeypatch.setitem(sys.modules,'torch',torch);monkeypatch.setitem(sys.modules,'torch.cuda',cuda)
+    value=_read(api.record_process(capsule['context'],'start'));raw=_read(value['debug']['provenance'])
+    assert value['debug']['value'] is True
+    assert raw['schema']=='bac-hardware-process-observation-v2'
+    assert raw['torch_anomaly']==dict(state='measured',value=False,reason='')
+    assert raw['python_debug'] is True and raw['python_optimize']==0

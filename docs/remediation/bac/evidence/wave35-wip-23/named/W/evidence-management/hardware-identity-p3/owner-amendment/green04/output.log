@@ -1,0 +1,32 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_____________ test_owner_launch_binds_actual_call_and_spawn_policy _____________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-136/test_owner_launch_binds_actual0/source/pkg/inert-module.txt'), 'bl..._launch_binds_actual0/freeze.json', 'sha256': '2d2fc6fdb15acda9df24607606259ae04889d6af7e5a1bce80a764423506d4e1'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fbd51f48180>
+
+    def test_owner_launch_binds_actual_call_and_spawn_policy(capsule,monkeypatch):
+>       api,ref=_owner(capsule,monkeypatch);launch=_launch(capsule,api,ref,monkeypatch)
+                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:597: in _launch
+    return api.prepare_owner_launch(capsule['context'],start,ref,'test_inert',
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:563: in prepare_owner_launch
+    protocol.validate_record('id',instance_id)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_owner_launch_binds_actual_call_and_spawn_policy
+1 failed, 1 passed, 49 deselected in 0.57s

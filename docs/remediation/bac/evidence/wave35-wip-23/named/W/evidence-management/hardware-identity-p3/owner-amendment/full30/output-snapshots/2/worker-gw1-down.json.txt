@@ -1,0 +1,64 @@
+{
+  "at": "2026-11-14T09:22:20.332472Z",
+  "controller_start": {
+    "bytes": 8606,
+    "path": "/tmp/bac-p3-inert-09e62udi/output/attempt/job/process-p-9e6266fd41ca13e80370abc0b6c58769db8229336b928f76db03294b10ceae6a-start.json",
+    "sha256": "c8e9470e8a1ca1f1670444834ad76a8f7cedfd59ba4d075622036df1dfedc106"
+  },
+  "error": "",
+  "phase": "down",
+  "predecessor_start": [
+    {
+      "bytes": 8193,
+      "path": "/tmp/bac-p3-inert-09e62udi/output/attempt/job/process-p-050bc409d19258d830052e7a06c9b6209bf5495a285a53039bf76347654e6fb2-start.json",
+      "sha256": "a24a3510909b225ed541a4c7e61f60951aa106addb482314d71217988e620200"
+    }
+  ],
+  "prior_lifecycle": [
+    {
+      "bytes": 2027,
+      "path": "/tmp/bac-p3-inert-09e62udi/output/attempt/job/worker-gw1-configure.json",
+      "sha256": "8ebb3a835d181ffdd40abe9ba8056b2128466b66a9fda1fb2d541d3909706794"
+    }
+  ],
+  "process_start": [
+    {
+      "bytes": 8373,
+      "path": "/tmp/bac-p3-inert-09e62udi/output/attempt/job/process-p-a3d0a59600b90ebb5f87ae355043dcf6096940e4459de72045c71103eb503ffb-start.json",
+      "sha256": "d71187aa3fce99ee2664049d4c1094d11bc469dce4163a3c0562c2e2a0318b74"
+    }
+  ],
+  "role_id": "workers",
+  "schema": "bac-hardware-worker-lifecycle-v1",
+  "worker_identity": {
+    "mainargv": [
+      "/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest/__main__.py",
+      "-c",
+      "/dev/null",
+      "--rootdir",
+      "/workspace/bac-review-2026-11-01/qualification",
+      "--noconftest",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "xdist.plugin",
+      "-p",
+      "test_bac_hardware_identity_v1",
+      "-p",
+      "bac_hardware_identity_v1",
+      "--bac-identity-policy",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full30/tmp/test_pytest_controller_workers2/policy.json",
+      "--bac-identity-policy-sha256",
+      "5ffb522ed671c1ac28121bb951dbc708b75f174a060b4787c1adf3d24ee1752a",
+      "-q",
+      "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_replacement",
+      "-n",
+      "1",
+      "--max-worker-restart",
+      "1"
+    ],
+    "testrunuid": "2cea1f6f8d914b8b8be10616c71fd243",
+    "workercount": 1,
+    "workerid": "gw1"
+  }
+}

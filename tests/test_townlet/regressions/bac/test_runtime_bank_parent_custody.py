@@ -29,7 +29,7 @@ from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import (
     compiled as compiled,
 )
 from townlet.exploration.rng_custody import process_rng_domain
-from townlet.exploration.world_curiosity_state import ServiceClock
+from townlet.exploration.world_curiosity_state import OwnedWorldBackend, ServiceClock, SharedWorldBackend
 from townlet.training.state import BatchedAgentState
 
 
@@ -852,3 +852,497 @@ def test_install_completion_failure_cannot_restore_healthy_latch(compiled: Any, 
     assert rig.bank._completion_uncertain is True
     assert rig.bank._entered is False and rig.bank._lineage is None
     poison_witness(request, "install_completion", trace, None, raised.value is error, rig.bank._completion_uncertain)
+
+
+def diagnostic_api(owner: Any) -> Any:
+    method = getattr(owner, "failure_diagnostic_state", None)
+    assert callable(method), "missing producer failure_diagnostic_state API"
+    return method
+
+
+def diagnostic_as_reference(state: dict[str, Any], runtime: bool) -> dict[str, Any]:
+    """Test comparison only: never feed this normalization to a production loader."""
+    result = deepcopy(state)
+    assert result.pop("failure_reason") == "runtime_failure"
+    if runtime:
+        assert result["schema"] == "exploration-runtime-failure-diagnostic-v1"
+        result["schema"] = "exploration-runtime-state-v1"
+        result["bank"] = diagnostic_as_reference(result["bank"], False)
+    else:
+        assert result["schema"] == "curiosity-bank-failure-diagnostic-v1"
+        result["schema"] = "curiosity-bank-state-v2"
+    return result
+
+
+def diagnostic_step(rig: Any) -> None:
+    """Real ENV reward and BANK service; no raw provider mutation or forged stamp."""
+    candidate = rig.candidate()
+    prepared = rig.population.prepare_vector_step(**candidate)
+    _, _, _, info = rig.env.step(candidate["actions"], vector_step=prepared)
+    handoff = info["intrinsic_transition"]
+    rig.runtime.admit_and_service(context=handoff.context, stamp=handoff.stamp, accepted=handoff.accepted)
+
+
+def observe_diagnostic_children(rig: Any, monkeypatch: Any) -> list[str]:
+    """Transparent real native capture observers, never substitute provider state."""
+    calls: list[str] = []
+
+    def observe(owner: Any, method: str, label: str) -> None:
+        original = getattr(owner, method)
+
+        def capture(instance: Any, *args: Any, **kwargs: Any) -> Any:
+            result = original(instance, *args, **kwargs)
+            calls.append(label)
+            return result
+
+        monkeypatch.setattr(owner, method, capture)
+
+    if rig.bank.scope == "shared":
+        observe(SharedWorldBackend, "call", "shared")
+    else:
+        observe(OwnedWorldBackend, "snapshot_with_capture", "private")
+    return calls
+
+
+@pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+def test_failure_diagnostic_full_current_payload(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+    """Omitted gradients/RNG/cache/step or a cached checkpoint must lose this comparison."""
+    rig = make_parent(compiled, family, scope)
+    begin(rig, retired=IDS[1:])
+    diagnostic_step(rig)
+    reference = rig.runtime.checkpoint_state()
+    assert reference["bank"]["step"] is not None
+    assert reference["bank"]["bank_phase"] == "live_episode"
+    assert len(reference["bank"]["worlds"]) == len(IDS)
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    runtime_capture, bank_capture = diagnostic_api(rig.runtime), diagnostic_api(rig.bank)
+    children = observe_diagnostic_children(rig, monkeypatch)
+    trace = CompletionTrace(rig, monkeypatch, None, None)
+    revision = rig.bank.mutation_revision
+    runtime_revision = rig.runtime._revision
+    state = runtime_capture()
+    expected_children = ["shared"] if scope == "shared" else ["private"] * len(IDS)
+    assert children == expected_children
+    equal(diagnostic_as_reference(state, True), reference)
+    assert rig.bank.mutation_revision > revision and rig.runtime._revision > runtime_revision
+    assert len(trace.bank_handles) == 1 and trace.bank_handles[0].completion_failed() is False
+    assert rig.bank._failed and not rig.bank._completion_uncertain
+    children.clear()
+    bank_state = bank_capture()
+    assert children == expected_children
+    equal(diagnostic_as_reference(bank_state, False), reference["bank"])
+    # Returned transport is owned; changing it cannot rewrite the next actual capture.
+    state["cadence"].clear()
+    state["bank"]["worlds"].clear()
+    equal(diagnostic_as_reference(runtime_capture(), True), reference)
+    with pytest.raises(RuntimeError, match="quarantined"):
+        rig.runtime.checkpoint_state()
+    with pytest.raises(RuntimeError, match="quarantined"):
+        rig.bank.snapshot_world(world_id=IDS[0])
+    with pytest.raises(RuntimeError, match="quarantined"):
+        rig.runtime.begin_episode(accepted=rig.record.accepted)
+
+
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+def test_failure_diagnostic_retains_completion_history(compiled: Any, monkeypatch: Any, scope: str) -> None:
+    """The diagnostic must retain real committed completion before the next begin clears it."""
+    rig = make_parent(compiled, "adaptive_rnd", scope)
+    begin(rig, retired=IDS[1:])
+    rig.population.step_population(rig.env)
+    prepared = prepare_close(rig)
+    capture = diagnostic_api(rig.runtime)
+    commit = rig.runtime.commit_batch_episode
+    stop = RuntimeError("stop close after actual committed diagnostic")
+    captured: list[dict[str, Any]] = []
+
+    def committed(**kwargs: Any) -> Any:
+        commit(**kwargs)
+        reference = rig.runtime.checkpoint_state()
+        assert reference["bank"]["completion"] is not None
+        assert reference["cadence"]["last_committed"] is not None
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+        state = capture()
+        equal(diagnostic_as_reference(state, True), reference)
+        captured.append(state)
+        raise stop
+
+    monkeypatch.setattr(rig.runtime, "commit_batch_episode", committed)
+    with pytest.raises(RuntimeError) as raised:
+        close(rig, prepared, release=True)
+    assert raised.value is stop and len(captured) == 1
+
+
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+@pytest.mark.parametrize("reason", ["healthy", "empty_participation"])
+def test_failure_diagnostic_requires_runtime_failure(compiled: Any, monkeypatch: Any, owner_name: str, reason: str) -> None:
+    """A broad allow-failed switch must not admit healthy or different quarantine states."""
+    rig = make_parent(compiled)
+    begin(rig, retired=IDS[1:])
+    if reason != "healthy":
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+    method = diagnostic_api(getattr(rig, owner_name))
+    children = observe_diagnostic_children(rig, monkeypatch)
+    with pytest.raises((ValueError, RuntimeError)):
+        method()
+    assert children == []
+    if reason == "healthy":
+        assert rig.runtime.checkpoint_state()["schema"] == "exploration-runtime-state-v1"
+    else:
+        with pytest.raises(RuntimeError, match="quarantined"):
+            rig.runtime.checkpoint_state()
+
+
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_failure_diagnostic_refuses_unauthenticated_quarantine(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+    """Actual retained quarantine must still authenticate against the accepted producer."""
+    rig = make_parent(compiled)
+    begin(rig, retired=IDS[1:])
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    method = diagnostic_api(getattr(rig, owner_name))
+    validate = rig.bank._validate
+    failure = RuntimeError("accepted producer refuses diagnostic")
+    validated: list[Any] = []
+
+    def refusal(**kwargs: Any) -> None:
+        validate(**kwargs)
+        validated.append(kwargs["accepted"])
+        raise failure
+
+    monkeypatch.setattr(rig.bank, "_validate", refusal)
+    children = observe_diagnostic_children(rig, monkeypatch)
+    with pytest.raises(RuntimeError) as raised:
+        method()
+    assert raised.value is failure and validated == [rig.record.accepted]
+    assert children == [] and rig.bank._failed and not rig.bank._completion_uncertain
+
+
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+@pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+def test_failure_diagnostic_is_not_restore_transport(compiled: Any, monkeypatch: Any, owner_name: str, method: str) -> None:
+    """Unmodified diagnostics must refuse before candidate materialization or registration."""
+    source, target = make_parent(compiled), make_parent(compiled)
+    begin(source, retired=IDS[1:])
+    diagnostic_step(source)
+    source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+    state = diagnostic_api(getattr(source, owner_name))()
+    original = target.runtime.checkpoint_state()
+    events: list[str] = []
+
+    def forbidden(*args: Any, **kwargs: Any) -> Any:
+        events.append("candidate")
+        pytest.fail("diagnostic reached candidate materialization/registration")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(target.bank, "_replacement_cohort", forbidden)
+        patch.setattr(target.bank, "_report_transport", forbidden)
+        patch.setattr(target.runtime, "_report_extra", forbidden)
+        kwargs = {
+            "prepare_restore": dict(state=state, mode="live_episode", accepted=None, parent_restore=None, validate_parent_restore=None),
+            "prepare_private_initialization": dict(
+                state=state, initialization="fresh_private", parent_restore=None, validate_parent_restore=None
+            ),
+            "install_restore": dict(prepared=state),
+        }
+        with pytest.raises((ValueError, RuntimeError, TypeError)):
+            getattr(getattr(target, owner_name), method)(**kwargs[method])
+    assert events == []
+    equal(target.runtime.checkpoint_state(), original)
+    restore_initial(target.runtime, original)
+
+
+@pytest.mark.parametrize("parent_bound", [False, True])
+def test_failure_diagnostic_callbacks_cannot_borrow_authority(compiled: Any, monkeypatch: Any, parent_bound: bool) -> None:
+    """The new diagnostic must not expose a forwarding permit to accepted callbacks."""
+    rig = make_parent(compiled)
+    begin(rig, retired=IDS[1:])
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    capture = diagnostic_api(rig.runtime)
+    bank_capture = diagnostic_api(rig.bank)
+    validate = rig.bank._validate
+    calls: list[bool] = []
+
+    def callback(**kwargs: Any) -> None:
+        validate(**kwargs)
+        revision = rig.bank.mutation_revision
+        for peer in (capture, bank_capture, rig.bank.checkpoint_state):
+            with pytest.raises(RuntimeError):
+                peer()
+            assert rig.bank.mutation_revision == revision
+        calls.append(True)
+
+    monkeypatch.setattr(rig.bank, "_validate", callback)
+    if parent_bound:
+        with bound(rig.runtime, Controller()):
+            state = capture()
+    else:
+        state = capture()
+    assert calls == [True] and state["failure_reason"] == "runtime_failure"
+    assert not rig.runtime._operation_active and not rig.bank._entered
+
+
+def test_failure_diagnostic_own_completion_uncertainty_refuses_reinspection(compiled: Any, monkeypatch: Any, request: Any) -> None:
+    """Actual failed diagnostic completion must latch uncertainty and prohibit fresh reads."""
+    poison_case("diagnostic_completion")
+    rig = make_parent(compiled, "rnd", "per_world")
+    begin(rig, retired=IDS[1:])
+    diagnostic_step(rig)
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    capture = diagnostic_api(rig.runtime)
+    diagnostic_api(rig.bank)
+    failure = RuntimeError("diagnostic own completion")
+    children = observe_diagnostic_children(rig, monkeypatch)
+    trace = CompletionTrace(rig, monkeypatch, "bank", failure)
+    with pytest.raises(RuntimeError) as raised:
+        capture()
+    assert raised.value is failure and children == ["private"] * len(IDS)
+    assert len(trace.bank_handles) == 1 and trace.bank_handles[0].completion_failed() is True
+    assert rig.bank._completion_uncertain and rig.bank._failed
+    children.clear()
+    for owner in (rig.runtime, rig.bank):
+        with pytest.raises((ValueError, RuntimeError)):
+            diagnostic_api(owner)()
+    assert children == []
+    poison_witness(request, "diagnostic_completion", trace, None, raised.value is failure, rig.bank._completion_uncertain)
+
+
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_failure_diagnostic_refuses_pending_completion(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+    """A real uncommitted completion cannot be exported by bypassing local quarantine."""
+    rig = make_parent(compiled)
+    begin(rig, retired=IDS[1:])
+    rig.population.step_population(rig.env)
+    prepared = prepare_close(rig)
+    assert prepared is not None and rig.bank._prepared is not None
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    capture = diagnostic_api(getattr(rig, owner_name))
+    children = observe_diagnostic_children(rig, monkeypatch)
+    with pytest.raises((ValueError, RuntimeError), match="pending"):
+        capture()
+    assert children == [] and rig.bank._failed
+
+
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+def test_failure_diagnostic_preserves_native_local_failure_contract(compiled: Any, monkeypatch: Any, scope: str) -> None:
+    """Private healthy=False snapshots remain exportable; failed shared calls still refuse."""
+    rig = make_parent(compiled, "rnd", scope)
+    begin(rig, retired=IDS[1:])
+    diagnostic_step(rig)
+    # Establish the new API before the deliberate failure, so RED is an absent API.
+    capture = diagnostic_api(rig.runtime)
+    error = RuntimeError("native capture body failure with clean completion")
+    owner_type = OwnedWorldBackend if scope == "per_world" else SharedWorldBackend
+    method = "snapshot_with_capture" if scope == "per_world" else "call"
+    original = getattr(owner_type, method)
+    observed: list[bool] = []
+
+    def fail_after_capture(instance: Any, callback: Any, *, lineage: Any) -> Any:
+        def failure(provider: Any) -> Any:
+            callback(provider)
+            observed.append(True)
+            raise error
+
+        return original(instance, failure, lineage=lineage)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(owner_type, method, fail_after_capture)
+        with pytest.raises(RuntimeError) as raised:
+            rig.runtime.checkpoint_state()
+        assert raised.value is error and observed == [True]
+    assert not rig.bank._completion_uncertain
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    if scope == "shared":
+        with pytest.raises(RuntimeError):
+            capture()
+    else:
+        state = capture()
+        assert state["schema"] == "exploration-runtime-failure-diagnostic-v1"
+        assert state["bank"]["worlds"][0]["backend"]["healthy"] is False
+        assert all(row["backend"]["healthy"] is True for row in state["bank"]["worlds"][1:])
+        assert state["bank"]["step"] is not None
+    assert rig.bank._failed and not rig.bank._completion_uncertain
+    with pytest.raises(RuntimeError, match="quarantined"):
+        rig.runtime.checkpoint_state()
+
+
+def generic_api(owner: Any) -> Any:
+    method = getattr(owner, "diagnostic_state", None)
+    assert callable(method), "missing producer diagnostic_state API"
+    return method
+
+
+def generic_reference(state: dict[str, Any], runtime: bool, reason: str | None) -> dict[str, Any]:
+    result = deepcopy(state)
+    assert result.pop("failure_reason") == reason
+    if runtime:
+        assert result["schema"] == "exploration-runtime-diagnostic-v1"
+        result["schema"] = "exploration-runtime-state-v1"
+        result["bank"] = generic_reference(result["bank"], False, reason)
+    else:
+        assert result["schema"] == "curiosity-bank-diagnostic-v1"
+        result["schema"] = "curiosity-bank-state-v2"
+    return result  # Comparison only; never supplied to a loader.
+
+
+@pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+@pytest.mark.parametrize("phase", ["initial", "available", "runtime_failure"])
+def test_generic_diagnostic_full_payload(compiled: Any, monkeypatch: Any, family: str, scope: str, phase: str) -> None:
+    rig = make_parent(compiled, family, scope)
+    if phase != "initial":
+        begin(rig, retired=IDS[1:])
+        diagnostic_step(rig)
+    reference = rig.runtime.checkpoint_state()
+    reason = None
+    if phase == "runtime_failure":
+        reason = phase
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+    capture = generic_api(rig.runtime)
+    children = observe_diagnostic_children(rig, monkeypatch)
+    state = capture()
+    assert len(children) == (1 if scope == "shared" else len(IDS))
+    equal(generic_reference(state, True, reason), reference)
+    equal(generic_reference(generic_api(rig.bank)(), False, reason), reference["bank"])
+    state["bank"]["worlds"].clear()
+    equal(generic_reference(capture(), True, reason), reference)
+    if reason is None:
+        with pytest.raises((ValueError, RuntimeError)):
+            rig.runtime.failure_diagnostic_state()
+        equal(rig.runtime.checkpoint_state(), reference)
+    else:
+        equal(diagnostic_as_reference(rig.runtime.failure_diagnostic_state(), True), reference)
+        with pytest.raises(RuntimeError, match="quarantined"):
+            rig.runtime.checkpoint_state()
+
+
+@pytest.mark.parametrize("failed", [False, True])
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_generic_diagnostic_restore_refusal(compiled: Any, monkeypatch: Any, failed: bool, owner_name: str) -> None:
+    source, target = make_parent(compiled), make_parent(compiled)
+    begin(source, retired=IDS[1:])
+    if failed:
+        source.runtime.quarantine_episode(accepted=source.record.accepted, reason="runtime_failure")
+    state = generic_api(getattr(source, owner_name))()
+    before = target.runtime.checkpoint_state()
+
+    def forbidden(*args: Any, **kwargs: Any) -> Any:
+        pytest.fail("generic diagnostic reached materialization")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(target.bank, "_replacement_cohort", forbidden)
+        patch.setattr(target.bank, "_report_transport", forbidden)
+        patch.setattr(target.runtime, "_report_extra", forbidden)
+        for method, kwargs in (
+            ("prepare_restore", dict(state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)),
+            (
+                "prepare_private_initialization",
+                dict(state=state, initialization="fresh_private", parent_restore=None, validate_parent_restore=None),
+            ),
+            ("install_restore", dict(prepared=state)),
+        ):
+            with pytest.raises((ValueError, RuntimeError, TypeError)):
+                getattr(getattr(target, owner_name), method)(**kwargs)
+        if owner_name == "bank":
+            wrapped = deepcopy(before)
+            wrapped["bank"] = state
+            with pytest.raises((ValueError, RuntimeError)):
+                restore_initial(target.runtime, wrapped)
+    equal(target.runtime.checkpoint_state(), before)
+
+
+@pytest.mark.parametrize("kind", ["pending", "empty_participation", "auth"])
+def test_generic_diagnostic_refusal_controls(compiled: Any, monkeypatch: Any, kind: str) -> None:
+    rig = make_parent(compiled)
+    begin(rig, retired=IDS[1:])
+    if kind == "pending":
+        rig.population.step_population(rig.env)
+        assert prepare_close(rig) is not None and rig.bank._prepared is not None
+    else:
+        reason = "runtime_failure" if kind == "auth" else kind
+        rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason=reason)
+    capture = generic_api(rig.runtime)
+    validate = rig.bank._validate
+
+    def refusal(**kwargs: Any) -> None:
+        validate(**kwargs)
+        raise RuntimeError("diagnostic accepted producer refusal")
+
+    if kind == "auth":
+        monkeypatch.setattr(rig.bank, "_validate", refusal)
+    children = observe_diagnostic_children(rig, monkeypatch)
+    for method in (capture, generic_api(rig.bank)):
+        with pytest.raises((ValueError, RuntimeError)):
+            method()
+    assert children == []
+
+
+@pytest.mark.parametrize("parent_bound", [False, True])
+def test_generic_diagnostic_callback_guard(compiled: Any, monkeypatch: Any, parent_bound: bool) -> None:
+    rig = make_parent(compiled)
+    begin(rig, retired=IDS[1:])
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    capture, peer = generic_api(rig.runtime), generic_api(rig.bank)
+    validate, calls = rig.bank._validate, []
+
+    def callback(**kwargs: Any) -> None:
+        validate(**kwargs)
+        for method in (capture, peer):
+            with pytest.raises(RuntimeError):
+                method()
+        calls.append(True)
+
+    monkeypatch.setattr(rig.bank, "_validate", callback)
+    if parent_bound:
+        with bound(rig.runtime, Controller()):
+            assert capture()["failure_reason"] == "runtime_failure"
+    else:
+        assert capture()["failure_reason"] == "runtime_failure"
+    assert calls == [True]
+
+
+def test_generic_diagnostic_completion_uncertainty(compiled: Any, monkeypatch: Any, request: Any) -> None:
+    poison_case("generic_diagnostic_completion")
+    rig = make_parent(compiled)
+    capture = generic_api(rig.runtime)
+    error = RuntimeError("generic diagnostic completion")
+    trace = CompletionTrace(rig, monkeypatch, "bank", error)
+    with pytest.raises(RuntimeError) as raised:
+        capture()
+    assert raised.value is error and rig.bank._completion_uncertain
+    assert len(trace.bank_handles) == 1 and trace.bank_handles[0].completion_failed() is True
+    children = observe_diagnostic_children(rig, monkeypatch)
+    with pytest.raises((ValueError, RuntimeError)):
+        capture()
+    assert children == []
+    poison_witness(request, "generic_diagnostic_completion", trace, None, raised.value is error, rig.bank._completion_uncertain)
+
+
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+def test_generic_diagnostic_native_failure_contract(compiled: Any, monkeypatch: Any, scope: str) -> None:
+    rig = make_parent(compiled, "rnd", scope)
+    begin(rig, retired=IDS[1:])
+    capture = generic_api(rig.runtime)
+    owner, method = (OwnedWorldBackend, "snapshot_with_capture") if scope == "per_world" else (SharedWorldBackend, "call")
+    original, error = getattr(owner, method), RuntimeError("generic native local failure")
+
+    def intercept(instance: Any, callback: Any, *, lineage: Any) -> Any:
+        def fail(provider: Any) -> Any:
+            callback(provider)
+            raise error
+
+        return original(instance, fail, lineage=lineage)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(owner, method, intercept)
+        with pytest.raises(RuntimeError) as raised:
+            rig.runtime.checkpoint_state()
+        assert raised.value is error
+    rig.runtime.quarantine_episode(accepted=rig.record.accepted, reason="runtime_failure")
+    if scope == "shared":
+        with pytest.raises(RuntimeError):
+            capture()
+    else:
+        state = capture()
+        assert state["bank"]["worlds"][0]["backend"]["healthy"] is False
+        assert state["failure_reason"] == "runtime_failure"
+    assert not rig.bank._completion_uncertain

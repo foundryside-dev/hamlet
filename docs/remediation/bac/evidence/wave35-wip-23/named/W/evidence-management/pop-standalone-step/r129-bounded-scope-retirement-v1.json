@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-14T09:38:12.049060+00:00",
+  "scope": "W35-C-INITIAL-PARTICIPATION-POP",
+  "last_bounded_manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r128-candidate.json",
+  "manifest_sha256": "89e36ada06c18b39c28fc74e1e85e08f87e4ea74c48410816e9da7c13104a982",
+  "last_actual_lines": 5000,
+  "last_bodies": 5,
+  "retired_inventory": [
+    {
+      "path": "src/townlet/population/vectorized.py",
+      "projected_lines": 3169,
+      "access": "modify_only_after_genuine_RED_and_authored_review"
+    },
+    {
+      "path": "src/townlet/training/episode.py",
+      "projected_lines": 176,
+      "access": "read_only"
+    },
+    {
+      "path": "src/townlet/training/clock_ledger.py",
+      "projected_lines": 48,
+      "access": "read_only"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "projected_lines": 832,
+      "access": "only_bounded_current_caller_and_true_participant_helper_adaptation_on_baton"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "projected_lines": 775,
+      "access": "new_original_focused_regression"
+    }
+  ],
+  "replacement_current_scope": "W35-R0-POP-STANDALONE-STEP",
+  "reason": "Current parent tests now900 lines; historical five-body context would5068. Preserve sealed R128 inventory and use current four-body4946 scope/fresh reviewer. No source guard removed: capturer retains full previous source_files union. No capability/test/assertion removal or old review reuse claimed."
+}

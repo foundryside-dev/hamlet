@@ -1,0 +1,102 @@
+{
+  "files": [
+    {
+      "bytes": 1902,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/FINAL-MANIFEST-v1.json",
+      "root": "W",
+      "sha256": "1727127fa5cb3b77a86077b67ae29e32915da1bf069a1f461bf69092e085c468"
+    },
+    {
+      "bytes": 5760,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/HANDOFF-v1.json",
+      "root": "W",
+      "sha256": "e80e383f6a3ab635174adc7c4bc01c7325c912b2c9d92ec6072dabac3d47078a"
+    },
+    {
+      "bytes": 325,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/READBACK-VERIFICATION-v1.json",
+      "root": "W",
+      "sha256": "80d2b8c0f64a9d6db9e3e88df9001ae138e7677c051840cc57b3202eb4b51364"
+    },
+    {
+      "bytes": 1221,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/SOURCE-ALIAS-GAP-RESOLUTION-v1.json",
+      "root": "W",
+      "sha256": "d00e8a02b8165ca89a65c85422f6cc5169af028d1b1cfb849cc7f0a1ec673b51"
+    },
+    {
+      "bytes": 3406,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/SUPPLEMENTAL-CHECKS-AND-OBLIGATIONS-v1.json",
+      "root": "W",
+      "sha256": "d6b4ec6dd887e932a1281fb4a0a9dc87007dbcfe99899ef823eb702389bbbf51"
+    },
+    {
+      "bytes": 83569,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r126-history-component-v1.json",
+      "root": "W",
+      "sha256": "d7f0d34674d38705051f60b670ee9a53c7b18d0d2f13f181c214ab28e32fb150"
+    },
+    {
+      "bytes": 64670,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r127-exact-source-retention-v1/exploration_policy.py.txt",
+      "root": "W",
+      "sha256": "e08309e0c55ca0d757fc33c926a21ee266b2935082826c14994208d6aebc3191"
+    },
+    {
+      "bytes": 69798,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r127-exact-source-retention-v1/scoped_curiosity.py.txt",
+      "root": "W",
+      "sha256": "8da80d4c87f666f6df7a4260ca16dd8feeb460ffa83e6713904e739598b667cc"
+    },
+    {
+      "bytes": 52853,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r127-history-component-v1.json",
+      "root": "W",
+      "sha256": "e24f54d16c0bdb1510f348fcc6f064947e61544bbb0278302901215e161d4ae3"
+    },
+    {
+      "bytes": 22349,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r128-history-component-v1.json",
+      "root": "W",
+      "sha256": "ff9a59da81be05002843bf09e6c941f3595969f7692796d23f479fcfb563acbe"
+    },
+    {
+      "bytes": 34953,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/r129-history-component-v1.json",
+      "root": "W",
+      "sha256": "23370d7113a887a12aa44cdad9fa0f5429d0a6c786eae34784e870f06ba0d76f"
+    },
+    {
+      "bytes": 28765,
+      "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/supporting-closure-v1.json",
+      "root": "W",
+      "sha256": "cb830bccdecd52481931c7ff5c3e66e3d90ecf0f01e46dbec0eb45a2ad788199"
+    }
+  ],
+  "prior_manifest": {
+    "bytes": 1902,
+    "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/FINAL-MANIFEST-v1.json",
+    "root": "W",
+    "sha256": "1727127fa5cb3b77a86077b67ae29e32915da1bf069a1f461bf69092e085c468"
+  },
+  "readback": {
+    "bytes": 325,
+    "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/READBACK-VERIFICATION-v1.json",
+    "root": "W",
+    "sha256": "80d2b8c0f64a9d6db9e3e88df9001ae138e7677c051840cc57b3202eb4b51364"
+  },
+  "scope": "Immutable additive evidence preparation only. Root owns integration and future seal.",
+  "source_resolution": {
+    "bytes": 1221,
+    "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/SOURCE-ALIAS-GAP-RESOLUTION-v1.json",
+    "root": "W",
+    "sha256": "d00e8a02b8165ca89a65c85422f6cc5169af028d1b1cfb849cc7f0a1ec673b51"
+  },
+  "status": "CLOSED R126-R129 INVENTORY; SOURCE GAPS RESOLVED; R128 POSTFLIGHT OPEN",
+  "supplement": {
+    "bytes": 3406,
+    "path": "evidence-management/wip23-preparation/closed-r126-r129-v1/SUPPLEMENTAL-CHECKS-AND-OBLIGATIONS-v1.json",
+    "root": "W",
+    "sha256": "d6b4ec6dd887e932a1281fb4a0a9dc87007dbcfe99899ef823eb702389bbbf51"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "Q_members": 4,
+  "checks": 7,
+  "component": {
+    "bytes": 39370,
+    "path": "evidence-management/wip23-preparation/closed-r133-v1/r133-history-component-v1.json",
+    "root": "W",
+    "sha256": "a0c29aa7fa8501c80df87973f472e6a57ee68d7fc5ce9fde0af9f2f7be8d21f5"
+  },
+  "files": [
+    {
+      "bytes": 39370,
+      "path": "evidence-management/wip23-preparation/closed-r133-v1/r133-history-component-v1.json",
+      "root": "W",
+      "sha256": "a0c29aa7fa8501c80df87973f472e6a57ee68d7fc5ce9fde0af9f2f7be8d21f5"
+    },
+    {
+      "bytes": 161482,
+      "path": "evidence-management/wip23-preparation/closed-r133-v1/vectorized.py.txt",
+      "root": "W",
+      "sha256": "7f02f08359fa15aaa713e8e7221142d130f560cd96cea13334c64c54b088ee8a"
+    }
+  ],
+  "status": "R133 CLOSED INVENTORY; ROOT SEAL PENDING",
+  "verification": "Reference hashes rechecked; no APP/Git execution."
+}

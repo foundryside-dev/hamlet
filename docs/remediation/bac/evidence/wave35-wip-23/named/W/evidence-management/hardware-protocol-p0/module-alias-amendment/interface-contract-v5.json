@@ -1,0 +1,112 @@
+{
+  "family": "bac-hardware-v1",
+  "packet": "P0",
+  "status": "frozen amendment for independent review; root adoption required before consumer integration",
+  "public_interfaces": {
+    "validate_spec(spec: dict) -> None": "validate exact spec and recursively validate/hash referenced files; raises ValueError on rejection",
+    "validate_record(kind: str, value: dict) -> None": "validate one registered exact record shape and local invariants, including referenced file bytes; raises ValueError",
+    "file_reference(path: Path) -> dict": "read/hash existing regular file without following symlinks; return exact path,bytes,sha256; no writes"
+  },
+  "qualification_boundary": "P0 validates transport shape and immutable byte references only. It does not parse referenced JSON, verify external receipts, execute pinned validators, establish causal hardware work, or certify admission. No consumer may equate validate_record returning None with qualification.",
+  "mandatory_job_obligations": [
+    "process-custody",
+    "source-freeze",
+    "required-cases"
+  ],
+  "role_constraints": {
+    "controller": "exactly one per job",
+    "worker": "count equals explicit xdist_workers; replacements retain separate identity and declared replacement_limit",
+    "spawn-child/work-child": "must carry strict-child-core or strict-child-producer owned contract; inter_op=5 and debug=True; one-thread baseline",
+    "fork-guard": "fork-three-trials contract; guard-only, Torch/CUDA forbidden; inherited-module witness and unavailable thread/debug runtime probes with reasons; declared strict inherited configuration inter_op=5/debug=True",
+    "discovery": "separate admitted discovery process; discovery must never be performed by later uninitialized case identity recorder",
+    "observer": "uninitialized observer cannot perform Torch work or initialize CUDA",
+    "all": "exact role IDs and process cardinalities supplied by sealed jobs; PID/PPID/start identity/host/boot bind actual emitters; P3 verifies real observations"
+  },
+  "obligation_owners": {
+    "common": "P3/P4 custody, source freeze and required cases",
+    "strict-child-core/strict-child-producer/rng-custody/fork-three-trials/phase-pair": "P5 plus required bounded owner instrumentation slices; historical exact typed/correlated constraints remain mandatory",
+    "cuda-fresh-initialization/cuda-nondefault-rng/cuda-unindexed-switch/cuda-cross-device/cuda-async-completion/cuda-injected-failures": "six accepted groups; exact executable IDs and payload schemas supplied by existing owners, not invented here",
+    "b-route-leaf/b-ten-poison-children/parent-currentness/outer-completion/recurrent-activation/post-poison-b6": "current B/parent/recurrent owner supplies exact inventory and accepted receipts before scheduling"
+  },
+  "downstream_requirements": {
+    "P1": "Parse and validate candidate/environment/source-freeze/request records; reconcile exact authorized paths/imports/input inventory; probe separate actual process; derive nested quotas/affinity/cpuset/CPU capacity and memory/scratch with reserves; prove Torch CUDA build/driver/visibility/UUID/MIG mapping and allocation; refuse unavailable required facts. Validate references alone never admits.",
+    "P2": "Bind admission/spec/job budgets; sum concurrent controllers/workers/children, account replacement overlap; immutable exclusive attempt/output/scratch creation and all symlink/path races; exact env/argv/seeds; stable multi-device physical-parent/RNG/timing leases; required timing host isolation; preserve failed/interrupted/unrun output. No false successful orchestration exit.",
+    "P3": "Emit actual process start/end, source/import hashes and PID/PPID/start/host/boot; compare exact role-specific config, required children and replacements; guard no-Torch and fresh no-init; root no-writer barrier from capture through last witness; no parent-fabricated observations.",
+    "P4": "Parse and cross-bind every referenced record, digest and exact argv/env/seed/spec/candidate/dependency/exit/device assignment; exact collection/outcome sets and no skip/xfail; verify end/seal and source freeze; exclusively create receipts and independently verify each pinned case validator receipt. An unimplemented, untrusted, missing or failed validator yields unsatisfied/unrun, never satisfied.",
+    "P5": "Resolve separately bounded strict child/producer/fork/phase interfaces and real-work witness schemas before implementation; preserve all strict PID/PPID/Process/queue, RNG, quarantine/error/order, no-Torch three-fork-trial and phase pair obligations. Parse payload using exact pinned accepted case-contract + actual validator; generic envelope/reference pass is never pass-through acceptance."
+  },
+  "required_interface_gaps": [
+    "Exact owner-supplied producer/helper paths and full child/fork/phase schemas remain owed in bounded P5 slices.",
+    "Exact executable real-CUDA IDs, storage/output/device/event/RNG/completion witnesses and CPU-only no-init member of group 1 remain owner work; missing controls stay UNRUN.",
+    "Current canonical B routes, ten poison children and parent/currentness/B6 receipts remain owner-supplied.",
+    "Case-contract, witness_schema, validator, payload and validator_receipt references must be parsed/authenticated by consuming verifier; P0 deliberately performs no case dispatch."
+  ],
+  "rulings": [
+    "Root approved finite closed common transport plus required pinned case contracts, without inventing executable IDs or qualifying payloads.",
+    "Only the authorized synthetic test file is executed. Default application suite would violate explicit no application import/runtime scope.",
+    "Filesystem paths in normalized records are absolute canonical paths; file_reference accepts a Path whose spelling may already have been normalized by pathlib. Raw record path strings are checked before Path construction.",
+    "No source staging/checkout/worktree/git-init/remote/installation/GPU activity. Existing tools are immutable and read only for digest comparison.",
+    "Root-approved request minimum covers planned workload reservation, while private P1/P2 reserve/overhead and resource-allocation authority remain separate mandatory checks; no schema extension for private payloads."
+  ],
+  "evidence_classification": "All test data and files are inert synthetic; no mocked evidence is real CUDA; neither hardware availability nor BAC application qualification is claimed.",
+  "revision": 5,
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+    "bytes": 13184,
+    "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+  },
+  "reference_observation_boundary": "Revalidate no-follow directory chain device/inode identity from filesystem root and final file metadata after hashing. Reject observed ancestor or file substitution. Hashes and samples only attest bytes/identity observed during this call; no future immutability or prevention of transient restored edits is claimed. Root no-writer source freeze remains mandatory.",
+  "local_state_invariants": {
+    "source-freeze": "measured end >= start; unavailable end carries explicit reason",
+    "refused/unrun job-result": "exit_code null; signal zero; end and elapsed unavailable with reasons; collected_ids/outcomes/process_records/obligation_records empty. start denotes orchestration record start observation, not a fabricated launched process. Command/log and capture source references can preserve refusal diagnostics.",
+    "completed results": "Successful/completed-failed/completed-unverified require observed integer exit, end/elapsed, ordered finish. Successful exit0 and all required evidence; completed-failed ordinary positive exit and signal0; completed-unverified exit0/signal0 and nonempty evidence-gap reason. Real signals/timeout/active abort remain interrupted."
+  },
+  "review_resolution": {
+    "ancestor_replacement": "reproduced red and fixed with namespace-root chain identity recheck",
+    "nonexecution_relabel": "reproduced refused and unrun failures; fixed explicit nonexecution invariants",
+    "reversed_freeze_time": "reproduced red and fixed timestamp ordering",
+    "tests": "red-review-fixes-v1: 4failed/85passed; green-review-fixes-v1:89passed",
+    "amendment_exact_layout": "Four wrong-ID/nested destination mutations reproduced RED then rejected GREEN; exact fixed job_id layout follows accepted allocation private addendum v2, superseding weaker descendant wording in v3 interface."
+  },
+  "amendment_authority": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-interface-amendment-decision-v1.json",
+    "bytes": 2511,
+    "sha256": "5b23d1616de3b2857026f315bbc4ad6b17a4017ad2d766ad78bf08d98d21bb4c"
+  },
+  "accepted_amendment": {
+    "required_job_time_fields": "timeout_seconds exact finite int/float >0; termination_grace_seconds exact finite int/float >=0; no bool, optionality or defaults. P2 starts timeout after successful launch using monotonic time; TERM/grace/KILL bounded cleanup and actual wait observations.",
+    "required_role_fields": "peak_cpu_slots positive-int per simultaneously live process instance; cpu_reservation_basis accepted-case-contract or measured-bound; cpu_reservation_evidence file reference. P1 authenticates exact role/config/cases and valid upper bound, never a point sample or inference from inter_op. P2 enforces admitted demand; P3 actual witnesses remain mandatory.",
+    "cpu_formula": "Each job.cpu_slots >= sum((role.count + role.replacement_limit) * role.peak_cpu_slots). Strict inter_op=5 does not imply 5 active threads or waive the explicit peak bound.",
+    "layout": "Request requires attempt_id and lease_root; spec requires lease_root. output_root and scratch_root are existing parent roots. P2 exclusively creates output_root/attempt_id and scratch_root/attempt_id mode0700. Each job.output MUST EQUAL output_root/attempt_id/job.id and each job.scratch MUST EQUAL scratch_root/attempt_id/job.id. Arbitrary descendants or wrong job IDs refuse. Source/output/scratch/lease roots mutually disjoint. P0 rejects observed existing symlink/non-directory path components; P2 retains atomic creation, alias and namespace race checks.",
+    "fixed_job_files": {
+      "command": "command.json",
+      "stdout": "stdout.log",
+      "result": "result.json",
+      "case_emitted_evidence": "completion.json"
+    },
+    "job-evidence": "Closed nonterminal envelope: schema,kind,attempt_id,job_id,spec,command,collected_ids,outcomes,process_records,obligation_records,source_witnesses,inventory. No log/exit/signal/end/elapsed/disposition. Case instrumentation emits only observations possible before its own termination. P2 waits/reaps, pins final log and authors job-result with actual terminal facts.",
+    "status_precedence": "Actual signal/timeout/active abort -> interrupted. Ordinary observed nonzero exit -> completed-failed, retaining evidence gaps in reason. Ordinary observed exit0 with missing/invalid proof -> completed-unverified; integer exit0, signal0, measured end/elapsed, ordered end, nonempty reason, runner nonzero. completed-unverified is accepted in job-result, attempt-seal and receipt.test_outcome and never upgrades hardware/test acceptance.",
+    "local_budget": "Spec budget and request minimum cover top requested-concurrency largest job CPU reservations and RAM budgets separately; retained scratch bytes/inodes are sum of every planned job. Explicit attempt/capture/log overhead, reserves and cross-attempt allocation partitions are private P1/P2 authority-bound requirements; no extra P0 fields.",
+    "causal_source_witness": "P2 actual orchestration-controller PID/PPID/start/host/boot and prelaunch/final read-only source observations are attempt-level source-witness records. That process never substitutes for the job controller role; job-controller/worker/child observations are actual P3 emitters.",
+    "private_payloads": "Reviewed allocation/grant/discovery v2 payloads remain closed pinned consumer records. Their authority, raw discovery provenance, required backend, observed process identity, current registry/availability and device UUID mapping are mandatory P1/P2 checks; no arbitrary pass-through or extra P0 fields.",
+    "allocation_and_leases": "One active runner per root-authorized resource allocation via stable shared allocation lease. Separate allocations require root-proven disjoint capacity partitions. Preserve admitted within-allocation job concurrency. Shared ordinary host-timing ownership conflicts with exclusive timing jobs; canonical physical-parent and RNG leases use root-authorized shared lease_root under no-writer custody."
+  },
+  "accepted_allocation_private_contract": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+    "bytes": 5739,
+    "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+  },
+  "module_alias_amendment": {
+    "name_scalar": "reference-name",
+    "scope": "named-reference.name only; existing id/path/tool sets and all semantic checks unchanged",
+    "semantics": "Bounded generic labels OR bounded ASCII dotted Python module aliases; exact names preserved, never normalized or dropped",
+    "limit": 128,
+    "qualification": "P0 structural validation only; P3 exact observed aliases/source closure remain required",
+    "proposal": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P0-MODULE-ALIAS-AMENDMENT-v1.md",
+      "bytes": 8059,
+      "sha256": "f37ba436e643192b7b17077110980616a3c9de57196b535f291d1daf723cd9ea"
+    },
+    "tests": "red01: 10 failed/169 passed; green01: 179 passed; no skips"
+  }
+}

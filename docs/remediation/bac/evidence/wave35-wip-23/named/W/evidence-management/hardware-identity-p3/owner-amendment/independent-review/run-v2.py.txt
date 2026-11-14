@@ -1,0 +1,23 @@
+import datetime,hashlib,json,os,subprocess,sys
+from pathlib import Path
+out=Path(__file__).parent/sys.argv[1]
+out.mkdir(exist_ok=False)
+q=Path('/workspace/bac-review-2026-11-01/qualification')
+names=['bac_hardware_identity_v1.py','test_bac_hardware_identity_v1.py','bac_hardware_protocol_v1.py']
+def refs():
+ return [dict(path=str(q/n),bytes=(q/n).stat().st_size,sha256=hashlib.sha256((q/n).read_bytes()).hexdigest()) for n in names]
+def now(): return datetime.datetime.now(datetime.timezone.utc).isoformat()
+before=refs()
+selection='preloaded_fork_recorder_zero_imports or fork_refuses_changed_preparation or nested_spawn_fork_actual_ancestry or two_actual_forks_cannot_reuse_one_handle or fork_failed_emission_has_no_successful_return'
+argv=['/workspace/hamlet/.venv/bin/python','-B','-m','pytest','-c','/dev/null','--rootdir',str(q),'--noconftest','-p','no:cacheprovider','--basetemp',str(out/'tmp'),'-q',str(q/names[1]),'-k',selection]
+env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1',PYTEST_DISABLE_PLUGIN_AUTOLOAD='1',PYTHONPATH=str(q),CUDA_VISIBLE_DEVICES='',OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1')
+if sys.argv[1]=='collection-v2': argv.append('--collect-only')
+start=now()
+with (out/'output.log').open('xb') as log:
+ proc=subprocess.Popen(argv,cwd=q,env=env,stdout=log,stderr=subprocess.STDOUT)
+ actual=Path('/proc/'+str(proc.pid)+'/cmdline').read_bytes().split(b'\0')
+ stat=Path('/proc/'+str(proc.pid)+'/stat').read_text()
+ rc=proc.wait(timeout=100)
+result=dict(argv=argv,actual_argv=[x.decode() for x in actual if x],pid=proc.pid,stat=stat,start=start,end=now(),exit_code=rc,source_before=before,source_after=refs(),scope='Selected R-dependent inert cases; collection is nonexecution; runtime requires root lease; no APP/Torch/GPU qualification',environment=env)
+with (out/'execution.json').open('x') as f: json.dump(result,f,indent=2)
+print(json.dumps(dict(exit_code=rc,source_unchanged=before==result['source_after'],log=str(out/'output.log'))))

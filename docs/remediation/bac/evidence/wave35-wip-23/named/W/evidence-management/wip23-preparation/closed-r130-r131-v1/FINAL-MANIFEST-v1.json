@@ -1,0 +1,86 @@
+{
+  "Q_members": 12,
+  "checks": 8,
+  "components": [
+    {
+      "bytes": 89425,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r130-history-component-v1.json",
+      "root": "W",
+      "sha256": "a7d47b4241c3e0a818f4178a3e432bc4d3392808c124f68b7af10b4534c0274f"
+    },
+    {
+      "bytes": 34059,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-history-component-v1.json",
+      "root": "W",
+      "sha256": "3760f75cfc4a566ed1e1fb27f723e63d9b5b7fab15d09e496ab48b92c05f63a3"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 944,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/R127-PROBE-ALIAS-RESOLUTION-v1.json",
+      "root": "W",
+      "sha256": "33b1514392f40a257b40d5a12e3103bd0047efb5a75f37585653b649f2deccc0"
+    },
+    {
+      "bytes": 938,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/SOURCE-RETENTION-v1.json",
+      "root": "W",
+      "sha256": "f25fdcc4e45dc64385e99086ab712ed6a15a9724be3f385205777e5766f162a6"
+    },
+    {
+      "bytes": 9757,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/SUPPORTING-CLOSURE-v1.json",
+      "root": "W",
+      "sha256": "647def740ec93f743d04e4cd284105d08ab50d71ba803fc2cf0ea6b10a29bdbc"
+    },
+    {
+      "bytes": 89425,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r130-history-component-v1.json",
+      "root": "W",
+      "sha256": "a7d47b4241c3e0a818f4178a3e432bc4d3392808c124f68b7af10b4534c0274f"
+    },
+    {
+      "bytes": 65151,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-exact-source-retention-v1/exploration_policy.py.txt",
+      "root": "W",
+      "sha256": "5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363"
+    },
+    {
+      "bytes": 70651,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-exact-source-retention-v1/scoped_curiosity.py.txt",
+      "root": "W",
+      "sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c"
+    },
+    {
+      "bytes": 60772,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-exact-source-retention-v1/test_runtime_bank_parent_custody.py.txt",
+      "root": "W",
+      "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872"
+    },
+    {
+      "bytes": 34059,
+      "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/r131-history-component-v1.json",
+      "root": "W",
+      "sha256": "3760f75cfc4a566ed1e1fb27f723e63d9b5b7fab15d09e496ab48b92c05f63a3"
+    }
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "remaining": [
+    "R132 running checks/static/review; not sealed.",
+    "Retain absolute UTC, original witness attempt/PID and exact execution-subtree provenance limitations.",
+    "Root finite123\u2013132 receipt/contract/review and separate P0/P3 components pending."
+  ],
+  "status": "CLOSED R130-R131 INVENTORY; R132 EXCLUDED PENDING ROOT NOTICE",
+  "supporting_closure": {
+    "bytes": 9757,
+    "path": "evidence-management/wip23-preparation/closed-r130-r131-v1/SUPPORTING-CLOSURE-v1.json",
+    "root": "W",
+    "sha256": "647def740ec93f743d04e4cd284105d08ab50d71ba803fc2cf0ea6b10a29bdbc"
+  },
+  "unused_T21_UNRUN": 4
+}

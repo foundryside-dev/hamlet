@@ -1,0 +1,99 @@
+{
+  "actual_git_identity": {
+    "candidate": {
+      "bytes": 207540,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r129-candidate.json",
+      "sha256": "ebbe60fb1ccf0ee3395dda839908c6f8c3b0db6b53c1b30eabd4b3ea66a61c36"
+    },
+    "head": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+    "tree": "e3d2274b34a6c8a6620a803fdf041d05151b66a0"
+  },
+  "at": "2026-11-14T09:39:20.700455+00:00",
+  "body_inventory": [
+    {
+      "lines": 60,
+      "reference": {
+        "bytes": 2917,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      }
+    },
+    {
+      "lines": 526,
+      "reference": {
+        "bytes": 34654,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "lines": 1067,
+      "reference": {
+        "bytes": 65961,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+        "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+      }
+    },
+    {
+      "lines": 1126,
+      "reference": {
+        "bytes": 67361,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+        "sha256": "39b4513e3df308612924b2cd7c37111ebf91398645c1ebb57ec534af4e33bcf2"
+      }
+    },
+    {
+      "lines": 998,
+      "reference": {
+        "bytes": 45937,
+        "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_world_rng_bootstrap.py",
+        "sha256": "452e427b945475e050b35273b6bb44effe3ade6ef96629c4382c2d68591ee727"
+      }
+    }
+  ],
+  "ceiling": 3878,
+  "interface": {
+    "bytes": 10566,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/interface-contract-v5.json",
+    "sha256": "a0130f27c50305cf5917bebd792fd904ef123be551ce4b246ad09822858b6d87"
+  },
+  "predecessor": {
+    "bytes": 5189,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/freeze-v2.json",
+    "sha256": "2ef3d41d7af778208ee3fbc00a3f71aa71df44495fcba17bc907b193475f4c85"
+  },
+  "prior_author_execution": {
+    "bytes": 3832,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/execution.json",
+    "sha256": "a760d0c7aa0f9aba5a3454074dfb22a5da8cdc51d044a76929533275e9ea12ee"
+  },
+  "prior_author_result": {
+    "deselected": 3,
+    "exit_code": 0,
+    "passed": 100,
+    "pid": 214949
+  },
+  "prior_author_result_scope": "Executed old R128 tests8666dc...; no claim that100 tests executed new R129 bytes.",
+  "rebinding_proof": {
+    "bytes": 2606,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/r129-literal-rebinding-proof-v1.json",
+    "sha256": "f0f95702864b04bd81fb13aeafd8901cb06bf9666090c481d730c4dad3be512b"
+  },
+  "required_current_check": "Independent reviewer15 affected R-dependent cases on exact current bytes; no redundant full author suite required by root.",
+  "review_gap_disposition": {
+    "bytes": 6100,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/review-gap-disposition-v2.json",
+    "sha256": "eb21f82883dcbaf9de5d780145da474b02c3c61f68ff07511e85e8cd89e1b31d"
+  },
+  "schema": "bac-p3-owner-amendment-freeze-v3",
+  "source_change": "NONE; exact production dee985 unchanged.",
+  "status": "FROZEN literal-only R129 test binding; independent15 affected-case execution pending",
+  "unrun": [
+    "Actual P2 owner/raw-v2/receipt correspondence integration",
+    "Actual P2 owned-process-group backstop after abrupt guard death with live sampler",
+    "Actual P4/P5 current strict payload/return/custody validation",
+    "APP producer qualification and real Torch/CUDA/server execution"
+  ],
+  "whole_body_count": 5,
+  "whole_body_lines": 3777
+}

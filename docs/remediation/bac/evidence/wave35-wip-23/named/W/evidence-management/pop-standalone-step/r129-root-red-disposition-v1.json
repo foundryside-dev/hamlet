@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-14T09:48:04.806675+00:00",
+  "status": "R129 EXPECTED RED; PRODUCER GENERIC TEST-ONLY PHASE GRANTED",
+  "candidate": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r129-candidate.json",
+    "sha256": "ebbe60fb1ccf0ee3395dda839908c6f8c3b0db6b53c1b30eabd4b3ea66a61c36",
+    "bytes": 207540
+  },
+  "negative_custody": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r129-pop-available-red-attempt-1/pop-available-red-negative-custody.json",
+    "sha256": "ecf81e6172570a4a93b1803ba00910f4c0a8fa03af4908fdf60c15660c5b6709",
+    "bytes": 958
+  },
+  "failure_index": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r129-pop-available-red-attempt-1/pop-available-red-failure-index.json",
+    "sha256": "647770fa9e5e33a6951a6a8bc35c91491dcf23078ace483c9d54feac3764304d",
+    "bytes": 888
+  },
+  "plan_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/independent-review/generic-diagnostic-plan-review-v1.md",
+    "sha256": "6d1ef894c8d5f53fbff6844d58c70b80b53f4a235d55771ada4cb9867208e42c",
+    "bytes": 5641
+  },
+  "observation": "Both actual failed-step stages reached current diagnostic export and failed at runtime failure quarantine required; 2 failed, no collection error. Available BANK current-state export remains required.",
+  "r128_postflight": "Original pace case observed1PASS, in-run identities retained, but root final live postflight was not completed before R129 source advanced. This is explicitly not full postflight custody. Rerun original on final repaired candidate; no historical source recreation.",
+  "scope": "No full POP/C1/BAC closure. Generic API addition preserves failure-only API contract. Test-only single writer, production remains frozen until next root RED."
+}

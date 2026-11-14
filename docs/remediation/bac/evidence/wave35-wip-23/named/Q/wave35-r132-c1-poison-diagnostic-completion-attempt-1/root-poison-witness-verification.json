@@ -1,0 +1,27 @@
+{
+  "status": "PASS; C1 component only",
+  "witness": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-diagnostic-completion-attempt-1/c1-poison-diagnostic-completion/parent-c1-diagnostic_completion.json",
+  "witness_sha256": "543877781e7a860f1ca12804c4d59f062749cfb33946f25591e88790d87b1756",
+  "outer": {
+    "role": "diagnostic_completion",
+    "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-diagnostic-completion-attempt-1-spec.json",
+    "spec_sha256": "dfa258c9458b68eb222e2c902488e3f1b88844e4c0cdca778deaedefe94b8f7e",
+    "argv": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r132-c1-poison-diagnostic-completion-attempt-1-spec.json"
+    ],
+    "start_utc": "2026-11-14T09:56:04.444868+00:00",
+    "environment_delta": {
+      "BAC_PARENT_C1_POISON_CASE": "diagnostic_completion"
+    },
+    "orchestrator_pid": 218604,
+    "script_sha256": "cb7579d7e686048e1397e483ef2fa12b6b1854a558d85878c9ee81c6bc3192c9",
+    "launcher_pid": 219088,
+    "launcher_start_ticks": 12947478,
+    "exit_code": 0,
+    "end_utc": "2026-11-14T09:56:12.872182+00:00"
+  },
+  "qualification": "Actual fresh child ancestry, source, profile and assertions; CPU only, not CUDA qualification"
+}

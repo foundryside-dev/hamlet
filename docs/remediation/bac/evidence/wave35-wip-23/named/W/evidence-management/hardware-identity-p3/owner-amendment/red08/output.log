@@ -1,0 +1,38 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_preloaded_fork_recorder_zero_imports ___________________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...aded_fork_recorder_z0/freeze.json', 'sha256': '03776bdf0cd14cacba5ebe91acbae072ca59540b4b02fb504b36472dd824e004'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f9081e082b0>
+
+    def test_preloaded_fork_recorder_zero_imports(capsule,monkeypatch):
+        import builtins
+        api,ref=_owner(capsule,monkeypatch,'fork-guard');_fork_policy(capsule)
+        _real_source(capsule,api,monkeypatch)
+        ref=capsule['job']['obligations'][-1]['contract']
+>       launch=_launch(capsule,api,ref,monkeypatch,'fork')
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:604: in _launch
+    start=api.record_process(capsule['context'],'start')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:434: in record_process
+    source = _source(context,spec,candidate,identity,output,f'source-{pid}-{phase}.json',at)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:237: in _source
+    _require(head.returncode == 0 and head.stdout.strip() == candidate['head'] and tree.returncode == 0,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, message = 'source HEAD/index changed'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: source HEAD/index changed
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:38: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_preloaded_fork_recorder_zero_imports
+1 failed, 50 deselected in 0.57s

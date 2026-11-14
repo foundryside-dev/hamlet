@@ -1,0 +1,1113 @@
+{
+  "schema_family": "bac-hardware-v1",
+  "record_types": {
+    "reference": {
+      "path": "path",
+      "bytes": "uint",
+      "sha256": "sha256"
+    },
+    "budget": {
+      "cpu_slots": "uint",
+      "ram_bytes": "uint",
+      "scratch_bytes": "uint",
+      "scratch_inodes": "uint"
+    },
+    "named-reference": {
+      "name": "reference-name",
+      "reference": "reference"
+    },
+    "input": {
+      "path": "path",
+      "reference": "reference"
+    },
+    "dependency": {
+      "name": "text",
+      "version": "text",
+      "reference": "reference"
+    },
+    "identity": {
+      "pid": "positive-int",
+      "ppid": "uint",
+      "start_identity": "text",
+      "host": "text",
+      "boot_id": "text"
+    },
+    "device": {
+      "logical_index": "uint",
+      "gpu_uuid": "text",
+      "mig_uuid": [
+        "nullable",
+        "text"
+      ],
+      "physical_parent_uuid": "text",
+      "model": "text",
+      "vram_bytes": "positive-int",
+      "isolation": [
+        "enum",
+        "physical-exclusive",
+        "shared-parent-exclusive"
+      ],
+      "mapping_provenance": "reference"
+    },
+    "seed": {
+      "policy": [
+        "enum",
+        "explicit"
+      ],
+      "python": "uint",
+      "numpy": "uint",
+      "torch": "uint",
+      "cuda": [
+        "list",
+        "uint",
+        0
+      ]
+    },
+    "role": {
+      "id": "id",
+      "role": [
+        "enum",
+        "controller",
+        "worker",
+        "spawn-child",
+        "fork-guard",
+        "discovery",
+        "observer",
+        "work-child"
+      ],
+      "count": "positive-int",
+      "replacement_limit": "uint",
+      "observer": [
+        "enum",
+        "uninitialized",
+        "guard-only",
+        "work"
+      ],
+      "intra_op": [
+        "enum",
+        1
+      ],
+      "inter_op": "positive-int",
+      "debug": "bool",
+      "torch_policy": [
+        "enum",
+        "forbidden",
+        "observe-loaded",
+        "work"
+      ],
+      "cuda_policy": [
+        "enum",
+        "forbidden",
+        "no-initialize",
+        "real-work"
+      ],
+      "peak_cpu_slots": "positive-int",
+      "cpu_reservation_basis": [
+        "enum",
+        "accepted-case-contract",
+        "measured-bound"
+      ],
+      "cpu_reservation_evidence": "reference"
+    },
+    "obligation": {
+      "id": "id",
+      "kind": [
+        "enum",
+        "process-custody",
+        "source-freeze",
+        "required-cases",
+        "rng-custody",
+        "strict-child-core",
+        "strict-child-producer",
+        "fork-three-trials",
+        "phase-pair",
+        "cuda-fresh-initialization",
+        "cuda-nondefault-rng",
+        "cuda-unindexed-switch",
+        "cuda-cross-device",
+        "cuda-async-completion",
+        "cuda-injected-failures",
+        "b-route-leaf",
+        "b-ten-poison-children",
+        "parent-currentness",
+        "outer-completion",
+        "recurrent-activation",
+        "post-poison-b6"
+      ],
+      "required_cases": [
+        "list",
+        "text",
+        1
+      ],
+      "contract": "reference",
+      "validator": "reference",
+      "evidence_class": [
+        "enum",
+        "cpu",
+        "cpu-standin",
+        "real-cuda"
+      ],
+      "minimum_devices": "uint"
+    },
+    "job": {
+      "id": "id",
+      "profile": [
+        "enum",
+        "cpu",
+        "cuda"
+      ],
+      "argv": [
+        "list",
+        "text",
+        1
+      ],
+      "interpreter": "path",
+      "cwd": "path",
+      "environment": "env",
+      "seed": "seed",
+      "required_collected_ids": [
+        "list",
+        "text",
+        1
+      ],
+      "xdist_workers": "uint",
+      "roles": [
+        "list",
+        "role",
+        1
+      ],
+      "budget": "budget",
+      "devices": [
+        "list",
+        "device",
+        0
+      ],
+      "serialization_domains": [
+        "list",
+        "text",
+        1
+      ],
+      "timeout_seconds": "positive-number",
+      "termination_grace_seconds": "number",
+      "timing": [
+        "enum",
+        "ordinary",
+        "exclusive-host",
+        "qualified-corunning"
+      ],
+      "timing_contract": [
+        "list",
+        "reference",
+        0
+      ],
+      "prerequisites": [
+        "list",
+        "reference",
+        0
+      ],
+      "obligations": [
+        "list",
+        "obligation",
+        1
+      ],
+      "output": "path",
+      "scratch": "path"
+    },
+    "admission-request": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "admission-request"
+      ],
+      "authorized_root": "path",
+      "interpreter": "reference",
+      "scratch_root": "path",
+      "output_root": "path",
+      "attempt_id": "id",
+      "lease_root": "path",
+      "profile": [
+        "enum",
+        "cpu",
+        "cuda"
+      ],
+      "requested_job_concurrency": "positive-int",
+      "minimum": "budget",
+      "reserve": "budget",
+      "authorized_devices": [
+        "list",
+        "text",
+        0
+      ],
+      "requested_visibility": "string",
+      "jobs": [
+        "list",
+        "job",
+        1
+      ],
+      "source_freeze": "reference",
+      "tools": [
+        "list",
+        "named-reference",
+        6
+      ],
+      "dependencies": "reference"
+    },
+    "command": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "command"
+      ],
+      "attempt_id": "id",
+      "job_id": "id",
+      "spec": "reference",
+      "argv": [
+        "list",
+        "text",
+        1
+      ],
+      "cwd": "path",
+      "environment": "env",
+      "seed": "seed",
+      "runner": "reference",
+      "at": "utc"
+    },
+    "source-witness": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "source-witness"
+      ],
+      "candidate": "reference",
+      "source_freeze": "reference",
+      "head": "git-id",
+      "tree": "git-id",
+      "inventory": [
+        "list",
+        "reference",
+        1
+      ],
+      "at": "utc",
+      "process_identity": "identity"
+    },
+    "attempt-seal": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "attempt-seal"
+      ],
+      "attempt_id": "id",
+      "spec": "reference",
+      "start": "reference",
+      "disposition": [
+        "enum",
+        "successful",
+        "completed-failed",
+        "completed-unverified",
+        "interrupted",
+        "refused",
+        "unrun"
+      ],
+      "job_results": [
+        "list",
+        "reference",
+        1
+      ],
+      "inventory": [
+        "list",
+        "reference",
+        1
+      ],
+      "at": "utc",
+      "source_freeze": "reference"
+    },
+    "case-contract": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "case-contract"
+      ],
+      "obligation_kind": [
+        "enum",
+        "process-custody",
+        "source-freeze",
+        "required-cases",
+        "rng-custody",
+        "strict-child-core",
+        "strict-child-producer",
+        "fork-three-trials",
+        "phase-pair",
+        "cuda-fresh-initialization",
+        "cuda-nondefault-rng",
+        "cuda-unindexed-switch",
+        "cuda-cross-device",
+        "cuda-async-completion",
+        "cuda-injected-failures",
+        "b-route-leaf",
+        "b-ten-poison-children",
+        "parent-currentness",
+        "outer-completion",
+        "recurrent-activation",
+        "post-poison-b6"
+      ],
+      "required_cases": [
+        "list",
+        "text",
+        1
+      ],
+      "witness_schema": "reference",
+      "validator": "reference",
+      "roles": [
+        "list",
+        "role",
+        1
+      ],
+      "evidence_class": [
+        "enum",
+        "cpu",
+        "cpu-standin",
+        "real-cuda"
+      ],
+      "minimum_devices": "uint"
+    },
+    "spec": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "spec"
+      ],
+      "attempt_id": "id",
+      "candidate": "reference",
+      "tools": [
+        "list",
+        "named-reference",
+        6
+      ],
+      "dependencies": "reference",
+      "admission": "reference",
+      "profile": [
+        "enum",
+        "cpu",
+        "cuda"
+      ],
+      "authorized_root": "path",
+      "output_root": "path",
+      "scratch_root": "path",
+      "lease_root": "path",
+      "job_concurrency": "positive-int",
+      "budget": "budget",
+      "jobs": [
+        "list",
+        "job",
+        1
+      ],
+      "source_freeze": "reference"
+    },
+    "source-freeze": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "source-freeze"
+      ],
+      "authorized_root": "path",
+      "grant": "reference",
+      "start": "utc",
+      "end": [
+        "observed",
+        "utc"
+      ],
+      "no_writer_barrier": [
+        "enum",
+        true
+      ],
+      "includes_untracked": [
+        "enum",
+        true
+      ],
+      "index_lock": "path",
+      "retention": "text"
+    },
+    "candidate": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "candidate"
+      ],
+      "head": "git-id",
+      "tree": "git-id",
+      "authorized_root": "path",
+      "import_roots": [
+        "list",
+        "path",
+        1
+      ],
+      "inventory": {
+        "source": [
+          "list",
+          "input",
+          1
+        ],
+        "tests": [
+          "list",
+          "input",
+          1
+        ],
+        "configs": [
+          "list",
+          "input",
+          1
+        ],
+        "scripts": [
+          "list",
+          "input",
+          1
+        ],
+        "ratchet": [
+          "list",
+          "input",
+          1
+        ],
+        "artifacts": [
+          "list",
+          "input",
+          1
+        ]
+      },
+      "registry": "reference",
+      "availability": "reference",
+      "source_freeze": "reference"
+    },
+    "environment": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "environment"
+      ],
+      "interpreter": "reference",
+      "python_version": "text",
+      "dependencies": [
+        "list",
+        "dependency",
+        1
+      ],
+      "environment": "env",
+      "platform": "text",
+      "torch_build": [
+        "fact",
+        "text"
+      ],
+      "cuda_runtime": [
+        "fact",
+        "text"
+      ],
+      "driver": [
+        "fact",
+        "text"
+      ]
+    },
+    "cgroup": {
+      "path": "path",
+      "cpu_quota_us": [
+        "fact",
+        "number"
+      ],
+      "cpu_period_us": [
+        "fact",
+        "number"
+      ],
+      "memory_limit_bytes": [
+        "fact",
+        "uint"
+      ],
+      "cpuset": [
+        "fact",
+        [
+          "list",
+          "uint",
+          0
+        ]
+      ]
+    },
+    "admission": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "admission"
+      ],
+      "request": "reference",
+      "discovery_process": "reference",
+      "at": "utc",
+      "profile": [
+        "enum",
+        "cpu",
+        "cuda"
+      ],
+      "disposition": [
+        "enum",
+        "admitted",
+        "refused"
+      ],
+      "reasons": [
+        "list",
+        "text",
+        0
+      ],
+      "cgroups": [
+        "list",
+        "cgroup",
+        1
+      ],
+      "affinity": [
+        "fact",
+        [
+          "list",
+          "uint",
+          1
+        ]
+      ],
+      "effective_cpu_capacity": [
+        "fact",
+        "number"
+      ],
+      "host_ram_bytes": [
+        "fact",
+        "uint"
+      ],
+      "limited_ram_bytes": [
+        "fact",
+        "uint"
+      ],
+      "ram_current_bytes": [
+        "fact",
+        "uint"
+      ],
+      "scratch_free_bytes": [
+        "fact",
+        "uint"
+      ],
+      "scratch_free_inodes": [
+        "fact",
+        "uint"
+      ],
+      "tmpdir": "path",
+      "cpu_topology": [
+        "fact",
+        "text"
+      ],
+      "numa_topology": [
+        "fact",
+        "text"
+      ],
+      "gpu_topology": [
+        "fact",
+        "text"
+      ],
+      "environment": "reference",
+      "requested_visibility": "string",
+      "effective_visibility": "string",
+      "devices": [
+        "list",
+        "device",
+        0
+      ],
+      "competing_workloads": [
+        "fact",
+        [
+          "list",
+          "text",
+          0
+        ]
+      ],
+      "probe_errors": [
+        "list",
+        "text",
+        0
+      ],
+      "minimum": "budget",
+      "reserve": "budget",
+      "admitted_budget": "budget"
+    },
+    "process": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "process"
+      ],
+      "attempt_id": "id",
+      "job_id": "id",
+      "spec": "reference",
+      "process_id": "id",
+      "role_id": "id",
+      "role": [
+        "enum",
+        "controller",
+        "worker",
+        "spawn-child",
+        "fork-guard",
+        "discovery",
+        "observer",
+        "work-child"
+      ],
+      "phase": [
+        "enum",
+        "start",
+        "end"
+      ],
+      "identity": "identity",
+      "parent_identity": [
+        "list",
+        "identity",
+        0
+      ],
+      "replacement_of": [
+        "list",
+        "identity",
+        0
+      ],
+      "interpreter": "reference",
+      "argv": [
+        "list",
+        "text",
+        1
+      ],
+      "cwd": "path",
+      "imports": [
+        "list",
+        "named-reference",
+        0
+      ],
+      "source_witness": "reference",
+      "environment": "env",
+      "devices": [
+        "list",
+        "device",
+        0
+      ],
+      "intra_op": [
+        "fact",
+        "positive-int"
+      ],
+      "inter_op": [
+        "fact",
+        "positive-int"
+      ],
+      "debug": [
+        "fact",
+        "bool"
+      ],
+      "torch_observation": [
+        "enum",
+        "not-loaded",
+        "loaded-without-calls",
+        "work",
+        "forbidden-inherited-module-witness"
+      ],
+      "cuda_observation": [
+        "enum",
+        "uninitialized",
+        "initialized",
+        "forbidden"
+      ],
+      "at": "utc",
+      "monotonic_ns": "uint",
+      "elapsed_ns": [
+        "observed",
+        "uint"
+      ]
+    },
+    "attempt-start": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "attempt-start"
+      ],
+      "attempt_id": "id",
+      "spec": "reference",
+      "at": "utc",
+      "source_witness": "reference",
+      "source_freeze": "reference",
+      "retention": "text"
+    },
+    "outcome": {
+      "case_id": "text",
+      "setup": [
+        "enum",
+        "passed",
+        "failed",
+        "skipped",
+        "xfailed",
+        "xpassed",
+        "not-run"
+      ],
+      "call": [
+        "enum",
+        "passed",
+        "failed",
+        "skipped",
+        "xfailed",
+        "xpassed",
+        "not-run"
+      ],
+      "teardown": [
+        "enum",
+        "passed",
+        "failed",
+        "skipped",
+        "xfailed",
+        "xpassed",
+        "not-run"
+      ],
+      "evidence": [
+        "list",
+        "reference",
+        1
+      ]
+    },
+    "job-evidence": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "job-evidence"
+      ],
+      "attempt_id": "id",
+      "job_id": "id",
+      "spec": "reference",
+      "command": "reference",
+      "collected_ids": [
+        "list",
+        "text",
+        0
+      ],
+      "outcomes": [
+        "list",
+        "outcome",
+        0
+      ],
+      "process_records": [
+        "list",
+        "reference",
+        0
+      ],
+      "obligation_records": [
+        "list",
+        "reference",
+        0
+      ],
+      "source_witnesses": [
+        "list",
+        "reference",
+        0
+      ],
+      "inventory": [
+        "list",
+        "reference",
+        1
+      ]
+    },
+    "job-result": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "job-result"
+      ],
+      "attempt_id": "id",
+      "job_id": "id",
+      "spec": "reference",
+      "disposition": [
+        "enum",
+        "successful",
+        "completed-failed",
+        "completed-unverified",
+        "interrupted",
+        "refused",
+        "unrun"
+      ],
+      "exit_code": [
+        "nullable",
+        "int"
+      ],
+      "signal": "uint",
+      "reason": "string",
+      "start": "utc",
+      "end": [
+        "observed",
+        "utc"
+      ],
+      "elapsed_ns": [
+        "observed",
+        "uint"
+      ],
+      "command": "reference",
+      "log": "reference",
+      "collected_ids": [
+        "list",
+        "text",
+        0
+      ],
+      "outcomes": [
+        "list",
+        "outcome",
+        0
+      ],
+      "process_records": [
+        "list",
+        "reference",
+        0
+      ],
+      "obligation_records": [
+        "list",
+        "reference",
+        0
+      ],
+      "source_witnesses": [
+        "list",
+        "reference",
+        0
+      ],
+      "inventory": [
+        "list",
+        "reference",
+        1
+      ]
+    },
+    "obligation-evidence": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "obligation-evidence"
+      ],
+      "attempt_id": "id",
+      "job_id": "id",
+      "spec": "reference",
+      "obligation_id": "id",
+      "obligation_kind": [
+        "enum",
+        "process-custody",
+        "source-freeze",
+        "required-cases",
+        "rng-custody",
+        "strict-child-core",
+        "strict-child-producer",
+        "fork-three-trials",
+        "phase-pair",
+        "cuda-fresh-initialization",
+        "cuda-nondefault-rng",
+        "cuda-unindexed-switch",
+        "cuda-cross-device",
+        "cuda-async-completion",
+        "cuda-injected-failures",
+        "b-route-leaf",
+        "b-ten-poison-children",
+        "parent-currentness",
+        "outer-completion",
+        "recurrent-activation",
+        "post-poison-b6"
+      ],
+      "contract": "reference",
+      "validator": "reference",
+      "case_id": "text",
+      "evidence_class": [
+        "enum",
+        "cpu",
+        "cpu-standin",
+        "real-cuda"
+      ],
+      "payload": "reference",
+      "producer_process": "reference",
+      "related_attempts": [
+        "list",
+        "reference",
+        0
+      ]
+    },
+    "obligation-disposition": {
+      "id": "id",
+      "disposition": [
+        "enum",
+        "satisfied",
+        "unsatisfied",
+        "unrun"
+      ],
+      "reason": "string",
+      "contract": "reference",
+      "validator": "reference",
+      "evidence": [
+        "list",
+        "reference",
+        0
+      ],
+      "validator_receipt": [
+        "list",
+        "reference",
+        0
+      ]
+    },
+    "receipt": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "receipt"
+      ],
+      "attempt_id": "id",
+      "job_id": "id",
+      "spec": "reference",
+      "verifier": "reference",
+      "at": "utc",
+      "result": "reference",
+      "custody": [
+        "enum",
+        "satisfied",
+        "unsatisfied"
+      ],
+      "test_outcome": [
+        "enum",
+        "successful",
+        "completed-failed",
+        "completed-unverified",
+        "interrupted",
+        "refused",
+        "unrun"
+      ],
+      "hardware": [
+        "enum",
+        "satisfied",
+        "unsatisfied",
+        "unrun"
+      ],
+      "obligations": [
+        "list",
+        "obligation-disposition",
+        1
+      ],
+      "reasons": [
+        "list",
+        "text",
+        0
+      ],
+      "inventory": [
+        "list",
+        "reference",
+        1
+      ]
+    }
+  },
+  "roles": [
+    "controller",
+    "worker",
+    "spawn-child",
+    "fork-guard",
+    "discovery",
+    "observer",
+    "work-child"
+  ],
+  "obligations": [
+    "process-custody",
+    "source-freeze",
+    "required-cases",
+    "rng-custody",
+    "strict-child-core",
+    "strict-child-producer",
+    "fork-three-trials",
+    "phase-pair",
+    "cuda-fresh-initialization",
+    "cuda-nondefault-rng",
+    "cuda-unindexed-switch",
+    "cuda-cross-device",
+    "cuda-async-completion",
+    "cuda-injected-failures",
+    "b-route-leaf",
+    "b-ten-poison-children",
+    "parent-currentness",
+    "outer-completion",
+    "recurrent-activation",
+    "post-poison-b6"
+  ],
+  "required_tools": [
+    "protocol",
+    "capture",
+    "runner",
+    "identity",
+    "verifier",
+    "children-verifier"
+  ],
+  "descriptor_grammar": {
+    "object": "exact keys, all required, recursively validate",
+    "enum": "type and value equal; bool is not int",
+    "list": "exact list; descriptor is [list,item,min_length]",
+    "nullable": "only explicit nullable permits null",
+    "fact": "exact state,value,reason,provenance; measured typed value + empty reason; other states null + nonempty reason; provenance reference mandatory",
+    "observed": "exact state,value,reason; measured typed value + empty reason, or unavailable null + nonempty reason",
+    "primitives": {
+      "int": "exact Python int",
+      "uint": "exact int >= 0",
+      "positive-int": "exact int >= 1",
+      "number": "exact int/float, finite, 0..maximum IEEE754 float",
+      "bool": "exact bool",
+      "string": "exact str without NUL; empty allowed",
+      "text": "string with nonwhitespace content",
+      "path": "absolute canonical POSIX path; no dot/dotdot/empty components/backslash/NUL",
+      "id": "ASCII alphanumeric first; then ASCII alphanumeric underscore dot hyphen; 1..128 characters",
+      "sha256": "64 lowercase hex characters",
+      "git-id": "40 lowercase hex characters",
+      "utc": "valid UTC calendar timestamp YYYY-MM-DDTHH:MM:SS.ffffffZ",
+      "env": "string-keyed env mapping; shell identifier keys and string values",
+      "positive-number": "Exact int/float, finite >0 and <= maximum IEEE754 float; bool refused",
+      "reference-name": "Exact NUL-free str, 1..128 characters; generic ASCII label [A-Za-z0-9][A-Za-z0-9_.-]* OR dotted ASCII Python identifiers [A-Za-z_][A-Za-z0-9_]* separated by single dots; literal unchanged"
+    }
+  },
+  "reference_rule": "Recompute every reference from a regular file opened through O_NOFOLLOW directory descriptors. Compare exact path, bytes and SHA256. Missing file, symlink, changed inode/size/times while hashing, content/length mismatch => ValueError. This does not establish a no-writer interval.",
+  "revision": 3,
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/schema-inventory-v2.json",
+    "bytes": 22624,
+    "sha256": "d6882e7ab20c788299a9c29584920bdd8a76bd503c1a4ed12a0bff48f248e63d"
+  }
+}

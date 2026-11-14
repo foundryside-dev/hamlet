@@ -1,0 +1,65 @@
+...F.                                                                    [100%]
+=================================== FAILURES ===================================
+_____ test_pytest_controller_workers_emit_closed_completion[1-False-True] ______
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar...t_controller_workers3/freeze.json', 'sha256': '4de4b62d5ba4278eb51911028b02cb162a26a972f108cd65302b1306282a7ac4'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8f763c9040>
+workers = 1, replacement = False, owner = True
+
+    @pytest.mark.parametrize('workers,replacement,owner',[(0,False,False),(1,False,False),(1,True,False),(1,False,True)])
+    def test_pytest_controller_workers_emit_closed_completion(capsule,monkeypatch,workers,replacement,owner):
+        api=_prepare(capsule,monkeypatch)
+        q=Path(__file__).parent;job=capsule['job'];context=capsule['context']
+        policy=dict(schema='bac-hardware-identity-policy-v1',spec_path=str(capsule['tmp']/'spec.json'),
+            command_path=str(capsule['output']/'command.json'),runtime_path=str(capsule['output']/'runtime-context.json'),
+            **{k:copy.deepcopy(context[k]) for k in ['job_id','role_id','required_imports','worker_roles','environment_delta']})
+        job['environment']['BAC_P3_INERT_SPEC']=policy['spec_path']
+        job['environment']['PYTHONPATH']=str(q)
+        if workers:
+            job['xdist_workers']=workers
+            job['roles'].append(dict(capsule['role'],id='workers',role='worker',count=workers,replacement_limit=int(replacement)))
+            job['budget']['cpu_slots']=1+workers+int(replacement)
+            policy['worker_roles']=['workers']*workers
+        policy_ref=_write(capsule['tmp']/'policy.json',policy)
+        selection='test_inert_owner_job' if owner else 'test_inert_replacement' if replacement else 'test_inert_job'
+        case='test_bac_hardware_identity_v1.py::'+selection
+        cases=[case+'[1]',case+'[2]'] if replacement else [case]
+        job['required_collected_ids']=cases
+        for obligation in job['obligations']:obligation['required_cases']=cases
+        if owner:
+>           role=_strict_role(capsule,'spawn-child')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:417: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:289: in _strict_role
+    _reseal(capsule)
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:274: in _reseal
+    protocol.validate_spec(spec)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:520: in validate_spec
+    validate_record("spec", spec)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:376: in _semantic
+    _require(value["budget"]["cpu_slots"] >= sum((role["count"] + role["replacement_limit"]) * role["peak_cpu_slots"]
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'nested peak CPU reservations missing'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: nested peak CPU reservations missing
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_pytest_controller_workers_emit_closed_completion[1-False-True]
+1 failed, 4 passed, 59 deselected in 5.30s

@@ -1,0 +1,918 @@
+{
+  "accounting": {
+    "collection": 23,
+    "red_failed": 9,
+    "red_passed": 1
+  },
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately recorded outer-launcher times are not substituted.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208092,
+            "path": "wave35/r123-candidate.json",
+            "root": "W",
+            "sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793"
+          },
+          "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r123-collection-spec.json",
+              "sha256": "27527f219562d837d33ac30601e301b02aa98a17f6dbb8b46603c18c97acc21d",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4808,
+            "path": "wave35/r123-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "32ec3cb315915b65cfd3f3ba01d7a29a7e8283062f5735df37fc6331b77fe8e1"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "fbee02585e6703fcc4e2de0a452174b37fc907ee",
+            "tests": "35626b37aaa817f1012e9a9d71bdcc7ca61e0dbd"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA not qualified"
+          },
+          "id": "wave35-r123-collection-spec.json--unrun",
+          "path": "wave35-r123-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 123,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 collection/owned template; actual POP named attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r123-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "scope": "Closed exact-round component/history only; no terminal checkpoint qualification or whole-POP acceptance.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r123-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately recorded outer-launcher times are not substituted.",
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208092,
+            "path": "wave35/r123-candidate.json",
+            "root": "W",
+            "sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793"
+          },
+          "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r123-owned-spec.json",
+              "sha256": "883e2804f8845fbd3259eb7d6a0939e19bf5013f896e255d651a79e14330c8c8",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4808,
+            "path": "wave35/r123-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "32ec3cb315915b65cfd3f3ba01d7a29a7e8283062f5735df37fc6331b77fe8e1"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "fbee02585e6703fcc4e2de0a452174b37fc907ee",
+            "tests": "35626b37aaa817f1012e9a9d71bdcc7ca61e0dbd"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA not qualified"
+          },
+          "id": "wave35-r123-owned-spec.json--unrun",
+          "path": "wave35-r123-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 123,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 collection/owned template; actual POP named attempts indexed separately."
+        }
+      ],
+      "check": "wave35-r123-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "scope": "Closed exact-round component/history only; no terminal checkpoint qualification or whole-POP acceptance.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r123-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately recorded outer-launcher times are not substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208092,
+            "path": "wave35/r123-candidate.json",
+            "root": "W",
+            "sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793"
+          },
+          "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_actual_a_learning_replay_private_b_and_next_cycle",
+            "--collect-only",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r123-pop-step-collection-attempt-1"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection/identity-controller.json",
+              "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f",
+              "type": "file"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection-custody.json",
+              "sha256": "2ba3753d009523b1c4de8ddc94d3ae9fdd46cc8c0954b07ace1da0763d39acde",
+              "type": "file"
+            },
+            {
+              "bytes": 1443,
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection-result.json",
+              "sha256": "1ebe4bdf6d9a21f50b8f358ceba185c965d8c336867778328019fcb94f130ace",
+              "type": "file"
+            },
+            {
+              "bytes": 3193,
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection.log",
+              "sha256": "2d86702b6b29cb50c98706740578ce3256e67ca092396421a6292573d0a0a892",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.732666237003286,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4808,
+            "path": "wave35/r123-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "32ec3cb315915b65cfd3f3ba01d7a29a7e8283062f5735df37fc6331b77fe8e1"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "fbee02585e6703fcc4e2de0a452174b37fc907ee",
+            "tests": "35626b37aaa817f1012e9a9d71bdcc7ca61e0dbd"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA not qualified"
+          },
+          "id": "wave35-r123-pop-step-collection-attempt-1--pop-step-collection",
+          "log_paths": [
+            {
+              "bytes": 3193,
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection.log",
+              "root": "Q",
+              "sha256": "2d86702b6b29cb50c98706740578ce3256e67ca092396421a6292573d0a0a892"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 921,
+            "path": "evidence-management/pop-standalone-step/wave35-r123-pop-step-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "e8a14608554363abff3f24512ae478e4b1ca17463013e2d43fd28ef079052e9f"
+          },
+          "path": "wave35-r123-pop-step-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1443,
+            "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection-result.json",
+            "root": "Q",
+            "sha256": "1ebe4bdf6d9a21f50b8f358ceba185c965d8c336867778328019fcb94f130ace"
+          },
+          "record_id": "pop-step-collection",
+          "result": {
+            "bytes": 1443,
+            "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection-result.json",
+            "root": "Q",
+            "sha256": "1ebe4bdf6d9a21f50b8f358ceba185c965d8c336867778328019fcb94f130ace"
+          },
+          "round": 123,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 650,
+            "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection-custody.json",
+            "root": "Q",
+            "sha256": "2ba3753d009523b1c4de8ddc94d3ae9fdd46cc8c0954b07ace1da0763d39acde"
+          }
+        }
+      ],
+      "check": "wave35-r123-pop-step-collection-attempt-1--pop-step-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "scope": "Closed exact-round component/history only; no terminal checkpoint qualification or whole-POP acceptance.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r123-pop-step-collection-attempt-1--pop-step-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result has no absolute UTC; separately recorded outer-launcher times are not substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+          "candidate_manifest": {
+            "bytes": 208092,
+            "path": "wave35/r123-candidate.json",
+            "root": "W",
+            "sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793"
+          },
+          "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_actual_parent_handoff_single_reward_service_and_replay[shared-none]",
+            "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_partial_failure_records_reached_cut_and_refuses_reexecution[env-executing-0]",
+            "tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r123-pop-step-red-attempt-1"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 9,
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "descendants": [
+            {
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red",
+              "type": "directory"
+            },
+            {
+              "bytes": 4264,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-0c5c611373824553.json",
+              "sha256": "4d5590eb4e867b916a5d3319fee12f4c761ef28387c011d5a6dc0bdbc442b392",
+              "type": "file"
+            },
+            {
+              "bytes": 4270,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-3fc8294eee53a211.json",
+              "sha256": "b448cb77a69d98e63d9509ca987a4b8077127c45f6f6140dd563c6f986bfbf7f",
+              "type": "file"
+            },
+            {
+              "bytes": 4442,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-45b5520770169c85.json",
+              "sha256": "59a009455f140eb1bf7d753d4f417f2c5b47f55f8b8595a05a5607e1b1ee3080",
+              "type": "file"
+            },
+            {
+              "bytes": 3094,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-4b96bd76e62bcb74.json",
+              "sha256": "6ae24de88c6830f8c6261f71b9a93c8402b42214b196b4f0fcc8fba7db03b101",
+              "type": "file"
+            },
+            {
+              "bytes": 4439,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-72448959080fa56b.json",
+              "sha256": "021541d700471fe6452452778f132f6659a72e269a8b9d96fe66373aff847fa6",
+              "type": "file"
+            },
+            {
+              "bytes": 4433,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-84920f45affcaede.json",
+              "sha256": "9ae440bb9848879a56c45049a3a9eb771b8dc7233dfbf42ec6d4c090fb1f33ab",
+              "type": "file"
+            },
+            {
+              "bytes": 4267,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-a3513cf13797cf72.json",
+              "sha256": "a852f38d109182442c9ff8960ab230bff975a5c3a0c4dce3b2c15c0532d5bedb",
+              "type": "file"
+            },
+            {
+              "bytes": 4436,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-b7cde3bd0abf54e4.json",
+              "sha256": "e5152056f9aa58c8108932551d8b2bc3a560a4870955a4c636d170208dd8d270",
+              "type": "file"
+            },
+            {
+              "bytes": 4273,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-ff2f2aa34d1bb021.json",
+              "sha256": "83991664e37c0ddd7419eb15617783506c80fd91e73ec3bcf8cba92f3dee3bb5",
+              "type": "file"
+            },
+            {
+              "bytes": 4257,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw0-0c5c611373824553.json",
+              "sha256": "700dc7dc7b40a3a1d68642158e111aa28abe603c76c83069cfeaf3086b940903",
+              "type": "file"
+            },
+            {
+              "bytes": 4263,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw0-3fc8294eee53a211.json",
+              "sha256": "1fdb253f4426567f2e4516447995f8844d46c470d1fff94509c496561cebd737",
+              "type": "file"
+            },
+            {
+              "bytes": 3087,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw0-4b96bd76e62bcb74.json",
+              "sha256": "64a73a9f4b642a25da3143af1520579511d70d90ce83f00dae4a784ff666833f",
+              "type": "file"
+            },
+            {
+              "bytes": 4435,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-45b5520770169c85.json",
+              "sha256": "6c2f5ecb19563b2c19f4597d9182b4ae0b3c8c54668db276321b051b29915a44",
+              "type": "file"
+            },
+            {
+              "bytes": 4432,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-72448959080fa56b.json",
+              "sha256": "fcd345e8baa774b00869676f50123e9ab4b507e3ffc304b9229204c4404ff1c1",
+              "type": "file"
+            },
+            {
+              "bytes": 4426,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-84920f45affcaede.json",
+              "sha256": "d78fdfadcf5e22e00f1cec78e671b41c3a313ed9332f0e8a99c883aceeca4a37",
+              "type": "file"
+            },
+            {
+              "bytes": 4260,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-a3513cf13797cf72.json",
+              "sha256": "5fc893df2cf4a2e11fe802160ec325a1f826894804d1b4730bf6166436b9317e",
+              "type": "file"
+            },
+            {
+              "bytes": 4429,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-b7cde3bd0abf54e4.json",
+              "sha256": "7e4cc514a8e3d3e608022c246a6b690dae92dd8c4b468487d52756198f7648e7",
+              "type": "file"
+            },
+            {
+              "bytes": 4266,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-ff2f2aa34d1bb021.json",
+              "sha256": "765ed3e5daed81e52e9dd0823ca2d4d649579b804c3058f8dd5ab206354c2d3c",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-controller.json",
+              "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-gw0.json",
+              "sha256": "ef44d6abce011bb7d14d6e6d30c532e0fda882e8a0cbddbcf8ba5a90f02f30ff",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-gw1.json",
+              "sha256": "9aeeeb89d97d1e1939bf351461ee675881ab30dc6deb52a782cf706ceed87f27",
+              "type": "file"
+            },
+            {
+              "bytes": 3994,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-failure-index.json",
+              "sha256": "af6c1c85235615175e9645d507e3114c6a6e22b40a06edefda9047833b2e72f5",
+              "type": "file"
+            },
+            {
+              "bytes": 959,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-negative-custody.json",
+              "sha256": "09535655300b69a7a89e2a552f3a9458c4afa324c938c801ad59295ec1cf0ab9",
+              "type": "file"
+            },
+            {
+              "bytes": 1335,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-result.json",
+              "sha256": "b548f138eb300726923ee9e023e221eba1ecf789fab1d67685828970f1f5adb6",
+              "type": "file"
+            },
+            {
+              "bytes": 37626,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red.log",
+              "sha256": "6e89d75652ca283a625ba181aeebd40b9e31080d404895f06066a17f9beeb247",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 18.963829877000535,
+          "ended_at": null,
+          "environment": {
+            "bytes": 4808,
+            "path": "wave35/r123-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "32ec3cb315915b65cfd3f3ba01d7a29a7e8283062f5735df37fc6331b77fe8e1"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "fbee02585e6703fcc4e2de0a452174b37fc907ee",
+            "tests": "35626b37aaa817f1012e9a9d71bdcc7ca61e0dbd"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; CUDA not qualified"
+          },
+          "id": "wave35-r123-pop-step-red-attempt-1--pop-step-red",
+          "log_paths": [
+            {
+              "bytes": 37626,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red.log",
+              "root": "Q",
+              "sha256": "6e89d75652ca283a625ba181aeebd40b9e31080d404895f06066a17f9beeb247"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 907,
+            "path": "evidence-management/pop-standalone-step/wave35-r123-pop-step-red-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "a404ca310088db6c71991180036bc96c04375facbd4d18b7bdb4f98dc1dd1220"
+          },
+          "path": "wave35-r123-pop-step-red-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "ef44d6abce011bb7d14d6e6d30c532e0fda882e8a0cbddbcf8ba5a90f02f30ff"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "9aeeeb89d97d1e1939bf351461ee675881ab30dc6deb52a782cf706ceed87f27"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 1335,
+            "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-result.json",
+            "root": "Q",
+            "sha256": "b548f138eb300726923ee9e023e221eba1ecf789fab1d67685828970f1f5adb6"
+          },
+          "record_id": "pop-step-red",
+          "result": {
+            "bytes": 1335,
+            "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-result.json",
+            "root": "Q",
+            "sha256": "b548f138eb300726923ee9e023e221eba1ecf789fab1d67685828970f1f5adb6"
+          },
+          "round": 123,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 959,
+            "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-negative-custody.json",
+            "root": "Q",
+            "sha256": "09535655300b69a7a89e2a552f3a9458c4afa324c938c801ad59295ec1cf0ab9"
+          }
+        }
+      ],
+      "check": "wave35-r123-pop-step-red-attempt-1--pop-step-red",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "scope": "Closed exact-round component/history only; no terminal checkpoint qualification or whole-POP acceptance.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r123-pop-step-red-attempt-1--pop-step-red"
+    }
+  ],
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_manifest": {
+    "bytes": 208092,
+    "path": "wave35/r123-candidate.json",
+    "root": "W",
+    "sha256": "b375249eec818b7a09dea142e04827e8820b55544ab2a0c52ffedc466bedf793"
+  },
+  "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "fbee02585e6703fcc4e2de0a452174b37fc907ee",
+    "tests": "35626b37aaa817f1012e9a9d71bdcc7ca61e0dbd"
+  },
+  "fixture_preflight": {
+    "bytes": 4808,
+    "path": "wave35/r123-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "32ec3cb315915b65cfd3f3ba01d7a29a7e8283062f5735df37fc6331b77fe8e1"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r123-collection-spec.json",
+      "round": 123,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r123-owned-spec.json",
+      "round": 123,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r123-pop-step-collection-attempt-1",
+      "round": 123,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r123-pop-step-collection-attempt-1-spec.json",
+      "round": 123,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r123-pop-step-red-attempt-1",
+      "round": 123,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r123-pop-step-red-attempt-1-spec.json",
+      "round": 123,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r123-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r123-collection-spec.json",
+        "sha256": "27527f219562d837d33ac30601e301b02aa98a17f6dbb8b46603c18c97acc21d",
+        "type": "file"
+      }
+    ],
+    "wave35-r123-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r123-owned-spec.json",
+        "sha256": "883e2804f8845fbd3259eb7d6a0939e19bf5013f896e255d651a79e14330c8c8",
+        "type": "file"
+      }
+    ],
+    "wave35-r123-pop-step-collection-attempt-1": [
+      {
+        "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection/identity-controller.json",
+        "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f",
+        "type": "file"
+      },
+      {
+        "bytes": 650,
+        "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection-custody.json",
+        "sha256": "2ba3753d009523b1c4de8ddc94d3ae9fdd46cc8c0954b07ace1da0763d39acde",
+        "type": "file"
+      },
+      {
+        "bytes": 1443,
+        "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection-result.json",
+        "sha256": "1ebe4bdf6d9a21f50b8f358ceba185c965d8c336867778328019fcb94f130ace",
+        "type": "file"
+      },
+      {
+        "bytes": 3193,
+        "path": "wave35-r123-pop-step-collection-attempt-1/pop-step-collection.log",
+        "sha256": "2d86702b6b29cb50c98706740578ce3256e67ca092396421a6292573d0a0a892",
+        "type": "file"
+      }
+    ],
+    "wave35-r123-pop-step-collection-attempt-1-spec.json": [
+      {
+        "bytes": 1211,
+        "path": "wave35-r123-pop-step-collection-attempt-1-spec.json",
+        "sha256": "31dddfef0d3b3ed2a4880521f5d4e8a4ebcfbdf19c86f3ccfc478c6b43c7a757",
+        "type": "file"
+      }
+    ],
+    "wave35-r123-pop-step-red-attempt-1": [
+      {
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red",
+        "type": "directory"
+      },
+      {
+        "bytes": 4264,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-0c5c611373824553.json",
+        "sha256": "4d5590eb4e867b916a5d3319fee12f4c761ef28387c011d5a6dc0bdbc442b392",
+        "type": "file"
+      },
+      {
+        "bytes": 4270,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-3fc8294eee53a211.json",
+        "sha256": "b448cb77a69d98e63d9509ca987a4b8077127c45f6f6140dd563c6f986bfbf7f",
+        "type": "file"
+      },
+      {
+        "bytes": 4442,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-45b5520770169c85.json",
+        "sha256": "59a009455f140eb1bf7d753d4f417f2c5b47f55f8b8595a05a5607e1b1ee3080",
+        "type": "file"
+      },
+      {
+        "bytes": 3094,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-4b96bd76e62bcb74.json",
+        "sha256": "6ae24de88c6830f8c6261f71b9a93c8402b42214b196b4f0fcc8fba7db03b101",
+        "type": "file"
+      },
+      {
+        "bytes": 4439,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-72448959080fa56b.json",
+        "sha256": "021541d700471fe6452452778f132f6659a72e269a8b9d96fe66373aff847fa6",
+        "type": "file"
+      },
+      {
+        "bytes": 4433,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-84920f45affcaede.json",
+        "sha256": "9ae440bb9848879a56c45049a3a9eb771b8dc7233dfbf42ec6d4c090fb1f33ab",
+        "type": "file"
+      },
+      {
+        "bytes": 4267,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-a3513cf13797cf72.json",
+        "sha256": "a852f38d109182442c9ff8960ab230bff975a5c3a0c4dce3b2c15c0532d5bedb",
+        "type": "file"
+      },
+      {
+        "bytes": 4436,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-b7cde3bd0abf54e4.json",
+        "sha256": "e5152056f9aa58c8108932551d8b2bc3a560a4870955a4c636d170208dd8d270",
+        "type": "file"
+      },
+      {
+        "bytes": 4273,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-controller-ff2f2aa34d1bb021.json",
+        "sha256": "83991664e37c0ddd7419eb15617783506c80fd91e73ec3bcf8cba92f3dee3bb5",
+        "type": "file"
+      },
+      {
+        "bytes": 4257,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw0-0c5c611373824553.json",
+        "sha256": "700dc7dc7b40a3a1d68642158e111aa28abe603c76c83069cfeaf3086b940903",
+        "type": "file"
+      },
+      {
+        "bytes": 4263,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw0-3fc8294eee53a211.json",
+        "sha256": "1fdb253f4426567f2e4516447995f8844d46c470d1fff94509c496561cebd737",
+        "type": "file"
+      },
+      {
+        "bytes": 3087,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw0-4b96bd76e62bcb74.json",
+        "sha256": "64a73a9f4b642a25da3143af1520579511d70d90ce83f00dae4a784ff666833f",
+        "type": "file"
+      },
+      {
+        "bytes": 4435,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-45b5520770169c85.json",
+        "sha256": "6c2f5ecb19563b2c19f4597d9182b4ae0b3c8c54668db276321b051b29915a44",
+        "type": "file"
+      },
+      {
+        "bytes": 4432,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-72448959080fa56b.json",
+        "sha256": "fcd345e8baa774b00869676f50123e9ab4b507e3ffc304b9229204c4404ff1c1",
+        "type": "file"
+      },
+      {
+        "bytes": 4426,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-84920f45affcaede.json",
+        "sha256": "d78fdfadcf5e22e00f1cec78e671b41c3a313ed9332f0e8a99c883aceeca4a37",
+        "type": "file"
+      },
+      {
+        "bytes": 4260,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-a3513cf13797cf72.json",
+        "sha256": "5fc893df2cf4a2e11fe802160ec325a1f826894804d1b4730bf6166436b9317e",
+        "type": "file"
+      },
+      {
+        "bytes": 4429,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-b7cde3bd0abf54e4.json",
+        "sha256": "7e4cc514a8e3d3e608022c246a6b690dae92dd8c4b468487d52756198f7648e7",
+        "type": "file"
+      },
+      {
+        "bytes": 4266,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/failure-gw1-ff2f2aa34d1bb021.json",
+        "sha256": "765ed3e5daed81e52e9dd0823ca2d4d649579b804c3058f8dd5ab206354c2d3c",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-controller.json",
+        "sha256": "649516de14ef546639e8eb84ca95fcc5c4eb5ae93976ec3736c9e8db9792c31f",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-gw0.json",
+        "sha256": "ef44d6abce011bb7d14d6e6d30c532e0fda882e8a0cbddbcf8ba5a90f02f30ff",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red/identity-gw1.json",
+        "sha256": "9aeeeb89d97d1e1939bf351461ee675881ab30dc6deb52a782cf706ceed87f27",
+        "type": "file"
+      },
+      {
+        "bytes": 3994,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-failure-index.json",
+        "sha256": "af6c1c85235615175e9645d507e3114c6a6e22b40a06edefda9047833b2e72f5",
+        "type": "file"
+      },
+      {
+        "bytes": 959,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-negative-custody.json",
+        "sha256": "09535655300b69a7a89e2a552f3a9458c4afa324c938c801ad59295ec1cf0ab9",
+        "type": "file"
+      },
+      {
+        "bytes": 1335,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red-result.json",
+        "sha256": "b548f138eb300726923ee9e023e221eba1ecf789fab1d67685828970f1f5adb6",
+        "type": "file"
+      },
+      {
+        "bytes": 37626,
+        "path": "wave35-r123-pop-step-red-attempt-1/pop-step-red.log",
+        "sha256": "6e89d75652ca283a625ba181aeebd40b9e31080d404895f06066a17f9beeb247",
+        "type": "file"
+      }
+    ],
+    "wave35-r123-pop-step-red-attempt-1-spec.json": [
+      {
+        "bytes": 1117,
+        "path": "wave35-r123-pop-step-red-attempt-1-spec.json",
+        "sha256": "f712c7042e413fe195f63a4899404efff2ce45983e6f56517607c93512d70f6a",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 123,
+  "schema": "bac-closed-round-history-component-v1",
+  "scope": "Retain all actual failures/UNRUNs and own candidate identities. Cross-round and overlapping counts not summed. R124 REQUEST CHANGES remains; R125 repairs A-only witness only; full failed diagnostic export P2 remains pending.",
+  "source_aliases": [
+    {
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "exact_retained": {
+        "bytes": 161100,
+        "path": "evidence-management/pop-standalone-step/r123-executed-source/vectorized.py.txt",
+        "root": "W",
+        "sha256": "6c4f7ca085f0a7db34f42bebe22f0240ed12825627c13bcffb3c0d3be3f99022"
+      },
+      "live_hash_matches": false,
+      "original": "/workspace/hamlet/src/townlet/population/vectorized.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "6c4f7ca085f0a7db34f42bebe22f0240ed12825627c13bcffb3c0d3be3f99022"
+    },
+    {
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "live_hash_matches": false,
+      "missing_exact_snapshot": true,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "9186a953f79cd8b4cf2a4fea47c6ff24197ae53764b6d2e6fa33267f78000bd5"
+    },
+    {
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "exact_retained": {
+        "bytes": 36333,
+        "path": "evidence-management/pop-standalone-step/r123-executed-source/test_parent_intrinsic_handoff.py.txt",
+        "root": "W",
+        "sha256": "6cea1235f8dc149aceb5ca7352b855ac001a8bfb1e758a9c3b116f3654f2acb0"
+      },
+      "live_hash_matches": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "6cea1235f8dc149aceb5ca7352b855ac001a8bfb1e758a9c3b116f3654f2acb0"
+    },
+    {
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "exact_retained": {
+        "bytes": 4542,
+        "path": "evidence-management/pop-standalone-step/r123-executed-source/test_population_standalone_step_cleanup.py.txt",
+        "root": "W",
+        "sha256": "486ea77ed0e3046c5e0f5bf907d311e6ced4c00035d1912ba3ef9a0050796909"
+      },
+      "live_hash_matches": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_population_standalone_step_cleanup.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "486ea77ed0e3046c5e0f5bf907d311e6ced4c00035d1912ba3ef9a0050796909"
+    },
+    {
+      "candidate_tree": "ce0ae1e1d54bbe7042a3651f339bce6db1f54088",
+      "exact_retained": {
+        "bytes": 37523,
+        "path": "evidence-management/parent-c1/r122-executed-source/test_runtime_bank_parent_custody.py.txt",
+        "root": "W",
+        "sha256": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc"
+      },
+      "live_hash_matches": false,
+      "original": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "reason": "Executed source snapshot or mutable C1 source alias; never substitute later live bytes.",
+      "sha256": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc"
+    }
+  ],
+  "status": "CLOSED HISTORY PREPARATION; NOT CHECKPOINT SEAL"
+}

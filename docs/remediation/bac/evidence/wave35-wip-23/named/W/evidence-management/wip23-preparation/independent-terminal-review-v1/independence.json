@@ -1,0 +1,61 @@
+{
+  "schema": "bac-terminal-review-independence-v1",
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_wip22_terminal_review",
+  "role": "terminal",
+  "independent": true,
+  "reviewed_subject": {
+    "contract": {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-checkpoint-contract-v1.json",
+      "bytes": 11808,
+      "sha256": "1af66eae6d628f84373fbe835a5c37b35b13bbf3b5d1f6ae1c2289ed8ef7a70f"
+    },
+    "qualification_subject": {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-qualification-subject-v1.json",
+      "bytes": 10246,
+      "sha256": "07c1ffa1d4d8a09437d95005aaae61860621fb92b34fe9edf8750612e8e89bea"
+    },
+    "receipt_draft": {
+      "root": "W",
+      "path": "evidence-management/wip23-preparation/root-reviewed-receipt-draft-v1.json",
+      "bytes": 2452331,
+      "sha256": "95dfd9dad721c66c974958bf326b7aecb726b6467b0ed17290028541bfdcb8d2"
+    },
+    "candidate_manifest": {
+      "root": "W",
+      "path": "wave35/r133-candidate.json",
+      "bytes": 207540,
+      "sha256": "6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58"
+    }
+  },
+  "candidate_tree": "0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592",
+  "scope": "Finite WIP23 R123\u2013R133 evidence/publication-readiness review; no full BAC or hardware acceptance.",
+  "disposition": "APPROVE BOUNDED EVIDENCE PUBLICATION READINESS",
+  "review": {
+    "root": "W",
+    "path": "evidence-management/wip23-preparation/independent-terminal-review-v1/review.md",
+    "bytes": 11145,
+    "sha256": "413fa4af50cf09b3549a3eb880af6795c8834a30091fb9478013742e12134ded"
+  },
+  "metadata_checks": {
+    "root": "W",
+    "path": "evidence-management/wip23-preparation/independent-terminal-review-v1/metadata-checks.json",
+    "bytes": 3949,
+    "sha256": "418e709e7ef1fae862237db3326c97302c33cae677ace15307c1d94d908d6db9"
+  },
+  "independence_basis": "Fresh terminal review by an agent distinct from root producer and final POP/producer implementers and source reviewers. Reviewer authored earlier R124/R128 findings and generic plan review, disclosed and retained, but did not author final implementation or sealed checkpoint inputs. Reconciled exact final source reviews against actual records and independently rehashed closure/attempts/reused objects.",
+  "prior_review_involvement": [
+    "R124 REQUEST CHANGES",
+    "R128 REQUEST CHANGES",
+    "Generic diagnostic plan design-only approval"
+  ],
+  "new_implementation_bodies_read": 0,
+  "new_APP_executions": 0,
+  "git_operations": 0,
+  "prior_charged_lines": 4993,
+  "prior_charged_bodies": 5,
+  "created_at": "2026-11-14T10:17:00.289999+00:00",
+  "remaining": "Root final seal/full selection/assembly/document application/publication/remote checks; full acceptance gates remain open."
+}

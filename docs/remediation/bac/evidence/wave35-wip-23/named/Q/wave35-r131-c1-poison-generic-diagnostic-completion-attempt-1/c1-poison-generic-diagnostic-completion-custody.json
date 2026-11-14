@@ -1,0 +1,22 @@
+{
+  "job": "c1-poison-generic-diagnostic-completion",
+  "base_commit": "23701174e5418aca5e8fc90cbe694f773d3ebff6",
+  "candidate_tree": "f672f656e43c2965a0637227e23c1297197fdf8c",
+  "exit_code": 0,
+  "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 7.123558771010721,
+  "source_guards": 822,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

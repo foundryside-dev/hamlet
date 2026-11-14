@@ -1,0 +1,18 @@
+F...........                                                             [100%]
+=================================== FAILURES ===================================
+___________________ test_owner_role_requires_launch_lineage ____________________
+
+capsule = {'blob': PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwar..._role_requires_launc0/freeze.json', 'sha256': 'a6b5f9cab31e8380badc30f22e765de1c7326efa8756462ad6d26b26c707974c'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdc9596c2b0>
+
+    def test_owner_role_requires_launch_lineage(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch);_strict_role(capsule,'spawn-child')
+        capsule['context']['role_id']='spawn-child'
+>       with pytest.raises(ValueError,match='owner'):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:683: Failed
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_owner_role_requires_launch_lineage
+1 failed, 11 passed, 50 deselected in 3.08s

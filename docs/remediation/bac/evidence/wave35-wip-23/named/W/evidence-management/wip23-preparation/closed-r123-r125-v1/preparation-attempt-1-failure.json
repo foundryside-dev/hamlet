@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-14T09:12:08.015760+00:00",
+  "status": "FAILED BEFORE OUTPUT COMPONENTS",
+  "command": "python -B /tmp/prepare_closed_r123_r125_v1.py",
+  "failure": "Intentional P0 module-alias fixture contains symlinks; blanket ordinary-file inventory refused.",
+  "correction": "Represent fixture links as observed metadata, never select/traverse/materialize symlinks. Q attempt namespace remains strict."
+}

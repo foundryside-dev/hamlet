@@ -1,0 +1,12 @@
+{
+  "ids": [
+    "test_bac_hardware_identity_v1.py::test_inert_replacement[1]",
+    "test_bac_hardware_identity_v1.py::test_inert_replacement[2]"
+  ],
+  "process": {
+    "bytes": 8193,
+    "path": "/tmp/bac-p3-inert-09e62udi/output/attempt/job/process-p-050bc409d19258d830052e7a06c9b6209bf5495a285a53039bf76347654e6fb2-start.json",
+    "sha256": "a24a3510909b225ed541a4c7e61f60951aa106addb482314d71217988e620200"
+  },
+  "schema": "bac-hardware-pytest-collection-v1"
+}

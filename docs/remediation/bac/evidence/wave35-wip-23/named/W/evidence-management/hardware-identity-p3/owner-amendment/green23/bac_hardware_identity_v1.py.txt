@@ -1,0 +1,1054 @@
+"""Actual process witnesses. No application imports, CUDA discovery or RNG work.
+
+Authority is supplied explicitly by root/accepted owner or the root-delegated P2
+runtime descriptor. Hashes alone never authenticate that delegation. P4/P5 own
+whole-job custody and case/hardware acceptance, including missing final witnesses.
+"""
+import datetime
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import socket
+import select
+import signal
+import stat
+import shutil
+import subprocess
+import sys
+import time
+import types
+
+import bac_hardware_protocol_v1 as protocol
+
+PROTOCOL_SHA = 'e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860'
+CONTEXT_KEYS = {'schema','spec','command','trusted_grant','job_id','role_id','required_imports',
+                'worker_roles','environment_delta','parent_start','replacement_start','lifecycle',
+                'worker_identity','policy','runtime'}
+POLICY_KEYS = {'schema','spec_path','command_path','runtime_path','job_id','role_id',
+               'required_imports','worker_roles','environment_delta'}
+GRANT_KEYS = {'schema','authorized_root','head','tree','import_roots','inputs','start','end',
+              'no_writer_barrier','includes_untracked','authority','allocation_grant','cpu_reservation_evidence'}
+_STATE = None
+_CURRENT = None
+_CALL = None
+_HANDLES = {}
+_BUDGET = None
+
+
+def _require(ok, message):
+    if not ok:
+        raise ValueError(message)
+
+
+def _exact(value, keys, label):
+    _require(type(value) is dict and set(value) == set(keys), label + ': exact fields required')
+
+
+def _utc():
+    ns = time.time_ns();t = time.gmtime(ns//1_000_000_000)
+    return '%04d-%02d-%02dT%02d:%02d:%02d.%06dZ' % (*t[:6],(ns//1000)%1_000_000)
+
+
+def _pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        _require(key not in result, 'duplicate JSON field')
+        result[key] = value
+    return result
+
+
+def _load(reference, kind=None):
+    protocol.validate_record('reference', reference)
+    value = json.loads(Path(reference['path']).read_text(), object_pairs_hook=_pairs)
+    _require(protocol.file_reference(Path(reference['path'])) == reference, 'reference changed while reading')
+    if kind:
+        protocol.validate_record(kind, value)
+    return value
+
+
+def _directory(path):
+    """No-follow directory capability; caller must close. P0 checks spelling."""
+    raw = str(path)
+    _require(raw.startswith('/') and all(p not in ('.','..') for p in raw.split('/')), 'unsafe directory')
+    fd = os.open('/', os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for part in raw.split('/')[1:]:
+            if not part: continue
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            os.close(fd)
+            fd = child
+        return fd
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def _write(output, name, value, kind=None):
+    if kind:
+        protocol.validate_record(kind, value)
+    _require(Path(name).name == name, 'unsafe output filename')
+    parent = _directory(output)
+    try:
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=parent)
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write((json.dumps(value, sort_keys=True, indent=2) + '\n').encode())
+            stream.flush()
+            os.fsync(stream.fileno())
+        # Verify namespace still names the retained directory and exact output.
+        live = _directory(output)
+        try:
+            _require(os.fstat(parent).st_ino == os.fstat(live).st_ino and
+                     os.fstat(parent).st_dev == os.fstat(live).st_dev, 'output ancestor changed')
+        finally:
+            os.close(live)
+        return protocol.file_reference(Path(output) / name)
+    finally:
+        os.close(parent)
+
+
+def _identity(pid=None):
+    pid = os.getpid() if pid is None else pid
+    stat = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()
+    return dict(pid=pid, ppid=int(stat[1]), start_identity=stat[19],
+                host=socket.gethostname(), boot_id=Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+
+
+def _process_id(identity):
+    return 'p-' + hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
+
+
+def _imports(context, candidate, environment, phase):
+    allowed = {item['reference']['path']:item['reference'] for group in candidate['inventory'].values() for item in group}
+    allowed.update({item['reference']['path']:item['reference'] for item in environment['dependencies']})
+    result = []
+    names = set()
+    for required in context['required_imports']:
+        _exact(required, {'name','reference','phases'}, 'required import')
+        protocol.validate_record('named-reference', {k:required[k] for k in ('name','reference')})
+        _require(required['name'] not in names, 'duplicate import name')
+        names.add(required['name'])
+        phases = required['phases']
+        _require(type(phases) is list and bool(phases) and len(phases)==len(set(phases)) and
+                 set(phases) <= {'start','end'}, 'invalid import phases')
+        reference = required['reference']
+        _require(allowed.get(reference['path']) == reference, 'import not authorized by input/dependency inventory')
+        if Path(reference['path']).is_relative_to(candidate['authorized_root']):
+            _require(any(Path(reference['path']).is_relative_to(root) for root in candidate['import_roots']),
+                     'declared import outside authorized import root')
+        module = sys.modules.get(required['name'])
+        if module is None:
+            _require(phase not in phases, 'required actual import absent')
+            continue
+        _require(type(module) is types.ModuleType, 'unrecognized imported module')
+        origin = vars(module).get('__file__')
+        _require(type(origin) is str and protocol.file_reference(Path(origin)) == reference, 'actual import origin mismatch')
+        result.append(dict(name=required['name'], reference=reference))
+    # Every loaded source-root file must be frozen, including imports not requested.
+    for name, module in list(sys.modules.items()):
+        if type(module) is not types.ModuleType:
+            continue
+        origin = vars(module).get('__file__')
+        if type(origin) is str and Path(origin).is_absolute() and Path(origin).is_relative_to(candidate['authorized_root']):
+            ref = protocol.file_reference(Path(origin))
+            _require(allowed.get(ref['path']) == ref, 'unfrozen loaded source import')
+            _require(any(Path(ref['path']).is_relative_to(root) for root in candidate['import_roots']),
+                     'actual source import outside authorized import root')
+            if name not in names:
+                result.append(dict(name=name,reference=ref))
+                names.add(name)
+    return result
+
+
+def _environment(context, job):
+    if context['parent_start'] and context['worker_identity'] is None:
+        launch = _owner_info(context, job)
+        _require(dict(os.environ) == launch['environment'], 'owner environment changed')
+        return dict(os.environ)
+    delta = context['environment_delta']
+    _exact(delta, {'common','worker'}, 'environment delta')
+    for group in delta.values():
+        _require(type(group) is dict, 'environment addition map required')
+    _require(set(delta['common']) <= {'PYTEST_VERSION','LC_CTYPE'} and
+             set(delta['worker']) <= {'COLUMNS','LINES'}, 'unaccepted environment addition')
+    expected = dict(job['environment'])
+    additions = dict(delta['common'])
+    worker = context['worker_identity']
+    if worker is not None:
+        _worker_identity(worker)
+        additions.update(delta['worker'])
+        additions.update(PYTEST_XDIST_WORKER=worker['workerid'],
+                         PYTEST_XDIST_WORKER_COUNT=str(worker['workercount']),
+                         PYTEST_XDIST_TESTRUNUID=worker['testrunuid'])
+    _require(not set(expected) & set(additions), 'framework cannot override launch environment')
+    expected.update(additions)
+    actual = dict(os.environ)
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+    return actual
+
+
+def _worker_identity(value):
+    _exact(value, {'workerid','workercount','testrunuid','mainargv'}, 'worker identity')
+    _require(type(value['workerid']) is str and re.fullmatch(r'gw[0-9]+', value['workerid']) is not None,
+             'invalid actual worker ID')
+    _require(type(value['workercount']) is int and value['workercount'] > 0, 'invalid worker count')
+    _require(type(value['testrunuid']) is str and re.fullmatch('[0-9a-f]{32}', value['testrunuid']) is not None,
+             'invalid testrunuid')
+    _require(type(value['mainargv']) is list and value['mainargv'] and
+             all(type(v) is str and v for v in value['mainargv']), 'invalid worker argv')
+
+
+def _source(context, spec, candidate, identity, output, name, at):
+    freeze = _load(spec['source_freeze'], 'source-freeze')
+    _require(candidate['source_freeze'] == spec['source_freeze'] and
+             freeze['grant'] == context['trusted_grant'], 'root source grant binding mismatch')
+    grant = _load(context['trusted_grant'])
+    _exact(grant, GRANT_KEYS, 'root grant')
+    _require(grant['schema'] == 'bac-hardware-source-grant-v1' and grant['no_writer_barrier'] is True and
+             grant['includes_untracked'] is True and type(grant['authority']) is str and bool(grant['authority'].strip()),
+             'root no-writer authority missing')
+    inputs = [item['reference'] for category in ('source','tests','configs','scripts','ratchet','artifacts')
+              for item in candidate['inventory'][category]]
+    _require(len({r['path'] for r in inputs}) == len(inputs), 'duplicate candidate input')
+    for key in ('authorized_root','head','tree','import_roots'):
+        _require(grant[key] == candidate[key], 'grant candidate mismatch: '+key)
+    _require(grant['inputs'] == inputs and freeze['authorized_root'] == spec['authorized_root'] == candidate['authorized_root'],
+             'root/inventory authority mismatch')
+    for stamp in (grant['start'],grant['end']):
+        if stamp is not None:
+            _require(type(stamp) is str and re.fullmatch(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z',stamp) is not None,
+                     'invalid root grant timestamp')
+            datetime.datetime.strptime(stamp,'%Y-%m-%dT%H:%M:%S.%fZ')
+    _require(grant['start'] <= at and (grant['end'] is None or at <= grant['end']) and freeze['start'] <= at and
+             (freeze['end']['state'] == 'unavailable' or at <= freeze['end']['value']), 'source freeze interval inactive')
+    protocol.validate_record('reference', grant['allocation_grant'])
+    _require(type(grant['cpu_reservation_evidence']) is list and grant['cpu_reservation_evidence'], 'missing CPU authority')
+    for ref in grant['cpu_reservation_evidence']:
+        protocol.validate_record('reference', ref)
+    for ref in inputs:
+        protocol.validate_record('reference', ref)
+    lockpath = Path(freeze['index_lock'])
+    parent = _directory(lockpath.parent)
+    try:
+        lock = os.open(lockpath.name, os.O_RDWR | os.O_NOFOLLOW, dir_fd=parent)
+    finally:
+        os.close(parent)
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        head = subprocess.run(['git','rev-parse','HEAD'], cwd=Path(spec['authorized_root']),
+                              capture_output=True, text=True, check=False)
+        tree = subprocess.run(['git','diff-index','--cached','--quiet',candidate['tree'],'--'],
+                              cwd=Path(spec['authorized_root']), capture_output=True, text=True, check=False)
+        _require(head.returncode == 0 and head.stdout.strip() == candidate['head'] and tree.returncode == 0,
+                 'source HEAD/index changed')
+    finally:
+        fcntl.flock(lock, fcntl.LOCK_UN)
+        os.close(lock)
+    observed_at = _utc()
+    _require(grant['start'] <= observed_at and (grant['end'] is None or observed_at <= grant['end']) and
+             freeze['start'] <= observed_at and (freeze['end']['state']=='unavailable' or observed_at<=freeze['end']['value']),
+             'source freeze interval expired during final observation')
+    witness = dict(schema='bac-hardware-v1',kind='source-witness',candidate=spec['candidate'],
+                   source_freeze=spec['source_freeze'],head=candidate['head'],tree=candidate['tree'],
+                   inventory=inputs,at=observed_at,process_identity=identity)
+    return _write(output, name, witness, 'source-witness')
+
+
+def _torch(role, phase):
+    torch = sys.modules.get('torch')
+    loaded = type(torch) is types.ModuleType
+    missing = dict(intra_op=None, inter_op=None, debug=__debug__ if role['role'] != 'fork-guard' else None)
+    if role['role'] == 'fork-guard':
+        return missing, 'forbidden-inherited-module-witness', 'forbidden', loaded, None, 'guard-only: no Torch/CUDA calls permitted'
+    work = role['observer'] == 'work' or role['torch_policy'] == 'work'
+    if not loaded:
+        _require(not work or phase == 'start', 'work end requires loaded Torch configuration')
+        return missing, 'not-loaded', 'uninitialized', False, None, 'Torch absent; no import or runtime configuration observation'
+    cuda = sys.modules.get('torch.cuda')
+    _require(type(cuda) is types.ModuleType, 'loaded CUDA module observation unavailable')
+    if not work:
+        marker = vars(cuda).get('_initialized')
+        _require(type(marker) is bool, 'loaded Torch CUDA marker unavailable/unrecognized')
+        facts = missing
+        observation = 'loaded-without-calls'
+        reason = 'loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited'
+    else:
+        facts = dict(debug=__debug__)
+        for key, getter in [('intra_op','get_num_threads'),('inter_op','get_num_interop_threads')]:
+            fn = vars(torch).get(getter)
+            _require(callable(fn), 'required loaded Torch getter unavailable')
+            value = fn()
+            _require(type(value) is type(role[key]) and value == role[key], 'role configuration mismatch: '+key)
+            facts[key] = value
+        fn = vars(cuda).get('is_initialized')
+        _require(callable(fn), 'loaded CUDA getter unavailable')
+        marker = fn()
+        _require(type(marker) is bool, 'invalid CUDA state observation')
+        observation = 'work'
+        reason = 'loaded Torch initialization state only, not independent proof of native device work'
+    _require(role['cuda_policy'] != 'no-initialize' or marker is False, 'required uninitialized role already initialized')
+    _require(role['torch_policy'] != 'forbidden', 'Torch observation forbidden for role')
+    return facts, observation, 'initialized' if marker else 'uninitialized', True, marker, reason
+
+
+def _modules():
+    return hashlib.sha256(json.dumps(sorted(sys.modules),ensure_ascii=True,separators=(',',':')).encode('ascii')).hexdigest()
+
+
+def _anomaly(observation, reason):
+    value = None
+    if observation == 'work':
+        fn = vars(sys.modules['torch']).get('is_anomaly_enabled')
+        _require(callable(fn), 'loaded anomaly observation unavailable')
+        value = fn()
+        _require(type(value) is bool, 'invalid anomaly observation')
+    return dict(state='measured' if value is not None else 'unavailable',value=value,reason='' if value is not None else reason)
+
+
+def _policy(path, digest):
+    ref = protocol.file_reference(Path(path))
+    _require(ref['sha256'] == digest, 'static identity policy digest mismatch')
+    policy = _load(ref)
+    _exact(policy, POLICY_KEYS, 'identity policy')
+    _require(policy['schema'] == 'bac-hardware-identity-policy-v1', 'unknown static policy')
+    return ref, policy
+
+
+def _authority(context, spec, job, identity):
+    _require(len(context['policy']) == len(context['runtime']), 'authority transport cardinality')
+    if not context['policy']:
+        return  # Direct owner API: caller supplies explicit out-of-band authority.
+    policy = _load(context['policy'][0])
+    _exact(policy, POLICY_KEYS, 'identity policy')
+    _require(policy['schema'] == 'bac-hardware-identity-policy-v1', 'wrong policy schema')
+    argv = job['argv']
+    for key, value in [('--bac-identity-policy',context['policy'][0]['path']),
+                       ('--bac-identity-policy-sha256',context['policy'][0]['sha256'])]:
+        _require(argv.count(key) == 1 and argv.index(key)+1 < len(argv) and argv[argv.index(key)+1] == value,
+                 'policy not pinned by exact job argv')
+    for key in ('job_id','required_imports','worker_roles','environment_delta'):
+        _require(context[key] == policy[key], 'derived context changed static policy')
+    _require(policy['spec_path'] == context['spec']['path'] and
+             policy['command_path'] == context['command']['path'] == str(Path(job['output'])/'command.json') and
+             policy['runtime_path'] == context['runtime'][0]['path'] == str(Path(job['output'])/'runtime-context.json'),
+             'runtime known path mismatch')
+    candidate = _load(spec['candidate'], 'candidate')
+    _require(not any(entry['path'] == context['policy'][0]['path'] for group in candidate['inventory'].values() for entry in group),
+             'static policy cannot occur in candidate inventory')
+    runtime = _load(context['runtime'][0])
+    _exact(runtime, {'schema','spec','command','trusted_grant','policy','runner_identity','runner_source_start'}, 'runtime descriptor')
+    _require(runtime['schema'] == 'bac-hardware-identity-runtime-v1', 'unknown runtime descriptor')
+    for key in ('spec','command','trusted_grant'):
+        _require(runtime[key] == context[key], 'runtime context binding mismatch')
+    _require(runtime['policy'] == context['policy'][0], 'runtime policy mismatch')
+    source = _load(runtime['runner_source_start'], 'source-witness')
+    _require(source['process_identity'] == runtime['runner_identity'] and source['candidate'] == spec['candidate'] and
+             source['source_freeze'] == spec['source_freeze'], 'runner delegation source mismatch')
+    if context['worker_identity'] is None and not context['parent_start']:
+        _require(context['role_id'] == policy['role_id'] and runtime['runner_identity'] == _identity(identity['ppid']),
+                 'runtime not delegated by actual live runner parent')
+
+
+def _parent(context, spec, job, identity, role):
+    parents = []
+    replacements = []
+    if context['parent_start']:
+        start = _load(context['parent_start'][0], 'process')
+        _require(start['phase']=='start' and start['spec']==context['spec'] and start['job_id']==job['id'] and
+                 start['identity'] == _identity(identity['ppid']), 'actual parent process identity mismatch')
+        parents.append(start['identity'])
+    if context['worker_identity'] is not None:
+        _require(role['role']=='worker' and bool(parents) and bool(context['lifecycle']), 'worker lifecycle missing')
+        lifecycle = _load(context['lifecycle'][0])
+        _exact(lifecycle, {'schema','phase','controller_start','worker_identity','role_id','predecessor_start',
+                           'process_start','error','at','prior_lifecycle'}, 'worker lifecycle')
+        _require(lifecycle['schema']=='bac-hardware-worker-lifecycle-v1' and lifecycle['phase']=='configure' and
+                 lifecycle['controller_start']==context['parent_start'][0] and lifecycle['worker_identity']==context['worker_identity'] and
+                 lifecycle['role_id']==role['id'] and lifecycle['predecessor_start']==context['replacement_start'] and
+                 lifecycle['process_start']==[] and lifecycle['error']=='', 'worker configure association mismatch')
+        _require(context['worker_identity']['workercount']==job['xdist_workers'], 'worker count mismatch')
+    if context['replacement_start']:
+        previous = _load(context['replacement_start'][0], 'process')
+        _require(role['replacement_limit'] > 0 and previous['phase']=='start' and previous['role_id']==role['id'] and
+                 previous['spec']==context['spec'] and previous['identity'] != identity and context['lifecycle'],
+                 'unadmitted/ambiguous replacement')
+        lifecycle = _load(context['lifecycle'][0])
+        _require(len(lifecycle['prior_lifecycle'])==1, 'replacement missing predecessor lifecycle')
+        down = _load(lifecycle['prior_lifecycle'][0])
+        _require(down['phase']=='down' and down['error'] and down['process_start']==context['replacement_start'] and
+                 down['role_id']==role['id'], 'replacement missing actual failed predecessor')
+        replacements.append(previous['identity'])
+    return parents, replacements
+
+
+def record_process(context: dict, phase: str) -> dict:
+    """Record only observations made by this actual process; preserve partials."""
+    modules_before = _modules()
+    try:
+        _exact(context, CONTEXT_KEYS, 'identity context')
+        _require(context['schema']=='bac-hardware-identity-context-v1' and phase in ('start','end'), 'unknown context/phase')
+        for key in ('parent_start','replacement_start','lifecycle','policy','runtime'):
+            _require(type(context[key]) is list and len(context[key]) <= 1, 'context reference cardinality')
+        _require(protocol.file_reference(Path(protocol.__file__))['sha256']==PROTOCOL_SHA, 'protocol bytes unadopted')
+        _require(__debug__ and sys.flags.optimize == 0, 'optimized Python cannot qualify')
+        spec = _load(context['spec'], 'spec')
+        jobs = [job for job in spec['jobs'] if job['id']==context['job_id']]
+        _require(len(jobs)==1, 'unknown job')
+        job = jobs[0]
+        roles = [role for role in job['roles'] if role['id']==context['role_id']]
+        _require(len(roles)==1, 'unadmitted role')
+        role = roles[0]
+        _require(role['role'] in ('controller','worker') or bool(context['parent_start']), 'owner launch lineage required')
+        _require(role['role'] != 'fork-guard', 'fork guard requires prepared recorder')
+        _require(role['debug'] is __debug__, 'role Python debug configuration mismatch')
+        tools = {tool['name']:tool['reference'] for tool in spec['tools']}
+        _require(tools['identity']==protocol.file_reference(Path(__file__)) and
+                 tools['protocol']==protocol.file_reference(Path(protocol.__file__)), 'identity/protocol tool binding mismatch')
+        environment = _load(spec['dependencies'], 'environment')
+        interpreter = protocol.file_reference(Path(sys.executable).resolve())
+        _require(interpreter==environment['interpreter'] and str(Path(sys.executable).resolve())==str(Path(job['interpreter']).resolve()),
+                 'actual interpreter mismatch')
+        _require(os.getcwd()==job['cwd'], 'actual cwd mismatch')
+        command = _load(context['command'], 'command')
+        _require(command['spec']==context['spec'] and command['attempt_id']==spec['attempt_id'] and command['job_id']==job['id'],
+                 'command identity mismatch')
+        for key in ('argv','cwd','environment','seed'):
+            _require(command[key]==job[key], 'command launch mismatch')
+        _require(command['runner']==tools['runner'], 'command runner mismatch')
+        candidate = _load(spec['candidate'], 'candidate')
+        identity = _identity()
+        pid = _process_id(identity)
+        output = Path(job['output'])
+        process_path = output/f'process-{pid}-{phase}.json'
+        _require(not process_path.exists(), 'duplicate process phase')
+        _authority(context,spec,job,identity)
+        actual_env = _environment(context,job)
+        parents,replacements = _parent(context,spec,job,identity,role)
+        claim = _claim(context,job,identity,phase)
+        now = time.monotonic_ns()
+        at = _utc()
+        if phase=='end':
+            start = _load(protocol.file_reference(output/f'process-{pid}-start.json'),'process')
+            _require(start['identity']==identity and start['spec']==context['spec'] and start['role_id']==role['id'] and
+                     start['parent_identity']==parents and start['replacement_of']==replacements and now>=start['monotonic_ns'],
+                     'end not paired with actual start')
+            elapsed = dict(state='measured',value=now-start['monotonic_ns'],reason='')
+        else:
+            elapsed = dict(state='unavailable',value=None,reason='process start has no elapsed interval')
+        imports = _imports(context,candidate,environment,phase)
+        facts,torch_observation,cuda_observation,loaded,marker,reason = _torch(role,phase)
+        source = _source(context,spec,candidate,identity,output,f'source-{pid}-{phase}.json',at)
+        raw = _write(output,f'process-{pid}-observation-{phase}.json',dict(
+            schema='bac-hardware-process-observation-v2',python_debug=__debug__,python_optimize=sys.flags.optimize,
+            torch_anomaly=_anomaly(torch_observation,reason),source_method='direct-git',recorder_mode='ordinary',
+            module_names_before_sha256=modules_before,module_names_after_sha256=_modules(),owner_claim=claim,sampler=[],context=context,identity=identity,phase=phase,
+            environment=actual_env,worker_identity=context['worker_identity'],torch_loaded=loaded,
+            cuda_marker=marker,observation_limit=reason,at=at))
+        measured = {key:dict(state='measured' if value is not None else 'unavailable',value=value,
+                            reason='' if value is not None else reason,provenance=raw) for key,value in facts.items()}
+        process = dict(schema='bac-hardware-v1',kind='process',attempt_id=spec['attempt_id'],job_id=job['id'],
+            spec=context['spec'],process_id=pid,role_id=role['id'],role=role['role'],phase=phase,identity=identity,
+            parent_identity=parents,replacement_of=replacements,interpreter=interpreter,
+            argv=[value.decode() for value in Path('/proc/self/cmdline').read_bytes().split(b'\0') if value],
+            cwd=os.getcwd(),imports=imports,source_witness=source,environment=actual_env,devices=job['devices'],
+            **measured,torch_observation=torch_observation,cuda_observation=cuda_observation,
+            at=at,monotonic_ns=now,elapsed_ns=elapsed)
+        ref = _write(output,process_path.name,process,'process')
+        global _CURRENT
+        _CURRENT = dict(context=json.loads(json.dumps(context)),start=ref,identity=identity) if phase == 'start' else None
+        return ref
+    except (OSError,KeyError,TypeError,json.JSONDecodeError) as exc:
+        raise ValueError('process witness refused: '+str(exc)) from exc
+
+
+def _tick():
+    if _BUDGET is not None:
+        _require(time.monotonic_ns() < _BUDGET, 'fork sampler deadline exceeded')
+
+
+def _primitive_ref(path):
+    _tick();parent,name=path.rsplit('/',1);directory=_directory(parent)
+    try:
+        fd=os.open(name,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=directory)
+        try:
+            before=os.fstat(fd);_require(stat.S_ISREG(before.st_mode), 'not regular input')
+            h=hashlib.sha256();size=0
+            while True:
+                _tick();chunk=os.read(fd,65536)
+                if not chunk: break
+                h.update(chunk);size+=len(chunk)
+            after=os.fstat(fd)
+            _require((before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns,before.st_ctime_ns)==
+                (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns) and size==after.st_size, 'input changed')
+            live=_directory(parent)
+            try:
+                _require((os.fstat(directory).st_dev,os.fstat(directory).st_ino)==
+                         (os.fstat(live).st_dev,os.fstat(live).st_ino), 'input directory namespace changed')
+                named=os.stat(name,dir_fd=live,follow_symlinks=False)
+                _require((named.st_dev,named.st_ino)==(after.st_dev,after.st_ino), 'input namespace changed')
+            finally: os.close(live)
+            return dict(path=path,bytes=size,sha256=h.hexdigest())
+        finally: os.close(fd)
+    finally: os.close(directory)
+
+
+def _primitive_write(output,name,value):
+    _tick();_require('/' not in name and name not in ('.','..'), 'unsafe filename')
+    data=value if type(value) is bytes else (json.dumps(value,sort_keys=True,indent=2)+'\n').encode()
+    parent=_directory(output)
+    try:
+        fd=os.open(name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=parent)
+        try:
+            cursor=0
+            while cursor<len(data):
+                _tick();cursor+=os.write(fd,data[cursor:cursor+65536])
+        finally: os.close(fd)
+        live=_directory(output)
+        try: _require((os.fstat(parent).st_dev,os.fstat(parent).st_ino)==(os.fstat(live).st_dev,os.fstat(live).st_ino),'output namespace changed')
+        finally: os.close(live)
+        ref=_primitive_ref(output+'/'+name)
+        _require(ref['bytes']==len(data) and ref['sha256']==hashlib.sha256(data).hexdigest(), 'emission namespace changed')
+        return ref
+    finally: os.close(parent)
+
+
+def _fork_identity(pid):
+    with open('/proc/'+str(pid)+'/stat') as f: fields=f.read().rsplit(')',1)[1].split()
+    with open('/proc/sys/kernel/random/boot_id') as f: boot=f.read().strip()
+    return dict(pid=pid,ppid=int(fields[1]),start_identity=fields[19],host=socket.gethostname(),boot_id=boot)
+
+
+def _prepare_fork(context,spec,job,role,candidate,environment,owner_contract):
+    policies=[(r,_load(r)) for r in job['prerequisites']]
+    policies=[(r,p) for r,p in policies if p.get('schema')=='bac-hardware-owner-sampler-policy-v1']
+    _require(len(policies)==1, 'exact fork sampler policy required');ref,policy=policies[0]
+    fixed=dict(owner_deadline_ns=10_000_000_000,sampler_cutoff_ns=8_000_000_000,sampler_total_ns=6_000_000_000,
+        phase_ns=3_000_000_000,lock_wait_ns=250_000_000,command_run_ns=500_000_000,term_grace_ns=100_000_000,
+        kill_reap_ns=400_000_000,emission_reserve_ns=250_000_000,stdout_limit_bytes=8192,stderr_limit_bytes=8192)
+    _exact(policy,set(fixed)|{'schema','role_ids','max_input_bytes','cpu_slots','scratch_bytes','scratch_inodes'},'sampler policy')
+    _require(type(policy['role_ids']) is list and len(set(policy['role_ids']))==len(policy['role_ids']) and
+             role['id'] in policy['role_ids'], 'sampler role not admitted')
+    for key in set(policy)-{'schema','role_ids'}:
+        _require(type(policy[key]) is int and policy[key]>0 and (key not in fixed or policy[key]==fixed[key]), 'sampler budget invalid')
+    bound=_load(role['cpu_reservation_evidence'])
+    fields={'schema','basis','role_id','role','observer','intra_op','inter_op','debug','torch_policy','cuda_policy',
+        'peak_cpu_slots','argv','environment','required_cases','head','tree','inputs','justification','authority','bound_statement'}
+    _exact(bound,fields,'CPU bound');grant=_load(context['trusted_grant'])
+    _require(bound['schema']=='bac-hardware-cpu-bound-v1' and bound['basis']==role['cpu_reservation_basis'] and
+        bound['role_id']==role['id'] and role['cpu_reservation_evidence'] in grant['cpu_reservation_evidence'] and
+        type(bound['justification']) is list and ref in bound['justification'], 'sampler CPU grant/justification missing')
+    for key in ('role','observer','intra_op','inter_op','debug','torch_policy','cuda_policy','peak_cpu_slots'):
+        _require(type(bound[key]) is type(role[key]) and bound[key]==role[key], 'sampler CPU role mismatch')
+    for key in ('argv','environment'): _require(bound[key]==job[key], 'sampler CPU command mismatch')
+    _require(bound['required_cases']==job['required_collected_ids'] and bound['head']==candidate['head'] and
+        bound['tree']==candidate['tree'] and bound['inputs']==grant['inputs'] and
+        type(bound['authority']) is str and bool(bound['authority'].strip()) and type(bound['bound_statement']) is str and
+        bool(bound['bound_statement'].strip()), 'sampler CPU workload mismatch')
+    for item in bound['justification']: protocol.validate_record('reference',item)
+    _require(policy['cpu_slots']<=role['peak_cpu_slots'] and policy['scratch_bytes']<=job['budget']['scratch_bytes'] and
+        policy['scratch_inodes']<=job['budget']['scratch_inodes'], 'sampler resources exceed admitted reservation')
+    refs={}
+    def collect(value):
+        if type(value) is list:
+            for item in value: collect(item)
+        elif type(value) is dict:
+            if set(value)=={'path','bytes','sha256'}:
+                if value['path'] in refs:
+                    _require(refs[value['path']]==value,'conflicting prepared ref');return
+                protocol.validate_record('reference',value);refs[value['path']]=value
+                if value['path'].endswith('.json'): collect(_load(value))
+            else:
+                for item in value.values(): collect(item)
+    collect([context,spec,job,candidate,environment,owner_contract])
+    git=shutil.which('git');_require(git is not None,'Git unavailable')
+    git=str(Path(git).resolve());refs[git]=protocol.file_reference(Path(git))
+    _require(any(d['name']=='git' and d['reference']==refs[git] for d in environment['dependencies']), 'Git executable not admitted')
+    interpreter=str(Path(sys.executable).resolve());refs[interpreter]=protocol.file_reference(Path(interpreter))
+    _require(sum(r['bytes'] for r in refs.values())<=policy['max_input_bytes'], 'prepared input byte bound exceeded')
+    freeze=_load(spec['source_freeze']);grant=_load(context['trusted_grant'])
+    _primitive_ref(git);_primitive_write  # Prebind machinery before the final module snapshot.
+    return dict(policy_ref=ref,policy=policy,refs=tuple(refs.values()),spec=spec,job=job,role=role,candidate=candidate,
+        freeze=freeze,grant=grant,git=git,interpreter=refs[interpreter],imports=_imports(context,candidate,environment,'end'))
+
+
+def _sampler_command(plan,argv,name,deadline):
+    policy=plan['policy'];start=time.monotonic_ns();pipes=[os.pipe(),os.pipe()]
+    pid=None;status=None;buffers=[bytearray(),bytearray()];overflow=[False,False];error=None
+    try:
+        actions=[(os.POSIX_SPAWN_DUP2,pipes[0][1],1),(os.POSIX_SPAWN_DUP2,pipes[1][1],2)]
+        for text in os.listdir('/proc/self/fd'):
+            fd=int(text)
+            if fd>2:
+                try: os.fstat(fd)
+                except OSError: continue
+                actions.append((os.POSIX_SPAWN_CLOSE,fd))
+        _tick();pid=os.posix_spawn(plan['git'],argv,dict(os.environ),file_actions=actions)
+        for r,w in pipes: os.close(w);os.set_blocking(r,False)
+        run_end=min(deadline,start+policy['command_run_ns']);term_at=None;kill_at=None
+        open_fds={r:i for i,(r,w) in enumerate(pipes)}
+        while status is None or open_fds:
+            now=time.monotonic_ns()
+            if status is None:
+                got,observed=os.waitpid(pid,os.WNOHANG)
+                if got: status=observed
+            if error is None and now>=run_end: error='sampler command timeout'
+            if error is not None and status is None:
+                if term_at is None: os.kill(pid,signal.SIGTERM);term_at=now
+                elif kill_at is None and now-term_at>=policy['term_grace_ns']: os.kill(pid,signal.SIGKILL);kill_at=now
+                if kill_at is not None and now-kill_at>=policy['kill_reap_ns']: break
+            if now>=deadline+policy['term_grace_ns']+policy['kill_reap_ns']: break
+            ready=select.select(list(open_fds),[],[],0.005)[0] if open_fds else []
+            for fd in ready:
+                try: chunk=os.read(fd,65536)
+                except BlockingIOError: continue
+                if not chunk: open_fds.pop(fd);continue
+                i=next(i for i,(r,w) in enumerate(pipes) if r==fd);limit=policy['stdout_limit_bytes' if i==0 else 'stderr_limit_bytes']
+                available=max(0,limit-len(buffers[i]));buffers[i].extend(chunk[:available])
+                if len(chunk)>available: overflow[i]=True;error='sampler output cap exceeded'
+            if not open_fds and status is None: time.sleep(0.001)
+        _require(status is not None,'sampler child not reaped')
+        end=time.monotonic_ns()
+        refs=[_primitive_write(plan['job']['output'],name+suffix,bytes(data)) for suffix,data in zip(('.stdout','.stderr'),buffers)]
+        row=dict(argv=argv,pid=pid,start_ns=start,end_ns=end,exit_code=os.waitstatus_to_exitcode(status),
+            stdout=refs[0],stderr=refs[1],stdout_truncated=overflow[0],stderr_truncated=overflow[1])
+        _primitive_write(plan['job']['output'],name+'.json',row)
+        _require(error is None and row['exit_code']==0, error or 'Git source query failed')
+        return row,bytes(buffers[0])
+    finally:
+        if pid is not None and status is None:
+            # Exceptional paths still have bounded, nonblocking owned-PID cleanup.
+            try: os.kill(pid,signal.SIGKILL)
+            except ProcessLookupError: pass
+            stop=time.monotonic_ns()+policy['kill_reap_ns']
+            while time.monotonic_ns()<stop:
+                got,status_now=os.waitpid(pid,os.WNOHANG)
+                if got: status=status_now;break
+                time.sleep(0.001)
+        for pair in pipes:
+            for fd in pair:
+                try: os.close(fd)
+                except OSError: pass
+
+
+def record_fork_process(handle,phase):
+    global _BUDGET
+    _require(handle in _HANDLES and phase in ('start','end'), 'unissued fork handle/phase')
+    plan=_HANDLES[handle];launch=plan['launch'];policy=plan['policy'];begin=time.monotonic_ns();before=_modules()
+    _require(_BUDGET is None,'nested sampler')
+    limit=min(begin+policy['phase_ns'],launch['sampler_cutoff_ns'],begin+policy['sampler_total_ns']-plan['prefix_ns'])
+    reserve=policy['term_grace_ns']+policy['kill_reap_ns']+policy['emission_reserve_ns'];_BUDGET=limit-reserve
+    lock=None;acquired=None;released=None
+    try:
+        _tick();identity=_fork_identity(os.getpid());pid=_process_id(identity)
+        _require(identity!=plan['parent'] and _fork_identity(identity['ppid'])==plan['parent'], 'fork actual parent mismatch')
+        _require(before==launch['module_names_sha256'] and len(os.listdir('/proc/self/task'))==1, 'fork module/task mismatch')
+        _require(dict(os.environ)==launch['environment'] and __debug__ and sys.flags.optimize==0 and
+                 os.getcwd()==plan['job']['cwd'], 'fork environment/config mismatch')
+        with open('/proc/self/cmdline','rb') as f: argv=[v.decode() for v in f.read().split(b'\0') if v]
+        _require(argv==launch['parent_argv'], 'fork argv mismatch')
+        _require(phase not in plan['records'] and (phase=='start' or 'start' in plan['records']), 'fork phase pairing')
+        name='owner-claim-'+launch['instance_id']+'.json';out=plan['job']['output']
+        if phase=='start':
+            claim=_primitive_write(out,name,dict(schema='bac-hardware-owner-claim-v1',launch=plan['launch_ref'],identity=identity,
+                role_id=plan['role']['id'],at=_utc(),monotonic_ns=time.monotonic_ns()))
+            plan['claim']=claim;plan['child']=identity
+        else:
+            _require(plan['child']==identity and _primitive_ref(plan['claim']['path'])==plan['claim'], 'fork claim/start mismatch')
+            _require(_primitive_ref(plan['records']['start']['path'])==plan['records']['start'],'fork start changed')
+            claim=plan['claim']
+        for ref in (*plan['refs'],plan['launch_ref'],*plan['phase_refs']):
+            _require(_primitive_ref(ref['path'])==ref,'prepared reference changed')
+        for item in plan['imports']:
+            module=sys.modules.get(item['name'])
+            _require(type(module) is types.ModuleType and vars(module).get('__file__')==item['reference']['path'], 'inherited import changed')
+        at=_utc();grant=plan['grant'];freeze=plan['freeze']
+        _require(grant['start']<=at and (grant['end'] is None or at<=grant['end']) and freeze['start']<=at and
+                 (freeze['end']['state']=='unavailable' or at<=freeze['end']['value']), 'fork freeze inactive')
+        directory,name=freeze['index_lock'].rsplit('/',1);fd=_directory(directory)
+        try: lock=os.open(name,os.O_RDWR|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=fd)
+        finally: os.close(fd)
+        _require(stat.S_ISREG(os.fstat(lock).st_mode),'index lock not regular');lock_end=min(_BUDGET,time.monotonic_ns()+policy['lock_wait_ns'])
+        while True:
+            _tick()
+            try: fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB);acquired=time.monotonic_ns();break
+            except BlockingIOError:
+                _require(time.monotonic_ns()<lock_end,'fork index lock deadline');time.sleep(0.001)
+        commands=[];prefix='sampler-'+pid+'-'+phase
+        for index,args in enumerate((['rev-parse','HEAD'],['diff-index','--cached','--quiet',plan['candidate']['tree'],'--'])):
+            _tick();row,data=_sampler_command(plan,[plan['git'],'-C',plan['spec']['authorized_root'],*args],prefix+'-'+str(index),_BUDGET)
+            commands.append(row)
+            if index==0: _require(data.decode().strip()==plan['candidate']['head'],'fork HEAD changed')
+        fcntl.flock(lock,fcntl.LOCK_UN);os.close(lock);lock=None;released=time.monotonic_ns()
+        for ref in plan['refs']: _require(_primitive_ref(ref['path'])==ref,'final prepared reference changed')
+        at=_utc();_require((grant['end'] is None or at<=grant['end']) and
+            (freeze['end']['state']=='unavailable' or at<=freeze['end']['value']), 'fork freeze expired')
+        source=_primitive_write(out,'source-'+pid+'-'+phase+'.json',dict(schema='bac-hardware-v1',kind='source-witness',
+            candidate=plan['spec']['candidate'],source_freeze=plan['spec']['source_freeze'],head=plan['candidate']['head'],
+            tree=plan['candidate']['tree'],inventory=grant['inputs'],at=at,process_identity=identity))
+        _BUDGET=limit;end=time.monotonic_ns();cumulative=plan['source_ns']+end-begin
+        sampler=_primitive_write(out,prefix+'.json',dict(schema='bac-hardware-owner-sampler-observation-v1',policy=plan['policy_ref'],
+            launch=plan['launch_ref'],identity=identity,phase=phase,start_ns=begin,end_ns=end,cumulative_ns=cumulative,
+            lock_acquired_ns=acquired,lock_released_ns=released,commands=commands))
+        reason='guard-only: no Torch/CUDA calls permitted'
+        raw=_primitive_write(out,'process-'+pid+'-observation-'+phase+'.json',dict(schema='bac-hardware-process-observation-v2',
+            context=plan['context'],identity=identity,phase=phase,environment=dict(os.environ),worker_identity=None,
+            torch_loaded=type(sys.modules.get('torch')) is types.ModuleType,cuda_marker=None,observation_limit=reason,at=at,
+            python_debug=__debug__,python_optimize=sys.flags.optimize,torch_anomaly=dict(state='unavailable',value=None,reason=reason),
+            source_method='direct-git',recorder_mode='fork-guard',module_names_before_sha256=before,
+            module_names_after_sha256=_modules(),owner_claim=[claim],sampler=[sampler]))
+        unavailable=dict(state='unavailable',value=None,reason=reason,provenance=raw)
+        elapsed=dict(state='unavailable',value=None,reason='process start has no elapsed interval') if phase=='start' else dict(
+            state='measured',value=begin-plan['start_ns'],reason='')
+        process=dict(schema='bac-hardware-v1',kind='process',attempt_id=plan['spec']['attempt_id'],job_id=plan['job']['id'],
+            spec=plan['context']['spec'],process_id=pid,role_id=plan['role']['id'],role='fork-guard',phase=phase,identity=identity,
+            parent_identity=[plan['parent']],replacement_of=[],interpreter=plan['interpreter'],argv=argv,cwd=os.getcwd(),
+            imports=plan['imports'],source_witness=source,environment=dict(os.environ),devices=plan['job']['devices'],
+            intra_op=unavailable,inter_op=unavailable,debug=unavailable,torch_observation='forbidden-inherited-module-witness',
+            cuda_observation='forbidden',at=at,monotonic_ns=begin,elapsed_ns=elapsed)
+        result=_primitive_write(out,'process-'+pid+'-'+phase+'.json',process)
+        after=_modules();emission_end=time.monotonic_ns()
+        emission=_primitive_write(out,'sampler-emission-'+pid+'-'+phase+'.json',dict(
+            schema='bac-hardware-owner-sampler-emission-v1',policy=plan['policy_ref'],launch=plan['launch_ref'],
+            identity=identity,phase=phase,sampler=sampler,raw=raw,process=result,emission_end_ns=emission_end,
+            module_names_after_sha256=after))
+        plan['phase_refs'].extend([source,sampler,raw,result,emission,claim])
+        for row in commands: plan['phase_refs'].extend([row['stdout'],row['stderr']])
+        _require(_modules()==before,'module growth during complete fork recording');_tick()
+        plan['prefix_ns']+=time.monotonic_ns()-begin;plan['source_ns']=cumulative;plan['records'][phase]=result
+        if phase=='start': plan['start_ns']=begin
+        return result
+    finally:
+        if lock is not None:
+            fcntl.flock(lock,fcntl.LOCK_UN);os.close(lock)
+        _BUDGET=None
+
+
+def current_process_context():
+    if _CURRENT is None or _CURRENT['identity'] != _identity():
+        return None
+    return json.loads(json.dumps({k:_CURRENT[k] for k in ('context','start')}))
+
+
+def pytest_runtest_call(item):
+    global _CALL
+    if current_process_context() is None:
+        yield
+        return
+    _require(_CALL is None, 'overlapping or inherited pytest call')
+    entry = (_identity(),item.nodeid,item)
+    _CALL = entry
+    try:
+        yield
+    finally:
+        if _CALL is entry:
+            _CALL = None
+
+
+pytest_runtest_call.pytest_impl = {'wrapper':True,'tryfirst':True}
+LAUNCH_KEYS = {'schema','spec','command','owner_contract','parent_process','source_witness','parent_identity',
+    'parent_argv','case_id','pytest_phase','child_role_id','instance_id','start_method','environment',
+    'python_assertions_enabled','inherited_imports','module_names_sha256','sampler_policy','owner_deadline_ns',
+    'sampler_cutoff_ns','at','monotonic_ns'}
+
+
+def _contract(spec,job,reference,case,role_id):
+    contract = _load(reference,'case-contract')
+    selected = [o for o in job['obligations'] if o['contract']==reference and o['kind']==contract['obligation_kind']]
+    _require(len(selected)==1 and case in selected[0]['required_cases'] and case in contract['required_cases'] and
+        case in job['required_collected_ids'], 'owner case contract not selected')
+    roles = [r for r in job['roles'] if r['id']==role_id]
+    _require(len(roles)==1 and roles[0] in contract['roles'] and roles[0]['role'] not in ('controller','worker'),
+             'owner role contract mismatch')
+    return roles[0]
+
+
+def _owner_info(context,job,seen=()):
+    _require(len(context['parent_start'])==len(context['lifecycle'])==1 and context['worker_identity'] is None and
+             context['replacement_start']==context['policy']==context['runtime']==[], 'owner context transport')
+    launch = _load(context['lifecycle'][0]);_exact(launch,LAUNCH_KEYS,'owner launch')
+    _require(launch['schema']=='bac-hardware-owner-launch-v1' and launch['pytest_phase']=='call' and
+             launch['start_method'] in ('spawn','fork') and launch['python_assertions_enabled'] is True and
+             launch['parent_process']==context['parent_start'][0], 'owner launch binding')
+    _require(type(launch['instance_id']) is str and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',launch['instance_id']), 'invalid instance id')
+    _require(context['lifecycle'][0]['path']==str(Path(job['output'])/('owner-launch-'+launch['instance_id']+'.json')),
+             'owner launch namespace')
+    parent = _load(launch['parent_process'],'process')
+    _require(parent['phase']=='start' and parent['identity']==launch['parent_identity'] and
+             parent['spec']==context['spec'] and parent['job_id']==job['id'] and parent['process_id'] not in seen,
+             'owner parent start binding/cycle')
+    raw = _load(parent['debug']['provenance']);pc = raw['context']
+    _require(raw['schema']=='bac-hardware-process-observation-v2' and raw['identity']==parent['identity'] and
+             raw['phase']=='start', 'parent raw binding')
+    expected = dict(pc,role_id=launch['child_role_id'],parent_start=[launch['parent_process']],
+        lifecycle=context['lifecycle'],replacement_start=[],worker_identity=None,policy=[],runtime=[])
+    _require(context==expected and launch['spec']==context['spec'] and launch['command']==context['command'],
+             'owner context derivation')
+    spec = _load(context['spec'],'spec');role = _contract(spec,job,launch['owner_contract'],launch['case_id'],context['role_id'])
+    _require((role['role']=='fork-guard')==(launch['start_method']=='fork'), 'owner method/role mismatch')
+    env = dict(parent['environment'])
+    if parent['role'] in ('controller','worker'):
+        _require(bool(pc['policy']) and 'PYTEST_CURRENT_TEST' not in env, 'owner lacks delegated pytest ancestor')
+        _authority(pc,spec,job,parent['identity'])
+        env['PYTEST_CURRENT_TEST']=launch['case_id']+' (call)'
+    else:
+        prior = _owner_info(pc,job,seen+(parent['process_id'],))
+        _require(prior['case_id']==launch['case_id'], 'nested owner changed case')
+    source = _load(launch['source_witness'],'source-witness')
+    _require(source['process_identity']==parent['identity'] and source['candidate']==spec['candidate'] and
+             source['source_freeze']==spec['source_freeze'] and source['at']<=launch['at'] and
+             launch['environment']==env and launch['parent_argv']==parent['argv'], 'owner source/environment mismatch')
+    if launch['start_method']=='spawn':
+        _require(launch['sampler_policy']==[] and launch['owner_deadline_ns'] is None and
+                 launch['sampler_cutoff_ns'] is None, 'spawn cannot inherit fork deadline')
+    return launch
+
+
+def _claim(context,job,identity,phase):
+    if not context['parent_start'] or context['worker_identity'] is not None:
+        return []
+    launch = _owner_info(context,job)
+    path = Path(job['output'])/('owner-claim-'+launch['instance_id']+'.json')
+    if phase=='start':
+        return [_write(job['output'],path.name,dict(schema='bac-hardware-owner-claim-v1',launch=context['lifecycle'][0],
+            identity=identity,role_id=context['role_id'],at=_utc(),monotonic_ns=time.monotonic_ns()))]
+    ref = protocol.file_reference(path);value = _load(ref)
+    _exact(value,{'schema','launch','identity','role_id','at','monotonic_ns'},'owner claim')
+    start = _load(protocol.file_reference(Path(job['output'])/('process-'+_process_id(identity)+'-start.json')),'process')
+    raw = _load(start['debug']['provenance'])
+    _require(value['schema']=='bac-hardware-owner-claim-v1' and value['identity']==identity and
+        value['launch']==context['lifecycle'][0] and value['role_id']==context['role_id'] and raw['owner_claim']==[ref],
+        'owner claim changed')
+    return [ref]
+
+
+def prepare_owner_launch(parent_context,parent_start,owner_contract,case_id,child_role_id,instance_id,start_method):
+    active = current_process_context()
+    _require(active==dict(context=parent_context,start=parent_start), 'launcher is not active actual process')
+    _require(type(instance_id) is str and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}',instance_id), 'invalid instance id')
+    _require(start_method in ('spawn','fork'), 'unsupported owner method')
+    spec = _load(parent_context['spec'],'spec');job = next(j for j in spec['jobs'] if j['id']==parent_context['job_id'])
+    role = _contract(spec,job,owner_contract,case_id,child_role_id)
+    _require((role['role']=='fork-guard')==(start_method=='fork'), 'owner method/role mismatch')
+    parent = _load(parent_start,'process');identity = _identity()
+    _require(parent['identity']==identity and parent['phase']=='start', 'launcher identity changed')
+    env = dict(parent['environment'])
+    if parent['role'] in ('controller','worker'):
+        _require(_CALL is not None and _CALL[:2]==(identity,case_id) and bool(parent_context['policy']), 'not actual pytest call')
+        _authority(parent_context,spec,job,identity)
+        _require('PYTEST_CURRENT_TEST' not in env, 'phase preauthorized in launch')
+        env['PYTEST_CURRENT_TEST']=case_id+' (call)'
+    else:
+        prior = _owner_info(parent_context,job)
+        _require(prior['case_id']==case_id, 'nested owner changed case')
+    _require(dict(os.environ)==env and __debug__ and sys.flags.optimize==0, 'launcher environment/Python mismatch')
+    candidate = _load(spec['candidate'],'candidate');environment = _load(spec['dependencies'],'environment')
+    imports = _imports(parent_context,candidate,environment,'end')
+    source = _source(parent_context,spec,candidate,identity,Path(job['output']),'source-launch-'+instance_id+'.json',_utc())
+    context = dict(parent_context,role_id=child_role_id,parent_start=[parent_start],lifecycle=[],
+                   replacement_start=[],worker_identity=None,policy=[],runtime=[])
+    prepared = _prepare_fork(context,spec,job,role,candidate,environment,owner_contract) if start_method=='fork' else None
+    before = _modules();now = time.monotonic_ns()
+    launch = dict(schema='bac-hardware-owner-launch-v1',spec=context['spec'],command=context['command'],
+        owner_contract=owner_contract,parent_process=parent_start,source_witness=source,parent_identity=identity,
+        parent_argv=parent['argv'],case_id=case_id,pytest_phase='call',child_role_id=child_role_id,instance_id=instance_id,
+        start_method=start_method,environment=env,python_assertions_enabled=__debug__,inherited_imports=imports,
+        module_names_sha256=before,sampler_policy=[] if prepared is None else [prepared['policy_ref']],
+        owner_deadline_ns=None if prepared is None else now+prepared['policy']['owner_deadline_ns'],
+        sampler_cutoff_ns=None if prepared is None else now+prepared['policy']['sampler_cutoff_ns'],at=_utc(),monotonic_ns=now)
+    ref = _primitive_write(job['output'],'owner-launch-'+instance_id+'.json',launch)
+    context['lifecycle']=[ref]
+    result = dict(reference=ref,context=context,handle=None)
+    if prepared is not None:
+        prepared.update(context=context,launch=launch,launch_ref=ref,parent=identity,prefix_ns=0,source_ns=0,records={},phase_refs=[])
+        result['handle']=object();_HANDLES[result['handle']]=prepared
+    _require(_modules()==before, 'module growth during final preparation tail')
+    return result
+
+
+def pytest_addoption(parser):
+    group = parser.getgroup('bac-hardware-identity')
+    group.addoption('--bac-identity-policy', action='store', default=None)
+    group.addoption('--bac-identity-policy-sha256', action='store', default=None)
+
+
+def pytest_configure(config):
+    global _STATE
+    path, digest = config.getoption('--bac-identity-policy'), config.getoption('--bac-identity-policy-sha256')
+    if path is None and digest is None:
+        return
+    _require(path is not None and digest is not None, 'both identity policy options required')
+    policy_ref, policy = _policy(path,digest)
+    runtime_ref = protocol.file_reference(Path(policy['runtime_path']))
+    runtime = _load(runtime_ref)
+    _exact(runtime, {'schema','spec','command','trusted_grant','policy','runner_identity','runner_source_start'}, 'runtime descriptor')
+    context = dict(schema='bac-hardware-identity-context-v1',spec=runtime['spec'],command=runtime['command'],
+        trusted_grant=runtime['trusted_grant'],policy=[policy_ref],runtime=[runtime_ref],
+        **{key:policy[key] for key in ('job_id','role_id','required_imports','worker_roles','environment_delta')},
+        parent_start=[],replacement_start=[],lifecycle=[],worker_identity=None)
+    workerinput = getattr(config,'workerinput',None)
+    if workerinput is not None:
+        actual = {key:workerinput[key] for key in ('workerid','workercount','testrunuid','mainargv')}
+        derived = workerinput.get('bac_identity_context')
+        _exact(derived,CONTEXT_KEYS,'derived worker context')
+        for key in CONTEXT_KEYS - {'role_id','parent_start','replacement_start','lifecycle','worker_identity'}:
+            _require(derived[key] == context[key], 'worker changed static context')
+        _require(derived['worker_identity'] == actual, 'workerinput actual identity mismatch')
+        context = derived
+    spec = _load(context['spec'],'spec')
+    job = next(job for job in spec['jobs'] if job['id']==context['job_id'])
+    _require(type(context['worker_roles']) is list and len(context['worker_roles'])==job['xdist_workers'], 'worker policy count mismatch')
+    for role in job['roles']:
+        if role['role']=='worker':
+            _require(context['worker_roles'].count(role['id'])==role['count'], 'worker policy role count mismatch')
+    start = record_process(context,'start')
+    _STATE = dict(context=context,spec=spec,job=job,start=start,initial=0,nodes={},failed=[],replacements={},report_keys=set())
+
+
+def _worker_start(worker_id):
+    matches = []
+    for path in Path(_STATE['job']['output']).glob('process-*-start.json'):
+        if '-observation-' in path.name:
+            continue
+        ref = protocol.file_reference(path)
+        value = _load(ref,'process')
+        if value['role']=='worker' and value['environment'].get('PYTEST_XDIST_WORKER')==worker_id:
+            _require(value['spec']==_STATE['context']['spec'] and value['parent_identity']==[_load(_STATE['start'])['identity']],
+                     'worker start outside controller custody')
+            matches.append(ref)
+    _require(len(matches)==1,'worker start absent/ambiguous; cannot infer replacement predecessor')
+    return matches[0]
+
+
+def _lifecycle(worker, role_id, phase, predecessor, process, prior, error):
+    value = dict(schema='bac-hardware-worker-lifecycle-v1',phase=phase,controller_start=_STATE['start'],
+        worker_identity=worker,role_id=role_id,predecessor_start=predecessor,process_start=process,error=error,
+        at=_utc(),prior_lifecycle=prior)
+    return _write(_STATE['job']['output'],f'worker-{worker["workerid"]}-{phase}.json',value)
+
+
+def pytest_configure_node(node):
+    if _STATE is None:
+        return
+    worker = {key:node.workerinput[key] for key in ('workerid','workercount','testrunuid','mainargv')}
+    _worker_identity(worker)
+    _require(worker['workerid']==node.gateway.id,'gateway and workerinput mismatch')
+    _require(worker['workerid'] not in _STATE['nodes'],'reused worker label')
+    prior,predecessor = [],[]
+    if _STATE['initial'] < len(_STATE['context']['worker_roles']):
+        role_id = _STATE['context']['worker_roles'][_STATE['initial']]
+        _STATE['initial'] += 1
+    else:
+        _require(bool(_STATE['failed']),'replacement has no failed lifecycle predecessor')
+        down_ref = _STATE['failed'].pop(0)
+        down = _load(down_ref)
+        role_id = down['role_id']
+        count = _STATE['replacements'].get(role_id,0)+1
+        role = next(role for role in _STATE['job']['roles'] if role['id']==role_id)
+        _require(count <= role['replacement_limit'],'unadmitted worker replacement')
+        _STATE['replacements'][role_id] = count
+        predecessor,prior = down['process_start'],[down_ref]
+    configure = _lifecycle(worker,role_id,'configure',predecessor,[],prior,'')
+    context = dict(_STATE['context'],role_id=role_id,parent_start=[_STATE['start']],
+                   replacement_start=predecessor,lifecycle=[configure],worker_identity=worker)
+    node.workerinput['bac_identity_context'] = context
+    _STATE['nodes'][worker['workerid']] = configure
+
+
+def pytest_testnodedown(node,error):
+    if _STATE is None:
+        return
+    configure_ref = _STATE['nodes'][node.gateway.id]
+    configure = _load(configure_ref)
+    start = _worker_start(node.gateway.id)
+    down = _lifecycle(configure['worker_identity'],configure['role_id'],'down',configure['predecessor_start'],
+                      [start],[configure_ref],'' if error is None else str(error))
+    if error is not None:
+        _STATE['failed'].append(down)
+
+
+def pytest_collection_finish(session):
+    if _STATE is None:
+        return
+    if _STATE['job']['xdist_workers'] and _STATE['context']['worker_identity'] is None:
+        return
+    ids = [item.nodeid for item in session.items]
+    _require(len(ids)==len(set(ids)), 'duplicate collected IDs')
+    process_id = _load(_STATE['start'])['process_id']
+    _write(_STATE['job']['output'],f'collection-{process_id}.json',dict(
+        schema='bac-hardware-pytest-collection-v1',process=_STATE['start'],ids=ids))
+
+
+def pytest_runtest_logreport(report):
+    if _STATE is None or (_STATE['job']['xdist_workers'] and _STATE['context']['worker_identity'] is None):
+        return
+    _require(report.when in ('setup','call','teardown'),'unknown pytest report phase')
+    key = (report.nodeid,report.when)
+    _require(key not in _STATE['report_keys'],'duplicate case phase report')
+    _STATE['report_keys'].add(key)
+    outcome = report.outcome
+    if hasattr(report,'wasxfail'):
+        outcome = 'xfailed' if report.skipped else 'xpassed'
+    value = dict(schema='bac-hardware-pytest-report-v1',process=_STATE['start'],case_id=report.nodeid,
+                 phase=report.when,outcome=outcome,longrepr=str(report.longrepr) if report.longrepr is not None else '',at=_utc())
+    process_id = _load(_STATE['start'])['process_id']
+    digest = hashlib.sha256((report.nodeid+'\0'+report.when).encode()).hexdigest()
+    _write(_STATE['job']['output'],f'report-{process_id}-{digest}.json',value)
+
+
+def _completion():
+    context,job,spec = _STATE['context'],_STATE['job'],_STATE['spec']
+    processes,sources,obligations,inventory,collections,reports = [],[],[],[],[],{}
+    for path in sorted(Path(job['output']).glob('*.json')):
+        ref = protocol.file_reference(path)
+        value = _load(ref)
+        inventory.append(ref)
+        kind = value.get('kind')
+        if kind=='process':
+            protocol.validate_record(kind,value)
+            _require(value['spec']==context['spec'] and value['job_id']==job['id'],'foreign process evidence')
+            processes.append(ref)
+        elif kind=='source-witness':
+            protocol.validate_record(kind,value)
+            _require(value['candidate']==spec['candidate'] and value['source_freeze']==spec['source_freeze'],'foreign source evidence')
+            sources.append(ref)
+        elif kind=='obligation-evidence':
+            protocol.validate_record(kind,value)
+            _require(value['spec']==context['spec'] and value['job_id']==job['id'],'foreign obligation evidence')
+            obligations.append(ref)
+        elif value.get('schema')=='bac-hardware-pytest-collection-v1':
+            _exact(value,{'schema','process','ids'},'pytest collection')
+            emitter = _load(value['process'],'process')
+            _require(emitter['spec']==context['spec'] and emitter['job_id']==job['id'],'foreign collection emitter')
+            _require(type(value['ids']) is list and len(value['ids'])==len(set(value['ids'])),'invalid collection')
+            collections.append(value['ids'])
+        elif value.get('schema')=='bac-hardware-pytest-report-v1':
+            _exact(value,{'schema','process','case_id','phase','outcome','longrepr','at'},'pytest report')
+            emitter = _load(value['process'],'process')
+            _require(emitter['spec']==context['spec'] and emitter['job_id']==job['id'],'foreign report emitter')
+            case,phase = value['case_id'],value['phase']
+            _require(phase in ('setup','call','teardown'),'unknown report phase')
+            row = reports.setdefault(case,dict(case_id=case,setup='not-run',call='not-run',teardown='not-run',evidence=[]))
+            _require(row[phase]=='not-run','duplicate case phase across processes')
+            row[phase] = value['outcome']
+            row['evidence'].append(ref)
+    _require(bool(collections) and all(c==collections[0] for c in collections),'missing/differing process collections')
+    envelope = dict(schema='bac-hardware-v1',kind='job-evidence',attempt_id=spec['attempt_id'],job_id=job['id'],
+        spec=context['spec'],command=context['command'],collected_ids=collections[0],
+        outcomes=[reports[key] for key in sorted(reports)],process_records=processes,
+        obligation_records=obligations,source_witnesses=sources,inventory=inventory)
+    return _write(job['output'],'completion.json',envelope,'job-evidence')
+
+
+def pytest_sessionfinish(session,exitstatus):
+    if _STATE is None:
+        return
+    record_process(_STATE['context'],'end')
+    if _STATE['context']['worker_identity'] is None:
+        _completion()
+
+
+# Register optional xdist hooks without importing pytest in direct child emitters.
+pytest_configure_node.pytest_impl = {'optionalhook':True}
+pytest_testnodedown.pytest_impl = {'optionalhook':True}

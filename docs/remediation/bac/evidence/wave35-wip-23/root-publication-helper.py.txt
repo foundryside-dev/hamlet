@@ -1,0 +1,134 @@
+"""Root-owned exact-byte WIP23 publication; no network, commit, or branch action."""
+from datetime import datetime, timezone
+from pathlib import Path
+import hashlib
+import json
+import subprocess
+
+R = Path('/workspace/hamlet')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+E = W / 'evidence-management/wip23-preparation'
+OUT = R / 'docs/remediation/bac/evidence/wave35-wip-23'
+CHAIN = R / 'docs/remediation/bac/evidence/checkpoint-chain.json'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+read = lambda p: json.loads(p.read_text())
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R, text=True).strip()
+
+def reference(path):
+    return dict(path=str(path.relative_to(R)), bytes=path.stat().st_size, sha256=sha(path))
+
+def write_new(path, value):
+    with path.open('x') as out:
+        json.dump(value, out, indent=2)
+        out.write('\n')
+
+def copy_new(source, destination):
+    with destination.open('xb') as out:
+        out.write(source.read_bytes())
+    assert sha(source) == sha(destination)
+
+plan = read(E / 'root-selection-plan-v1.json')
+assembly = read(E / 'root-assembly-report-v1.json')
+receipt = read(E / 'root-terminal-receipt-v1.json')
+subject = read(E / 'root-qualification-subject-v1.json')
+manifest = read(W / 'wave35/r133-candidate.json')
+documents = read(E / 'root-reviewed-document-postimages-v1/ROOT-DOCUMENT-REVIEW-v1.json')
+assert plan['status'] == 'READY FOR ROOT PUBLICATION CHECKS'
+assert receipt['status'] == 'SEALED FOR EVIDENCE SELECTION'
+assert assembly['selection_plan_sha256'] == sha(E / 'root-selection-plan-v1.json')
+assert plan['receipt']['sha256'] == sha(E / 'root-terminal-receipt-v1.json')
+assert sha(CHAIN) == plan['chain']['sha256']
+assert git('rev-parse', 'HEAD') == manifest['base_commit'] == '23701174e5418aca5e8fc90cbe694f773d3ebff6'
+assert git('branch', '--show-current') == 'project-recovery-bac-2026-11-01'
+assert git('write-tree') == manifest['candidate_tree'] == plan['candidate_tree']
+assert subprocess.run(['git', 'diff', '--quiet'], cwd=R).returncode == 0
+assert subprocess.check_output(['git', 'worktree', 'list', '--porcelain'], cwd=R, text=True) == manifest['worktree_registry']
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in manifest[group].items():
+        assert sha(R / path) == digest, path
+for row in plan['inputs']:
+    path = Path(row['original'])
+    assert path.stat().st_size == row['bytes'] and sha(path) == row['sha256'], path
+    assert 'git-backups/' not in str(path) and 'bac-before-email-rewrite' not in str(path)
+for digest, row in plan['objects'].items():
+    path = R / row['path']
+    assert path.stat().st_size == row['bytes'] and sha(path) == digest, path
+for key in ('contract', 'candidate_tree', 'execution_subtrees', 'documents', 'package_accounting'):
+    assert receipt[key] == subject[key], key
+assert receipt['component_receipts'] == subject['required_components']
+for row in documents['files']:
+    assert sha(R / row['destination']) == row['original_sha256']
+    source = W / row['path']
+    assert sha(source) == row['sha256'] and source.stat().st_size == row['bytes']
+
+copy_new(E / 'root-selection-plan-v1.json', OUT / 'selection-plan.json')
+copy_new(E / 'root-assembly-report-v1.json', OUT / 'assembly-report.json')
+copy_new(Path(__file__), OUT / 'root-publication-helper.py.txt')
+write_new(OUT / 'final-seal-comparison.json', dict(
+    status='PASS; root final receipt agrees with frozen independently reviewed subject',
+    receipt_sha256=sha(E / 'root-terminal-receipt-v1.json'),
+    subject_sha256=sha(E / 'root-qualification-subject-v1.json'),
+    review_sha256=sha(E / 'independent-terminal-review-v1/review.md'),
+    candidate_tree=manifest['candidate_tree'],
+    selected_input_rehash_count=len(plan['inputs']), selected_object_rehash_count=len(plan['objects'])))
+applied = []
+for row in documents['files']:
+    destination = R / row['destination']
+    destination.write_bytes((W / row['path']).read_bytes())
+    assert sha(destination) == row['sha256']
+    applied.append(dict(destination=row['destination'], before=row['original_sha256'], after=row['sha256']))
+write_new(OUT / 'root-document-application-v1.json', dict(
+    status='Exact root-approved postimages applied; source execution identity remains separate',
+    document_approval_sha256=sha(E / 'root-reviewed-document-postimages-v1/ROOT-DOCUMENT-REVIEW-v1.json'),
+    applied=applied, expected_execution_subtrees=plan['execution_subtrees']))
+public = {k: plan[k] for k in ('checkpoint_id', 'series', 'interval', 'contract', 'catalog',
+    'required_components', 'review_subject', 'candidate_manifest', 'receipt', 'base_commit',
+    'candidate_tree', 'execution_subtrees', 'inputs', 'objects')}
+public.update(schema='bac-checkpoint-publication-v1', round=133,
+    previous_record=plan['previous_checkpoint'], selection_plan=reference(OUT / 'selection-plan.json'),
+    prepared_at_utc=datetime.now(timezone.utc).isoformat(),
+    status='UNRELEASED WIP; bounded diagnostic/POP repair and P0/P3 tooling reviewed; full BAC and global gates open',
+    package_accounting=receipt['package_accounting'], metrics=plan['metrics'],
+    assembly_report=reference(OUT / 'assembly-report.json'),
+    root_final_seal_comparison=reference(OUT / 'final-seal-comparison.json'),
+    publication_source_guard=reference(OUT / 'root-document-application-v1.json'),
+    publication_helper=reference(OUT / 'root-publication-helper.py.txt'),
+    summary='R133 selected POP25 PASS; R132 owns133 ordinary C1,7 isolated poison and36 independent PASS with12 fork warnings. Mypy12FAIL retained. Full owner/integration/coverage/slow/CUDA gates remain required. P0/P3 tooling separately bounded; live P2 work excluded.',
+    publication=dict(existing_branch='project-recovery-bac-2026-11-01',
+        prior_remote_sha_verified_before_publication=manifest['base_commit'],
+        method='Exact remote SHA and actual CI checked after authorized push, never inferred from assembly.',
+        no_new_branch_or_worktree=True, no_PR_or_merge=True),
+    metadata_limitations=['R128 original pace PASS lacks original postflight; later executions have their own identity.',
+        'Missing original job UTC/PID observations remain unavailable; outer launch observations stay separate.',
+        'Historical child witnesses retain original fields; actual spec/process/source association independently verified.',
+        'Same-byte R132 C1 evidence is not a new R133 execution.',
+        'Actual CUDA UNRUN; future server access and topology unknown.'])
+public_path = R / 'docs/remediation/bac/evidence/wave35-wip-23.json'
+write_new(public_path, public)
+chain = read(CHAIN)
+chain['entries'].append(dict(id=public['checkpoint_id'], manifest=reference(public_path),
+    previous_record=public['previous_record'], previous_catalog_entry='wave35-wip-22',
+    identity=dict(evidence_base_commit=public['base_commit'], evidence_candidate_tree=public['candidate_tree'],
+        execution_subtrees=public['execution_subtrees']), status=public['status'],
+    packet='Full failed-step diagnostics and standalone POP cleanup', round=133, receipt_pointer='#/receipt',
+    package_accounting=receipt['package_accounting'], qualified_progress='28 qualified / 38 remaining / 66 original packages unchanged',
+    selection_plan=public['selection_plan'], publication='WIP checkpoint; exact remote/CI verification separate'))
+chain['current_local_candidate'] = public['candidate_tree']
+chain['current_checkpoint'] = dict(reference(public_path), candidate_tree=public['candidate_tree'],
+    publication='WIP checkpoint; exact remote/CI verification separate')
+chain['latest_verified_remote_publication_at_assembly'] = 'wave35-wip-22'
+chain['latest_verified_remote_commit_at_assembly'] = manifest['base_commit']
+CHAIN.write_text(json.dumps(chain, indent=2) + '\n')
+paths = manifest['changed_paths'] + [x['destination'] for x in documents['files']] + [
+    str(CHAIN.relative_to(R)), str(public_path.relative_to(R)), str(OUT.relative_to(R))]
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+publication_tree = git('write-tree')
+for path, expected in public['execution_subtrees'].items():
+    assert git('rev-parse', publication_tree + ':' + path) == expected, path
+assert subprocess.run(['git', 'diff', '--quiet'], cwd=R).returncode == 0
+staged = git('diff', '--cached', '--name-only').splitlines()
+assert all(p in paths or p.startswith(str(OUT.relative_to(R)) + '/') for p in staged)
+write_new(E / 'root-publication-stage-v1.json', dict(status='PASS; exact approved staged publication, not yet committed/pushed',
+    manifest=reference(public_path), publication_tree=publication_tree,
+    execution_subtrees=public['execution_subtrees'], staged_file_count=len(staged), no_new_branch_or_worktree=True))
+print(json.dumps(dict(manifest=reference(public_path), publication_tree=publication_tree, staged_files=len(staged))))

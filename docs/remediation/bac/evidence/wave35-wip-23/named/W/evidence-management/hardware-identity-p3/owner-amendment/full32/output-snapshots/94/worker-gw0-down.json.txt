@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-14T09:32:01.521858Z",
+  "controller_start": {
+    "bytes": 8598,
+    "path": "/tmp/bac-p3-inert-zieyq_zq/output/attempt/job/process-p-6b23e550759692ee3e84c57d14116bb6f38df4897e6273d9893847343c0ce10d-start.json",
+    "sha256": "047dcb747023a2c1957600154bd94835dc5be6c4944f721856d5cc997b6e4cfa"
+  },
+  "error": "",
+  "phase": "down",
+  "predecessor_start": [],
+  "prior_lifecycle": [
+    {
+      "bytes": 1548,
+      "path": "/tmp/bac-p3-inert-zieyq_zq/output/attempt/job/worker-gw0-configure.json",
+      "sha256": "1b42f8cd110b9f4fe0281d27b761077789449ecf22eb40453baf5afa5046366a"
+    }
+  ],
+  "process_start": [
+    {
+      "bytes": 8193,
+      "path": "/tmp/bac-p3-inert-zieyq_zq/output/attempt/job/process-p-3f9d607777bda49778dd3a9bfdb11bdf9712a85c56b944f1d2c68bbf1f8bf753-start.json",
+      "sha256": "5526b29808855afdf5094586ff29719552826d030be8898ee74fe0a30b83dd2b"
+    }
+  ],
+  "role_id": "workers",
+  "schema": "bac-hardware-worker-lifecycle-v1",
+  "worker_identity": {
+    "mainargv": [
+      "/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest/__main__.py",
+      "-c",
+      "/dev/null",
+      "--rootdir",
+      "/workspace/bac-review-2026-11-01/qualification",
+      "--noconftest",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "xdist.plugin",
+      "-p",
+      "test_bac_hardware_identity_v1",
+      "-p",
+      "bac_hardware_identity_v1",
+      "--bac-identity-policy",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/full32/tmp/test_pytest_controller_workers1/policy.json",
+      "--bac-identity-policy-sha256",
+      "6df0c2aacf9e9bb2de2e0f47dcf5f0aacba8275608edbee90cd57bef1eb670c5",
+      "-q",
+      "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_job",
+      "-n",
+      "1",
+      "--max-worker-restart",
+      "1"
+    ],
+    "testrunuid": "85c5f77aa7d54480ace36643320f2735",
+    "workercount": 1,
+    "workerid": "gw0"
+  }
+}

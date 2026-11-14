@@ -1,22 +1,19 @@
 # Current runtime/BANK parent custody component contract
 
-2026-11-14. Source-verified component contract, at R122 below.
-This describes implemented component APIs; full C1 acceptance remains open.
-The required owner regression gate retains 215 failures; mypy has 15 diagnostics.
-ENV/POP/cohort/recurrent/runner integration remains required. No CUDA hardware
-qualification or whole-parent completion guarantee is supplied by this document.
+2026-11-14. Source-verified component contract at R133. Full C1 acceptance remains open. R121 owner-suite 215 failures are historical; current R133 global mypy fails with 12 diagnostics in two files. Actual CUDA is UNRUN.
 
 ## Exact source
 
 | Source under repository root | Lines | SHA256 |
 | --- | ---: | --- |
-| src/townlet/config/exploration_policy.py | 1313 | 50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9 |
-| src/townlet/exploration/scoped_curiosity.py | 1443 | 55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4 |
+| src/townlet/config/exploration_policy.py | 1343 | 5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363 |
+| src/townlet/exploration/scoped_curiosity.py | 1492 | 110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c |
 | src/townlet/exploration/parent_custody.py | 239 | 1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f |
-| tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py | 854 | ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc |
+| tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py | 1348 | 7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872 |
+| src/townlet/population/vectorized.py | 3169 | 7f02f08359fa15aaa713e8e7221142d130f560cd96cea13334c64c54b088ee8a |
+| tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py | 900 | bbfdc1e8d60a609de6dacf7b68c0d6cb7e014df308dddddde5698ad2bf7fd673 |
 
-R122 manifest SHA256: `6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e`;
-candidate tree: `7d3be1eeda87015e939f1dd90275b05a1586676b`.
+R133 manifest SHA256: `6a29f0a6d8111dbfcddaf90652230a8290d8370864d6dbbead279c481f5a6b58`; candidate tree: `0f9f3305b637c0d0f6b2a24c50eef5e6af5a4592`. R132 results for 133 ordinary cases, seven isolated poison controls and 36 independent cases retain their own candidate identity; equal supplier/test bytes do not assert a new R133 execution. All 25 selected POP cases pass at R133 with full postflight custody.
 
 ## Public APIs and lifetime
 
@@ -78,7 +75,7 @@ forwarding followed only by preallocated runtime state/revision/handle assignmen
 ## Episode quarantine is a distinct existing operation
 
 Runtime `quarantine_episode(*, accepted, reason)` forwards reason unchanged.
-BANK lines 931–939 authenticate accepted first, then accept only exact-str
+BANK authenticates accepted first, then accepts only exact-str
 `empty_participation` or `runtime_failure`. An identical accepted/reason pair is
 idempotent; a changed pair refuses. A new valid pair sets local failure and
 quarantine and advances mutation revision; runtime forwarding invalidates its
@@ -94,3 +91,13 @@ Conditional raw native/storage routes, complete device-prefix inventory, true
 outer-owner health/publication, and required failed owner assertions remain open.
 No compatibility adapter, fabricated authority, implicit recovery or scope waiver
 is part of this component contract.
+
+## Complete diagnostic export and standalone POP cleanup
+
+Runtime and BANK expose generic `diagnostic_state()`. Runtime returns `exploration-runtime-diagnostic-v1` with nested `curiosity-bank-diagnostic-v1`; the existing failure-only API retains its distinct schema and failure requirement. Generic `failure_reason=None` describes actual locally available BANK state, including initial state without an invented accepted token. `runtime_failure` requires authenticated ordinary local quarantine. These labels do not assert whole-run health. Empty participation, pending completion, missing authentication, monotonic own-completion uncertainty, poison and custody restrictions still refuse. Existing parent binding, one-call forwarding permits, callback guards and lock order remain in force.
+
+The payload retains fresh complete native state, gradients, RNG, cursors, caches, step and completion history. Private per-world native `healthy=False` remains admissible under its native contract; shared failed native capture still refuses. Diagnostic export neither heals failure nor grants recovery. Runtime's restore parser rejects generic/failure diagnostic runtime schemas and nested diagnostic BANK payloads; BANK's supported prepare-restore and private-initialization receivers reject both BANK diagnostic schemas before cohort creation. Opaque installs still require retained identity handles. This describes those supported receiver boundaries, not a nonexistent runtime private-initialization API.
+
+POP preserves its healthy `checkpoint_state()` route, explicit proven failed route, all twelve outer fields and evaluation order. The failed route uses generic `diagnostic_state()` so an available BANK can be reported truthfully after a different POP failure. Standalone step cleanup retains actual failure/completion evidence. Complete payload comparison, fresh receiver failed-progress refusal and capture sentinel identity remain required and are exercised by the bounded POP selection. Diagnostic transport cannot resume failed progress. Two R133 return casts change typing only; no fallback, cached subset or exception swallowing is introduced.
+
+Source-review basis is the R131 independent producer review (`245f090945f240a57122ed404979761e524681261394efe42dd55ea62bc8a6e8`), fresh R132 POP review and R133 typing addendum (`ecdb4e5098ae04d3e98e0d2d610b39149722467d298ab942d94c521f9b12fdeb`). These component reviews are not the independent terminal checkpoint review. R132 retains 12 intentional fork DeprecationWarnings. R128's missing original postflight stays explicit; later POP reruns do not rewrite historical custody. Package accounting remains 28 qualified / 38 remaining / 66 total.

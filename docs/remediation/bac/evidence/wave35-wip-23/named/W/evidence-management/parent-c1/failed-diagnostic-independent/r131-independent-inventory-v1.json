@@ -1,0 +1,25 @@
+{
+  "src/townlet/config/exploration_policy.py": {
+    "sha256": "5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363",
+    "lines": 1343
+  },
+  "src/townlet/exploration/scoped_curiosity.py": {
+    "sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c",
+    "lines": 1492
+  },
+  "src/townlet/exploration/parent_custody.py": {
+    "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f",
+    "lines": 239
+  },
+  "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": {
+    "sha256": "7102dd35e36481713b24fc2ec37e242e8d00d2ee9bc958db018ba89dd5638872",
+    "lines": 1348
+  },
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/failed-diagnostic-independent/test_r127_diagnostic_independent.py",
+    "lines": 159,
+    "sha256": "127ef1d5bab81e0de8f3bc5fb2fdad5653717e7beb8b030c90747b229bf361f5"
+  },
+  "total_lines": 4581,
+  "body_count": 5
+}

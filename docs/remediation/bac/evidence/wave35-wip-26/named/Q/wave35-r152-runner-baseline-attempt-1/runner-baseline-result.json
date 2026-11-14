@@ -1,0 +1,27 @@
+{
+  "name": "runner-baseline",
+  "exit_code": 1,
+  "seconds": 14.939171385020018,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r152-runner-baseline-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r152-runner-baseline-attempt-1/runner-baseline.log",
+  "sha256": "7167d4d7bacd04054e7f32fc6e37c891b37832db957c0dabb658f32455dee7d6",
+  "candidate_tree": "8affc41158ae70bd3e2a43cc7cd619a1f7d90a9a",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "manifest_sha256": "b8faeb9883148f64e1e920925239e0aac3a95d16a5d11e95e0c59cac1c3222b8",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: 'VectorizedPopulation' object has no attribute '_get_current_intrinsic_weight_value'\n    Final checkpoint also failed: ValueError('Boundary restore requires a fresh receiving population')",
+  "candidate_tree": "ba27ba9ae592a00a85041bac98a169dbc8ac885c"
+}

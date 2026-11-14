@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "f19433d099271efa6ed006535c2e0a33db2bf760",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rnd_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: build_curriculum() got an unexpected keyword argument 'max_steps_per_episode'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "ba27ba9ae592a00a85041bac98a169dbc8ac885c",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rnd_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'VectorizedPopulation' object has no attribute '_get_current_intrinsic_weight_value'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

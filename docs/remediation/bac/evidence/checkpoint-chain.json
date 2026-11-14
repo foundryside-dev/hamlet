@@ -6,7 +6,7 @@
     "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
   },
   "chain_semantics": "Natural publication-label order; links authenticate exact checkpoint bytes, not inferred Git ancestry or current-source equivalence. Missing wave labels are not synthesized.",
-  "current_local_candidate": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "current_local_candidate": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
   "entries": [
     {
       "artifact_checks": {
@@ -1991,15 +1991,55 @@
         "sha256": "07def2ecd35cba56f4b9528774ee15377086211332d2db5214d013823ae2b34c"
       },
       "publication": "WIP checkpoint; exact remote/CI verification separate"
+    },
+    {
+      "id": "wave35-wip-26",
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-26.json",
+        "sha256": "5e778dd2efe4b620419ef0ed5a29634c0c5309a2fe68e07477b5279ec97e2ad7",
+        "bytes": 494434
+      },
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-25.json",
+        "sha256": "b6a246fdb0737c802972412e8b61590ea1fe0ea3af8857899e725ac0061aa5f7"
+      },
+      "previous_catalog_entry": "wave35-wip-25",
+      "identity": {
+        "evidence_base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+        "evidence_candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "fe9e9f2cde4695272462b3830ac5a25fc4d85433",
+          "tests": "3354675c33c958d666a6beded4cfbeb67172b5e0"
+        }
+      },
+      "status": "ACTIVE WIP; partial checkpoint, PW04 and final gates open",
+      "packet": "R160 A61PASS and separate initial POP3PASS. Runner acceptance remains failed at latest R155 execution. B/C RED preserved. Seven poison children and mypy13/final gates open. Original accounting28/38/66 unchanged.",
+      "round": 160,
+      "receipt_pointer": "#/receipt",
+      "package_accounting": {
+        "qualified": 28,
+        "remaining": 38,
+        "total": 66
+      },
+      "qualified_progress": "28 qualified /38 remaining /66 original packages unchanged",
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-26/selection-plan.json",
+        "sha256": "58a3bded28863d17e7c545895cab64806f2f5a1d2f73e26a0617bfae763607a4",
+        "bytes": 594877
+      },
+      "publication": "WIP checkpoint; exact remote/CI verification separate"
     }
   ],
-  "latest_verified_remote_publication_at_assembly": "wave35-wip-24",
+  "latest_verified_remote_publication_at_assembly": "wave35-wip-25",
   "current_checkpoint": {
-    "path": "docs/remediation/bac/evidence/wave35-wip-25.json",
-    "bytes": 55362771,
-    "sha256": "b6a246fdb0737c802972412e8b61590ea1fe0ea3af8857899e725ac0061aa5f7",
-    "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+    "path": "docs/remediation/bac/evidence/wave35-wip-26.json",
+    "sha256": "5e778dd2efe4b620419ef0ed5a29634c0c5309a2fe68e07477b5279ec97e2ad7",
+    "bytes": 494434,
+    "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
     "publication": "WIP checkpoint; exact remote/CI verification separate"
   },
-  "latest_verified_remote_commit_at_assembly": "6477ff4efdadaf33955c0096cb1cf27a0d348d65"
+  "latest_verified_remote_commit_at_assembly": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e"
 }

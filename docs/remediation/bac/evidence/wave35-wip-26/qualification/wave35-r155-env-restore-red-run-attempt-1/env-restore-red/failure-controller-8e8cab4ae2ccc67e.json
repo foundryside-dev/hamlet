@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_failed-True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'",
+  "candidate_tree": "a37cf18fcebb24c6c34165fafa4df6876e5494c7"
+}

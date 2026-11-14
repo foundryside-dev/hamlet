@@ -1,6 +1,24 @@
 # BAC implementation status
 
-**PAUSED at the user’s request.** No further implementation or runtime is authorized by this checkpoint. See the [pause handoff](PAUSE-HANDOFF-WIP25.md) for the finite cut, exact pins, retained failures and explicit resume sequence.
+**ACTIVE — resumed by the user after the independent investigation.** PW04 real-runner checkpoint/restore/continued-learning is the controlling acceptance target. WIP25 remains a historical pause checkpoint; it is not the current authorization state.
+
+## 2026-11-14 — WIP26: runner integration and composed-restore prerequisites
+
+The [authoritative record](evidence/wave35-wip-26.json) and [selection plan](evidence/wave35-wip-26/selection-plan.json) retain the finite R149–R160 partial work and failures; this checkpoint does not close PW04. Terminal execution tree is `39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee`, based on `f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e`. Publication documentation is a separate postimage, not a replacement for executed source identity.
+
+The runner now transports explicit authored world identity, constructs the selected exploration runtime and genuine owners, enters authenticated episodes, and commits real completion effects before releasing a boundary. Checkpoint numbering uses completed-batch counts. The missing `test_shared_runner_checkpoint_still_roundtrips` is authored and included alongside the original native runner test. Their latest execution, R155, reached `released-completed` but failed a repeated checkpoint flush. That flush is repaired; native save/restore composition is still missing, and neither runner acceptance is claimed passing.
+
+C3 packet A adds source-issued prepared-world seals and pure currentness validation. R156 records 52 focused passes. R159 records nine independently authored Astra probes passing; the same 12-case selection also contains the three repaired initial POP/replay regressions, including actual next-learning-update continuation. These distinct scopes are not summed into a whole-programme total. After the type-only repair, R160 reran the 52 focused and nine independent cases together: 61 passed. Its separate initial replay selection passed all three cases again. These reruns overlap earlier results. A has bounded independent approval; later C changes to its helper require fresh review.
+
+Replay preparation now constructs a genuine offside owner, preserves receiving archives through real transport, and issues/installs each handle on that same owner with explicit lineage. It no longer copies locks/opaque custody or transfers a prepared handle between owners. This repairs the three R148 failures without weakening bound-owner replacement guards. The R158 current runtime custody selection records 133 passes and seven explicit fresh-poison-child skips; the 20 earlier fixture failures were repaired by binding ENV and runtime to the same authentic operation. The seven skipped controls remain required.
+
+C3 B/C are still deliberate RED: R159 records 18 non-poison missing-API failures and one isolated missing-observer failure before the poison injection. These tests construct real producers, but are component controls, not native owner attestations. Approved implementation follows this checkpoint. The actual bound native path must preserve registered owners, compose genuine world/runtime/replay state, and retain an owned last-lawful INITIAL/COMPLETED snapshot for interruption.
+
+R157 is UNRUN after a static fixture-import failure; R158 retains the independent probe's WeakSet comparison assertion failure, corrected for R159. Earlier constructor, capture, pre-execution and verification failures remain recorded. R159 global typing found 41 errors and the defaults ratchet found 602 against a ceiling of 600. Real component annotations/entry checks, an ENV type annotation and explicit computational branches repaired 28 type errors and both added ratchet violations. R160 global Ruff, scoped Black and defaults at the unchanged ceiling of 600 pass. Global mypy still fails with 13 errors: six oracle callers, six existing replay-conversion calls and the required UnifiedServer roster migration. Default/full suites, coverage, slow/learning and hardware gates remain unqualified here. No CUDA or offered-server result is claimed.
+
+**28 qualified / 38 remaining / 66 original packages remains unchanged.** Next: implement and independently verify B/C, stable-owner native publication and runner artifact composition; make both real runner witnesses and deep-corruption refusal pass; migrate affected current callers; complete required gates and fresh package review. Remote publication and CI observations are separate from this execution checkpoint.
+
+
 
 ## 2026-11-14 — WIP25 pause checkpoint: R146–R148 manual physical component
 

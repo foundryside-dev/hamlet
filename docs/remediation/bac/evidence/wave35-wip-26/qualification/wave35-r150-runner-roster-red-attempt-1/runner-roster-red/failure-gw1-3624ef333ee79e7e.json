@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_runner_world_roster.py::test_runner_persists_and_reuses_exact_authored_roster",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "E   TypeError: DemoRunner.__init__() got an unexpected keyword argument 'world_roster'",
+  "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259"
+}

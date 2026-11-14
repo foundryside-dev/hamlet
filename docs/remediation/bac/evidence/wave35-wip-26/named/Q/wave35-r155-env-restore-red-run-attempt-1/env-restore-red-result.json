@@ -1,0 +1,31 @@
+{
+  "name": "env-restore-red",
+  "exit_code": 1,
+  "seconds": 36.244935031980276,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r155-env-restore-red-run-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r155-env-restore-red-run-attempt-1/env-restore-red.log",
+  "sha256": "f7eeca5298bf1cb4b8e49ab8ed1cd8f7b6f689b6c23e2b247eca51f5f8502ea7",
+  "candidate_tree": "a37cf18fcebb24c6c34165fafa4df6876e5494c7",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "manifest_sha256": "642a775a06ee092588ac19c7a54f8e33933623015394c9e98c98f44fe16d7127",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

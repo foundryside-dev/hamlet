@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_copied_foreign_and_replaced_payload_preparations_have_no_authority",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "E   AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'",
+  "candidate_tree": "a37cf18fcebb24c6c34165fafa4df6876e5494c7"
+}

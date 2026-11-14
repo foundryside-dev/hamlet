@@ -1,0 +1,128 @@
+{
+  "status": "ROOT EXACT-BYTE ALIASES; NOT RECONSTRUCTED EXECUTION RECORDS",
+  "aliases": [
+    {
+      "original_path": "/tmp/bac-r149-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r149-capture.log",
+        "bytes": 8271,
+        "sha256": "a57f89c2e331eb59e119482f2be9acba51745b1e5119365f9512ed21aef4fab6"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r150-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r150-capture.log",
+        "bytes": 8344,
+        "sha256": "f356c736ede1f51e8b22f3f7dedb54ae152cb3225c8f5f22dfb011723aff1f24"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r151-capture-retry.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r151-capture-retry.log",
+        "bytes": 8344,
+        "sha256": "cb68587d62bbffa2599ead10279fdfeb9a11b2fd9cee19252ead42708ae5cf72"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r151-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r151-capture.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r152-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r152-capture.log",
+        "bytes": 8344,
+        "sha256": "dbfde79b286c908d44eef6574be360c7132d7fd6d1ad037853aa577925069fa7"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r154-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r154-capture.log",
+        "bytes": 8344,
+        "sha256": "85c829185149dec16b60f947b2bbdd73e734106d65bdc126044b37005f22892f"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r155-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r155-capture.log",
+        "bytes": 8417,
+        "sha256": "2a6deac932370b56326179c1aa2a7609906147c92122b8849e3ac0eb72e352ec"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r156-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r156-capture.log",
+        "bytes": 8417,
+        "sha256": "b0f5119989052696aef83c3f740e088e36e3cc21092ca02008c362040020fa0d"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r157-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r157-capture.log",
+        "bytes": 8502,
+        "sha256": "2ce683829e7a2eefd8a45c2efcce179d6a19325833688dfd27529c0038489fa2"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r158-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r158-capture.log",
+        "bytes": 8502,
+        "sha256": "f62b86c1297973c5d0e7b1cbd43c411fc45a0ea9de140727eb910181b5abb5a3"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r159-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r159-capture.log",
+        "bytes": 8718,
+        "sha256": "75b227a6e4e1a887242a8bc3b8c1b1eb69a9534c2458da4ddc41f11e4ce0f507"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    },
+    {
+      "original_path": "/tmp/bac-r160-capture.log",
+      "alias": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r160-capture.log",
+        "bytes": 8718,
+        "sha256": "da0b5be8ff1cdcf462c936879527ed12e6f436c67f72b5c3eceb9149f6602fed"
+      },
+      "meaning": "Exact retained stdout bytes only; empty files do not establish successful execution or recover missing stderr."
+    }
+  ],
+  "limitations": [
+    "Missing original capture/static/verifier stderr or logs remain unavailable; no inferred timestamps or recreated original records."
+  ]
+}

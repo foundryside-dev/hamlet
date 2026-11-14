@@ -1,0 +1,57 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [306 items]
+
+........................................................................ [ 23%]
+.FFFFFFF.F...F..F.F.FF.F.F..F.F...F...F..F.............................. [ 47%]
+...............................................................sssss.... [ 70%]
+...........................................s............................ [ 94%]
+........s.........                                                       [100%]
+=================================== FAILURES ===================================
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-shared-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-shared-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-shared-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-per_world-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-per_world-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[all-per_world-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-shared-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-shared-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-shared-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-shared-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-shared-icm]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-per_world-none]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-per_world-count_based]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-per_world-rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-per_world-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-per_world-icm]
+================== 20 failed, 279 passed, 7 skipped in 48.56s ==================

@@ -14,7 +14,7 @@ from numbers import Number, Real
 from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, cast
-from weakref import WeakValueDictionary
+from weakref import WeakSet, WeakValueDictionary
 
 import torch
 
@@ -2150,6 +2150,10 @@ class VectorizedHamletEnv:
         self._world_frozen: WorldRecord | None = None
         self._world_cursors = dict.fromkeys(ids, 0)
         self._world_records: WeakValueDictionary[int, WorldRecord] = WeakValueDictionary()
+        # Composition owns revocation/terminal transitions; the pure preparation
+        # predicate must never grant currentness after either has been recorded.
+        self._world_restore_revoked: WeakSet[WorldRecord] = WeakSet()
+        self._world_restore_terminal = False
         self._world_equal: dict[str, WorldRecord] = {}
         self._world_bindings: dict[int, dict[str, Any]] = {}
         self._world_authority: WorldBoundaryAuthority | None = None
@@ -2970,7 +2974,7 @@ class VectorizedHamletEnv:
             world_ids=destination,
             world_episode_seqs=tuple(prepared["accepted_episode_seqs"][world_id] for world_id in destination),
         )
-        return self._record(
+        record = self._record(
             "prepared_restore",
             {
                 "state": prepared,
@@ -2978,6 +2982,8 @@ class VectorizedHamletEnv:
                 "destination_vfs_context": VFSRandomness(context=context).state(),
             },
         )
+        self._env_custody._seal_prepared_restore(record)
+        return record
 
     @env_guard
     def install_world_restore(self, *, prepared: WorldRecord, release: WorldRecord) -> WorldRecord:

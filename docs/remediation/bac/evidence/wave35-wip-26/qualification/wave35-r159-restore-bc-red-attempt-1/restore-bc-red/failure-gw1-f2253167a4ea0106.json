@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_guard_refusal_seals_first_attempt_but_preserves_lawful_standalone_retry[bank]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "E   AttributeError: 'CuriosityBank' object has no attribute 'restore_installation_outcome'",
+  "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83"
+}

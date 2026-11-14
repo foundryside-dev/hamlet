@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_actual_install_result_survives_consumption_and_read_is_not_an_operation[per_world-runtime]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: 'ExplorationRuntime' object has no attribute 'restore_installation_outcome'",
+  "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83"
+}

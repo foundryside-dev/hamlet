@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "E   ValueError: operation is unavailable in world phase released-completed",
+  "candidate_tree": "a37cf18fcebb24c6c34165fafa4df6876e5494c7"
+}

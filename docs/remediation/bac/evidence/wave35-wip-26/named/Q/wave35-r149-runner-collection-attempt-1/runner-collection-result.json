@@ -1,0 +1,28 @@
+{
+  "name": "runner-collection",
+  "exit_code": 0,
+  "seconds": 5.959296373999678,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r149-runner-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r149-runner-collection-attempt-1/runner-collection.log",
+  "sha256": "047c25c43317f176c82712ec34eba631effadf66087fc301a56ce2c9caf14af9",
+  "candidate_tree": "6170b491a487243871e528070ae326639bbcbc42",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "manifest_sha256": "7999cf0066297aa81591df5ae4de169b2f7d1bd99f638500fa86caf0907b5aa3",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

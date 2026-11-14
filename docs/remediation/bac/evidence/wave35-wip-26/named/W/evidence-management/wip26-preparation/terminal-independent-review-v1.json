@@ -1,0 +1,73 @@
+{
+  "schema": "bac-independent-terminal-review-v1",
+  "producer": "/root",
+  "delegated_draft_producer": "/root/bac_astra_wip23_closed_evidence",
+  "reviewer": "/root/bac_independent_root_cause",
+  "independent": true,
+  "independence_basis": "Reviewer authored neither frozen packet nor application changes/tests/execution records; distinct independent terminal metadata review. Earlier RCA remains unchanged.",
+  "disposition": "APPROVE BOUNDED PUBLICATION",
+  "scope": "Finite R149-R160 mixed-result durability only; no PW04/package/fullBAC/hardware/source acceptance of unseen bodies",
+  "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "reviewed_subject": [
+    {
+      "root": "W",
+      "path": "wave35/r160-candidate.json",
+      "sha256": "de9422382e5e2345b8fb216fb0c766dc610e10ce29631acd05121ecd33405528",
+      "bytes": 217861
+    },
+    {
+      "root": "W",
+      "path": "wave35/WIP26-QUALIFICATION-SUBJECT-v1.json",
+      "sha256": "76a1d874302519bbfad1af944d12f0aea955e02379cffb83a5de18edd5147e7d",
+      "bytes": 12480
+    },
+    {
+      "root": "W",
+      "path": "wave35/WIP26-CHECKPOINT-CONTRACT-v1.json",
+      "sha256": "20485b606d9fa1ab19422812d8972d5ed754abd9e0ea7e103a999f47757b9013",
+      "bytes": 13146
+    },
+    {
+      "root": "W",
+      "path": "wave35/WIP26-PRE-REVIEW-RECEIPT-v1.json",
+      "sha256": "042f906e875dc26e98afe7f9c0fdca0758e166a958f12985263655fb40423c12",
+      "bytes": 443406
+    }
+  ],
+  "report": {
+    "root": "W",
+    "path": "evidence-management/wip26-preparation/terminal-independent-review-v1.md",
+    "sha256": "c0b4a2646a1ae4c039b1995ba12dac70f66255f4a57ecce57607b1c4e91bfa90",
+    "bytes": 7796
+  },
+  "verification": {
+    "checks": 53,
+    "interval_entries": 78,
+    "dependencies": 127,
+    "distinct_rooted_references_hashed": 283,
+    "reference_or_result_mismatches": 0,
+    "tests_executed": false,
+    "git_executed": false,
+    "additional_implementation_test_bodies_inspected": 0
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "unavailable_original_records": [
+    "R157 standalone original Ruff failure log",
+    "R155 original failed index-lock verifier record"
+  ],
+  "limitations": [
+    "Retained root source attestations not independently rederived using Git",
+    "Runtime source/process evidence reviewed, not re-executed",
+    "Packet A code approval attributed to separate source reviewer",
+    "Runner native acceptance remains FAILED at latest R155 execution",
+    "B/C production and native composition remain open",
+    "Seven required fresh poison children remain skipped",
+    "Global mypy13 and final/global/hardware gates remain open",
+    "Root final seal/selection/publication/remote checks still required"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r151-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r151-runner-progress-attempt-2",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "runner-progress",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_runner_world_roster.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r151-runner-progress-attempt-2"
+      ]
+    }
+  ]
+}

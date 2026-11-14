@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   TypeError: AdaptiveIntrinsicExploration.__init__() missing 2 required keyword-only arguments: 'rng' and 'service_clock_unit'",
+  "candidate_tree": "8affc41158ae70bd3e2a43cc7cd619a1f7d90a9a"
+}

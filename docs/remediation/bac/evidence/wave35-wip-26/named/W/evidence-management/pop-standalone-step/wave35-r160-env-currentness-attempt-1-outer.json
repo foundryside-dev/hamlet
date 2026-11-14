@@ -1,0 +1,20 @@
+{
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r160-env-currentness-attempt-1-spec.json",
+  "spec_sha256": "bba3fa1074667974d505d646ab6f63d70955fd9ddaf307ed66244b6105e5d4d2",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r160-env-currentness-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T18:31:23.970125+00:00",
+  "orchestrator_pid": 260769,
+  "script_sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+  "environment_delta": {},
+  "scope": "Outer launcher observations; original job results and import custody remain separate",
+  "launcher_pid": 260775,
+  "launcher_start_ticks": 16039431,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T18:31:47.071871+00:00",
+  "elapsed_seconds": 23.10174257599283
+}

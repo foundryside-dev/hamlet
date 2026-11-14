@@ -1,0 +1,85 @@
+{
+  "components": [
+    {
+      "bytes": 34925,
+      "path": "evidence-management/wip26-preparation/closed-r160-v1/r160-history-component-v1.json",
+      "root": "W",
+      "sha256": "e73e81c99f61ab4cad5bb72fcd8386681c95ce9e7b25bbbf46b7c8171bb98cfc"
+    }
+  ],
+  "exclusions": [
+    "Q scratch",
+    "unnamed fixtures",
+    "future/live rounds",
+    "final contract/receipt/seal",
+    "publication/docs/Spaces"
+  ],
+  "gaps": [
+    {
+      "check": "wave35-r160-restore-collection-attempt-1--restore-collection",
+      "reason": "No unique original named postflight report; original result/log retained, root classification required.",
+      "round": 160
+    }
+  ],
+  "neutral_inventory_helper": {
+    "bytes": 38500,
+    "path": "evidence-management/bac_checkpoint_contract.py",
+    "root": "W",
+    "sha256": "6fc6845ccb73e9bc8a0e24837bf005b0d2cd156107cb8a8341ded9012b7c54b3"
+  },
+  "observed_checks": [
+    {
+      "check": "wave35-r160-env-currentness-attempt-1--env-currentness",
+      "collected": null,
+      "counts": {
+        "passed": 61,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 160,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r160-replay-initial-attempt-1--replay-initial",
+      "collected": null,
+      "counts": {
+        "passed": 3,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 160,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r160-restore-collection-attempt-1--restore-collection",
+      "collected": 64,
+      "counts": null,
+      "kind": "collection",
+      "round": 160,
+      "status": "PASSED"
+    }
+  ],
+  "observed_closed_interval": [
+    160,
+    160
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "preparation_tool": {
+    "bytes": 11236,
+    "path": "evidence-management/wip24-preparation/inventory_closed_rounds_v1.py",
+    "root": "W",
+    "sha256": "2cf1b3799085cd9efdcb99cb736e328f4eca437aef725e1da820768aacc61e1a"
+  },
+  "status": "PREPARATION INVENTORY ONLY; TERMINAL NOT FROZEN",
+  "terminal_round": null
+}

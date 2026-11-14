@@ -1,0 +1,117 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [52 items]
+
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                     [100%]
+=================================== FAILURES ===================================
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:120: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:153: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:151: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:232: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:245: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:272: assert (1 == 1 and False)
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:295: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_prepared_world_currentness.py:206: AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-False-INITIAL]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-False-COMPLETED]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-True-INITIAL]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-True-COMPLETED]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-False-INITIAL]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-False-COMPLETED]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-True-INITIAL]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-True-COMPLETED]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_prepared_check_never_reads_payload_or_enters_device_or_admission_work[False]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_prepared_check_never_reads_payload_or_enters_device_or_admission_work[True]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_phase-bootstrap-ready]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_generation-1]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_generation-False]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_revision-1]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_revision-False]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_seed-43]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_roster-value6]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_identity-different-semantic-identity]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_ids-value8]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_cursors-value9]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_cursors-value10]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_bindings-value11]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_equal-value12]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_busy-True]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_failed-True]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_exploration_bound-True]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_reset_state-value29]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_manual_close_prepared-value30]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_tick-1]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_busy-True]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_failed-True]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_pending-value3]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_accepted-value4]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_accepted-value16]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_state-value5]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_reset-value17]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_stage-completed]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_failure-value7]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_reservation-value18]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_copied_foreign_and_replaced_payload_preparations_have_no_authority
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_expired_foreign_thread_and_operation_bound_scopes_refuse
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_seal_does_not_keep_abandoned_world_preparation_alive
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_vfs_pending-value24]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_release-value19]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_last_closed-value25]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_saved_binding-value26]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_pending-value27]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_closure-value20]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_committed-value28]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_consumers-value22]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_frozen-value21]
+FAILED tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_restored-value23]
+============================= 52 failed in 27.99s ==============================

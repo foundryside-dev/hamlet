@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_bound_component_reward_service_retry[one-per_world-none]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   RuntimeError: Unrelated same-thread RNG reentry is forbidden",
+  "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254"
+}

@@ -1,0 +1,101 @@
+{
+  "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+  "capsules": [
+    {
+      "bytes": 6040,
+      "path": "pw04-closure-progress.md",
+      "root": "W",
+      "sha256": "95db196689aff41dd78857e574829a15a48e20f706d14afbee8363adacafb700"
+    },
+    {
+      "bytes": 7206,
+      "path": "pw04-current-callers.md",
+      "root": "W",
+      "sha256": "4b6888fd59cdbd96dd5923501c53bd34e70f0098bdcf84e2f33c42bde678ba50"
+    },
+    {
+      "bytes": 3161,
+      "path": "pw04-custody-consumer-repair.md",
+      "root": "W",
+      "sha256": "583e9f832a0fa71f8f9cc6ba819ce974b1717de51f55808162a75dd17f50a1ad"
+    },
+    {
+      "bytes": 12947,
+      "path": "pw04-env-controller-api.md",
+      "root": "W",
+      "sha256": "b15b4b59612af6b676f1a59639bbc7930cc40f9e7fffcc9534b96219fe9dc47d"
+    },
+    {
+      "bytes": 19142,
+      "path": "pw04-native-integration-assessment.md",
+      "root": "W",
+      "sha256": "0f9024ef3e9aebeb010baae608c2651ecf06a119dc24c420924ae9bceb1c5d01"
+    },
+    {
+      "bytes": 2414,
+      "path": "pw04-replay-lineage-repair.md",
+      "root": "W",
+      "sha256": "2b1d9bc162a28f70e87d40f35035e5a1b53d7456d9537921158ed507bc3d9681"
+    },
+    {
+      "bytes": 10808,
+      "path": "pw04-replay-native-api.md",
+      "root": "W",
+      "sha256": "1810a1d51b09413e6efc87b7ba442252b8e72697394831ad79d16d287f0c502e"
+    },
+    {
+      "bytes": 5287,
+      "path": "pw04-restore-attempt-c-api.md",
+      "root": "W",
+      "sha256": "c0a04fd363c308be5149e8b392bbeffef1f620017ed11ff0991f0919ad5535bd"
+    },
+    {
+      "bytes": 3953,
+      "path": "pw04-restore-env-a-api.md",
+      "root": "W",
+      "sha256": "b741f4a47d82efc2ee9e4eb1b79f5475a6230b573688e42857be02d5ef3d71c0"
+    },
+    {
+      "bytes": 12091,
+      "path": "pw04-restore-env-a-review.md",
+      "root": "W",
+      "sha256": "e1da60928b45f60c93f650f7242e076c2fc4111dfd447a88806070c8e1c42e4f"
+    },
+    {
+      "bytes": 22448,
+      "path": "pw04-runner-runtime-api.md",
+      "root": "W",
+      "sha256": "d77e6587f93631e3c5d9628686d581e81e254d44b5d881c237b1eaf0e3ef3712"
+    }
+  ],
+  "identity_scope": "R160 inclusion anchor, original per-round source identities retained; unchanged historical results not rerun",
+  "limitations": [
+    "Full native composition/provider-artifact-fresh-runner-next-learning acceptance open",
+    "R159 BC18 and isolated1 failed before intended API/fault; not poison acceptance",
+    "R158 seven required fresh-poison skips remain owed",
+    "R159 mypy41/defaults602 failed;R160 mypy13 failed,defaults600/Ruff/Black passed"
+  ],
+  "static_observations": [
+    {
+      "bytes": 4089,
+      "path": "evidence-management/wip26-preparation/static-r159-v1/ROOT-OBSERVED-RESULTS-v1.json",
+      "root": "W",
+      "sha256": "284c0b354cfb6aaa168192c2e2fe4cb058b4b05a6046c634ba46acd77d1e9a2d"
+    },
+    {
+      "bytes": 3422,
+      "path": "evidence-management/wip26-preparation/static-r160-v1/ROOT-OBSERVED-RESULTS-v1.json",
+      "root": "W",
+      "sha256": "ffbbb36bbd21bb73691288691ee732c7ed2da54fb4fca2762817a4252e2e9975"
+    }
+  ],
+  "status": "R160 A52+independent9 and replay3 passed; runner/native incomplete; BC deliberate RED retained",
+  "supersedes_draft_component_only": {
+    "bytes": 2411,
+    "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83",
+    "path": "evidence-management/wip26-preparation/packet-closed-r149-r159-v2/bounded-component-status-v2.json",
+    "root": "W",
+    "scope": "A source/runtime, partial runner/replay, BC tests RED; no new package",
+    "sha256": "16c0146971e1a6bead1fd9b7387486f9dd04e0a9be4c70e31b2f46c8f27923b7"
+  }
+}

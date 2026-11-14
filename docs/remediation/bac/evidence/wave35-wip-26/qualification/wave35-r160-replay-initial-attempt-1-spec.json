@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r160-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r160-replay-initial-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "replay-initial",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_current_initial_transport_has_complete_exact_ledger",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_initial_pop_roundtrip_preserves_ledger_and_next_real_update",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_initial_install_refuses_roles_bound_after_preparation",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r160-replay-initial-attempt-1"
+      ]
+    }
+  ]
+}

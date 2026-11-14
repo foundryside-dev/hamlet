@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   TypeError: VectorizedPopulation.reset() missing 2 required keyword-only arguments: 'reservation' and 'retired_world_ids'\n\nDuring handling of the above exception, another exception occurred:\nE   RuntimeError: Owned episode lacks its genuine sealed population reading",
+  "candidate_tree": "5d3cbce0b90ec1da405e1faf615862711f31d06b"
+}

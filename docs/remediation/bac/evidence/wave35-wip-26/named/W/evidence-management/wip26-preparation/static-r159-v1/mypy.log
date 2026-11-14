@@ -1,0 +1,56 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/environment/parent_custody.py:152: error: "object" has no attribute "_world_records"  [attr-defined]
+src/townlet/environment/parent_custody.py:160: error: "object" has no attribute "_world_revision"  [attr-defined]
+src/townlet/environment/parent_custody.py:164: error: "object" has no attribute "_world_roster"  [attr-defined]
+src/townlet/environment/parent_custody.py:165: error: "object" has no attribute "_world_seed"  [attr-defined]
+src/townlet/environment/parent_custody.py:166: error: "object" has no attribute "_world_ids"  [attr-defined]
+src/townlet/environment/parent_custody.py:167: error: "object" has no attribute "_world_identity"  [attr-defined]
+src/townlet/environment/parent_custody.py:168: error: "object" has no attribute "_exploration_bound"  [attr-defined]
+src/townlet/environment/parent_custody.py:169: error: "object" has no attribute "_manual_session"  [attr-defined]
+src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Missing named argument "vector_step" for "step" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:128: note: "step" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+src/townlet/population/vectorized.py:698: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:698: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:698: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:698: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:699: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:699: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:699: error: Missing named argument "lineage" for "prepare_archived_import" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:699: note: "prepare_archived_import" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:701: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:701: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:702: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:702: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/demo/runner.py:299: error: "None" has no attribute "completed_outcomes"  [attr-defined]
+src/townlet/demo/runner.py:306: error: "None" has no attribute "clock_ledger"  [attr-defined]
+src/townlet/demo/runner.py:307: error: "None" has no attribute "epsilon"  [attr-defined]
+src/townlet/demo/runner.py:310: error: "None" has no attribute "prepare_episode_outcomes"  [attr-defined]
+src/townlet/demo/runner.py:311: error: "None" has no attribute "prepare_completion"  [attr-defined]
+src/townlet/demo/runner.py:318: error: "None" has no attribute "prepare_episode_close"  [attr-defined]
+src/townlet/demo/runner.py:326: error: "None" has no attribute "freeze_episode_close"  [attr-defined]
+src/townlet/demo/runner.py:328: error: "None" has no attribute "commit_prepared_episode_outcomes"  [attr-defined]
+src/townlet/demo/runner.py:329: error: "None" has no attribute "checkpoint_state"  [attr-defined]
+src/townlet/demo/runner.py:330: error: "None" has no attribute "validate_checkpoint_state"  [attr-defined]
+src/townlet/demo/runner.py:337: error: "None" has no attribute "commit_completion"  [attr-defined]
+src/townlet/demo/runner.py:339: error: "None" has no attribute "commit_episode_outcomes"  [attr-defined]
+src/townlet/demo/runner.py:340: error: "None" has no attribute "clock_ledger"  [attr-defined]
+src/townlet/demo/runner.py:342: error: "None" has no attribute "batch_commit_progress"  [attr-defined]
+src/townlet/demo/runner.py:346: error: "None" has no attribute "checkpoint_state"  [attr-defined]
+src/townlet/demo/runner.py:355: error: "None" has no attribute "epsilon"  [attr-defined]
+src/townlet/demo/runner.py:359: error: "None" has no attribute "sync_exploration_metrics"  [attr-defined]
+src/townlet/demo/runner.py:360: error: "None" has no attribute "current_epsilons"  [attr-defined]
+src/townlet/demo/runner.py:374: error: "None" has no attribute "close_episode"  [attr-defined]
+src/townlet/demo/runner.py:387: error: "None" has no attribute "install_boundary_release"  [attr-defined]
+src/townlet/demo/runner.py:733: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:805: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:928: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/unified_server.py:418: error: Missing named argument "world_roster" for "DemoRunner"  [call-arg]
+src/townlet/demo/unified_server.py:418: note: "DemoRunner" defined in "townlet.demo.runner"
+Found 41 errors in 5 files (checked 201 source files)

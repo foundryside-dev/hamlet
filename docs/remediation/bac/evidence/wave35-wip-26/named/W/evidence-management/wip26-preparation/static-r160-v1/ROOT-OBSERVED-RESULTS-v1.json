@@ -1,0 +1,77 @@
+{
+  "schema": "bac-root-static-observation-v1",
+  "scope": "Nonruntime static checks; source implementation/test subtrees correspond to named candidate, publication documentation is a separate postimage. Not package acceptance.",
+  "observed_at_utc": "2026-11-14T18:33:51.555656+00:00",
+  "round": 160,
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+  "checks": [
+    {
+      "check": "ruff",
+      "exit_code": 0,
+      "status": "PASSED",
+      "log": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/static-r160-v1/ruff.log",
+        "bytes": 19,
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      "started_at": null,
+      "ended_at": null,
+      "duration_seconds": null,
+      "unavailable_reason": "Original direct exec tool calls retained raw log and observed exit code; absolute process timestamps and full wall duration were not recorded. No reconstructed timing or runtime import custody is claimed."
+    },
+    {
+      "check": "black",
+      "exit_code": 0,
+      "status": "PASSED",
+      "log": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/static-r160-v1/black.log",
+        "bytes": 57,
+        "sha256": "46dd2b2515e04d20ad375b8ceb138cc8d9a3f8b3827ab92c626e093f411f32ca"
+      },
+      "started_at": null,
+      "ended_at": null,
+      "duration_seconds": null,
+      "unavailable_reason": "Original direct exec tool calls retained raw log and observed exit code; absolute process timestamps and full wall duration were not recorded. No reconstructed timing or runtime import custody is claimed."
+    },
+    {
+      "check": "mypy",
+      "exit_code": 1,
+      "status": "FAILED",
+      "log": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/static-r160-v1/mypy.log",
+        "bytes": 3561,
+        "sha256": "ccba106998fb3a555c63114a0f12d8094e8de45c41c979c7f9cc825e49c7f216"
+      },
+      "started_at": null,
+      "ended_at": null,
+      "duration_seconds": null,
+      "unavailable_reason": "Original direct exec tool calls retained raw log and observed exit code; absolute process timestamps and full wall duration were not recorded. No reconstructed timing or runtime import custody is claimed."
+    },
+    {
+      "check": "defaults",
+      "exit_code": 0,
+      "status": "PASSED",
+      "log": {
+        "root": "W",
+        "path": "evidence-management/wip26-preparation/static-r160-v1/defaults.log",
+        "bytes": 958,
+        "sha256": "f8ded263e8cd6199bbf5a9003be403963505ee3dd109fb29ae666917891e7a85"
+      },
+      "started_at": null,
+      "ended_at": null,
+      "duration_seconds": null,
+      "unavailable_reason": "Original direct exec tool calls retained raw log and observed exit code; absolute process timestamps and full wall duration were not recorded. No reconstructed timing or runtime import custody is claimed."
+    }
+  ],
+  "commands": {
+    "ruff": ".venv/bin/ruff check .",
+    "black": "git diff --name-only --cached -z -- '*.py' | xargs -0 .venv/bin/black --check",
+    "mypy": ".venv/bin/mypy src/townlet --show-error-codes",
+    "defaults": ".venv/bin/python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt --ratchet .defaults-ratchet",
+    "defaults-diagnostic": "same defaults command with --show-whitelisted"
+  }
+}

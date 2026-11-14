@@ -1,0 +1,32 @@
+{
+  "name": "runtime-custody-owners",
+  "exit_code": 0,
+  "seconds": 43.74816803599242,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "-rs",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r158-runtime-custody-owners-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r158-runtime-custody-owners-attempt-1/runtime-custody-owners.log",
+  "sha256": "d87b0842ecced61b0c0db1c12112ef9dce9e3c47ece504eb204a0c1a7909c701",
+  "candidate_tree": "66e8bff22c06c3afce54fb5b45657fa5d15b2d1d",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "manifest_sha256": "d69f7165b19ebfb150aa27d0a8b761b977c35a0ef3dadf36c01f4ab6fe313a91",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "66e8bff22c06c3afce54fb5b45657fa5d15b2d1d",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_prepared_world_currentness_independent.py"
+  ],
+  "signatures": [
+    {
+      "error": "assert {<weakref at ...7ff6a701c770>} == {WorldRecord(...: (0, 0)})}))}",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness_independent.py::test_record_revocation_is_exact_and_terminal_input_refuses_all",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

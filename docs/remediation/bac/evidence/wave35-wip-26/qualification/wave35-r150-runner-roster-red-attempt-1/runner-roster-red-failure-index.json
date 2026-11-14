@@ -1,0 +1,41 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+  "unique_node_phase_failures": 6,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_runner_world_roster.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: DemoRunner.__init__() got an unexpected keyword argument 'world_roster'",
+      "count": 6,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_world_roster.py::test_runner_refuses_roster_cardinality_before_creating_run_files",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_world_roster.py::test_runner_refuses_invalid_existing_manifest_before_rng_or_storage_mutation[extra]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_world_roster.py::test_runner_refuses_invalid_existing_manifest_before_rng_or_storage_mutation[order]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_world_roster.py::test_runner_refuses_invalid_existing_manifest_before_rng_or_storage_mutation[schema]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_world_roster.py::test_runner_persists_and_reuses_exact_authored_roster",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runner_world_roster.py::test_runner_refuses_invalid_existing_manifest_before_rng_or_storage_mutation[missing]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

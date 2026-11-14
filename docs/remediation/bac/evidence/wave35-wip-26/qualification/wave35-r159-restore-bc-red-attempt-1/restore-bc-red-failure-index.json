@@ -1,0 +1,102 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83",
+  "unique_node_phase_failures": 18,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py",
+    "tests/test_townlet/regressions/bac/test_world_restore_attempt.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'CuriosityBank' object has no attribute 'restore_installation_outcome'",
+      "count": 7,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_genuine_intervening_operation_reports_consumed_no_publication",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_observation_identity_thread_and_weak_lifetime",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_guard_refusal_seals_first_attempt_but_preserves_lawful_standalone_retry[bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_dictionary_publication_fault_is_never_certified_no_publication[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_actual_install_result_survives_consumption_and_read_is_not_an_operation[shared-bank]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_dictionary_publication_fault_is_never_certified_no_publication[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_actual_install_result_survives_consumption_and_read_is_not_an_operation[per_world-bank]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'WorldBoundaryAuthority' object has no attribute 'restore_bank_attempt'",
+      "count": 7,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_real_bank_install_and_component_journal[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_caught_preparation_error_cannot_continue",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_actual_child_publication_then_failure_fences_receiver[world]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_real_bank_install_and_component_journal[True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_actual_child_publication_then_failure_fences_receiver[finalizer]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_early_exit_revokes_only_selected_preparation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_attempt_cannot_be_copied_borrowed_or_reused",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'ExplorationRuntime' object has no attribute 'restore_installation_outcome'",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_actual_install_result_survives_consumption_and_read_is_not_an_operation[shared-runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_runtime_suffix_fault_preserves_actual_successful_bank_outcome",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_guard_refusal_seals_first_attempt_but_preserves_lawful_standalone_retry[runtime]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_actual_install_result_survives_consumption_and_read_is_not_an_operation[per_world-runtime]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

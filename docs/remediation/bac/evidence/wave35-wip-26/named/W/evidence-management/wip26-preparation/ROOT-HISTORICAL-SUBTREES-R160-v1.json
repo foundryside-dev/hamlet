@@ -1,0 +1,24 @@
+{
+  "status": "ROOT GIT OBJECT ATTESTATION; NOT EXECUTION OR PACKAGE ACCEPTANCE",
+  "observed_at_utc": "2026-11-14T18:33:19.823716+00:00",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "rounds": [
+    {
+      "round": 160,
+      "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r160-candidate.json",
+        "bytes": 217861,
+        "sha256": "de9422382e5e2345b8fb216fb0c766dc610e10ce29631acd05121ecd33405528"
+      },
+      "execution_subtrees": {
+        "src": "fe9e9f2cde4695272462b3830ac5a25fc4d85433",
+        "tests": "3354675c33c958d666a6beded4cfbeb67172b5e0",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    }
+  ]
+}

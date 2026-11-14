@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_actual_child_publication_then_failure_fences_receiver[world]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: 'WorldBoundaryAuthority' object has no attribute 'restore_bank_attempt'",
+  "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83"
+}

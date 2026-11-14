@@ -1,0 +1,767 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 211522,
+            "path": "wave35/r150-candidate.json",
+            "root": "W",
+            "sha256": "2816ca00333df9feac4fd7f15adac7527ce860676966b54134131d828dee3e9f"
+          },
+          "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r150-collection-spec.json",
+              "sha256": "cc2e09e422d632527c779b2d87c6b047238778127f5e1040c4f58c606074c203",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r150-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d51d905abdac2e852ea9477c82bd74cdb8cdaf927cfdb1a37fe41a6e6bff3425"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r150-collection-spec.json--unrun",
+          "path": "wave35-r150-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 150,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r150-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r150-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 211522,
+            "path": "wave35/r150-candidate.json",
+            "root": "W",
+            "sha256": "2816ca00333df9feac4fd7f15adac7527ce860676966b54134131d828dee3e9f"
+          },
+          "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r150-owned-spec.json",
+              "sha256": "bc9ae16f9e5adaa283009b5df108a0061797679118cf90db7cd45a99300bbef4",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r150-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d51d905abdac2e852ea9477c82bd74cdb8cdaf927cfdb1a37fe41a6e6bff3425"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r150-owned-spec.json--unrun",
+          "path": "wave35-r150-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 150,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r150-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r150-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 211522,
+            "path": "wave35/r150-candidate.json",
+            "root": "W",
+            "sha256": "2816ca00333df9feac4fd7f15adac7527ce860676966b54134131d828dee3e9f"
+          },
+          "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+          "collected_count": 6,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runner_world_roster.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=line",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r150-runner-roster-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection/identity-controller.json",
+              "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0",
+              "type": "file"
+            },
+            {
+              "bytes": 1048,
+              "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection-result.json",
+              "sha256": "4fe5e2c961e90bcd81914640c40b2690a0cd59d81037e1ea20370665e707e5b7",
+              "type": "file"
+            },
+            {
+              "bytes": 1242,
+              "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection.log",
+              "sha256": "340a4ad49811706ef679af990223e95702043b9a60573fead8fff1b3ba92b4d6",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.71572414599359,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r150-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d51d905abdac2e852ea9477c82bd74cdb8cdaf927cfdb1a37fe41a6e6bff3425"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r150-runner-roster-collection-attempt-1--runner-roster-collection",
+          "log_paths": [
+            {
+              "bytes": 1242,
+              "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection.log",
+              "root": "Q",
+              "sha256": "340a4ad49811706ef679af990223e95702043b9a60573fead8fff1b3ba92b4d6"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 931,
+            "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "b8cfd1475453acd61da9266c8e52bf839a07bc5e8d779a004425b589cfcb56fa"
+          },
+          "path": "wave35-r150-runner-roster-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1048,
+            "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection-result.json",
+            "root": "Q",
+            "sha256": "4fe5e2c961e90bcd81914640c40b2690a0cd59d81037e1ea20370665e707e5b7"
+          },
+          "record_id": "runner-roster-collection",
+          "result": {
+            "bytes": 1048,
+            "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection-result.json",
+            "root": "Q",
+            "sha256": "4fe5e2c961e90bcd81914640c40b2690a0cd59d81037e1ea20370665e707e5b7"
+          },
+          "round": 150,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier_unavailable_reason": "No unique original named postflight report; original result/log retained, root classification required."
+        }
+      ],
+      "check": "wave35-r150-runner-roster-collection-attempt-1--runner-roster-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r150-runner-roster-collection-attempt-1--runner-roster-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 211522,
+            "path": "wave35/r150-candidate.json",
+            "root": "W",
+            "sha256": "2816ca00333df9feac4fd7f15adac7527ce860676966b54134131d828dee3e9f"
+          },
+          "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runner_world_roster.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=line",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r150-runner-roster-red-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 6,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red",
+              "type": "directory"
+            },
+            {
+              "bytes": 404,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-21e4b387c6884ab4.json",
+              "sha256": "5ab711e5ea517a91724932e1eac7fe3ddaed4cedcc7831284f5c30a7da296974",
+              "type": "file"
+            },
+            {
+              "bytes": 372,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-3624ef333ee79e7e.json",
+              "sha256": "7f211e29e1bbbe1365879f60f1ba98a7ad65103c26839cd64e5f24fa8060915d",
+              "type": "file"
+            },
+            {
+              "bytes": 403,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-7f87919ffd71cd21.json",
+              "sha256": "25f689fd4bebe21ed8dda888ba18e3876bbb82b7e93d4eed73e6293e67da3d7b",
+              "type": "file"
+            },
+            {
+              "bytes": 383,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-8b1a1db754a843dc.json",
+              "sha256": "72d4ef92132603afec23d8df9b4c1f6d8e752c032a7adb5c09875891d453ba8d",
+              "type": "file"
+            },
+            {
+              "bytes": 402,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-9361e9ac44f6cf0b.json",
+              "sha256": "a85a767264cf020a9c707365fb0ad8ed8ded040e10109b3b7665e426b5b2a324",
+              "type": "file"
+            },
+            {
+              "bytes": 402,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-f7e8fa329e4d08f6.json",
+              "sha256": "9254b5971f137f7546e4d8194386ee87e17ef28bfd4b34da0f8df3a824971b8e",
+              "type": "file"
+            },
+            {
+              "bytes": 396,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw0-7f87919ffd71cd21.json",
+              "sha256": "25a3676202a7cf711e3f3be453a0eccb516cb8e7f172467dfad2b17e71973241",
+              "type": "file"
+            },
+            {
+              "bytes": 376,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw0-8b1a1db754a843dc.json",
+              "sha256": "f62f223969f011906e3dfb9f7dd377b3f4c636aa6bec2f54ef3136021aeab619",
+              "type": "file"
+            },
+            {
+              "bytes": 395,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw0-9361e9ac44f6cf0b.json",
+              "sha256": "8a40f363c2cadc4a9ef3fe56b49d3a1508e5e6c5e780c84576a02dd5bc1e8081",
+              "type": "file"
+            },
+            {
+              "bytes": 397,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw1-21e4b387c6884ab4.json",
+              "sha256": "4669527d781582ed84f4de535148e7c15e45822f0479d2de2f6edb55cb433ffe",
+              "type": "file"
+            },
+            {
+              "bytes": 365,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw1-3624ef333ee79e7e.json",
+              "sha256": "1253117ef90806e6c91e4a7cd3da496bb5c51731f643c3560e4c1e6a404c0132",
+              "type": "file"
+            },
+            {
+              "bytes": 395,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw1-f7e8fa329e4d08f6.json",
+              "sha256": "442e854afb898d1b10bc846a3e14d8ba8745f0d332d3e2b5e8da9d7ce8fdf2ae",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-controller.json",
+              "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-gw0.json",
+              "sha256": "8beb92246bba29246bb7a9ecc6c152599f8df0e97de1d80a71181a5ef6dc6568",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-gw1.json",
+              "sha256": "3ec87cfdfd7002795305f1560a550379fd70c18fa0bd7ee0898f62c31a7221cd",
+              "type": "file"
+            },
+            {
+              "bytes": 1759,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-failure-index.json",
+              "sha256": "0f8a9a8d3233eebbcf755665ace3e9e5280720ff635a619775b95f31073208c9",
+              "type": "file"
+            },
+            {
+              "bytes": 959,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-negative-custody.json",
+              "sha256": "f84c5cc3f13b41fc35bbf442143d3d10b8a5b404590a02f9d6fbcbe27a61d84d",
+              "type": "file"
+            },
+            {
+              "bytes": 1050,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-result.json",
+              "sha256": "02e012017fcbc4c1e339cbcbf0744c0264311f711d1c663bb413599b2d19eb90",
+              "type": "file"
+            },
+            {
+              "bytes": 2655,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red.log",
+              "sha256": "eb48d6b62ace705b78ad3031ec9cfd645730cd4b770449aa0ba64d00ce704ef4",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 11.758686314016813,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r150-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d51d905abdac2e852ea9477c82bd74cdb8cdaf927cfdb1a37fe41a6e6bff3425"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r150-runner-roster-red-attempt-1--runner-roster-red",
+          "log_paths": [
+            {
+              "bytes": 2655,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red.log",
+              "root": "Q",
+              "sha256": "eb48d6b62ace705b78ad3031ec9cfd645730cd4b770449aa0ba64d00ce704ef4"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 918,
+            "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-red-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "fb11b42241c85648abed44aaaecd7631bf4f3c5dd2cfced595341abfa36faa97"
+          },
+          "path": "wave35-r150-runner-roster-red-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "8beb92246bba29246bb7a9ecc6c152599f8df0e97de1d80a71181a5ef6dc6568"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "3ec87cfdfd7002795305f1560a550379fd70c18fa0bd7ee0898f62c31a7221cd"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1050,
+            "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-result.json",
+            "root": "Q",
+            "sha256": "02e012017fcbc4c1e339cbcbf0744c0264311f711d1c663bb413599b2d19eb90"
+          },
+          "record_id": "runner-roster-red",
+          "result": {
+            "bytes": 1050,
+            "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-result.json",
+            "root": "Q",
+            "sha256": "02e012017fcbc4c1e339cbcbf0744c0264311f711d1c663bb413599b2d19eb90"
+          },
+          "round": 150,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 959,
+            "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-negative-custody.json",
+            "root": "Q",
+            "sha256": "f84c5cc3f13b41fc35bbf442143d3d10b8a5b404590a02f9d6fbcbe27a61d84d"
+          }
+        }
+      ],
+      "check": "wave35-r150-runner-roster-red-attempt-1--runner-roster-red",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r150-runner-roster-red-attempt-1--runner-roster-red"
+    }
+  ],
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_manifest": {
+    "bytes": 211522,
+    "path": "wave35/r150-candidate.json",
+    "root": "W",
+    "sha256": "2816ca00333df9feac4fd7f15adac7527ce860676966b54134131d828dee3e9f"
+  },
+  "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+  "fixture_preflight": {
+    "bytes": 5812,
+    "path": "wave35/r150-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "d51d905abdac2e852ea9477c82bd74cdb8cdaf927cfdb1a37fe41a6e6bff3425"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r150-collection-spec.json",
+      "round": 150,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r150-owned-spec.json",
+      "round": 150,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r150-runner-roster-collection-attempt-1",
+      "round": 150,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r150-runner-roster-collection-attempt-1-spec.json",
+      "round": 150,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r150-runner-roster-red-attempt-1",
+      "round": 150,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r150-runner-roster-red-attempt-1-spec.json",
+      "round": 150,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r150-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r150-collection-spec.json",
+        "sha256": "cc2e09e422d632527c779b2d87c6b047238778127f5e1040c4f58c606074c203",
+        "type": "file"
+      }
+    ],
+    "wave35-r150-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r150-owned-spec.json",
+        "sha256": "bc9ae16f9e5adaa283009b5df108a0061797679118cf90db7cd45a99300bbef4",
+        "type": "file"
+      }
+    ],
+    "wave35-r150-runner-roster-collection-attempt-1": [
+      {
+        "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection/identity-controller.json",
+        "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0",
+        "type": "file"
+      },
+      {
+        "bytes": 1048,
+        "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection-result.json",
+        "sha256": "4fe5e2c961e90bcd81914640c40b2690a0cd59d81037e1ea20370665e707e5b7",
+        "type": "file"
+      },
+      {
+        "bytes": 1242,
+        "path": "wave35-r150-runner-roster-collection-attempt-1/runner-roster-collection.log",
+        "sha256": "340a4ad49811706ef679af990223e95702043b9a60573fead8fff1b3ba92b4d6",
+        "type": "file"
+      }
+    ],
+    "wave35-r150-runner-roster-collection-attempt-1-spec.json": [
+      {
+        "bytes": 803,
+        "path": "wave35-r150-runner-roster-collection-attempt-1-spec.json",
+        "sha256": "39414f8285e5b5543cc85a837f476851aae3b30c73a964981ed20f94eddf4d27",
+        "type": "file"
+      }
+    ],
+    "wave35-r150-runner-roster-red-attempt-1": [
+      {
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red",
+        "type": "directory"
+      },
+      {
+        "bytes": 404,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-21e4b387c6884ab4.json",
+        "sha256": "5ab711e5ea517a91724932e1eac7fe3ddaed4cedcc7831284f5c30a7da296974",
+        "type": "file"
+      },
+      {
+        "bytes": 372,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-3624ef333ee79e7e.json",
+        "sha256": "7f211e29e1bbbe1365879f60f1ba98a7ad65103c26839cd64e5f24fa8060915d",
+        "type": "file"
+      },
+      {
+        "bytes": 403,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-7f87919ffd71cd21.json",
+        "sha256": "25f689fd4bebe21ed8dda888ba18e3876bbb82b7e93d4eed73e6293e67da3d7b",
+        "type": "file"
+      },
+      {
+        "bytes": 383,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-8b1a1db754a843dc.json",
+        "sha256": "72d4ef92132603afec23d8df9b4c1f6d8e752c032a7adb5c09875891d453ba8d",
+        "type": "file"
+      },
+      {
+        "bytes": 402,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-9361e9ac44f6cf0b.json",
+        "sha256": "a85a767264cf020a9c707365fb0ad8ed8ded040e10109b3b7665e426b5b2a324",
+        "type": "file"
+      },
+      {
+        "bytes": 402,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-controller-f7e8fa329e4d08f6.json",
+        "sha256": "9254b5971f137f7546e4d8194386ee87e17ef28bfd4b34da0f8df3a824971b8e",
+        "type": "file"
+      },
+      {
+        "bytes": 396,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw0-7f87919ffd71cd21.json",
+        "sha256": "25a3676202a7cf711e3f3be453a0eccb516cb8e7f172467dfad2b17e71973241",
+        "type": "file"
+      },
+      {
+        "bytes": 376,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw0-8b1a1db754a843dc.json",
+        "sha256": "f62f223969f011906e3dfb9f7dd377b3f4c636aa6bec2f54ef3136021aeab619",
+        "type": "file"
+      },
+      {
+        "bytes": 395,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw0-9361e9ac44f6cf0b.json",
+        "sha256": "8a40f363c2cadc4a9ef3fe56b49d3a1508e5e6c5e780c84576a02dd5bc1e8081",
+        "type": "file"
+      },
+      {
+        "bytes": 397,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw1-21e4b387c6884ab4.json",
+        "sha256": "4669527d781582ed84f4de535148e7c15e45822f0479d2de2f6edb55cb433ffe",
+        "type": "file"
+      },
+      {
+        "bytes": 365,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw1-3624ef333ee79e7e.json",
+        "sha256": "1253117ef90806e6c91e4a7cd3da496bb5c51731f643c3560e4c1e6a404c0132",
+        "type": "file"
+      },
+      {
+        "bytes": 395,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/failure-gw1-f7e8fa329e4d08f6.json",
+        "sha256": "442e854afb898d1b10bc846a3e14d8ba8745f0d332d3e2b5e8da9d7ce8fdf2ae",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-controller.json",
+        "sha256": "e941fcab8139c329fe759bb14d0ea6727351e1ec1cb3cb22c798c96789c576d0",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-gw0.json",
+        "sha256": "8beb92246bba29246bb7a9ecc6c152599f8df0e97de1d80a71181a5ef6dc6568",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red/identity-gw1.json",
+        "sha256": "3ec87cfdfd7002795305f1560a550379fd70c18fa0bd7ee0898f62c31a7221cd",
+        "type": "file"
+      },
+      {
+        "bytes": 1759,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-failure-index.json",
+        "sha256": "0f8a9a8d3233eebbcf755665ace3e9e5280720ff635a619775b95f31073208c9",
+        "type": "file"
+      },
+      {
+        "bytes": 959,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-negative-custody.json",
+        "sha256": "f84c5cc3f13b41fc35bbf442143d3d10b8a5b404590a02f9d6fbcbe27a61d84d",
+        "type": "file"
+      },
+      {
+        "bytes": 1050,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red-result.json",
+        "sha256": "02e012017fcbc4c1e339cbcbf0744c0264311f711d1c663bb413599b2d19eb90",
+        "type": "file"
+      },
+      {
+        "bytes": 2655,
+        "path": "wave35-r150-runner-roster-red-attempt-1/runner-roster-red.log",
+        "sha256": "eb48d6b62ace705b78ad3031ec9cfd645730cd4b770449aa0ba64d00ce704ef4",
+        "type": "file"
+      }
+    ],
+    "wave35-r150-runner-roster-red-attempt-1-spec.json": [
+      {
+        "bytes": 822,
+        "path": "wave35-r150-runner-roster-red-attempt-1-spec.json",
+        "sha256": "4826db6b4d62b2fcfa1fc41764df6dd69194b1586e495e7e85709db0e32fa62b",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 150,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN"
+}

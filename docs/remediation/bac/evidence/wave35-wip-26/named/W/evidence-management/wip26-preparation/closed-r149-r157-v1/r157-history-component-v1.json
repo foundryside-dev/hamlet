@@ -1,0 +1,202 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 214657,
+            "path": "wave35/r157-candidate.json",
+            "root": "W",
+            "sha256": "0129ff95b65131c16e8b373421f7de434a9996e08ddbd5f47711d0e755f8c407"
+          },
+          "candidate_tree": "4b72ad15f15805d5a7164c2550498fc726c39dc7",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r157-collection-spec.json",
+              "sha256": "61f94b0689ae45d88297f2e3264dc6ebbb04dc2ad9916040cfa0da38b589d10d",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r157-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "24312d5fc667701cd0478f55e97e674987a16ade2a09ee3d56f3ab7107e60e2b"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r157-collection-spec.json--unrun",
+          "path": "wave35-r157-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 157,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r157-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r157-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 214657,
+            "path": "wave35/r157-candidate.json",
+            "root": "W",
+            "sha256": "0129ff95b65131c16e8b373421f7de434a9996e08ddbd5f47711d0e755f8c407"
+          },
+          "candidate_tree": "4b72ad15f15805d5a7164c2550498fc726c39dc7",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r157-owned-spec.json",
+              "sha256": "189f0b94b6375b61d64a5bf08dc8e00d70bd8070c94f9f68d3e4c0796980ee03",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r157-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "24312d5fc667701cd0478f55e97e674987a16ade2a09ee3d56f3ab7107e60e2b"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r157-owned-spec.json--unrun",
+          "path": "wave35-r157-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 157,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r157-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r157-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_manifest": {
+    "bytes": 214657,
+    "path": "wave35/r157-candidate.json",
+    "root": "W",
+    "sha256": "0129ff95b65131c16e8b373421f7de434a9996e08ddbd5f47711d0e755f8c407"
+  },
+  "candidate_tree": "4b72ad15f15805d5a7164c2550498fc726c39dc7",
+  "fixture_preflight": {
+    "bytes": 5812,
+    "path": "wave35/r157-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "24312d5fc667701cd0478f55e97e674987a16ade2a09ee3d56f3ab7107e60e2b"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r157-collection-spec.json",
+      "round": 157,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r157-env-independent-attempt-1-spec.json",
+      "round": 157,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r157-env-independent-collection-attempt-1-spec.json",
+      "round": 157,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r157-owned-spec.json",
+      "round": 157,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r157-runtime-custody-owners-attempt-1-spec.json",
+      "round": 157,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r157-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r157-collection-spec.json",
+        "sha256": "61f94b0689ae45d88297f2e3264dc6ebbb04dc2ad9916040cfa0da38b589d10d",
+        "type": "file"
+      }
+    ],
+    "wave35-r157-env-independent-attempt-1-spec.json": [
+      {
+        "bytes": 851,
+        "path": "wave35-r157-env-independent-attempt-1-spec.json",
+        "sha256": "b16b2198d4f1d2abc8b3180f9fb156886bb7b917a23baec1a56b83911df98b00",
+        "type": "file"
+      }
+    ],
+    "wave35-r157-env-independent-collection-attempt-1-spec.json": [
+      {
+        "bytes": 926,
+        "path": "wave35-r157-env-independent-collection-attempt-1-spec.json",
+        "sha256": "b2d281702b566366f59bd90f1436340cb01585f970892624172be354d8bba7e3",
+        "type": "file"
+      }
+    ],
+    "wave35-r157-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r157-owned-spec.json",
+        "sha256": "189f0b94b6375b61d64a5bf08dc8e00d70bd8070c94f9f68d3e4c0796980ee03",
+        "type": "file"
+      }
+    ],
+    "wave35-r157-runtime-custody-owners-attempt-1-spec.json": [
+      {
+        "bytes": 861,
+        "path": "wave35-r157-runtime-custody-owners-attempt-1-spec.json",
+        "sha256": "222a519517fdebfde5462c2e502de003e2a24e0e5c13c112e109b5ec6a2bf76e",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 157,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN"
+}

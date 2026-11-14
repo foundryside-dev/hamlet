@@ -55,6 +55,16 @@ def bound(owner: Any, controller: Controller) -> Any:
         assert invocation.completion_failed() is False
 
 
+@contextmanager
+def bound_world(rig: Any, controller: Controller) -> Any:
+    """Bind the real ENV and runtime to the same component operation."""
+    with rig.env.retain_parent_custody() as env_scope, rig.runtime.retain_parent_custody() as runtime_scope:
+        invocation = controller.invocation()
+        with invocation as operation, env_scope.bind_operation(operation=operation), runtime_scope.bind_operation(operation=operation):
+            yield
+        assert invocation.completion_failed() is False
+
+
 def restore_initial(runtime: Any, state: Any) -> None:
     prepared = runtime.prepare_restore(state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
     runtime.install_restore(prepared=prepared)
@@ -84,7 +94,7 @@ def test_bound_component_reward_service_retry(compiled: Any, monkeypatch: Any, f
     observed = observe_runtime(monkeypatch, rig)
     candidate = rig.candidate()
     prepared = rig.population.prepare_vector_step(**candidate)
-    with bound(rig.runtime, controller):
+    with bound_world(rig, controller):
         observations, rewards, dones, info = rig.env.step(candidate["actions"], vector_step=prepared)
         kwargs, reward = observed["reward"][-1]
         handoff = info["intrinsic_transition"]

@@ -1,0 +1,22 @@
+{
+  "job": "restore-positive",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83",
+  "exit_code": 0,
+  "counts": {
+    "passed": 12,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 29.710525358008454,
+  "source_guards": 831,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

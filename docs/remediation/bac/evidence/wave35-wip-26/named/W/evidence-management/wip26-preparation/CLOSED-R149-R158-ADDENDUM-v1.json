@@ -1,0 +1,237 @@
+{
+  "accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "capsule_time_scope": "Hash observations now; capsules remain authored handoffs/reviews with their own source pins. Review source claims do not substitute for current runtime qualification. Later mutable capsule changes require new additive references.",
+  "capture_outputs_observed": [
+    {
+      "bytes": 8271,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r149-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 149,
+      "sha256": "a57f89c2e331eb59e119482f2be9acba51745b1e5119365f9512ed21aef4fab6"
+    },
+    {
+      "bytes": 8344,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r150-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 150,
+      "sha256": "f356c736ede1f51e8b22f3f7dedb54ae152cb3225c8f5f22dfb011723aff1f24"
+    },
+    {
+      "bytes": 0,
+      "interpretation": "Empty file; proves no captured output, not success or failure content",
+      "observed_path": "/tmp/bac-r151-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 151,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 8344,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r152-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 152,
+      "sha256": "dbfde79b286c908d44eef6574be360c7132d7fd6d1ad037853aa577925069fa7"
+    },
+    {
+      "observed_path": "/tmp/bac-r153-capture.log",
+      "round": 153,
+      "status": "NOT FOUND at named candidate path; original path unknown; no further search"
+    },
+    {
+      "bytes": 8344,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r154-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 154,
+      "sha256": "85c829185149dec16b60f947b2bbdd73e734106d65bdc126044b37005f22892f"
+    },
+    {
+      "bytes": 8417,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r155-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 155,
+      "sha256": "2a6deac932370b56326179c1aa2a7609906147c92122b8849e3ac0eb72e352ec"
+    },
+    {
+      "bytes": 8417,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r156-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 156,
+      "sha256": "b0f5119989052696aef83c3f740e088e36e3cc21092ca02008c362040020fa0d"
+    },
+    {
+      "bytes": 8502,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r157-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 157,
+      "sha256": "2ce683829e7a2eefd8a45c2efcce179d6a19325833688dfd27529c0038489fa2"
+    },
+    {
+      "bytes": 8502,
+      "interpretation": "Existing capture output; no invocation timestamp/exit invented",
+      "observed_path": "/tmp/bac-r158-capture.log",
+      "publication_status": "Outside rooted W/Q/R evidence; root must preserve exact named log under W or explicitly retain unavailable original output limitation",
+      "round": 158,
+      "sha256": "f62b86c1297973c5d0e7b1cbd43c411fc45a0ea9de140727eb910181b5abb5a3"
+    }
+  ],
+  "component_gates": [
+    "A bounded static source review has no P1/P2 finding; independent runtime remains8/9 until corrected nine-probe rerun.",
+    "Runtime custody fixture selection133 passes but seven poison-child requirements remain separately owed.",
+    "Actual native saved-owner composition, continued learning and PW04 acceptance remain open.",
+    "R159 corrected probe, three replay-repair tests and B/C RED are future work outside this closed addendum."
+  ],
+  "named_source_capsules": [
+    {
+      "bytes": 5279,
+      "path": "pw04-closure-progress.md",
+      "root": "W",
+      "sha256": "ecff840c27708bbff5c0567e760b7a449b1e4075115c558e69d75552b89f03d8"
+    },
+    {
+      "bytes": 7206,
+      "path": "pw04-current-callers.md",
+      "root": "W",
+      "sha256": "4b6888fd59cdbd96dd5923501c53bd34e70f0098bdcf84e2f33c42bde678ba50"
+    },
+    {
+      "bytes": 3161,
+      "path": "pw04-custody-consumer-repair.md",
+      "root": "W",
+      "sha256": "583e9f832a0fa71f8f9cc6ba819ce974b1717de51f55808162a75dd17f50a1ad"
+    },
+    {
+      "bytes": 12947,
+      "path": "pw04-env-controller-api.md",
+      "root": "W",
+      "sha256": "b15b4b59612af6b676f1a59639bbc7930cc40f9e7fffcc9534b96219fe9dc47d"
+    },
+    {
+      "bytes": 12609,
+      "path": "pw04-native-integration-assessment.md",
+      "root": "W",
+      "sha256": "589de6a8fdbff7d9c30893f3e54281f1d3e0242820568f8225e174b63ca729df"
+    },
+    {
+      "bytes": 2414,
+      "path": "pw04-replay-lineage-repair.md",
+      "root": "W",
+      "sha256": "2b1d9bc162a28f70e87d40f35035e5a1b53d7456d9537921158ed507bc3d9681"
+    },
+    {
+      "bytes": 4489,
+      "path": "pw04-restore-attempt-c-api.md",
+      "root": "W",
+      "sha256": "708dd7b3cf94db0c826cbeae87baf1e8b56fc2ca04753ce00a509be964a7cadd"
+    },
+    {
+      "bytes": 3953,
+      "path": "pw04-restore-env-a-api.md",
+      "root": "W",
+      "sha256": "b741f4a47d82efc2ee9e4eb1b79f5475a6230b573688e42857be02d5ef3d71c0"
+    },
+    {
+      "bytes": 6709,
+      "path": "pw04-restore-env-a-review.md",
+      "root": "W",
+      "sha256": "86db3d7a156a9c519d44469d1d1b6df95e8e5de5a10d4d877bfc4aa325c54fc7"
+    },
+    {
+      "bytes": 22448,
+      "path": "pw04-runner-runtime-api.md",
+      "root": "W",
+      "sha256": "d77e6587f93631e3c5d9628686d581e81e254d44b5d881c237b1eaf0e3ef3712"
+    }
+  ],
+  "no_new_framework": true,
+  "observed_at_utc": "2026-11-14T18:09:47.040096+00:00",
+  "prior_proposal": {
+    "bytes": 32190,
+    "path": "evidence-management/wip26-preparation/FINITE-CHECKPOINT-INPUT-PROPOSAL-v1.json",
+    "root": "W",
+    "sha256": "c20dc13387854a24485503b08fbf89f2214fa691faf4a473554f2f682e5626b3"
+  },
+  "r157_static_failure": {
+    "evidence": {
+      "bytes": 5279,
+      "path": "pw04-closure-progress.md",
+      "root": "W",
+      "sha256": "ecff840c27708bbff5c0567e760b7a449b1e4075115c558e69d75552b89f03d8"
+    },
+    "reason": "Ruff fixture import re-export lint failure was tool-response-only. Do not invent raw stdout/stderr, timestamp, exit code or complete command provenance. Root repaired import-as/sorting and recaptured R158.",
+    "runtime": "All R157 runtime/collection specs remain UNRUN.",
+    "status": "FAILED per root observation/progress; original standalone static log UNAVAILABLE"
+  },
+  "r158_candidate_tree": "66e8bff22c06c3afce54fb5b45657fa5d15b2d1d",
+  "r158_interpretation": {
+    "custody": "Both runtime postflight reports retained in inventory. Collection lacks separate unique original postflight; nonqualifying.",
+    "independent_A": "8 PASS /1 FAIL,10.00 seconds. Root attributes failed assertion to reviewer WeakSet-vs-set comparison. Original failure preserved. Corrected probe is later mutable source; no execution/qualification inferred.",
+    "independent_probe_executed_sha256": "615c3f605230d273c22c9f8dd52cca79ddcadaed7df1d5a02091b1d2a34e32ea",
+    "runtime_custody_owner": "133 PASS /7 SKIP,36.77 seconds, passing postflight. Seven skips are explicitly required fresh-poison child selections, not CUDA skips or waived controls.",
+    "source_version": "Execution binds R158 candidate hashes, never the corrected current probe."
+  },
+  "r158_inventory": {
+    "bytes": 2309,
+    "path": "evidence-management/wip26-preparation/closed-r158-v1/PREPARATION-INVENTORY-v1.json",
+    "root": "W",
+    "sha256": "3df468e9ed80778e19058b62542dbaefda479184fb6d2ecaa4593ba8ebb940fa"
+  },
+  "r158_observed_checks": [
+    {
+      "check": "wave35-r158-env-independent-attempt-1--env-independent",
+      "collected": null,
+      "counts": {
+        "errors": 0,
+        "failed": 1,
+        "passed": 8,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 158,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r158-env-independent-collection-attempt-1--env-independent-collection",
+      "collected": 149,
+      "counts": null,
+      "kind": "collection",
+      "round": 158,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r158-runtime-custody-owners-attempt-1--runtime-custody-owners",
+      "collected": null,
+      "counts": {
+        "passed": 133,
+        "skipped": 7,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 158,
+      "status": "PASSED"
+    }
+  ],
+  "remaining_root_inputs": [
+    "Actual terminal selection/freeze after any R159 work",
+    "Exact original capture failure record disposition for R151 (named /tmp log is empty)",
+    "Durable W alias or explicit unavailable disposition for named /tmp logs",
+    "Historical subtree attestation, R155 failed verifier record, exact helper supplier reconciliation",
+    "Final bounded adoptions and independent terminal review only after subject freeze"
+  ],
+  "spaces": "Existing sequence60 unchanged; proposed active delta waits actual durable checkpoint identity",
+  "status": "CLOSED R149\u2013R158 ADDENDUM ONLY; TERMINAL NOT SELECTED"
+}

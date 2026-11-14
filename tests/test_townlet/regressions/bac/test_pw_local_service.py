@@ -463,6 +463,100 @@ def test_backend_losses_and_quotas_are_world_local(kind: str, overflow: str) -> 
     assert first_trace
 
 
+def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
+    """A completed checkpoint resumes the next real learning episode exactly."""
+    import hashlib
+    import shutil
+
+    from townlet.config.world_roster import WorldRosterDeclaration
+    from townlet.demo.runner import DemoRunner
+    from townlet.training.checkpoint_utils import safe_torch_load
+
+    root = Path(__file__).resolve().parents[4]
+    pack = tmp_path / "pack"
+    shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+    training_path = pack / "levels/L0_0_minimal/training.yaml"
+    document = yaml.safe_load(training_path.read_text())
+    training = document["training"]
+    training["population"]["size"] = 2
+    training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+    training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
+    training["training_loop"]["checkpointing"]["interval"] = 1
+    training["bac_options"]["rnd"]["max_pending_rows"] = 6
+    training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
+    training_path.write_text(yaml.safe_dump(document, sort_keys=False))
+    roster = WorldRosterDeclaration(("roundtrip-world-A", "roundtrip-world-B"))
+    uninterrupted = tmp_path / "uninterrupted"
+
+    def read_checkpoint(directory: Path, completed_episodes: int) -> dict[str, Any]:
+        artifact = directory / "checkpoints" / f"checkpoint_ep{completed_episodes:05d}.pt"
+        digest = artifact.with_suffix(".pt.sha256")
+        assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+        payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
+        assert payload["episode"] == completed_episodes
+        assert payload["population_state"]["clock_ledger"]["completed_batch_episodes"] == completed_episodes
+        return payload
+
+    with DemoRunner(
+        config_dir=pack,
+        db_path=uninterrupted / "run.db",
+        checkpoint_dir=uninterrupted / "checkpoints",
+        world_roster=roster,
+        level_name="L0_0_minimal",
+        max_episodes=3,
+    ) as runner:
+        runner.run()
+        saved = read_checkpoint(uninterrupted, 2)
+        expected = read_checkpoint(uninterrupted, 3)
+
+    saved_population = saved["population_state"]
+    expected_population = expected["population_state"]
+    saved_backend = saved_population["exploration_state"]["bank"]["shared_backend"]["native"]
+    expected_backend = expected_population["exploration_state"]["bank"]["shared_backend"]["native"]
+    saved_service = _service_state(saved_backend)
+    assert (saved_service["admitted_rows"], saved_service["consumed_rows"], saved_service["optimizer_updates"]) == (12, 10, 2)
+    assert saved_service["pending_observations"].shape == (2, _inner(saved_backend)["obs_dim"])
+    _learned(saved_backend, expected_backend)
+    assert expected_population["training_step_counter"] > saved_population["training_step_counter"] > 0
+    assert any(
+        not torch.equal(saved_population["q_network"][key], expected_population["q_network"][key]) for key in saved_population["q_network"]
+    )
+    assert expected_population["optimizer"]["state"]
+
+    resumed = tmp_path / "resumed"
+    (resumed / "checkpoints").mkdir(parents=True)
+    shutil.copy2(uninterrupted / "run-world-roster.json", resumed / "run-world-roster.json")
+    artifact = uninterrupted / "checkpoints/checkpoint_ep00002.pt"
+    for path in (artifact, artifact.with_suffix(".pt.sha256")):
+        shutil.copy2(path, resumed / "checkpoints" / path.name)
+    with DemoRunner(
+        config_dir=pack,
+        db_path=resumed / "run.db",
+        checkpoint_dir=resumed / "checkpoints",
+        world_roster=roster,
+        level_name="L0_0_minimal",
+        max_episodes=3,
+    ) as fresh:
+        fresh.run()
+        actual = read_checkpoint(resumed, 3)
+        assert fresh.completed_live_agent_steps == 18
+
+    # Timestamp and run paths describe publication, not learner continuation.
+    # Compare every current training/world field rather than model weights alone.
+    for key in (
+        "population_state",
+        "curriculum_state",
+        "affordance_layout",
+        "vfs_persistent_state",
+        "vfs_random_state",
+        "agent_ids",
+        "epsilon",
+        "completed_live_agent_steps",
+    ):
+        _equal(expected[key], actual[key])
+    _learned(saved_backend, actual["population_state"]["exploration_state"]["bank"]["shared_backend"]["native"])
+
+
 @pytest.mark.parametrize("kind", PROVIDERS)
 @pytest.mark.parametrize("overflow", OVERFLOW)
 @pytest.mark.parametrize("full_tail", (False, True))

@@ -1,0 +1,231 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "a37cf18fcebb24c6c34165fafa4df6876e5494c7",
+  "unique_node_phase_failures": 52,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'EnvParentCustody' object has no attribute 'validate_prepared_restore'",
+      "count": 51,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_last_closed-value25]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_prepared_check_never_reads_payload_or_enters_device_or_admission_work[False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-False-INITIAL]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_state-value5]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_tick-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_consumers-value22]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_pending-value27]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_reservation-value18]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_exploration_bound-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_closure-value20]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_failed-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_failed-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_seal_does_not_keep_abandoned_world_preparation_alive",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_committed-value28]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_stage-completed]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_manual_close_prepared-value30]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_accepted-value4]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_ids-value8]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-False-COMPLETED]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_reset_state-value29]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_bindings-value11]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_pending-value3]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_generation-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_revision-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-False-INITIAL]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_release-value19]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_reset-value17]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-True-INITIAL]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_generation-1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_frozen-value21]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_busy-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_busy-True]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_seed-43]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_vfs_pending-value24]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_accepted-value16]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-True-COMPLETED]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_restored-value23]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-True-COMPLETED]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_revision-False]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-False-COMPLETED]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_phase-bootstrap-ready]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_cursors-value10]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_equal-value12]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_roster-value6]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_cursors-value9]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_saved_binding-value26]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-True-INITIAL]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_identity-different-semantic-identity]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_manual_receiving_session_must_remain_genuinely_quiescent[_failure-value7]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_copied_foreign_and_replaced_payload_preparations_have_no_authority",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_prepared_check_never_reads_payload_or_enters_device_or_admission_work[True]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "assert (1 == 1 and False)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py::test_expired_foreign_thread_and_operation_bound_scopes_refuse",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

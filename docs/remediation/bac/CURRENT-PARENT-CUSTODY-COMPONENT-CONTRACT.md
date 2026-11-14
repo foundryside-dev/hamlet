@@ -1,6 +1,6 @@
 # Current runtime/BANK parent custody component contract
 
-**PAUSED at the user’s request.** No further implementation or runtime is authorized by this checkpoint. See the [pause handoff](PAUSE-HANDOFF-WIP25.md) for the finite cut, exact pins, retained failures and explicit resume sequence.
+**ACTIVE — resumed by the user after the independent investigation.** PW04 real-runner checkpoint/restore/continued-learning is the controlling acceptance target. WIP25 remains a historical pause checkpoint; it is not the current authorization state. See [current status](STATUS.md) for the R149–R160 partial checkpoint and remaining native acceptance.
 
 2026-11-14. Runtime/BANK diagnostics, ENV custody and the bounded CPU manual physical component have separate source reviews and root adoptions through R148. Earlier R132–R145 executions below retain their original identities. Full C1/C2 acceptance remains open; R148 global mypy fails with 12 existing diagnostics. Actual CUDA is UNRUN.
 

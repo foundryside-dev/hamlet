@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_prepared_world_currentness_independent.py::test_record_revocation_is_exact_and_terminal_input_refuses_all",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "E   assert {<weakref at ...7ff6a701c770>} == {WorldRecord(...: (0, 0)})}))}\n      \n      Use -v to get more diff",
+  "candidate_tree": "66e8bff22c06c3afce54fb5b45657fa5d15b2d1d"
+}

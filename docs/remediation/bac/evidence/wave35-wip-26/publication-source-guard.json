@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+  "approved_document_postimages": [
+    {
+      "approval_status": "Root finalized publication bytes; fresh terminal review pending",
+      "bytes": 127437,
+      "destination": "docs/remediation/bac/STATUS.md",
+      "execution_inventory_sha256": "d08317132aa1f41e88f3243eff2fa34ee9f9be24c4bf15eb4b651659583fa4ba",
+      "path": "docs/remediation/bac/STATUS.md",
+      "root": "R",
+      "sha256": "314a436ee9f4d0b19ce5959b52b9de55804e7fe70f355f9ca37ca2cdc0c6be6d"
+    },
+    {
+      "approval_status": "Root finalized publication bytes; fresh terminal review pending",
+      "bytes": 38460,
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "execution_inventory_sha256": null,
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "root": "R",
+      "sha256": "60286418078a553f5239368da613bd596f48ff9c1b5ad4ed9add8af1c4bb7475"
+    },
+    {
+      "approval_status": "Root finalized publication bytes; fresh terminal review pending",
+      "bytes": 15167,
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "execution_inventory_sha256": null,
+      "path": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "root": "R",
+      "sha256": "054c367b5c659ffe81749ee7c2d1f0b6346037514323abea5353132f9dbf1941"
+    }
+  ],
+  "scope": "All source/config/protected hashes equal execution candidate except exact independently reviewed document postimages."
+}

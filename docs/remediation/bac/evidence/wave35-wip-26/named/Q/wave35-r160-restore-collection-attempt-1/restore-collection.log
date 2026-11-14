@@ -1,0 +1,82 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 64 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_prepared_world_currentness.py>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-False-INITIAL]>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-False-COMPLETED]>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-True-INITIAL]>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[False-True-COMPLETED]>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-False-INITIAL]>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-False-COMPLETED]>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-True-INITIAL]>
+            <Function test_pure_prepared_check_preserves_multiple_records_and_issued_bootstrap[True-True-COMPLETED]>
+            <Function test_prepared_check_never_reads_payload_or_enters_device_or_admission_work[False]>
+            <Function test_prepared_check_never_reads_payload_or_enters_device_or_admission_work[True]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_phase-bootstrap-ready]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_generation-1]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_generation-False]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_revision-1]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_revision-False]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_seed-43]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_roster-value6]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_identity-different-semantic-identity]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_ids-value8]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_cursors-value9]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_cursors-value10]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_bindings-value11]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_equal-value12]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_busy-True]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_failed-True]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_exploration_bound-True]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_accepted-value16]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_reset-value17]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_reservation-value18]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_release-value19]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_closure-value20]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_frozen-value21]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_consumers-value22]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_restored-value23]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_vfs_pending-value24]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_last_closed-value25]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_world_saved_binding-value26]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_pending-value27]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_committed-value28]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_participation_reset_state-value29]>
+            <Function test_changed_receiving_metadata_refuses_without_poisoning_valid_preparation[_manual_close_prepared-value30]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_tick-1]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_busy-True]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_failed-True]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_pending-value3]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_accepted-value4]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_state-value5]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_stage-completed]>
+            <Function test_manual_receiving_session_must_remain_genuinely_quiescent[_failure-value7]>
+            <Function test_copied_foreign_and_replaced_payload_preparations_have_no_authority>
+            <Function test_expired_foreign_thread_and_operation_bound_scopes_refuse>
+            <Function test_seal_does_not_keep_abandoned_world_preparation_alive>
+          <Module test_prepared_world_currentness_independent.py>
+            <Function test_issuance_pins_survive_scope_reacquisition[_world_role_owners]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_exploration_runtime]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_claim_vector_step]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_world_authority]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_manual_session]>
+            <Function test_authority_internal_identity_remains_pinned[_owner]>
+            <Function test_authority_internal_identity_remains_pinned[_env]>
+            <Function test_record_revocation_is_exact_and_terminal_input_refuses_all>
+            <Function test_nested_opaque_preparation_graph_has_no_weak_key_value_cycle>
+          <Module test_parent_intrinsic_handoff.py>
+            <Function test_current_initial_transport_has_complete_exact_ledger>
+            <Function test_initial_pop_roundtrip_preserves_ledger_and_next_real_update>
+            <Function test_initial_install_refuses_roles_bound_after_preparation>
+
+========================= 64 tests collected in 0.20s ==========================

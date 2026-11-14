@@ -1,0 +1,1369 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 213138,
+            "path": "wave35/r156-candidate.json",
+            "root": "W",
+            "sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4"
+          },
+          "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r156-collection-spec.json",
+              "sha256": "2b84ecaacc48231278330cc64eb38cab20842199791111468fbf8b3435fd77a8",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r156-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "f916779d52e96a2027ab49d253cfbbcde25073840a549022070cbd5b2f0da522"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r156-collection-spec.json--unrun",
+          "path": "wave35-r156-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 156,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r156-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r156-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 213138,
+            "path": "wave35/r156-candidate.json",
+            "root": "W",
+            "sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4"
+          },
+          "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+          "collected_count": 358,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py",
+            "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+            "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+            "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=line",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r156-env-restore-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection/identity-controller.json",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00",
+              "type": "file"
+            },
+            {
+              "bytes": 1352,
+              "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection-result.json",
+              "sha256": "5b4cf3c2731c51d1a947b60af7b50d9c517a1420392479dae5350638a4e91233",
+              "type": "file"
+            },
+            {
+              "bytes": 34231,
+              "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection.log",
+              "sha256": "01edbe243abce09d85280d3b355c1e8efe48818a80608f5d33cbc1264695dc36",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.19725873801508,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r156-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "f916779d52e96a2027ab49d253cfbbcde25073840a549022070cbd5b2f0da522"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r156-env-restore-collection-attempt-1--env-restore-collection",
+          "log_paths": [
+            {
+              "bytes": 34231,
+              "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection.log",
+              "root": "Q",
+              "sha256": "01edbe243abce09d85280d3b355c1e8efe48818a80608f5d33cbc1264695dc36"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 927,
+            "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "945d146e4824a9aa948328da6510acb6d494e849527771746fe2842e82366220"
+          },
+          "path": "wave35-r156-env-restore-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1352,
+            "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection-result.json",
+            "root": "Q",
+            "sha256": "5b4cf3c2731c51d1a947b60af7b50d9c517a1420392479dae5350638a4e91233"
+          },
+          "record_id": "env-restore-collection",
+          "result": {
+            "bytes": 1352,
+            "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection-result.json",
+            "root": "Q",
+            "sha256": "5b4cf3c2731c51d1a947b60af7b50d9c517a1420392479dae5350638a4e91233"
+          },
+          "round": 156,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier_unavailable_reason": "No unique original named postflight report; original result/log retained, root classification required."
+        }
+      ],
+      "check": "wave35-r156-env-restore-collection-attempt-1--env-restore-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r156-env-restore-collection-attempt-1--env-restore-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 213138,
+            "path": "wave35/r156-candidate.json",
+            "root": "W",
+            "sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4"
+          },
+          "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=line",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r156-env-restore-green-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "passed": 52,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-controller.json",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-gw0.json",
+              "sha256": "61132bcbeacbf8e55aaf6e0a09679e49f763aed09e06dfafe713cbcafc64ebaf",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-gw1.json",
+              "sha256": "b2a39ff2bad4e07531af7ba2696dc7fd98d29f338e51909d88bd747e6f46dba3",
+              "type": "file"
+            },
+            {
+              "bytes": 649,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green-custody.json",
+              "sha256": "57bfc730c8bff6ddd82508f86a59a7b0204ff3b98e633f322d542fad93806f6e",
+              "type": "file"
+            },
+            {
+              "bytes": 1056,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green-result.json",
+              "sha256": "27e561ba600b2c54b71fb78e81a2c6b3f97f0ec7f68bf26090e06f3911d41dd8",
+              "type": "file"
+            },
+            {
+              "bytes": 602,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green.log",
+              "sha256": "220a3305378b4e6cacb00d84385e91c00c0aaf9bfab510404fc532d2392c765e",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 19.03358037499129,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r156-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "f916779d52e96a2027ab49d253cfbbcde25073840a549022070cbd5b2f0da522"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r156-env-restore-green-attempt-1--env-restore-green",
+          "log_paths": [
+            {
+              "bytes": 602,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green.log",
+              "root": "Q",
+              "sha256": "220a3305378b4e6cacb00d84385e91c00c0aaf9bfab510404fc532d2392c765e"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 918,
+            "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-green-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "a8b2751a280055eaa528050755da1a5a57bd76efc81a67291b860299b605004b"
+          },
+          "path": "wave35-r156-env-restore-green-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "61132bcbeacbf8e55aaf6e0a09679e49f763aed09e06dfafe713cbcafc64ebaf"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "b2a39ff2bad4e07531af7ba2696dc7fd98d29f338e51909d88bd747e6f46dba3"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1056,
+            "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green-result.json",
+            "root": "Q",
+            "sha256": "27e561ba600b2c54b71fb78e81a2c6b3f97f0ec7f68bf26090e06f3911d41dd8"
+          },
+          "record_id": "env-restore-green",
+          "result": {
+            "bytes": 1056,
+            "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green-result.json",
+            "root": "Q",
+            "sha256": "27e561ba600b2c54b71fb78e81a2c6b3f97f0ec7f68bf26090e06f3911d41dd8"
+          },
+          "round": 156,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 649,
+            "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green-custody.json",
+            "root": "Q",
+            "sha256": "57bfc730c8bff6ddd82508f86a59a7b0204ff3b98e633f322d542fad93806f6e"
+          }
+        }
+      ],
+      "check": "wave35-r156-env-restore-green-attempt-1--env-restore-green",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r156-env-restore-green-attempt-1--env-restore-green"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 213138,
+            "path": "wave35/r156-candidate.json",
+            "root": "W",
+            "sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4"
+          },
+          "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+            "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+            "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=line",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r156-env-restore-owners-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 20,
+            "passed": 279,
+            "skipped": 7,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners",
+              "type": "directory"
+            },
+            {
+              "bytes": 370,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-01169ed70fe37279.json",
+              "sha256": "71e5c4f5c27a5261433a217651bc5eb99836da50994ec1e20374e541a2bdf149",
+              "type": "file"
+            },
+            {
+              "bytes": 362,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-08953d112b89b1e9.json",
+              "sha256": "10814e4950fc6fd254d354949208f4a075ea2eef8487ec76978deab85beb52a0",
+              "type": "file"
+            },
+            {
+              "bytes": 365,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-0dfc668055c50860.json",
+              "sha256": "435295e0e8ab42d894683187c809abbce1d1987bb2f456dd23d63e57024cf66e",
+              "type": "file"
+            },
+            {
+              "bytes": 371,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-2489efef42ae430b.json",
+              "sha256": "1f67b2dec65f0da93e1c6141402e68f8b9e5e7a92146941027ce47049d7cf046",
+              "type": "file"
+            },
+            {
+              "bytes": 373,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-38a0f6d6b2abc2b8.json",
+              "sha256": "9e17af4aed65a1993beae1ffd212b5ec54dcb39c875609e6b725e5ea6132b974",
+              "type": "file"
+            },
+            {
+              "bytes": 363,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-4b86223b70d93831.json",
+              "sha256": "bf7107a51f27706e51e692926ffa56572adbdd34565fc75a7815f7b59506d44f",
+              "type": "file"
+            },
+            {
+              "bytes": 366,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-5bca0901dfcdd951.json",
+              "sha256": "9e4824656da2b9c1937e22db12f2d69183695261ef29613f363e86cb7577b368",
+              "type": "file"
+            },
+            {
+              "bytes": 374,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-69eb4747534a504e.json",
+              "sha256": "a18367f151fa7d6b2d894184eec87e00ca1de3f5e52111c7bae3a47be2d99edd",
+              "type": "file"
+            },
+            {
+              "bytes": 365,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7110bf0f8924f28c.json",
+              "sha256": "32377caae965ede511015ae16b401a2f676b73c3583eab38cd157ff9f6a47985",
+              "type": "file"
+            },
+            {
+              "bytes": 362,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7413207748319cbd.json",
+              "sha256": "39032bce9ee96401d629d70105be8a549f97c0a6b016c1e6d93e6d82b06bef73",
+              "type": "file"
+            },
+            {
+              "bytes": 365,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7b534bbaf7f5c60a.json",
+              "sha256": "9c5c48f297b4001de7c4294ae2bf736315cecf7cd263f28d0ef58c567f830f1a",
+              "type": "file"
+            },
+            {
+              "bytes": 373,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7bab3b853616cc7f.json",
+              "sha256": "7c7ac2dd63b9ad0b944a3fe995bf31a6e7dd888f99ca324ae739db0b178a7220",
+              "type": "file"
+            },
+            {
+              "bytes": 366,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-818894452c0c6990.json",
+              "sha256": "a517169ad0c1f55a024a763c24231693d3d81fdc0770b0d19a7da35fb70f4820",
+              "type": "file"
+            },
+            {
+              "bytes": 362,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-8a020c9c4f64f4f6.json",
+              "sha256": "687335489ddea71f7b782d1d275b4eb5932ede7e86b4b0be535ca26386d6dfe9",
+              "type": "file"
+            },
+            {
+              "bytes": 363,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-ab51ed1a333e8d70.json",
+              "sha256": "2248a6ee413f87ea996610fb7d8f963f5c29fd44ac4b8339a2daa04579a1f340",
+              "type": "file"
+            },
+            {
+              "bytes": 370,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-ac7f2d2ee1371c2c.json",
+              "sha256": "cfb8a0f0b8953595548b3bb538ac0c3e5d5714910eea96e194ad6066cc5c71dd",
+              "type": "file"
+            },
+            {
+              "bytes": 371,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-d3b7c1043d401698.json",
+              "sha256": "555fdc7a6756dde8115b3494853f9945b396ca6df32a9d485de9c3e435055021",
+              "type": "file"
+            },
+            {
+              "bytes": 374,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-e60c1c3403ca0254.json",
+              "sha256": "9144bda549a2192cbca48c65d14851f07a363d2a9ef0b85ea187fb7ab200bd2c",
+              "type": "file"
+            },
+            {
+              "bytes": 365,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-ec2c0382f93aef71.json",
+              "sha256": "925aa8377d27a3bc6bab32e64e4b0f1055d9e1b4c889b617120d2b0707b1100e",
+              "type": "file"
+            },
+            {
+              "bytes": 362,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-f722c04800257429.json",
+              "sha256": "16cfa24214dcc7318f31a4720232098aa1143f91030b02baf9baef5492f55f83",
+              "type": "file"
+            },
+            {
+              "bytes": 363,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-01169ed70fe37279.json",
+              "sha256": "f00b52c2f37d633536d213ee032a9c7d77c390d69aad0892c4c784c08cc912c6",
+              "type": "file"
+            },
+            {
+              "bytes": 355,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-08953d112b89b1e9.json",
+              "sha256": "43af7dc63de61f58384f40f92303da3444b213599e16a844afeea0328c406019",
+              "type": "file"
+            },
+            {
+              "bytes": 358,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-0dfc668055c50860.json",
+              "sha256": "ce39e07262c6ea1122ead2283b7313d40e4dda9e43d71e2d60d6de077e08a0e2",
+              "type": "file"
+            },
+            {
+              "bytes": 364,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-2489efef42ae430b.json",
+              "sha256": "54a4eab90ea95bcd774a9a7945e25502d87f1542fa31ec0e478212a316e51ccf",
+              "type": "file"
+            },
+            {
+              "bytes": 366,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-38a0f6d6b2abc2b8.json",
+              "sha256": "017d4ede4e3f1cd565a4a77e30b978754af223f15fd007d435da2cca84e84db2",
+              "type": "file"
+            },
+            {
+              "bytes": 356,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-4b86223b70d93831.json",
+              "sha256": "99014c34ff3b09a73eeb2ab1b16497fab5dd24983fe9aa5d65f5a84cf02cd724",
+              "type": "file"
+            },
+            {
+              "bytes": 359,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-5bca0901dfcdd951.json",
+              "sha256": "4bcbcc11406ac4e07565c853471022968411dd799ae0f12e9ac193e375d58b5f",
+              "type": "file"
+            },
+            {
+              "bytes": 367,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-69eb4747534a504e.json",
+              "sha256": "a1191c772a6aeedac99e8dc8c038caaf6d26edd5a28d39b2d20604472815f7f7",
+              "type": "file"
+            },
+            {
+              "bytes": 358,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7110bf0f8924f28c.json",
+              "sha256": "252373967256fe9e24e8d52c4b6f51369ea56f39777184e9dcb62135bd0514ab",
+              "type": "file"
+            },
+            {
+              "bytes": 355,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7413207748319cbd.json",
+              "sha256": "4c2dfa5fb795dbc925143f2f6026b7b45419ca239832c5c855a328b8ecca283c",
+              "type": "file"
+            },
+            {
+              "bytes": 358,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7b534bbaf7f5c60a.json",
+              "sha256": "146570659d7fb35de400c310ea40fb7d6433f6f384b34172f4f87e727167b16c",
+              "type": "file"
+            },
+            {
+              "bytes": 366,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7bab3b853616cc7f.json",
+              "sha256": "b65a66baeee7fc2d918bcef5ffdcbd1acd9117916255f803d42fd38428bf72b0",
+              "type": "file"
+            },
+            {
+              "bytes": 359,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-818894452c0c6990.json",
+              "sha256": "4ce3b283c359da5eb9fd1a604fbaf5f188b3a5a9fca5ecae3694f06d64d02134",
+              "type": "file"
+            },
+            {
+              "bytes": 355,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-8a020c9c4f64f4f6.json",
+              "sha256": "71c344abd12c26d82cfef9db8057ba8d1561d65def235241607ebf49a751c7d0",
+              "type": "file"
+            },
+            {
+              "bytes": 356,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-ab51ed1a333e8d70.json",
+              "sha256": "ab7fc882173d996952b9714f882058da1edec3d6241bb0731251fed831b1c5ee",
+              "type": "file"
+            },
+            {
+              "bytes": 363,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-ac7f2d2ee1371c2c.json",
+              "sha256": "3d1cd7a8a87deae63f1990fdde54f58ed738cb90c8b2d1e296e5e79defa7fca5",
+              "type": "file"
+            },
+            {
+              "bytes": 364,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-d3b7c1043d401698.json",
+              "sha256": "a1573c19f3b4d366b5bcc83c5d0f12fd7645558e5965e86df71c7408ca90b1db",
+              "type": "file"
+            },
+            {
+              "bytes": 367,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-e60c1c3403ca0254.json",
+              "sha256": "66178f203b68a98964b46f887c90c57fb1f62a8221490409a991aee2c4300b2e",
+              "type": "file"
+            },
+            {
+              "bytes": 358,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-ec2c0382f93aef71.json",
+              "sha256": "eea71bb8f85009eff8d92ae6b1354b709b392b7ce1f6d60ec9f50d31574b72a0",
+              "type": "file"
+            },
+            {
+              "bytes": 355,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-f722c04800257429.json",
+              "sha256": "7bbd886dc3a29bdd015db6ff94a673d4c06b614373ab822eabbd95f0ab534e89",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-controller.json",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-gw0.json",
+              "sha256": "61132bcbeacbf8e55aaf6e0a09679e49f763aed09e06dfafe713cbcafc64ebaf",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-gw1.json",
+              "sha256": "b2a39ff2bad4e07531af7ba2696dc7fd98d29f338e51909d88bd747e6f46dba3",
+              "type": "file"
+            },
+            {
+              "bytes": 4587,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-failure-index.json",
+              "sha256": "1f617eb1a1cd3681b5183584850c6ebb29ba523378ef3886751a6ff5ab26df19",
+              "type": "file"
+            },
+            {
+              "bytes": 963,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-negative-custody.json",
+              "sha256": "c2054548a82dc5f97b3c816e9936e977c9f6a428bc3ad6ec5b885c07f5ad53fb",
+              "type": "file"
+            },
+            {
+              "bytes": 1289,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-result.json",
+              "sha256": "664a2e4006ce2637cbfe88b6adcbe1b072de7081d2b8a07445d1d75ca5fa8e98",
+              "type": "file"
+            },
+            {
+              "bytes": 6387,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners.log",
+              "sha256": "c2633bb8a36d73eecf9839e62e98ff987ab2bc2844c4a46d42cde1e988c009e9",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 53.188532657019095,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r156-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "f916779d52e96a2027ab49d253cfbbcde25073840a549022070cbd5b2f0da522"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r156-env-restore-owners-attempt-1--env-restore-owners",
+          "log_paths": [
+            {
+              "bytes": 6387,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners.log",
+              "root": "Q",
+              "sha256": "c2633bb8a36d73eecf9839e62e98ff987ab2bc2844c4a46d42cde1e988c009e9"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 919,
+            "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-owners-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "cf1f754adac08ee508a300f78dd48964311522f27a196b89615f360261d453da"
+          },
+          "path": "wave35-r156-env-restore-owners-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "61132bcbeacbf8e55aaf6e0a09679e49f763aed09e06dfafe713cbcafc64ebaf"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "b2a39ff2bad4e07531af7ba2696dc7fd98d29f338e51909d88bd747e6f46dba3"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1289,
+            "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-result.json",
+            "root": "Q",
+            "sha256": "664a2e4006ce2637cbfe88b6adcbe1b072de7081d2b8a07445d1d75ca5fa8e98"
+          },
+          "record_id": "env-restore-owners",
+          "result": {
+            "bytes": 1289,
+            "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-result.json",
+            "root": "Q",
+            "sha256": "664a2e4006ce2637cbfe88b6adcbe1b072de7081d2b8a07445d1d75ca5fa8e98"
+          },
+          "round": 156,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 963,
+            "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-negative-custody.json",
+            "root": "Q",
+            "sha256": "c2054548a82dc5f97b3c816e9936e977c9f6a428bc3ad6ec5b885c07f5ad53fb"
+          }
+        }
+      ],
+      "check": "wave35-r156-env-restore-owners-attempt-1--env-restore-owners",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r156-env-restore-owners-attempt-1--env-restore-owners"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+          "candidate_manifest": {
+            "bytes": 213138,
+            "path": "wave35/r156-candidate.json",
+            "root": "W",
+            "sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4"
+          },
+          "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r156-owned-spec.json",
+              "sha256": "57b7f020f2dcc91eb5bab96d62bf763279e3857aaaf8dbe91b9d5d1d2c29dcdb",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5812,
+            "path": "wave35/r156-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "f916779d52e96a2027ab49d253cfbbcde25073840a549022070cbd5b2f0da522"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r156-owned-spec.json--unrun",
+          "path": "wave35-r156-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 156,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r156-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r156-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_manifest": {
+    "bytes": 213138,
+    "path": "wave35/r156-candidate.json",
+    "root": "W",
+    "sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4"
+  },
+  "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+  "fixture_preflight": {
+    "bytes": 5812,
+    "path": "wave35/r156-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "f916779d52e96a2027ab49d253cfbbcde25073840a549022070cbd5b2f0da522"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r156-collection-spec.json",
+      "round": 156,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r156-env-restore-collection-attempt-1",
+      "round": 156,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r156-env-restore-collection-attempt-1-spec.json",
+      "round": 156,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r156-env-restore-green-attempt-1",
+      "round": 156,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r156-env-restore-green-attempt-1-spec.json",
+      "round": 156,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r156-env-restore-owners-attempt-1",
+      "round": 156,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r156-env-restore-owners-attempt-1-spec.json",
+      "round": 156,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r156-owned-spec.json",
+      "round": 156,
+      "status": "UNRUN"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r156-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r156-collection-spec.json",
+        "sha256": "2b84ecaacc48231278330cc64eb38cab20842199791111468fbf8b3435fd77a8",
+        "type": "file"
+      }
+    ],
+    "wave35-r156-env-restore-collection-attempt-1": [
+      {
+        "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection/identity-controller.json",
+        "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00",
+        "type": "file"
+      },
+      {
+        "bytes": 1352,
+        "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection-result.json",
+        "sha256": "5b4cf3c2731c51d1a947b60af7b50d9c517a1420392479dae5350638a4e91233",
+        "type": "file"
+      },
+      {
+        "bytes": 34231,
+        "path": "wave35-r156-env-restore-collection-attempt-1/env-restore-collection.log",
+        "sha256": "01edbe243abce09d85280d3b355c1e8efe48818a80608f5d33cbc1264695dc36",
+        "type": "file"
+      }
+    ],
+    "wave35-r156-env-restore-collection-attempt-1-spec.json": [
+      {
+        "bytes": 1126,
+        "path": "wave35-r156-env-restore-collection-attempt-1-spec.json",
+        "sha256": "4e157763dbd0b9dc0d2f04f26fa9d0efe430a25e1ba96e5a3ec5557feaae33ce",
+        "type": "file"
+      }
+    ],
+    "wave35-r156-env-restore-green-attempt-1": [
+      {
+        "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-controller.json",
+        "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-gw0.json",
+        "sha256": "61132bcbeacbf8e55aaf6e0a09679e49f763aed09e06dfafe713cbcafc64ebaf",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green/identity-gw1.json",
+        "sha256": "b2a39ff2bad4e07531af7ba2696dc7fd98d29f338e51909d88bd747e6f46dba3",
+        "type": "file"
+      },
+      {
+        "bytes": 649,
+        "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green-custody.json",
+        "sha256": "57bfc730c8bff6ddd82508f86a59a7b0204ff3b98e633f322d542fad93806f6e",
+        "type": "file"
+      },
+      {
+        "bytes": 1056,
+        "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green-result.json",
+        "sha256": "27e561ba600b2c54b71fb78e81a2c6b3f97f0ec7f68bf26090e06f3911d41dd8",
+        "type": "file"
+      },
+      {
+        "bytes": 602,
+        "path": "wave35-r156-env-restore-green-attempt-1/env-restore-green.log",
+        "sha256": "220a3305378b4e6cacb00d84385e91c00c0aaf9bfab510404fc532d2392c765e",
+        "type": "file"
+      }
+    ],
+    "wave35-r156-env-restore-green-attempt-1-spec.json": [
+      {
+        "bytes": 830,
+        "path": "wave35-r156-env-restore-green-attempt-1-spec.json",
+        "sha256": "7ac89ef001467b9a4a904d95aa1402d29d8c1de9c1a789de4c753a5249e1c15b",
+        "type": "file"
+      }
+    ],
+    "wave35-r156-env-restore-owners-attempt-1": [
+      {
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners",
+        "type": "directory"
+      },
+      {
+        "bytes": 370,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-01169ed70fe37279.json",
+        "sha256": "71e5c4f5c27a5261433a217651bc5eb99836da50994ec1e20374e541a2bdf149",
+        "type": "file"
+      },
+      {
+        "bytes": 362,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-08953d112b89b1e9.json",
+        "sha256": "10814e4950fc6fd254d354949208f4a075ea2eef8487ec76978deab85beb52a0",
+        "type": "file"
+      },
+      {
+        "bytes": 365,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-0dfc668055c50860.json",
+        "sha256": "435295e0e8ab42d894683187c809abbce1d1987bb2f456dd23d63e57024cf66e",
+        "type": "file"
+      },
+      {
+        "bytes": 371,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-2489efef42ae430b.json",
+        "sha256": "1f67b2dec65f0da93e1c6141402e68f8b9e5e7a92146941027ce47049d7cf046",
+        "type": "file"
+      },
+      {
+        "bytes": 373,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-38a0f6d6b2abc2b8.json",
+        "sha256": "9e17af4aed65a1993beae1ffd212b5ec54dcb39c875609e6b725e5ea6132b974",
+        "type": "file"
+      },
+      {
+        "bytes": 363,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-4b86223b70d93831.json",
+        "sha256": "bf7107a51f27706e51e692926ffa56572adbdd34565fc75a7815f7b59506d44f",
+        "type": "file"
+      },
+      {
+        "bytes": 366,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-5bca0901dfcdd951.json",
+        "sha256": "9e4824656da2b9c1937e22db12f2d69183695261ef29613f363e86cb7577b368",
+        "type": "file"
+      },
+      {
+        "bytes": 374,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-69eb4747534a504e.json",
+        "sha256": "a18367f151fa7d6b2d894184eec87e00ca1de3f5e52111c7bae3a47be2d99edd",
+        "type": "file"
+      },
+      {
+        "bytes": 365,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7110bf0f8924f28c.json",
+        "sha256": "32377caae965ede511015ae16b401a2f676b73c3583eab38cd157ff9f6a47985",
+        "type": "file"
+      },
+      {
+        "bytes": 362,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7413207748319cbd.json",
+        "sha256": "39032bce9ee96401d629d70105be8a549f97c0a6b016c1e6d93e6d82b06bef73",
+        "type": "file"
+      },
+      {
+        "bytes": 365,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7b534bbaf7f5c60a.json",
+        "sha256": "9c5c48f297b4001de7c4294ae2bf736315cecf7cd263f28d0ef58c567f830f1a",
+        "type": "file"
+      },
+      {
+        "bytes": 373,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-7bab3b853616cc7f.json",
+        "sha256": "7c7ac2dd63b9ad0b944a3fe995bf31a6e7dd888f99ca324ae739db0b178a7220",
+        "type": "file"
+      },
+      {
+        "bytes": 366,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-818894452c0c6990.json",
+        "sha256": "a517169ad0c1f55a024a763c24231693d3d81fdc0770b0d19a7da35fb70f4820",
+        "type": "file"
+      },
+      {
+        "bytes": 362,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-8a020c9c4f64f4f6.json",
+        "sha256": "687335489ddea71f7b782d1d275b4eb5932ede7e86b4b0be535ca26386d6dfe9",
+        "type": "file"
+      },
+      {
+        "bytes": 363,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-ab51ed1a333e8d70.json",
+        "sha256": "2248a6ee413f87ea996610fb7d8f963f5c29fd44ac4b8339a2daa04579a1f340",
+        "type": "file"
+      },
+      {
+        "bytes": 370,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-ac7f2d2ee1371c2c.json",
+        "sha256": "cfb8a0f0b8953595548b3bb538ac0c3e5d5714910eea96e194ad6066cc5c71dd",
+        "type": "file"
+      },
+      {
+        "bytes": 371,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-d3b7c1043d401698.json",
+        "sha256": "555fdc7a6756dde8115b3494853f9945b396ca6df32a9d485de9c3e435055021",
+        "type": "file"
+      },
+      {
+        "bytes": 374,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-e60c1c3403ca0254.json",
+        "sha256": "9144bda549a2192cbca48c65d14851f07a363d2a9ef0b85ea187fb7ab200bd2c",
+        "type": "file"
+      },
+      {
+        "bytes": 365,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-ec2c0382f93aef71.json",
+        "sha256": "925aa8377d27a3bc6bab32e64e4b0f1055d9e1b4c889b617120d2b0707b1100e",
+        "type": "file"
+      },
+      {
+        "bytes": 362,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-controller-f722c04800257429.json",
+        "sha256": "16cfa24214dcc7318f31a4720232098aa1143f91030b02baf9baef5492f55f83",
+        "type": "file"
+      },
+      {
+        "bytes": 363,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-01169ed70fe37279.json",
+        "sha256": "f00b52c2f37d633536d213ee032a9c7d77c390d69aad0892c4c784c08cc912c6",
+        "type": "file"
+      },
+      {
+        "bytes": 355,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-08953d112b89b1e9.json",
+        "sha256": "43af7dc63de61f58384f40f92303da3444b213599e16a844afeea0328c406019",
+        "type": "file"
+      },
+      {
+        "bytes": 358,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-0dfc668055c50860.json",
+        "sha256": "ce39e07262c6ea1122ead2283b7313d40e4dda9e43d71e2d60d6de077e08a0e2",
+        "type": "file"
+      },
+      {
+        "bytes": 364,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-2489efef42ae430b.json",
+        "sha256": "54a4eab90ea95bcd774a9a7945e25502d87f1542fa31ec0e478212a316e51ccf",
+        "type": "file"
+      },
+      {
+        "bytes": 366,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-38a0f6d6b2abc2b8.json",
+        "sha256": "017d4ede4e3f1cd565a4a77e30b978754af223f15fd007d435da2cca84e84db2",
+        "type": "file"
+      },
+      {
+        "bytes": 356,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-4b86223b70d93831.json",
+        "sha256": "99014c34ff3b09a73eeb2ab1b16497fab5dd24983fe9aa5d65f5a84cf02cd724",
+        "type": "file"
+      },
+      {
+        "bytes": 359,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-5bca0901dfcdd951.json",
+        "sha256": "4bcbcc11406ac4e07565c853471022968411dd799ae0f12e9ac193e375d58b5f",
+        "type": "file"
+      },
+      {
+        "bytes": 367,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-69eb4747534a504e.json",
+        "sha256": "a1191c772a6aeedac99e8dc8c038caaf6d26edd5a28d39b2d20604472815f7f7",
+        "type": "file"
+      },
+      {
+        "bytes": 358,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7110bf0f8924f28c.json",
+        "sha256": "252373967256fe9e24e8d52c4b6f51369ea56f39777184e9dcb62135bd0514ab",
+        "type": "file"
+      },
+      {
+        "bytes": 355,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7413207748319cbd.json",
+        "sha256": "4c2dfa5fb795dbc925143f2f6026b7b45419ca239832c5c855a328b8ecca283c",
+        "type": "file"
+      },
+      {
+        "bytes": 358,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7b534bbaf7f5c60a.json",
+        "sha256": "146570659d7fb35de400c310ea40fb7d6433f6f384b34172f4f87e727167b16c",
+        "type": "file"
+      },
+      {
+        "bytes": 366,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-7bab3b853616cc7f.json",
+        "sha256": "b65a66baeee7fc2d918bcef5ffdcbd1acd9117916255f803d42fd38428bf72b0",
+        "type": "file"
+      },
+      {
+        "bytes": 359,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-818894452c0c6990.json",
+        "sha256": "4ce3b283c359da5eb9fd1a604fbaf5f188b3a5a9fca5ecae3694f06d64d02134",
+        "type": "file"
+      },
+      {
+        "bytes": 355,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-8a020c9c4f64f4f6.json",
+        "sha256": "71c344abd12c26d82cfef9db8057ba8d1561d65def235241607ebf49a751c7d0",
+        "type": "file"
+      },
+      {
+        "bytes": 356,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-ab51ed1a333e8d70.json",
+        "sha256": "ab7fc882173d996952b9714f882058da1edec3d6241bb0731251fed831b1c5ee",
+        "type": "file"
+      },
+      {
+        "bytes": 363,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-ac7f2d2ee1371c2c.json",
+        "sha256": "3d1cd7a8a87deae63f1990fdde54f58ed738cb90c8b2d1e296e5e79defa7fca5",
+        "type": "file"
+      },
+      {
+        "bytes": 364,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-d3b7c1043d401698.json",
+        "sha256": "a1573c19f3b4d366b5bcc83c5d0f12fd7645558e5965e86df71c7408ca90b1db",
+        "type": "file"
+      },
+      {
+        "bytes": 367,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-e60c1c3403ca0254.json",
+        "sha256": "66178f203b68a98964b46f887c90c57fb1f62a8221490409a991aee2c4300b2e",
+        "type": "file"
+      },
+      {
+        "bytes": 358,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-ec2c0382f93aef71.json",
+        "sha256": "eea71bb8f85009eff8d92ae6b1354b709b392b7ce1f6d60ec9f50d31574b72a0",
+        "type": "file"
+      },
+      {
+        "bytes": 355,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/failure-gw1-f722c04800257429.json",
+        "sha256": "7bbd886dc3a29bdd015db6ff94a673d4c06b614373ab822eabbd95f0ab534e89",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-controller.json",
+        "sha256": "88f95c6ea604614bd731a2bbc156b7e97579c01553be25bc8530c1c8a4faae00",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-gw0.json",
+        "sha256": "61132bcbeacbf8e55aaf6e0a09679e49f763aed09e06dfafe713cbcafc64ebaf",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners/identity-gw1.json",
+        "sha256": "b2a39ff2bad4e07531af7ba2696dc7fd98d29f338e51909d88bd747e6f46dba3",
+        "type": "file"
+      },
+      {
+        "bytes": 4587,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-failure-index.json",
+        "sha256": "1f617eb1a1cd3681b5183584850c6ebb29ba523378ef3886751a6ff5ab26df19",
+        "type": "file"
+      },
+      {
+        "bytes": 963,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-negative-custody.json",
+        "sha256": "c2054548a82dc5f97b3c816e9936e977c9f6a428bc3ad6ec5b885c07f5ad53fb",
+        "type": "file"
+      },
+      {
+        "bytes": 1289,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners-result.json",
+        "sha256": "664a2e4006ce2637cbfe88b6adcbe1b072de7081d2b8a07445d1d75ca5fa8e98",
+        "type": "file"
+      },
+      {
+        "bytes": 6387,
+        "path": "wave35-r156-env-restore-owners-attempt-1/env-restore-owners.log",
+        "sha256": "c2633bb8a36d73eecf9839e62e98ff987ab2bc2844c4a46d42cde1e988c009e9",
+        "type": "file"
+      }
+    ],
+    "wave35-r156-env-restore-owners-attempt-1-spec.json": [
+      {
+        "bytes": 1073,
+        "path": "wave35-r156-env-restore-owners-attempt-1-spec.json",
+        "sha256": "fe859e637ca6b27c6ced38c4af6c01c1d17b1f71c26a61fbbbd39fefc6f3ec76",
+        "type": "file"
+      }
+    ],
+    "wave35-r156-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r156-owned-spec.json",
+        "sha256": "57b7f020f2dcc91eb5bab96d62bf763279e3857aaaf8dbe91b9d5d1d2c29dcdb",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 156,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN"
+}

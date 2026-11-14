@@ -273,6 +273,7 @@ def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
 
     import yaml
 
+    from townlet.config.world_roster import WorldRosterDeclaration
     from townlet.demo.runner import DemoRunner
     from townlet.training.checkpoint_utils import safe_torch_load
 
@@ -288,8 +289,14 @@ def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
     training["training_loop"]["checkpointing"]["interval"] = 1
     training["bac_options"]["rnd"]["max_pending_rows"] = 6
     training_path.write_text(yaml.safe_dump(doc, sort_keys=False))
+    world_roster = WorldRosterDeclaration(("native-world-A", "native-world-B"))
     with DemoRunner(
-        config_dir=pack, db_path=tmp_path / "run.db", checkpoint_dir=tmp_path / "checkpoints", max_episodes=2, level_name="L0_0_minimal"
+        config_dir=pack,
+        db_path=tmp_path / "run.db",
+        checkpoint_dir=tmp_path / "checkpoints",
+        max_episodes=2,
+        world_roster=world_roster,
+        level_name="L0_0_minimal",
     ) as runner:
         runner.run()
         artifact = tmp_path / "checkpoints/checkpoint_ep00002.pt"
@@ -333,7 +340,12 @@ def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
     shutil.copy2(artifact, fresh_dir / artifact.name)
     shutil.copy2(digest, fresh_dir / digest.name)
     with DemoRunner(
-        config_dir=pack, db_path=tmp_path / "fresh.db", checkpoint_dir=fresh_dir, max_episodes=payload["episode"], level_name="L0_0_minimal"
+        config_dir=pack,
+        db_path=tmp_path / "fresh.db",
+        checkpoint_dir=fresh_dir,
+        max_episodes=payload["episode"],
+        world_roster=world_roster,
+        level_name="L0_0_minimal",
     ) as fresh:
         fresh.run()
         restored = fresh.population.exploration.rnd

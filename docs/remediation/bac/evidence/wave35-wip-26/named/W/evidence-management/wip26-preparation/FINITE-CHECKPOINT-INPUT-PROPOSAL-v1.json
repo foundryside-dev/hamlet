@@ -1,0 +1,790 @@
+{
+  "closed_inventory": {
+    "bytes": 8938,
+    "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/PREPARATION-INVENTORY-v1.json",
+    "root": "W",
+    "sha256": "ef7272caef3f929aab80ce2fb1e220c0f9bed077dac048106ee8b9560b52fba3"
+  },
+  "exclusions": [
+    "No Git/index/APP/runtime/test execution",
+    "No final seal/assembly/publication/docs/Spaces mutation",
+    "No unrelated hardware tool expansion or archive recursion",
+    "R158 live attempt descendants not frozen"
+  ],
+  "existing_reusable_helpers": [
+    {
+      "bytes": 38500,
+      "path": "evidence-management/bac_checkpoint_contract.py",
+      "root": "W",
+      "sha256": "6fc6845ccb73e9bc8a0e24837bf005b0d2cd156107cb8a8341ded9012b7c54b3"
+    },
+    {
+      "bytes": 11236,
+      "path": "evidence-management/wip24-preparation/inventory_closed_rounds_v1.py",
+      "root": "W",
+      "sha256": "2cf1b3799085cd9efdcb99cb736e328f4eca437aef725e1da820768aacc61e1a"
+    },
+    {
+      "bytes": 9359,
+      "path": "evidence-management/wip25-preparation/prepare_packet_v1.py",
+      "root": "W",
+      "sha256": "7698f668b0f6eed36958ccf09540e1db08ec72bf204e3545542291689933d483"
+    },
+    {
+      "bytes": 6965,
+      "path": "evidence-management/wip25-preparation/finalize_packet_v2.py",
+      "root": "W",
+      "sha256": "cccc86470ab7495fec3fcdcd491bbc02037c3dd6616c1130f862d313376cfafa"
+    },
+    {
+      "bytes": 4482,
+      "path": "run_bac_cold_checks_locked.py",
+      "root": "Q",
+      "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+    },
+    {
+      "bytes": 2917,
+      "path": "bac_source_identity.py",
+      "root": "Q",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 3032,
+      "path": "verify_bac_run.py",
+      "root": "Q",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 4596,
+      "path": "verify_bac_failed_run.py",
+      "root": "Q",
+      "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+    }
+  ],
+  "format_constraints": [
+    "No demonstrated format change needed. Reuse existing neutral schemas and catalog; do not infer terminal from live files.",
+    "Run actual validate_receipt after finite inputs ready; transient in-memory status override only for prereview structural check, no fabricated review.",
+    "Actual draft plan and individual-file size gate below104857600 bytes before any copy; prior WIP25 projection not evidence of this interval size."
+  ],
+  "helper_attribution": "Harness recorded digests match checked current helper in closed inventory. Identity/verifier byte references are observed now; exact historical suppliers must be reconciled to original witnesses/root attestation before seal. Only executed helper dependencies attach to actual checks; publication support explicitly publication_dependency_only. No helper source copy or new framework.",
+  "observed_at_utc": "2026-11-14T18:05:53.474153+00:00",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "proposed_interval": [
+    149,
+    158
+  ],
+  "published_base": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "required_components": [
+    "Own-source closed history R149 through root-confirmed terminal, retaining all failures and UNRUN specs",
+    "Actual runner constructor/entry/completion/counter changes and original plus authored witness; bounded review/adoption with native-composition limitation",
+    "ENV prepared-world currentness A: producer52 at R156, independent source review and pending nine-probe execution/review; no full restore claim",
+    "Current runtime-custody fixture repair: exact source review and actual R158 owner result pending",
+    "R151 capture refusal and preexecution failure, R155 verifier lock collision/retry, R157 static failures and import-only repair metadata"
+  ],
+  "retained_outer_records": [
+    {
+      "bytes": 914,
+      "path": "evidence-management/pop-standalone-step/wave35-r149-runner-baseline-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "aa7c3b0e33cd9af01076684fadba0b9d541d2d1a2ae05bca42d165d5dd4e8bb3"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r149-runner-baseline-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 968,
+      "path": "evidence-management/pop-standalone-step/wave35-r149-runner-baseline-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "2b1111056136f24901451945838789a9b3dfe30934960aaee78a526b35e77ed9"
+    },
+    {
+      "bytes": 917,
+      "path": "evidence-management/pop-standalone-step/wave35-r149-runner-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "e7d370b6ed008cfe72c0f0414869d6ec3aa7dab47d9005ba38b2341ebc0848a0"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r149-runner-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 994,
+      "path": "evidence-management/pop-standalone-step/wave35-r149-runner-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "e130b58d3cb42188d67541ad30615d1b106e044e66760e600ab347aa7cd6505f"
+    },
+    {
+      "bytes": 931,
+      "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "b8cfd1475453acd61da9266c8e52bf839a07bc5e8d779a004425b589cfcb56fa"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 962,
+      "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "e65ad799c259ab7eeb5d561387f2fd3d2012634ee0a51e12ea2a6633ce345598"
+    },
+    {
+      "bytes": 918,
+      "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-red-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "fb11b42241c85648abed44aaaecd7631bf4f3c5dd2cfced595341abfa36faa97"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-red-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 952,
+      "path": "evidence-management/pop-standalone-step/wave35-r150-runner-roster-red-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "66a79afdaea02c94e2bbe2443dc0c665e8dfe76a1e1dfed08fbeddf719625a7d"
+    },
+    {
+      "bytes": 916,
+      "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "c10f9fa93acbc79d565296c9c68023a8459069f2b297f6145968c43ae3d17236"
+    },
+    {
+      "bytes": 854,
+      "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "6d31a186b8734b8842d3bd6c0dfbfd14208f8a253809c8c1e89d71f6580b9d3e"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 914,
+      "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-2-outer.json",
+      "root": "W",
+      "sha256": "7679b1df2a3e1241037975e29387c810ea6ed307bf4c71846a51d2405698457f"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-2-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1069,
+      "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-2-outer.stdout",
+      "root": "W",
+      "sha256": "02e2aa8b9dff12e57d5f2068221e319eeff5c17776509bdb559858b1aba83c74"
+    },
+    {
+      "bytes": 914,
+      "path": "evidence-management/pop-standalone-step/wave35-r152-runner-baseline-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "6063d4359774466ae4d459dbea2ee8f7124fc8b3aed257f61e94694f75caee2a"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r152-runner-baseline-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 969,
+      "path": "evidence-management/pop-standalone-step/wave35-r152-runner-baseline-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "e8b4c68fb57e3de7ef237b02c2891277df2ab1e5b98f575c51f40763a74a0523"
+    },
+    {
+      "bytes": 913,
+      "path": "evidence-management/pop-standalone-step/wave35-r153-runner-baseline-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "4bfbdd4dc6f0bdfeb865c1645af2d2e0be8a1f6a62a268ee18744011bc35e2ad"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r153-runner-baseline-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 969,
+      "path": "evidence-management/pop-standalone-step/wave35-r153-runner-baseline-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "6fa2b69555b10b5f9bbbb043cee0d88f8f942a0ddf3b0060b4e0c3a3616f47dd"
+    },
+    {
+      "bytes": 914,
+      "path": "evidence-management/pop-standalone-step/wave35-r154-runner-baseline-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "f0519a387d3de5cf909f324239ac255865acf8fdbf87335ab7902b6a803d8fee"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r154-runner-baseline-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 969,
+      "path": "evidence-management/pop-standalone-step/wave35-r154-runner-baseline-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "29e36c042238cca94da720b3504d6ff3b30afef9bc68f5ccf60acd68fcd68da3"
+    },
+    {
+      "bytes": 935,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-env-restore-red-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "1f1e99b2a6cdd90dd27a9ee170c616cefe0575fb27b618dcd01d84db33455c15"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-env-restore-red-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 956,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-env-restore-red-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "d576aa9ccf029ac8c4dd0cde9a63b0be8d77fa824a51cd0898df228e7fa0ae24"
+    },
+    {
+      "bytes": 921,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-env-restore-red-run-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "bd1534f28dd6db236b6a3cd2e358b3d679e76fc24d3b57a748c2d43377fb79eb"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-env-restore-red-run-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 959,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-env-restore-red-run-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "d6ec9d501e11ff21ae80e83270b1bc5fd9fa889edf229aa53cdd30dd61edd501"
+    },
+    {
+      "bytes": 935,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-runner-progress-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "36ebb3a6502805a397d622815775997877e3986297c2b454f3da41a33e2acc2d"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-runner-progress-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1185,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-runner-progress-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "073ae166f374135732db914ce5d71702eb3e82877747e10f78cb8cca56631c43"
+    },
+    {
+      "bytes": 921,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-runner-progress-run-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "e8faff7e1265306f95af39e4746dc667fd46cf1a9661230ea61c0360c80f5e83"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-runner-progress-run-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1186,
+      "path": "evidence-management/pop-standalone-step/wave35-r155-runner-progress-run-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "6dff6d77b1098ba5928fc8fb7aaedfd73cc41b02c51fbc09e70ece933253f2db"
+    },
+    {
+      "bytes": 927,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "945d146e4824a9aa948328da6510acb6d494e849527771746fe2842e82366220"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1250,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "1d32ce3f8bb499c695909d5e4909a3b329dfb27fe92fb9b6422bd7bc77f2f304"
+    },
+    {
+      "bytes": 918,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-green-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "a8b2751a280055eaa528050755da1a5a57bd76efc81a67291b860299b605004b"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-green-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 958,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-green-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "6a3bd27fd6a15402544b61b409ed856fbeda83b3caf6d278667526dcaa22307c"
+    },
+    {
+      "bytes": 919,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-owners-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "cf1f754adac08ee508a300f78dd48964311522f27a196b89615f360261d453da"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-owners-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1179,
+      "path": "evidence-management/pop-standalone-step/wave35-r156-env-restore-owners-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "56fe4cc3e1d270c149ec3fbc8db09506f0995c3a5e805e254f1770ad7d5cff13"
+    }
+  ],
+  "root_facts_pending": [
+    "R158 terminal results and postflight; root terminal selection/freeze",
+    "Historical execution subtree/source attestation for exact interval",
+    "Exact capture/static/failed-verifier supplemental record paths",
+    "Independent A review/probe capsule and root bounded adoption; actual runner/fixture reviews",
+    "Source-qualified document claims and exact publication delta approval"
+  ],
+  "rounds": [
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 210603,
+        "path": "wave35/r149-candidate.json",
+        "root": "W",
+        "sha256": "7999cf0066297aa81591df5ae4de169b2f7d1bd99f638500fa86caf0907b5aa3"
+      },
+      "candidate_tree": "6170b491a487243871e528070ae326639bbcbc42",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 826
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r149-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "80aaadc3d63db3c72c9bbeea328249ba1cd44c56df67ca05a7465ef86d152b82"
+      },
+      "round": 149,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r149-collection-spec.json",
+        "wave35-r149-owned-spec.json",
+        "wave35-r149-runner-baseline-attempt-1",
+        "wave35-r149-runner-baseline-attempt-1-spec.json",
+        "wave35-r149-runner-collection-attempt-1",
+        "wave35-r149-runner-collection-attempt-1-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 211522,
+        "path": "wave35/r150-candidate.json",
+        "root": "W",
+        "sha256": "2816ca00333df9feac4fd7f15adac7527ce860676966b54134131d828dee3e9f"
+      },
+      "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 827
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r150-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "d51d905abdac2e852ea9477c82bd74cdb8cdaf927cfdb1a37fe41a6e6bff3425"
+      },
+      "round": 150,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r150-collection-spec.json",
+        "wave35-r150-owned-spec.json",
+        "wave35-r150-runner-roster-collection-attempt-1",
+        "wave35-r150-runner-roster-collection-attempt-1-spec.json",
+        "wave35-r150-runner-roster-red-attempt-1",
+        "wave35-r150-runner-roster-red-attempt-1-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 211618,
+        "path": "wave35/r151-candidate.json",
+        "root": "W",
+        "sha256": "ec83e769318512c011fe129d2189c4c8b25e1236aff5de0933b02a1cd9d61f85"
+      },
+      "candidate_tree": "f19433d099271efa6ed006535c2e0a33db2bf760",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 827
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r151-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "788bbcba13529bdded8b37b94f0535dc8b8949d8d48b88cd8f73d3d72081f10d"
+      },
+      "round": 151,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r151-collection-spec.json",
+        "wave35-r151-owned-spec.json",
+        "wave35-r151-runner-progress-attempt-1-spec.json",
+        "wave35-r151-runner-progress-attempt-2",
+        "wave35-r151-runner-progress-attempt-2-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 211618,
+        "path": "wave35/r152-candidate.json",
+        "root": "W",
+        "sha256": "b8faeb9883148f64e1e920925239e0aac3a95d16a5d11e95e0c59cac1c3222b8"
+      },
+      "candidate_tree": "8affc41158ae70bd3e2a43cc7cd619a1f7d90a9a",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 827
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r152-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "aaef845e46a62653f67b08f8f7e5a259d69646caf587fa799ee39ed4288d5710"
+      },
+      "round": 152,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r152-collection-spec.json",
+        "wave35-r152-owned-spec.json",
+        "wave35-r152-runner-baseline-attempt-1",
+        "wave35-r152-runner-baseline-attempt-1-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 211618,
+        "path": "wave35/r153-candidate.json",
+        "root": "W",
+        "sha256": "5502c152d30257fc201712edfff6953f0f0b9484464c187adcd6725bf9e11514"
+      },
+      "candidate_tree": "5d3cbce0b90ec1da405e1faf615862711f31d06b",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 827
+      },
+      "preflight": {
+        "bytes": 5779,
+        "path": "wave35/r153-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "2c0232c228833220c98604cbfab5aee84d73d7cbeaf49cf585f542ac7cad33b6"
+      },
+      "round": 153,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r153-collection-spec.json",
+        "wave35-r153-owned-spec.json",
+        "wave35-r153-runner-baseline-attempt-1",
+        "wave35-r153-runner-baseline-attempt-1-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 211618,
+        "path": "wave35/r154-candidate.json",
+        "root": "W",
+        "sha256": "8dd749c25267544a51d217718e74d4314b3b03a21578c41bf6e50df502671480"
+      },
+      "candidate_tree": "ba27ba9ae592a00a85041bac98a169dbc8ac885c",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 827
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r154-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "a1113d908a23290d9bff0b69b13e848496612e1955e2234dca4de57a68f5af12"
+      },
+      "round": 154,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r154-collection-spec.json",
+        "wave35-r154-owned-spec.json",
+        "wave35-r154-runner-baseline-attempt-1",
+        "wave35-r154-runner-baseline-attempt-1-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 213040,
+        "path": "wave35/r155-candidate.json",
+        "root": "W",
+        "sha256": "642a775a06ee092588ac19c7a54f8e33933623015394c9e98c98f44fe16d7127"
+      },
+      "candidate_tree": "a37cf18fcebb24c6c34165fafa4df6876e5494c7",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 828
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r155-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "9bc348a9f3b38d95dba75f5f70b038b11ea524b6d74f72cbdeab206bfb194e69"
+      },
+      "round": 155,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r155-collection-spec.json",
+        "wave35-r155-env-restore-red-collection-attempt-1",
+        "wave35-r155-env-restore-red-collection-attempt-1-spec.json",
+        "wave35-r155-env-restore-red-run-attempt-1",
+        "wave35-r155-env-restore-red-run-attempt-1-spec.json",
+        "wave35-r155-owned-spec.json",
+        "wave35-r155-runner-progress-collection-attempt-1",
+        "wave35-r155-runner-progress-collection-attempt-1-spec.json",
+        "wave35-r155-runner-progress-run-attempt-1",
+        "wave35-r155-runner-progress-run-attempt-1-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 213138,
+        "path": "wave35/r156-candidate.json",
+        "root": "W",
+        "sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4"
+      },
+      "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 828
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r156-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "f916779d52e96a2027ab49d253cfbbcde25073840a549022070cbd5b2f0da522"
+      },
+      "round": 156,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r156-collection-spec.json",
+        "wave35-r156-env-restore-collection-attempt-1",
+        "wave35-r156-env-restore-collection-attempt-1-spec.json",
+        "wave35-r156-env-restore-green-attempt-1",
+        "wave35-r156-env-restore-green-attempt-1-spec.json",
+        "wave35-r156-env-restore-owners-attempt-1",
+        "wave35-r156-env-restore-owners-attempt-1-spec.json",
+        "wave35-r156-owned-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 214657,
+        "path": "wave35/r157-candidate.json",
+        "root": "W",
+        "sha256": "0129ff95b65131c16e8b373421f7de434a9996e08ddbd5f47711d0e755f8c407"
+      },
+      "candidate_tree": "4b72ad15f15805d5a7164c2550498fc726c39dc7",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 829
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r157-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "24312d5fc667701cd0478f55e97e674987a16ade2a09ee3d56f3ab7107e60e2b"
+      },
+      "round": 157,
+      "state": "CLOSED; see own-source component inventory",
+      "top_level_Q_members": [
+        "wave35-r157-collection-spec.json",
+        "wave35-r157-env-independent-attempt-1-spec.json",
+        "wave35-r157-env-independent-collection-attempt-1-spec.json",
+        "wave35-r157-owned-spec.json",
+        "wave35-r157-runtime-custody-owners-attempt-1-spec.json"
+      ]
+    },
+    {
+      "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+      "candidate": {
+        "bytes": 214657,
+        "path": "wave35/r158-candidate.json",
+        "root": "W",
+        "sha256": "d69f7165b19ebfb150aa27d0a8b761b977c35a0ef3dadf36c01f4ab6fe313a91"
+      },
+      "candidate_tree": "66e8bff22c06c3afce54fb5b45657fa5d15b2d1d",
+      "inventory_counts": {
+        "artifacts": 13,
+        "configs": 573,
+        "source_files": 829
+      },
+      "preflight": {
+        "bytes": 5812,
+        "path": "wave35/r158-fixture-resource-preflight.json",
+        "root": "W",
+        "sha256": "4e875e0d705c187ab5b258438f32c246c7c7fcf9b31f6517abbc53a146851d60"
+      },
+      "round": 158,
+      "state": "LIVE; results/postflight pending root notice; no closed descendant snapshot",
+      "top_level_Q_members": [
+        "wave35-r158-collection-spec.json",
+        "wave35-r158-env-independent-attempt-1",
+        "wave35-r158-env-independent-attempt-1-spec.json",
+        "wave35-r158-env-independent-collection-attempt-1",
+        "wave35-r158-env-independent-collection-attempt-1-spec.json",
+        "wave35-r158-owned-spec.json",
+        "wave35-r158-runtime-custody-owners-attempt-1",
+        "wave35-r158-runtime-custody-owners-attempt-1-spec.json"
+      ]
+    }
+  ],
+  "spaces_proposal_only": {
+    "current_sequence": 60,
+    "text": "User resumed PW04 actual runner integration after WIP25. Local bounded work is active; native composition and full package qualification remain open. Published checkpoint remains WIP25 until root supplies the next verified durable identity. Accounting28/38/66 unchanged.",
+    "write_authorized": false
+  },
+  "special_dispositions": {
+    "generated_templates": {
+      "count_closed_rounds": 18,
+      "per_round": 2,
+      "reason": "Unused unrelated generated T21 collection/owned templates; retained separately from named actual checks.",
+      "status": "UNRUN"
+    },
+    "r151_preexecution_failure": {
+      "duration_seconds": 0.060632838984020054,
+      "ended_at": "2026-11-14T17:16:47.874967+00:00",
+      "exit_code": 1,
+      "reason": "Manifest absent before pytest; later candidate did not exist at this launch. Do not claim executed source identity from later manifest. Original capture refusal evidence path pending root.",
+      "record": {
+        "bytes": 916,
+        "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-1-outer.json",
+        "root": "W",
+        "sha256": "c10f9fa93acbc79d565296c9c68023a8459069f2b297f6145968c43ae3d17236"
+      },
+      "started_at": "2026-11-14T17:16:47.814306+00:00",
+      "status": "FAILED LAUNCHER; PYTEST UNRUN",
+      "stderr": {
+        "bytes": 854,
+        "path": "evidence-management/pop-standalone-step/wave35-r151-runner-progress-attempt-1-outer.stderr",
+        "root": "W",
+        "sha256": "6d31a186b8734b8842d3bd6c0dfbfd14208f8a253809c8c1e89d71f6580b9d3e"
+      },
+      "test_counts": null
+    },
+    "r155_verifier_retry": "Root progress reports parallel git-write-tree index lock collision; sequential verification retry passed without retesting or source change. Exact failed verifier attempt record still required; do not erase failure or count retry as test.",
+    "r157_unrun_named_specs": [
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "reason": "Root progress records static fixture re-export lint failure; R158 recaptured after import-only repair. No R157 runtime or collection occurred.",
+        "spec": {
+          "bytes": 851,
+          "path": "wave35-r157-env-independent-attempt-1-spec.json",
+          "root": "Q",
+          "sha256": "b16b2198d4f1d2abc8b3180f9fb156886bb7b917a23baec1a56b83911df98b00"
+        },
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "reason": "Root progress records static fixture re-export lint failure; R158 recaptured after import-only repair. No R157 runtime or collection occurred.",
+        "spec": {
+          "bytes": 926,
+          "path": "wave35-r157-env-independent-collection-attempt-1-spec.json",
+          "root": "Q",
+          "sha256": "b2d281702b566366f59bd90f1436340cb01585f970892624172be354d8bba7e3"
+        },
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "reason": "Root progress records static fixture re-export lint failure; R158 recaptured after import-only repair. No R157 runtime or collection occurred.",
+        "spec": {
+          "bytes": 861,
+          "path": "wave35-r157-runtime-custody-owners-attempt-1-spec.json",
+          "root": "Q",
+          "sha256": "222a519517fdebfde5462c2e502de003e2a24e0e5c13c112e109b5ec6a2bf76e"
+        },
+        "started_at": null,
+        "status": "UNRUN"
+      }
+    ]
+  },
+  "status": "FINITE PREPARATION ONLY; TERMINAL NOT FROZEN",
+  "subject_fields_required": [
+    "Exact sealed contract reference; named checkpoint ID; contiguous catalog through WIP25",
+    "Frozen terminal candidate manifest/base/tree and five exact execution subtrees; each earlier round source bindings",
+    "Exact Q top-level membership and descendants including empty dirs; terminal pointers per check/attempt",
+    "Executed result/log/verifier/process/import/thread/helper refs and honest unavailable UTC/custody reasons",
+    "Bounded component supplier/reviewer identities, exact source versions, adoption and overlap",
+    "Reviewed full destination document bytes; STATUS executed-inventory/publication delta explicitly separate",
+    "Independent terminal review of frozen subject and exact candidate; component review is not terminal review",
+    "Remaining native composition, restore, runner, global/static/coverage/hardware/final review and CI gates;28/38/66 unchanged"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_real_bank_install_and_component_journal[True]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "E   AttributeError: 'WorldBoundaryAuthority' object has no attribute 'restore_bank_attempt'",
+  "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83"
+}

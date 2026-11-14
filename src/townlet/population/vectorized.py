@@ -3070,10 +3070,19 @@ class VectorizedPopulation(PopulationManager):
         optimizer.load_state_dict(owned["optimizer"])
         if scheduler is not None:
             scheduler.load_state_dict(owned["scheduler"])
-        prepared_replay = replay_target.materialize_validated(validated_replay)
         if replay_target is self.replay_buffer:
-            replay_target = copy.deepcopy(replay_target)
-        replay_target.load_prepared(prepared_replay)
+            # Replay custody is owner-bound and contains locks and opaque RNG
+            # authority. Reconstruct offside through its real transport instead
+            # of copying that authority or moving a prepared handle to a copy.
+            if self._replay_setup is not None:
+                setup = replace(self._replay_setup, tick=ledger.vector_ticks)
+            else:
+                setup = self._compiled_replay_setup(ledger.vector_ticks)
+            replay_target = self._new_replay(setup)
+            retained = replay_target.prepare_serialized(self.replay_buffer.serialize(), expected_obs_dim=self._obs_dim, lineage=None)
+            replay_target.load_prepared(retained, lineage=None)
+        prepared_replay = replay_target.materialize_validated(validated_replay, lineage=None)
+        replay_target.load_prepared(prepared_replay, lineage=None)
         cadence = copy.deepcopy(owned["exploration_state"]["cadence"])
         correlation = cadence, mode, parent_restore
         self._preparing_checkpoint = correlation

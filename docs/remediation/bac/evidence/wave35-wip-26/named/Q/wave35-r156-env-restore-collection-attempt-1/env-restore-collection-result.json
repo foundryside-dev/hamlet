@@ -1,0 +1,32 @@
+{
+  "name": "env-restore-collection",
+  "exit_code": 0,
+  "seconds": 5.19725873801508,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r156-env-restore-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r156-env-restore-collection-attempt-1/env-restore-collection.log",
+  "sha256": "01edbe243abce09d85280d3b355c1e8efe48818a80608f5d33cbc1264695dc36",
+  "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "manifest_sha256": "902335480cfef9f23ae5f7157f24cecad9eadba1585f08ed521affea2f0631c4",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

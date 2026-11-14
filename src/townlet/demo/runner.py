@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import signal
 import time
@@ -13,12 +14,15 @@ from typing import Any
 import numpy as np
 import torch
 
+from townlet.config.exploration_policy import ExplorationRuntime, build_exploration
 from townlet.config.resolved_launch import resolve_launch
+from townlet.config.world_roster import WorldRosterDeclaration, canonical_bytes
+from townlet.curriculum.base import CurriculumManager
 from townlet.curriculum.factory import build_curriculum
 from townlet.demo.database import DemoDatabase
 from townlet.determinism import seed_all
-from townlet.environment.vectorized_env import VectorizedHamletEnv
-from townlet.exploration.adaptive_intrinsic import AdaptiveIntrinsicExploration
+from townlet.environment.vectorized_env import VectorizedHamletEnv, WorldReceiptIssuer
+from townlet.exploration.world_curiosity_state import WorldCuriosityDescriptor
 from townlet.population.vectorized import VectorizedPopulation
 from townlet.training.checkpoint_utils import (
     CHECKPOINT_FORMAT_VERSION,
@@ -30,7 +34,7 @@ from townlet.training.checkpoint_utils import (
     validate_demo_checkpoint_runtime_fields,
     verify_checkpoint_digest,
 )
-from townlet.training.episode import RunnerCompletionReason
+from townlet.training.episode import RunnerCompletionReason, freeze_lane_outcome
 from townlet.training.state import BatchedAgentState
 from townlet.training.tensorboard_logger import TensorBoardLogger
 from townlet.universe.compiled import CompiledUniverse
@@ -92,6 +96,7 @@ class DemoRunner:
         checkpoint_dir: Path | str,
         max_episodes: int | None = None,
         *,
+        world_roster: WorldRosterDeclaration,
         level_name: str | None = None,
         force_new_vfs: bool = False,
         max_environment_steps: int | None = None,
@@ -103,12 +108,15 @@ class DemoRunner:
             level_name: Explicit curriculum selection; may be inferred only when unambiguous.
             db_path: Path to SQLite database
             checkpoint_dir: Directory for checkpoint files
+            world_roster: Explicit immutable declaration of the run's logical worlds.
             max_episodes: Explicit runtime limit; omission uses selected effective training.
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
             max_environment_steps: Optional summed-live-agent transition budget.
                 A vector step is taken only when every currently live lane fits.
         """
         # Resolve and validate before allocating runtime files/logger resources.
+        if not isinstance(world_roster, WorldRosterDeclaration):
+            raise ValueError("world_roster requires a WorldRosterDeclaration")
         self.resolved_launch = resolve_launch(Path(config_dir), level_name=level_name)
         self.config_dir = self.resolved_launch.root
         self.level_name = self.resolved_launch.level_name
@@ -125,6 +133,10 @@ class DemoRunner:
         self.launch_overrides = MappingProxyType(overrides)
         self.db_path = Path(db_path)
         self.checkpoint_dir = Path(checkpoint_dir)
+        if len(world_roster.world_ids) != self.effective_run.training.population.size:
+            raise ValueError("world roster cardinality must match the selected population")
+        self.world_roster = world_roster
+        self.world_roster_path = self.checkpoint_dir.parent / "run-world-roster.json"
         self.force_new_vfs = force_new_vfs
         if max_environment_steps is not None and (
             not isinstance(max_environment_steps, int) or isinstance(max_environment_steps, bool) or max_environment_steps <= 0
@@ -134,6 +146,20 @@ class DemoRunner:
         self.completed_live_agent_steps = 0
         self.environment_step_budget_shortfall = 0
         self.environment_step_budget_reached = False
+
+        # The run declaration is immutable and precedes database/logger/RNG setup.
+        roster_bytes = canonical_bytes(world_roster.to_dict()) + b"\n"
+        if self.world_roster_path.exists():
+            self._validate_world_roster_manifest(roster_bytes)
+        elif self.db_path.exists() or (self.checkpoint_dir.exists() and any(self.checkpoint_dir.iterdir())):
+            raise ValueError("existing run is missing its world roster manifest")
+        else:
+            self.checkpoint_dir.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                with self.world_roster_path.open("xb") as stream:
+                    stream.write(roster_bytes)
+            except FileExistsError:
+                self._validate_world_roster_manifest(roster_bytes)
 
         # Create directories
         self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -180,10 +206,10 @@ class DemoRunner:
         self.current_episode = 0
 
         # Initialize components (will be created in run())
-        self.env = None
-        self.population = None
-        self.curriculum = None
-        self.exploration = None
+        self.env: VectorizedHamletEnv | None = None
+        self.population: VectorizedPopulation | None = None
+        self.curriculum: CurriculumManager | None = None
+        self.exploration: ExplorationRuntime | None = None
         self.recorder = None  # Episode recorder (initialized if recording enabled)
 
         # Shutdown flag
@@ -196,6 +222,16 @@ class DemoRunner:
             # Running in a worker thread (e.g., unified server)
             # Signal handling will be done by the orchestrator
             pass
+
+    def _validate_world_roster_manifest(self, expected: bytes) -> None:
+        """Refuse missing, malformed or changed persisted run identity without mutation."""
+        try:
+            actual = self.world_roster_path.read_bytes()
+            declared = WorldRosterDeclaration.from_dict(json.loads(actual))
+        except (OSError, ValueError, TypeError) as error:
+            raise ValueError("invalid world roster manifest") from error
+        if declared != self.world_roster or actual != expected:
+            raise ValueError("world roster manifest differs from the supplied declaration")
 
     def _handle_shutdown(self, signum, frame):
         """Handle shutdown signal gracefully."""
@@ -249,12 +285,111 @@ class DemoRunner:
         return False  # Don't suppress exceptions
 
     def flush_all_agents(self):
-        """Flush all agents' episodes to replay buffer before checkpoint."""
+        """Flush unfinished, participating lanes without repeating completed effects."""
         if not self.population:
             return
 
         for agent_idx in range(self.population.num_agents):
-            self.population.flush_episode(agent_idx, reason="checkpoint")
+            if int(self.population.episode_step_counts[agent_idx]) > 0 and not bool(self.population.episode_completed[agent_idx]):
+                self.population.flush_episode(agent_idx, reason="checkpoint")
+
+    def _complete_training_episode(self) -> None:
+        """Commit actual learner effects before granting the next ENV boundary."""
+        population, runtime, curriculum, env = self.population, self.exploration, self.curriculum, self.env
+        if population is None or runtime is None or curriculum is None or env is None:
+            raise RuntimeError("Episode completion requires initialized training components")
+        accepted = self.accepted_episode
+        events = tuple(sorted(population.completed_outcomes, key=lambda event: event.outcome.agent_idx))
+        if not events:
+            raise RuntimeError("Nonempty completion requires actual population outcomes")
+        frozen = tuple(map(freeze_lane_outcome, events))
+        content = tuple((item.payload.hex(), item.fingerprint) for item in frozen)
+        participants = tuple(event.world_id for event in events)
+        batch = accepted.batch_episode
+        before_count = population.clock_ledger.completed_batch_episodes
+        before_epsilon = runtime.epsilon
+        work = {"batch_episode": batch, "completion_content": content, "stage": "preparing"}
+        self.boundary_work = work
+        curriculum_prepared = curriculum.prepare_episode_outcomes(events)
+        bank_prepared = runtime.prepare_completion(
+            accepted=accepted,
+            boundary_key=batch,
+            completion_content=content,
+            outcomes=events,
+            participated_world_ids=participants,
+        )
+        close = env.prepare_episode_close(
+            accepted=accepted,
+            boundary_key=batch,
+            completion_content=content,
+            participated_world_ids=participants,
+            dispositions=bank_prepared.prepared_receipt,
+        )
+        work.update(curriculum_prepared=curriculum_prepared, bank_prepared=bank_prepared, close=close)
+        env.freeze_episode_close(close)
+        work["stage"] = "curriculum_in_progress"
+        curriculum.commit_prepared_episode_outcomes(curriculum_prepared)
+        curriculum_state = curriculum.checkpoint_state()
+        curriculum.validate_checkpoint_state(curriculum_state)
+        committed = {tuple(entry["identity"]): entry["fingerprint"] for entry in curriculum_state["completion"]["events"]}
+        if any(
+            committed.get((event.batch_episode, event.outcome.agent_idx)) != reading.fingerprint for event, reading in zip(events, frozen)
+        ):
+            raise RuntimeError("Curriculum did not retain the actual population completions")
+        work["stage"] = "curiosity_in_progress"
+        retirement = runtime.commit_completion(prepared=bank_prepared)
+        work.update(retirement=retirement, stage="population_in_progress")
+        population.commit_episode_outcomes(events)
+        if population.clock_ledger.completed_batch_episodes != before_count + 1:
+            raise RuntimeError("Population did not commit exactly one completed batch")
+        progress = population.batch_commit_progress
+        if progress is None or progress["batch_episode"] != batch or progress["status"] != "completed":
+            raise RuntimeError("Population completion remains unresolved")
+        expected_epsilon = max(self.effective_run.exploration.epsilon_end, before_epsilon * self.effective_run.exploration.epsilon_decay)
+        cadence = runtime.checkpoint_state()["cadence"]["last_committed"]
+        if (
+            cadence
+            != {
+                "batch_episode": batch,
+                "completion_content": content,
+                "epsilon_before": before_epsilon,
+                "epsilon_after": expected_epsilon,
+            }
+            or runtime.epsilon != expected_epsilon
+        ):
+            raise RuntimeError("Runtime cadence does not attest this completed batch")
+        work["stage"] = "selection_in_progress"
+        population.sync_exploration_metrics()
+        if not torch.equal(population.current_epsilons, torch.full_like(population.current_epsilons, expected_epsilon)):
+            raise RuntimeError("Population selection inputs do not reflect committed epsilon")
+        work["stage"] = "effects_verified"
+        payload = {"accepted": accepted, "boundary_key": batch, "completion_content": content}
+        children = {
+            name: WorldReceiptIssuer(owner=owner).issue(kind=name, payload=payload)
+            for name, owner in (
+                ("curriculum_receipt", curriculum),
+                ("exploration_receipt", runtime),
+                ("population_commit_receipt", population),
+                ("epsilon_install_receipt", runtime),
+                ("selection_sync_receipt", runtime),
+            )
+        }
+        closure = env.close_episode(close, dispositions=retirement)
+        work.update(closure=closure, stage="release_in_progress")
+        effects = WorldReceiptIssuer(owner=self).issue(
+            kind="boundary_effects",
+            payload={
+                "batch_episode": batch,
+                "accepted_identity": accepted,
+                "completion_content": content,
+                "retirement_receipt": closure.dispositions,
+                **children,
+            },
+        )
+        release = self.boundary_authority.completed(closure=closure, effects=effects)
+        env.install_boundary_release(release)
+        self.boundary_release = release
+        work.update(stage="completed", release=release)
 
     def save_checkpoint(self) -> None:
         """Save checkpoint at current episode."""
@@ -268,7 +403,8 @@ class DemoRunner:
         # P1.1 Phase 5: Flush all agents before checkpoint
         self.flush_all_agents()
 
-        checkpoint_path = self.checkpoint_dir / f"checkpoint_ep{self.current_episode:05d}.pt"
+        completed_episodes = population.clock_ledger.completed_batch_episodes
+        checkpoint_path = self.checkpoint_dir / f"checkpoint_ep{completed_episodes:05d}.pt"
 
         population_state = population.get_checkpoint_state()
         curriculum_state = curriculum.checkpoint_state()
@@ -280,7 +416,7 @@ class DemoRunner:
         # P1.1 Phase 2: Use population's complete checkpoint state
         checkpoint: dict[str, Any] = {
             "version": CHECKPOINT_FORMAT_VERSION,
-            "episode": self.current_episode,
+            "episode": completed_episodes,
             "timestamp": time.time(),
             "substrate_metadata": {
                 "position_dim": env.substrate.position_dim,
@@ -384,6 +520,7 @@ class DemoRunner:
 
     def run(self):
         """Run demo training loop."""
+        self._validate_world_roster_manifest(canonical_bytes(self.world_roster.to_dict()) + b"\n")
         logger.info(f"Starting demo runner: {self.max_episodes} episodes")
         logger.info(f"Database: {self.db_path}")
         logger.info(f"Checkpoints: {self.checkpoint_dir}")
@@ -393,7 +530,10 @@ class DemoRunner:
 
         # Initialize training components
         # v2.1: device is an infrastructure concern (no-defaults exemption).
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if torch.cuda.is_available():
+            device = torch.device("cuda", torch.cuda.current_device())
+        else:
+            device = torch.device("cpu")
 
         # Per-level metadata
         level_meta = self.compiled.get_level(self.level_name)
@@ -412,6 +552,9 @@ class DemoRunner:
             level_name=self.level_name,
             num_agents=num_agents,
             device=device,
+            world_roster=self.world_roster,
+            training_seed=effective_training.seed,
+            lane_world_ids=self.world_roster.world_ids,
         )
 
         # Dimensions sourced from compiled metadata
@@ -421,28 +564,43 @@ class DemoRunner:
         # Create curriculum (all params required per PDR-002)
         self.curriculum = build_curriculum(
             effective_training,
-            max_steps_per_episode=loop_cfg.max_steps_per_episode,
+            curriculum_options=self.effective_run.options.curriculum,
+            static_policy=self.effective_run.static_policy,
             device=device,
         )
 
-        # Create exploration (all params required per PDR-002)
-        intrinsic_cfg = effective_training.intrinsic
-        self.exploration = AdaptiveIntrinsicExploration(
-            obs_dim=obs_dim,
-            embed_dim=intrinsic_cfg.rnd.feature_dim,
-            rnd_learning_rate=intrinsic_cfg.rnd.learning_rate,
-            rnd_training_batch_size=effective_training.replay_buffer.batch_size,
-            initial_intrinsic_weight=intrinsic_cfg.initial_weight,
-            min_intrinsic_weight=intrinsic_cfg.annealing.min_weight,
-            variance_threshold=intrinsic_cfg.annealing.threshold,
-            min_survival_fraction=intrinsic_cfg.min_survival_fraction,
-            max_episode_length=loop_cfg.max_steps_per_episode,
-            survival_window=intrinsic_cfg.survival_window,
-            decay_rate=intrinsic_cfg.annealing.decay_rate,
-            epsilon_start=effective_training.exploration.epsilon_start,
-            epsilon_min=effective_training.exploration.epsilon_end,
-            epsilon_decay=effective_training.exploration.epsilon_decay,
+        # Resolved authoring selects the provider family and curiosity scope.
+        # Retain the actual BANK owner, distinct from its runtime facade.
+        def curiosity_issuer(bank: Any) -> WorldReceiptIssuer:
+            self.curiosity_bank = bank
+            return WorldReceiptIssuer(owner=bank)
+
+        def validate_committed_batch(*, batch_episode: int, outcomes: tuple[Any, ...]) -> None:
+            if self.population is None:
+                raise RuntimeError("Exploration requires its constructed population owner")
+            self.population.validate_committed_batch(batch_episode=batch_episode, outcomes=outcomes)
+
+        def validate_parent_cadence(*, cadence: Any, mode: str, accepted: Any, parent_restore: Any) -> None:
+            if self.population is None:
+                raise RuntimeError("Exploration requires its constructed population owner")
+            self.population.validate_parent_cadence(cadence=cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
+
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            self.effective_run.exploration,
+            world_ids=self.world_roster.world_ids,
+            observation_dim=obs_dim,
+            action_dim=action_dim,
+            training_seed=effective_training.seed,
+        )
+        self.exploration = build_exploration(
+            policy=self.effective_run.exploration,
+            descriptor=descriptor,
             device=device,
+            validate_accepted_episode=self.env.validate_accepted_episode,
+            issuer_factory=curiosity_issuer,
+            report_allocation=lambda estimate: logger.info("Curiosity allocation estimate: %r", estimate),
+            validate_committed_batch=validate_committed_batch,
+            validate_parent_cadence=validate_parent_cadence,
         )
 
         # Get training hyperparameters from config (all required per PDR-002)
@@ -498,6 +656,24 @@ class DemoRunner:
 
         self.curriculum.initialize_population(num_agents)
 
+        # Bind authentic live owners after POP has installed its ENV runtime hook.
+        # BANK owns curiosity; the facade owns selection and global exploration.
+        self.boundary_authority = self.env.bind_boundary_authority(
+            owner=self,
+            role_owners={
+                "population": self.population,
+                "curiosity": self.curiosity_bank,
+                "curriculum": self.curriculum,
+                "exploration": self.exploration,
+                "network": self.population.q_network,
+                "optimizer": self.population.optimizer,
+                "scheduler": self.population if self.population.scheduler is None else self.population.scheduler,
+                "replay": self.population.replay_buffer,
+                "selection": self.exploration,
+            },
+        )
+        self.boundary_release = None
+
         # Initialize episode recorder if enabled
         recording_cfg = self.training_config.recording
         if recording_cfg and recording_cfg.enabled:
@@ -521,7 +697,12 @@ class DemoRunner:
         # Try to resume from checkpoint
         loaded_episode = self.load_checkpoint()
         if loaded_episode is not None:
-            self.current_episode = loaded_episode + 1
+            self.current_episode = loaded_episode
+        else:
+            # Receiving checkpoint controllers must remain fresh-bound during
+            # restore. Bootstrap only after establishing this is a fresh run.
+            self.boundary_release = self.boundary_authority.bootstrap(first_batch_episode=self.current_episode)
+            self.env.install_boundary_release(self.boundary_release)
 
         # Phase 4 - Log hyperparameters to TensorBoard
         self.hparams = {
@@ -555,8 +736,19 @@ class DemoRunner:
 
         # Training loop
         failed = False
+        training_error: BaseException | None = None
         try:
             while self.current_episode < self.max_episodes and not self.should_shutdown and not self.environment_step_budget_reached:
+                if self.max_environment_steps is not None:
+                    may_step, shortfall = decide_live_agent_budget(
+                        completed=self.completed_live_agent_steps,
+                        live_agents=self.population.num_agents,
+                        budget=self.max_environment_steps,
+                    )
+                    if not may_step:
+                        self.environment_step_budget_shortfall = shortfall
+                        self.environment_step_budget_reached = True
+                        break
                 episode_start = time.time()
 
                 # Generalization test at episode 5000
@@ -583,10 +775,23 @@ class DemoRunner:
                     self.db.set_system_state("old_affordance_positions", json.dumps(old_positions))
                     self.db.set_system_state("new_affordance_positions", json.dumps(new_positions))
 
-                # Reset environment and population
-                # NOTE: Only call population.reset(), which internally calls env.reset()
-                # Calling both causes double reset which breaks affordance randomization
-                self.population.reset()
+                # ENV allocates identity; POP seals genuine initial participation
+                # before either consumer becomes active.
+                if self.boundary_release is None or self.boundary_release.next_batch_episode != self.current_episode:
+                    raise RuntimeError("Episode entry requires its installed controller boundary release")
+                reservation = self.env.prepare_episode(batch_episode=self.current_episode, release=self.boundary_release)
+                self.population.bind_episode_worlds(world_ids=reservation.world_ids, world_episode_seqs=reservation.world_episode_seqs)
+                self.population.begin_batch_episode(self.current_episode, planned_horizon=loop_cfg.max_steps_per_episode)
+                # This runner starts every declared lane; POP still publishes
+                # the authenticated all-participating decision for that roster.
+                reset_record, population_activation = self.population.reset(reservation=reservation, retired_world_ids=())
+                curiosity_activation = self.exploration.begin_episode(accepted=reset_record.accepted)
+                self.env.activate_episode(
+                    accepted=reset_record.accepted,
+                    population_receipt=population_activation,
+                    curiosity_receipt=curiosity_activation,
+                )
+                self.accepted_episode = reset_record.accepted
 
                 # Run episode
                 num_agents = self.population.num_agents
@@ -595,6 +800,7 @@ class DemoRunner:
                 episode_extrinsic_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_intrinsic_reward = torch.zeros(num_agents, device=self.env.device)
                 episode_shaping_reward = torch.zeros(num_agents, device=self.env.device)
+                episode_intrinsic_scales = torch.zeros(num_agents, device=self.env.device)
                 batch_episode_steps = 0
                 episode_live_agent_transitions = 0
                 affordance_visits = [defaultdict(int) for _ in range(num_agents)]
@@ -652,6 +858,7 @@ class DemoRunner:
                     # The same entry-eligible canonical row feeds summaries and recordings.
                     active_on_entry = agent_state.info["active_on_entry"]
                     components = agent_state.info["reward_components"]
+                    episode_intrinsic_scales = torch.where(active_on_entry, components["runtime_intrinsic_scale"], episode_intrinsic_scales)
                     zero_reward = torch.zeros_like(agent_state.rewards)
                     episode_reward += torch.where(active_on_entry, agent_state.rewards, zero_reward)
                     episode_extrinsic_reward += torch.where(active_on_entry, components["extrinsic"], zero_reward)
@@ -718,7 +925,10 @@ class DemoRunner:
                         break
 
                 if last_agent_state is None:
-                    continue
+                    self.env.abandon_episode(accepted=self.accepted_episode, reason="empty_participation")
+                    # This is quarantine, not a completed/native boundary. The
+                    # native controller must preserve the last lawful snapshot.
+                    break
 
                 # Close surviving lanes before publishing for the actual external stop.
                 completion_reason: RunnerCompletionReason
@@ -740,12 +950,11 @@ class DemoRunner:
                     [outcome.survival_time for outcome in completed_outcomes], dtype=torch.long, device=self.env.device
                 )
                 final_meters = [outcome.final_meters.detach().cpu().clone() for outcome in completed_outcomes]
-                curriculum_survival_tensor = step_counts.float()
-                curriculum_done_tensor = torch.ones(num_agents, dtype=torch.bool, device=self.env.device)
-                self.population.update_curriculum_tracker(curriculum_survival_tensor, curriculum_done_tensor)
+                self._complete_training_episode()
 
                 epsilon_value = self.population._get_current_epsilon_value()
-                intrinsic_weight_value = self.population._get_current_intrinsic_weight_value()
+                intrinsic_scales = episode_intrinsic_scales.detach().cpu()
+                intrinsic_weight_value = float(intrinsic_scales[0].item())
 
                 episode_reward_cpu = episode_reward.detach().cpu()
                 episode_extrinsic_cpu = episode_extrinsic_reward.detach().cpu()
@@ -755,7 +964,7 @@ class DemoRunner:
                 if completion is None:
                     raise RuntimeError("Cannot publish an episode without a slot-zero completion")
                 step_counts_cpu = step_counts.detach().cpu().long()
-                stages_cpu = self.curriculum.tracker.agent_stages.detach().cpu()
+                stages_cpu = torch.tensor([self.curriculum.get_stage_info(idx)["current_stage"] for idx in range(num_agents)])
 
                 # Log metrics to database
                 episode_timestamp = time.time()
@@ -822,7 +1031,7 @@ class DemoRunner:
                             "shaping_reward": float(episode_shaping_cpu[idx].item()),
                             "curriculum_stage": int(stages_cpu[idx].item()),
                             "epsilon": epsilon_value,
-                            "intrinsic_weight": intrinsic_weight_value,
+                            "intrinsic_weight": float(intrinsic_scales[idx].item()),
                         }
                     )
 
@@ -962,17 +1171,14 @@ class DemoRunner:
                     logger.info("=" * 80)
 
                 # Checkpoint every CHECKPOINT_INTERVAL episodes
-                if self.current_episode % self.CHECKPOINT_INTERVAL == 0:
+                if self.population.clock_ledger.completed_batch_episodes % self.CHECKPOINT_INTERVAL == 0:
                     self.save_checkpoint()
-
-                # Decay epsilon for next episode and sync telemetry
-                self.exploration.decay_epsilon()
-                self.population.sync_exploration_metrics()
 
                 self.current_episode += 1
 
-        except BaseException:
+        except BaseException as error:
             failed = True
+            training_error = error
             raise
         finally:
             if self.max_environment_steps is not None:
@@ -987,7 +1193,13 @@ class DemoRunner:
 
             # Save final checkpoint
             logger.info("Training complete, saving final checkpoint...")
-            self.save_checkpoint()
+            try:
+                self.save_checkpoint()
+            except Exception as checkpoint_error:
+                if training_error is None:
+                    raise
+                training_error.add_note(f"Final checkpoint also failed: {checkpoint_error!r}")
+                logger.exception("Final checkpoint failed while preserving the original training error")
 
             # Phase 4 - Log final metrics with hyperparameters
             if self.population is not None:

@@ -1,0 +1,22 @@
+{
+  "job": "runtime-custody-owners",
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_tree": "66e8bff22c06c3afce54fb5b45657fa5d15b2d1d",
+  "exit_code": 0,
+  "counts": {
+    "passed": 133,
+    "skipped": 7,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 43.74816803599242,
+  "source_guards": 829,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

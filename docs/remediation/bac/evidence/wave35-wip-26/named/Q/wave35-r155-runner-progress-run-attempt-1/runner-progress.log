@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [8 items]
+
+....F.F.                                                                 [100%]
+=================================== FAILURES ===================================
+/workspace/hamlet/src/townlet/environment/vectorized_env.py:2194: ValueError: operation is unavailable in world phase released-completed
+/workspace/hamlet/src/townlet/environment/vectorized_env.py:2194: ValueError: operation is unavailable in world phase released-completed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption
+FAILED tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips
+==================== 2 failed, 6 passed in 68.01s (0:01:08) ====================

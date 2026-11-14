@@ -1,0 +1,266 @@
+{
+  "base_commit": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e",
+  "candidate_manifest": {
+    "bytes": 217861,
+    "path": "wave35/r160-candidate.json",
+    "root": "W",
+    "sha256": "de9422382e5e2345b8fb216fb0c766dc610e10ce29631acd05121ecd33405528"
+  },
+  "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+  "capture_log_aliases": [
+    {
+      "bytes": 5679,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/aliases.json",
+      "root": "W",
+      "sha256": "3297544810a1e714b2f37add1a04b8035f1d6fa11e104441f2ea4b85fe5fb97d"
+    },
+    {
+      "bytes": 8271,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r149-capture.log",
+      "root": "W",
+      "sha256": "a57f89c2e331eb59e119482f2be9acba51745b1e5119365f9512ed21aef4fab6"
+    },
+    {
+      "bytes": 8344,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r150-capture.log",
+      "root": "W",
+      "sha256": "f356c736ede1f51e8b22f3f7dedb54ae152cb3225c8f5f22dfb011723aff1f24"
+    },
+    {
+      "bytes": 8344,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r151-capture-retry.log",
+      "root": "W",
+      "sha256": "cb68587d62bbffa2599ead10279fdfeb9a11b2fd9cee19252ead42708ae5cf72"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r151-capture.log",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 8344,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r152-capture.log",
+      "root": "W",
+      "sha256": "dbfde79b286c908d44eef6574be360c7132d7fd6d1ad037853aa577925069fa7"
+    },
+    {
+      "bytes": 8344,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r154-capture.log",
+      "root": "W",
+      "sha256": "85c829185149dec16b60f947b2bbdd73e734106d65bdc126044b37005f22892f"
+    },
+    {
+      "bytes": 8417,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r155-capture.log",
+      "root": "W",
+      "sha256": "2a6deac932370b56326179c1aa2a7609906147c92122b8849e3ac0eb72e352ec"
+    },
+    {
+      "bytes": 8417,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r156-capture.log",
+      "root": "W",
+      "sha256": "b0f5119989052696aef83c3f740e088e36e3cc21092ca02008c362040020fa0d"
+    },
+    {
+      "bytes": 8502,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r157-capture.log",
+      "root": "W",
+      "sha256": "2ce683829e7a2eefd8a45c2efcce179d6a19325833688dfd27529c0038489fa2"
+    },
+    {
+      "bytes": 8502,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r158-capture.log",
+      "root": "W",
+      "sha256": "f62b86c1297973c5d0e7b1cbd43c411fc45a0ea9de140727eb910181b5abb5a3"
+    },
+    {
+      "bytes": 8718,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r159-capture.log",
+      "root": "W",
+      "sha256": "75b227a6e4e1a887242a8bc3b8c1b1eb69a9534c2458da4ddc41f11e4ce0f507"
+    },
+    {
+      "bytes": 8718,
+      "path": "evidence-management/wip26-preparation/capture-log-aliases-v1/bac-r160-capture.log",
+      "root": "W",
+      "sha256": "da0b5be8ff1cdcf462c936879527ed12e6f436c67f72b5c3eceb9149f6602fed"
+    }
+  ],
+  "component_receipts": [
+    {
+      "bytes": 23882,
+      "candidate_tree": "6170b491a487243871e528070ae326639bbcbc42",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r149-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R149 history; retained failure/unrun/metadata limits",
+      "sha256": "dd990df5c55045e7de3bfcbe23d6bcd66c120a6a78f5493860e913c63a98fc84"
+    },
+    {
+      "bytes": 32063,
+      "candidate_tree": "f64dd02ce7f077cffab9740640238e569ea79259",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r150-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R150 history; retained failure/unrun/metadata limits",
+      "sha256": "0982c31ac91f2bb08b41eaf67b0c1c5a517558aba32e8584c5b0c8d3e1be7e05"
+    },
+    {
+      "bytes": 18656,
+      "candidate_tree": "f19433d099271efa6ed006535c2e0a33db2bf760",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r151-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R151 history; retained failure/unrun/metadata limits",
+      "sha256": "cdba138da33fde1a98dfe3e0429df742fc60eec0c05af2cc8aea036a1b0723d6"
+    },
+    {
+      "bytes": 15893,
+      "candidate_tree": "8affc41158ae70bd3e2a43cc7cd619a1f7d90a9a",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r152-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R152 history; retained failure/unrun/metadata limits",
+      "sha256": "b9761d87600dafcaaa6747e4ee91d638d19daae163f159f93f45070f671d57ba"
+    },
+    {
+      "bytes": 15893,
+      "candidate_tree": "5d3cbce0b90ec1da405e1faf615862711f31d06b",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r153-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R153 history; retained failure/unrun/metadata limits",
+      "sha256": "598c9e4c0abf7a23eb7b86b4e7879d8a64bed43d138265fe838883306165db7a"
+    },
+    {
+      "bytes": 15893,
+      "candidate_tree": "ba27ba9ae592a00a85041bac98a169dbc8ac885c",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r154-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R154 history; retained failure/unrun/metadata limits",
+      "sha256": "86c8cb39c26323c30d983c22ecf5549c8da458d19b1b36a949ee907a39d0f4b3"
+    },
+    {
+      "bytes": 105679,
+      "candidate_tree": "a37cf18fcebb24c6c34165fafa4df6876e5494c7",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r155-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R155 history; retained failure/unrun/metadata limits",
+      "sha256": "d9d822025e2007c7644bf76afcbb2b74c00e60cb6f0cab0fbd2a2a5a4a744008"
+    },
+    {
+      "bytes": 59100,
+      "candidate_tree": "8bee433c58cd53c75ee3b2ab32d54fa11f62a254",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r156-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R156 history; retained failure/unrun/metadata limits",
+      "sha256": "63249ecd28c2700f6b44a6147262c0ca7a21c8efb8985fb50cb9d6581a71a044"
+    },
+    {
+      "bytes": 7274,
+      "candidate_tree": "4b72ad15f15805d5a7164c2550498fc726c39dc7",
+      "path": "evidence-management/wip26-preparation/closed-r149-r157-v1/r157-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R157 history; retained failure/unrun/metadata limits",
+      "sha256": "1261186b0a38efb32ebc86e4d3cc5aa2aa326a526c276cd8a6c714e0d3b4dba1"
+    },
+    {
+      "bytes": 37450,
+      "candidate_tree": "66e8bff22c06c3afce54fb5b45657fa5d15b2d1d",
+      "path": "evidence-management/wip26-preparation/closed-r158-v1/r158-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R158 history; retained failure/unrun/metadata limits",
+      "sha256": "75f4707c28e7aa7922d89baddea8e602238aceb5a7ddd07c4d0da872c1cd4767"
+    },
+    {
+      "bytes": 66761,
+      "candidate_tree": "b2aa0e47fc230dd314a0ff1b3216000d55f45b83",
+      "path": "evidence-management/wip26-preparation/closed-r159-v1/r159-history-component-v1.json",
+      "root": "W",
+      "scope": "Own-source R159 history; retained failure/unrun/metadata limits",
+      "sha256": "783e679bfec03f11774c3841d77ca982e0a11ec23091b51091ab157815d5cbc8"
+    },
+    {
+      "bytes": 34925,
+      "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+      "path": "evidence-management/wip26-preparation/closed-r160-v1/r160-history-component-v1.json",
+      "root": "W",
+      "scope": "R160 own-source history;64 collection,61+3 runtime separately,unused T21 specs UNRUN",
+      "sha256": "e73e81c99f61ab4cad5bb72fcd8386681c95ce9e7b25bbbf46b7c8171bb98cfc"
+    },
+    {
+      "bytes": 3607,
+      "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+      "path": "evidence-management/wip26-preparation/packet-closed-r149-r160-v3/bounded-component-status-v3.json",
+      "root": "W",
+      "scope": "Final bounded A/partial runner/replay/RED status; no package closure",
+      "sha256": "c92c2f2719766903d12b0ac8e94e09668df9169543e27a585a7514a42f601f96"
+    }
+  ],
+  "contract": {
+    "bytes": 13146,
+    "path": "wave35/WIP26-CHECKPOINT-CONTRACT-v1.json",
+    "root": "W",
+    "sha256": "20485b606d9fa1ab19422812d8972d5ed754abd9e0ea7e103a999f47757b9013"
+  },
+  "document_source_guard": "Three root-approved publication postimages differ from prior documentation. Retain R160 manifest STATUS execution preimage; do not substitute published documentation for executed source identity.",
+  "documents": [
+    {
+      "approval_status": "Root finalized publication bytes; fresh terminal review pending",
+      "bytes": 127437,
+      "destination": "docs/remediation/bac/STATUS.md",
+      "execution_inventory_sha256": "d08317132aa1f41e88f3243eff2fa34ee9f9be24c4bf15eb4b651659583fa4ba",
+      "path": "docs/remediation/bac/STATUS.md",
+      "root": "R",
+      "sha256": "314a436ee9f4d0b19ce5959b52b9de55804e7fe70f355f9ca37ca2cdc0c6be6d"
+    },
+    {
+      "approval_status": "Root finalized publication bytes; fresh terminal review pending",
+      "bytes": 38460,
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "execution_inventory_sha256": null,
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "root": "R",
+      "sha256": "60286418078a553f5239368da613bd596f48ff9c1b5ad4ed9add8af1c4bb7475"
+    },
+    {
+      "approval_status": "Root finalized publication bytes; fresh terminal review pending",
+      "bytes": 15167,
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "execution_inventory_sha256": null,
+      "path": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "root": "R",
+      "sha256": "054c367b5c659ffe81749ee7c2d1f0b6346037514323abea5353132f9dbf1941"
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "fe9e9f2cde4695272462b3830ac5a25fc4d85433",
+    "tests": "3354675c33c958d666a6beded4cfbeb67172b5e0"
+  },
+  "historical_attestations": [
+    {
+      "bytes": 7739,
+      "path": "evidence-management/wip26-preparation/ROOT-HISTORICAL-SUBTREES-R149-R159-v1.json",
+      "root": "W",
+      "sha256": "8763ef0bc28528828ee5066f678d520c18c918cfb8f162a2725dbbb28e74551f"
+    },
+    {
+      "bytes": 892,
+      "path": "evidence-management/wip26-preparation/ROOT-HISTORICAL-SUBTREES-R160-v1.json",
+      "root": "W",
+      "sha256": "caecf03ac90c17e05ed49e5511151d0c18d872de60ddaf78bff675bce195421c"
+    }
+  ],
+  "required_next": [
+    "PW04 native composition and fresh-runner continued learning remain open; A/replay bounded only.",
+    "B/C18 and isolated1 intended API-absence failures retained; isolated missing observer before fault is not poison acceptance.",
+    "R158 seven skips require fresh poison children, not CUDA.",
+    "R157 original Ruff standalone log unavailable (tool response only); root progress and three UNRUN specs retained.",
+    "R151 initial capture log empty; launcher prerequisite failure preserved separately. Named original capture stdout now preserved by exact root aliases; empty R151 output does not reconstruct capture failure stderr.",
+    "R155 original failed index-lock verifier and sequential retry disposition retained in root progress; no new test claimed.",
+    "Global/full/default/coverage>=70/slow/learning/hardware/finalBAC review/exact remote CI open;28/38/66 unchanged.",
+    "Current R160 mypy13 FAIL:12 prior oracle/POP +1 UnifiedServer roster caller migration owed. R15941/defaults602 failures retained;R160defaults600 PASS without ratchet widening.",
+    "Runtime R16061+3 are distinct current selections; A52/independent9 overlap earlier runs. Not a combined historical unique total."
+  ],
+  "scope": "Finite R149\u2013R160 mixed-result durability; no PW04/package/fullBAC closure",
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW"
+}

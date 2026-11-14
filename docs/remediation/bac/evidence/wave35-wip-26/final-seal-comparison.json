@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "frozen_receipt_sha256": "042f906e875dc26e98afe7f9c0fdca0758e166a958f12985263655fb40423c12",
+  "sealed_receipt_sha256": "504838dd50a3510c611f49824c06a7bbe94a994f502e22af8a55832fc7bf3c18",
+  "changes": "Only status and actual independent terminal review added. Frozen subject and contract unchanged."
+}

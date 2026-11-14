@@ -1,0 +1,50 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 31 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_prepared_world_currentness_independent.py>
+            <Function test_issuance_pins_survive_scope_reacquisition[_world_role_owners]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_exploration_runtime]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_claim_vector_step]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_world_authority]>
+            <Function test_issuance_pins_survive_scope_reacquisition[_manual_session]>
+            <Function test_authority_internal_identity_remains_pinned[_owner]>
+            <Function test_authority_internal_identity_remains_pinned[_env]>
+            <Function test_record_revocation_is_exact_and_terminal_input_refuses_all>
+            <Function test_nested_opaque_preparation_graph_has_no_weak_key_value_cycle>
+          <Module test_parent_intrinsic_handoff.py>
+            <Function test_current_initial_transport_has_complete_exact_ledger>
+            <Function test_initial_pop_roundtrip_preserves_ledger_and_next_real_update>
+            <Function test_initial_install_refuses_roles_bound_after_preparation>
+          <Module test_restore_installation_outcomes.py>
+            <Function test_actual_install_result_survives_consumption_and_read_is_not_an_operation[shared-bank]>
+            <Function test_actual_install_result_survives_consumption_and_read_is_not_an_operation[shared-runtime]>
+            <Function test_actual_install_result_survives_consumption_and_read_is_not_an_operation[per_world-bank]>
+            <Function test_actual_install_result_survives_consumption_and_read_is_not_an_operation[per_world-runtime]>
+            <Function test_guard_refusal_seals_first_attempt_but_preserves_lawful_standalone_retry[bank]>
+            <Function test_guard_refusal_seals_first_attempt_but_preserves_lawful_standalone_retry[runtime]>
+            <Function test_genuine_intervening_operation_reports_consumed_no_publication>
+            <Function test_dictionary_publication_fault_is_never_certified_no_publication[False]>
+            <Function test_dictionary_publication_fault_is_never_certified_no_publication[True]>
+            <Function test_runtime_suffix_fault_preserves_actual_successful_bank_outcome>
+            <Function test_observation_identity_thread_and_weak_lifetime>
+            <Function test_bank_completion_failure_retains_published_outcome_poison>
+          <Module test_world_restore_attempt.py>
+            <Function test_real_bank_install_and_component_journal[False]>
+            <Function test_real_bank_install_and_component_journal[True]>
+            <Function test_early_exit_revokes_only_selected_preparation>
+            <Function test_attempt_cannot_be_copied_borrowed_or_reused>
+            <Function test_actual_child_publication_then_failure_fences_receiver[world]>
+            <Function test_actual_child_publication_then_failure_fences_receiver[finalizer]>
+            <Function test_caught_preparation_error_cannot_continue>
+
+========================= 31 tests collected in 0.24s ==========================

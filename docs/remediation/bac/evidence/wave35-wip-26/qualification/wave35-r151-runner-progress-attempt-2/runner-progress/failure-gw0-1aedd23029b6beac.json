@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "E   TypeError: build_curriculum() got an unexpected keyword argument 'max_steps_per_episode'",
+  "candidate_tree": "f19433d099271efa6ed006535c2e0a33db2bf760"
+}

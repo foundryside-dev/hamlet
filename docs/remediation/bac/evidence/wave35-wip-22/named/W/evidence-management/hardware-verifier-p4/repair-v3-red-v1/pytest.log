@@ -1,0 +1,60 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_replacement_requires_exact_inventoried_predecessor_down[fresh] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v3-red-v1/fixtures/test_replacement_requires_exac0')
+gateway = 'fresh'
+
+    @pytest.mark.parametrize("gateway", ["fresh", "same"])
+    def test_replacement_requires_exact_inventoried_predecessor_down(tmp_path, gateway):
+        evidence = Evidence(tmp_path, common=True, workers=1, replacement=True)
+        if gateway == "same":
+            change_worker_identity(evidence, "gw1", "workerid", "gw0")
+        actual_down = evidence.output / "worker-0-down.json"
+        copied_failed_down = write(evidence.root / "external-failed-down.json", json.loads(actual_down.read_text()))
+    
+        def mutate(path, value):
+            if path == actual_down:
+                value["error"] = ""
+            if path.name == "worker-1-configure.json":
+                value["prior_lifecycle"] = [copied_failed_down]
+    
+        coherent_change(evidence, mutate)
+        assert json.loads(actual_down.read_text())["error"] == ""
+        assert json.loads(Path(copied_failed_down["path"]).read_text())["error"]
+>       with pytest.raises(ValueError, match="replacement.*inventoried.*down"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1333: Failed
+______ test_replacement_requires_exact_inventoried_predecessor_down[same] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v3-red-v1/fixtures/test_replacement_requires_exac1')
+gateway = 'same'
+
+    @pytest.mark.parametrize("gateway", ["fresh", "same"])
+    def test_replacement_requires_exact_inventoried_predecessor_down(tmp_path, gateway):
+        evidence = Evidence(tmp_path, common=True, workers=1, replacement=True)
+        if gateway == "same":
+            change_worker_identity(evidence, "gw1", "workerid", "gw0")
+        actual_down = evidence.output / "worker-0-down.json"
+        copied_failed_down = write(evidence.root / "external-failed-down.json", json.loads(actual_down.read_text()))
+    
+        def mutate(path, value):
+            if path == actual_down:
+                value["error"] = ""
+            if path.name == "worker-1-configure.json":
+                value["prior_lifecycle"] = [copied_failed_down]
+    
+        coherent_change(evidence, mutate)
+        assert json.loads(actual_down.read_text())["error"] == ""
+        assert json.loads(Path(copied_failed_down["path"]).read_text())["error"]
+>       with pytest.raises(ValueError, match="replacement.*inventoried.*down"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1333: Failed
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_replacement_requires_exact_inventoried_predecessor_down[fresh]
+FAILED test_verify_bac_hardware_v1.py::test_replacement_requires_exact_inventoried_predecessor_down[same]
+2 failed, 86 deselected in 1.66s

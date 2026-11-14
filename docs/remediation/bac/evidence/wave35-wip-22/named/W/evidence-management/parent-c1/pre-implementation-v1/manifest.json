@@ -1,0 +1,17 @@
+{
+  "src/townlet/config/exploration_policy.py": {
+    "sha256": "fbda6a2178e794747ef1e9b7771d450463051aeba53a598dd40fc334c2754e67",
+    "lines": 1299
+  },
+  "src/townlet/exploration/scoped_curiosity.py": {
+    "sha256": "3b9b5476530317fc48991ba096545e3e2bad3593deb92d9caeb3a3bbab6e1027",
+    "lines": 1414
+  },
+  "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": {
+    "sha256": "4a7fe3512c23c963b5ec2bc6e3f89ad5790fb2d2b8c0ed7496a9f4a8f957e208",
+    "lines": 249
+  },
+  "src/townlet/exploration/parent_custody.py": {
+    "absent": true
+  }
+}

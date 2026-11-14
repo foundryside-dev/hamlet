@@ -1,0 +1,187 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/test_independent_p3.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "not probe",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures"
+  ],
+  "at": "2026-11-14T07:16:10.600405Z",
+  "attempt_id": "attempt",
+  "cuda_observation": "forbidden",
+  "cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_child_process_cust1/source",
+  "debug": {
+    "provenance": {
+      "bytes": 6922,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_child_process_cust1/output/attempt/job/process-p-514178e19cd17c813e6762f3ddb1b725be0ab66690822976771ad5aab1e05040-observation-end.json",
+      "sha256": "509233095dc4847db7e081ed6a4bc6e15f4e136327b30a21db5488c817b3e019"
+    },
+    "reason": "guard-only: no Torch/CUDA calls permitted",
+    "state": "unavailable",
+    "value": null
+  },
+  "devices": [],
+  "elapsed_ns": {
+    "reason": "",
+    "state": "measured",
+    "value": 60242661
+  },
+  "environment": {
+    "BROWSER_MANAGEMENT_SOCKET_PATH": "/home/agent/.local/run/browser-management/socket",
+    "CAAS_DIND_STORAGE_DRIVER": "vfs",
+    "CAAS_IMAGE_GIT_COMMIT_SHA": "969fca457cb91df54eb491d22bcaff20654139fe",
+    "CAAS_IMAGE_VERSION": "20261019221748-969fca457cb9",
+    "CLOUDSDK_CORE_CUSTOM_CA_CERTS_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS": "1",
+    "CODEX_BROWSER_DEFER_ACTIVATION": "1",
+    "CODEX_CAAS_SESSION_ID": "8b2c2c5624924e16852b25f75fe6149b",
+    "CODEX_CI": "1",
+    "CODEX_ENVIRONMENT_ID": "ccarenv_b64_Y2NhcmVudl9iNTE4NmVkNmE1NzQ4MTkxYTI4Njc1NDgxMTY2MDc3Yw",
+    "CODEX_EXEC_SERVER_PROXY_PRIVATE_IPS_VIA_UPSTREAM": "true",
+    "CODEX_EXEC_SERVER_REMOTE_BASE_URL": "https://codex-cloud-environments.chatgpt.com/api",
+    "CODEX_HOME": "/home/agent/.codex",
+    "CODEX_NO_UPDATE": "1",
+    "CODEX_PRIMARY_RUNTIME": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PRIMARY_RUNTIME_BUNDLE_VERSION": "26.1013.11914",
+    "CODEX_PRIMARY_RUNTIME_NODE": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "CODEX_PRIMARY_RUNTIME_NODE_MODULES": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "CODEX_PRIMARY_RUNTIME_PYTHON": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "CODEX_PRIMARY_RUNTIME_ROOT": "/opt/codex/runtimes/codex-primary-runtime",
+    "CODEX_PROXY_CERT": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "CODEX_SANDBOX_NETWORK_DISABLED": "1",
+    "CODEX_SESSION_ID": "01a193e8-ae65-741d-9700-f53bdb72809b",
+    "CODEX_THREAD_ID": "6af80a31-85c8-8191-ad04-c6d70e36c0b5",
+    "CODEX_TOOL_CALL_ID": "exec-e4a5ef80-44bc-4d13-a627-1e9f75a56054",
+    "CODEX_VERSION": "0.0.0",
+    "COLORTERM": "",
+    "COLUMNS": "80",
+    "CUDA_VISIBLE_DEVICES": "",
+    "DEBIAN_FRONTEND": "noninteractive",
+    "DOCKER_IGNORE_BR_NETFILTER_ERROR": "1",
+    "DOCKER_TLS_CERTDIR": "",
+    "GH_PAGER": "cat",
+    "GH_TOKEN": "ghu_codex-cloud-github-proxy",
+    "GIT_PAGER": "cat",
+    "GRPC_DEFAULT_SSL_ROOTS_FILE_PATH": "/etc/ssl/certs/ca-certificates.crt",
+    "HOME": "/home/agent",
+    "HTTPS_PROXY": "http://proxy:8080",
+    "HTTP_PROXY": "http://proxy:8080",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "LINES": "24",
+    "MKL_NUM_THREADS": "1",
+    "NETWORK": "caas_neko_desktop",
+    "NODE_EXTRA_CA_CERTS": "/usr/local/share/ca-certificates/environment-proxy-ca.crt",
+    "NODE_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "NO_COLOR": "1",
+    "NO_PROXY": "localhost,127.0.0.1,::1",
+    "NPM_CONFIG_AUDIT": "false",
+    "NPM_CONFIG_FUND": "false",
+    "NPM_CONFIG_PREFIX": "/home/agent/.local",
+    "OMP_NUM_THREADS": "1",
+    "OPENAI_CLUSTER": "applied-caas24",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PAGER": "cat",
+    "PATH": "/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "PLAYWRIGHT_NODEJS_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "PWD": "/workspace",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTEST_VERSION": "8.4.2",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification",
+    "REMOTE_DESKTOP_H265_ENABLED": "0",
+    "REQUESTS_CA_BUNDLE": "/etc/ssl/certs/ca-certificates.crt",
+    "RUST_LOG": "codex_exec_server=info,codex_cli=info,error",
+    "SHELL": "/bin/bash",
+    "SHLVL": "1",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "TERM": "dumb",
+    "USER": "agent",
+    "_": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "http_proxy": "http://proxy:8080",
+    "https_proxy": "http://proxy:8080",
+    "no_proxy": "localhost,127.0.0.1,::1"
+  },
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 189122,
+    "ppid": 189108,
+    "start_identity": "11988082"
+  },
+  "imports": [
+    {
+      "name": "inert_module",
+      "reference": {
+        "bytes": 19,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_child_process_cust1/source/pkg/inert-module.txt",
+        "sha256": "68dbe2e07dc5305478dcf486a2597403d9a3f4fae0f35459655f69fedee57b99"
+      }
+    }
+  ],
+  "inter_op": {
+    "provenance": {
+      "bytes": 6922,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_child_process_cust1/output/attempt/job/process-p-514178e19cd17c813e6762f3ddb1b725be0ab66690822976771ad5aab1e05040-observation-end.json",
+      "sha256": "509233095dc4847db7e081ed6a4bc6e15f4e136327b30a21db5488c817b3e019"
+    },
+    "reason": "guard-only: no Torch/CUDA calls permitted",
+    "state": "unavailable",
+    "value": null
+  },
+  "interpreter": {
+    "bytes": 6832784,
+    "path": "/usr/bin/python3.13",
+    "sha256": "889c603f0d17cb54060951bcf4c4f9b8c9ebd9e52b392c70209bbb9755d797d9"
+  },
+  "intra_op": {
+    "provenance": {
+      "bytes": 6922,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_child_process_cust1/output/attempt/job/process-p-514178e19cd17c813e6762f3ddb1b725be0ab66690822976771ad5aab1e05040-observation-end.json",
+      "sha256": "509233095dc4847db7e081ed6a4bc6e15f4e136327b30a21db5488c817b3e019"
+    },
+    "reason": "guard-only: no Torch/CUDA calls permitted",
+    "state": "unavailable",
+    "value": null
+  },
+  "job_id": "job",
+  "kind": "process",
+  "monotonic_ns": 119880940867653,
+  "parent_identity": [
+    {
+      "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+      "host": "51d55c80f0b0",
+      "pid": 189108,
+      "ppid": 189107,
+      "start_identity": "11987820"
+    }
+  ],
+  "phase": "end",
+  "process_id": "p-514178e19cd17c813e6762f3ddb1b725be0ab66690822976771ad5aab1e05040",
+  "replacement_of": [],
+  "role": "fork-guard",
+  "role_id": "fork-guard",
+  "schema": "bac-hardware-v1",
+  "source_witness": {
+    "bytes": 3081,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_child_process_cust1/output/attempt/job/source-p-514178e19cd17c813e6762f3ddb1b725be0ab66690822976771ad5aab1e05040-end.json",
+    "sha256": "876050544bc94ed8bddea3931961c5894d858b8ea6d7e14238382a9b3927b872"
+  },
+  "spec": {
+    "bytes": 13601,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_child_process_cust1/spec.json",
+    "sha256": "89ed5db8043841d8c207cc4507273cad0135602ade6f75a20096017d15a52b18"
+  },
+  "torch_observation": "forbidden-inherited-module-witness"
+}

@@ -1,0 +1,227 @@
+{
+  "baseline_inventory": {
+    "bytes": 2755978,
+    "path": "evidence-management/inventory-v2.json",
+    "root": "W",
+    "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
+  },
+  "catalog": [
+    {
+      "checkpoint_id": "wave35-wip-13",
+      "format": "wip13-artifacts-v1",
+      "interval": [
+        55,
+        58
+      ],
+      "manifest": {
+        "bytes": 81982,
+        "path": "docs/remediation/bac/evidence/wave35-wip-13.json",
+        "sha256": "f05ca336a4c96c9c36c17ca2edd0c5778937f719f8bc4fadcfabfe2ea9c45cdb"
+      },
+      "selection_plan": {
+        "bytes": 146067,
+        "path": "docs/remediation/bac/evidence/wave35-wip-13/selection-plan.json",
+        "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-14",
+      "format": "incremental-v2",
+      "interval": [
+        59,
+        72
+      ],
+      "manifest": {
+        "bytes": 619867,
+        "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+        "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+      },
+      "selection_plan": {
+        "bytes": 763830,
+        "path": "docs/remediation/bac/evidence/wave35-wip-14/selection-plan.json",
+        "sha256": "2195ce33e7a08039434f3018e5e426b3924a6564e1211181b249040c79ef8ea8"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-15",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        73,
+        81
+      ],
+      "manifest": {
+        "bytes": 372697,
+        "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+        "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+      },
+      "selection_plan": {
+        "bytes": 442172,
+        "path": "docs/remediation/bac/evidence/wave35-wip-15/selection-plan.json",
+        "sha256": "8e3c5de089fdd68688b9dbd69133b0d05186294312acfbb398301ee42ecf6e15"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-16",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        82,
+        85
+      ],
+      "manifest": {
+        "bytes": 227482,
+        "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+        "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+      },
+      "selection_plan": {
+        "bytes": 270542,
+        "path": "docs/remediation/bac/evidence/wave35-wip-16/selection-plan.json",
+        "sha256": "81df9d15bc175cc9a52ed6b448ce165ae5c12eb1c4741146b7ad3e6c94e903cb"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-17",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        86,
+        89
+      ],
+      "manifest": {
+        "bytes": 527701,
+        "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+        "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+      },
+      "selection_plan": {
+        "bytes": 648628,
+        "path": "docs/remediation/bac/evidence/wave35-wip-17/selection-plan.json",
+        "sha256": "5a01cc361f55d978e7b3808095fc4a61a1ce6c4b0229b863caf9e5dc598b09e6"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-18",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        90,
+        98
+      ],
+      "manifest": {
+        "bytes": 361683,
+        "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+        "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+      },
+      "selection_plan": {
+        "bytes": 430051,
+        "path": "docs/remediation/bac/evidence/wave35-wip-18/selection-plan.json",
+        "sha256": "193ddece376797d277675a5190610c2f742b7da8a01425c37a9e1057372afac8"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-19",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        99,
+        108
+      ],
+      "manifest": {
+        "bytes": 998690,
+        "path": "docs/remediation/bac/evidence/wave35-wip-19.json",
+        "sha256": "7f03a92f589227f68ee87064fd153dac3d961a8bfe3e1565323ecf318076c24b"
+      },
+      "selection_plan": {
+        "bytes": 1269940,
+        "path": "docs/remediation/bac/evidence/wave35-wip-19/selection-plan.json",
+        "sha256": "9b470996d63ff2d5473188592d2a6cba74ab7f4897691cb1b54cd35d868763dc"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-20",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        109,
+        113
+      ],
+      "manifest": {
+        "bytes": 1382890,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+        "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd"
+      },
+      "selection_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-21",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        114,
+        116
+      ],
+      "manifest": {
+        "bytes": 787084,
+        "path": "docs/remediation/bac/evidence/wave35-wip-21.json",
+        "sha256": "3f7894548379233e0134a232d08656c2323ed33a806c09c468e8848619e4b310"
+      },
+      "selection_plan": {
+        "bytes": 944085,
+        "path": "docs/remediation/bac/evidence/wave35-wip-21/selection-plan.json",
+        "sha256": "ccc0333a3ea4f91b4c64c5b83765e5bbfe61ac8a2d9e27a7f510d0b494765550"
+      }
+    }
+  ],
+  "checkpoint_id": "wave35-wip-22",
+  "interval_start": 117,
+  "required_components": [
+    {
+      "bytes": 26533,
+      "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+      "path": "evidence-management/wip22-preparation/packet-v3/r117-history-proposal-v1.json",
+      "root": "W",
+      "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+      "sha256": "5c785d580610106b12bc1d4d7396b444d28a223fde0784c333514ba2de729a67"
+    },
+    {
+      "bytes": 26858,
+      "candidate_tree": "0444b7d5dea599729ece9f3e72fd847701c89fbf",
+      "path": "evidence-management/wip22-preparation/packet-v3/r118-history-proposal-v1.json",
+      "root": "W",
+      "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+      "sha256": "108571ba8ab33272696be13ccc97588f1b12238444bb22ab5b7c6206c6ef2d34"
+    },
+    {
+      "bytes": 27836,
+      "candidate_tree": "62e1025e2d457eea50337f4f0889420831689a2d",
+      "path": "evidence-management/wip22-preparation/packet-v3/r119-history-proposal-v1.json",
+      "root": "W",
+      "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+      "sha256": "bccc59ebed58119e75c4f5798e92e491b8be35cd5a8e08b8ce27fa15f405235c"
+    },
+    {
+      "bytes": 89770,
+      "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+      "path": "evidence-management/wip22-preparation/packet-v3/r120-history-proposal-v1.json",
+      "root": "W",
+      "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+      "sha256": "fcfad4c8e115ee5238cc422ee3740a843f08b6ab99dc5bcc626dc5ca698dc19f"
+    },
+    {
+      "bytes": 198623,
+      "candidate_tree": "b429489ce4f6226b03e8f1a4971bd49861f9f2d5",
+      "path": "evidence-management/wip22-preparation/packet-v3/r121-history-proposal-v1.json",
+      "root": "W",
+      "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+      "sha256": "268e1a80b086eda30eb30b735f411a7163b69864626fc60705ce3cda62871b6c"
+    },
+    {
+      "bytes": 77456,
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "path": "evidence-management/wip22-preparation/packet-v3/r122-history-proposal-v1.json",
+      "root": "W",
+      "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+      "sha256": "799e1767a4c3e4e158f93f685c031b7d79baad0e854449f9f2c45af6cda6cae5"
+    }
+  ],
+  "schema": "bac-checkpoint-selection-contract-v1",
+  "series": "wave35",
+  "terminal_round": 122
+}

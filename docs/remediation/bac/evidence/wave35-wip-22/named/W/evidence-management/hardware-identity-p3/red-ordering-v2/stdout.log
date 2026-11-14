@@ -1,0 +1,38 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________ test_p1_fixed_category_order_ignores_json_object_key_order __________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-115/test_p1_fixed_category_order_i0/source/pkg/inert-module.txt'), 'bl...xed_category_order_i0/freeze.json', 'sha256': 'dd2fdcfa10ab1aaf822edc43908fd5522bf55703f00b0322113b9b37a1e28880'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f981d5796e0>
+
+    def test_p1_fixed_category_order_ignores_json_object_key_order(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        candidate=_read(capsule['spec']['candidate'])
+        categories=['source','tests','configs','scripts','ratchet','artifacts']
+        inputs=[entry['reference'] for name in categories for entry in candidate['inventory'][name]]
+        # The candidate is serialized with alphabetical keys, deliberately unlike P1's fixed order.
+        assert list(candidate['inventory']) != categories
+        _replace_grant(capsule,{'inputs':inputs})
+>       start=_read(api.record_process(capsule['context'],'start'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:532: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:407: in record_process
+    source = _source(context,spec,candidate,identity,output,f'source-{pid}-{phase}.json',at)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:202: in _source
+    _require(grant['inputs'] == inputs and freeze['authorized_root'] == spec['authorized_root'] == candidate['authorized_root'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, message = 'root/inventory authority mismatch'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: root/inventory authority mismatch
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:35: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_p1_fixed_category_order_ignores_json_object_key_order
+1 failed, 47 deselected in 0.60s

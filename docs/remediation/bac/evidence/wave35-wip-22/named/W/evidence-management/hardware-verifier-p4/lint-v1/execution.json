@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "--no-cache",
+    "--output-format",
+    "json",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+  ],
+  "pid": 191500,
+  "start": "2026-11-14T07:31:11.654656+00:00",
+  "end": "2026-11-14T07:31:11.709524+00:00",
+  "exit_code": 1
+}

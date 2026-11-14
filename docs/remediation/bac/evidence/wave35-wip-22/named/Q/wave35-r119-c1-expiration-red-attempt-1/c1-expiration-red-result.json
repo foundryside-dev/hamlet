@@ -1,0 +1,26 @@
+{
+  "name": "c1-expiration-red",
+  "exit_code": 1,
+  "seconds": 9.698332840009243,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[bank]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red.log",
+  "sha256": "800a11bc7c31b3180fc21612deccc60472e3f2431ba8b5d57952b024556432da",
+  "candidate_tree": "62e1025e2d457eea50337f4f0889420831689a2d",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "620adae8f07799e5b0d114b1d829a27e0b1bee2855f0dd3b549332b12141fba0",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

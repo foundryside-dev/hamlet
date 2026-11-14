@@ -1,0 +1,120 @@
+...........................F.FF                                          [100%]
+=================================== FAILURES ===================================
+_______________________ test_pytest_hooks_are_available ________________________
+
+    def test_pytest_hooks_are_available():
+        api=_api()
+        for name in ['pytest_addoption','pytest_configure','pytest_configure_node','pytest_testnodedown',
+                     'pytest_collection_finish','pytest_runtest_logreport','pytest_sessionfinish']:
+>           assert callable(getattr(api,name,None)), 'missing actual pytest hook '+name
+E           AssertionError: missing actual pytest hook pytest_addoption
+E           assert False
+E            +  where False = callable(None)
+E            +    where None = getattr(<module 'bac_hardware_identity_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py'>, 'pytest_addoption', None)
+
+test_bac_hardware_identity_v1.py:376: AssertionError
+___________ test_pytest_controller_workers_emit_closed_completion[0] ___________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-86/test_pytest_controller_workers0/source/pkg/inert-module.txt'), 'blo...t_controller_workers0/freeze.json', 'sha256': 'dce194fc7dabec148703de6863d6beea70c1fb992c6b016c43d8e8861fff39d8'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5d87d13000>
+workers = 0
+
+    @pytest.mark.parametrize('workers',[0,2])
+    def test_pytest_controller_workers_emit_closed_completion(capsule,monkeypatch,workers):
+        api=_prepare(capsule,monkeypatch)
+        q=Path(__file__).parent;job=capsule['job'];context=capsule['context']
+        policy=dict(schema='bac-hardware-identity-policy-v1',spec_path=str(capsule['tmp']/'spec.json'),
+            command_path=str(capsule['output']/'command.json'),runtime_path=str(capsule['output']/'runtime-context.json'),
+            **{k:copy.deepcopy(context[k]) for k in ['job_id','role_id','required_imports','worker_roles','environment_delta']})
+        job['environment']['BAC_P3_INERT_SPEC']=policy['spec_path']
+        job['environment']['PYTHONPATH']=str(q)
+        if workers:
+            job['xdist_workers']=workers
+            job['roles'].append(dict(capsule['role'],id='workers',role='worker',count=workers))
+            job['budget']['cpu_slots']=1+workers
+            policy['worker_roles']=['workers']*workers
+        policy_ref=_write(capsule['tmp']/'policy.json',policy)
+        case='test_bac_hardware_identity_v1.py::test_inert_job'
+        job['required_collected_ids']=[case]
+        for obligation in job['obligations']:obligation['required_cases']=[case]
+        argv=[sys.executable,'-m','pytest','-c','/dev/null','--rootdir',str(q),'--noconftest','-p','no:cacheprovider',
+              '-p','xdist.plugin','-p','test_bac_hardware_identity_v1','-p','bac_hardware_identity_v1',
+              '--bac-identity-policy',policy_ref['path'],'--bac-identity-policy-sha256',policy_ref['sha256'],
+              '-q',str(q/'test_bac_hardware_identity_v1.py')+'::test_inert_job']
+        if workers:argv+=['-n',str(workers)]
+        job['argv']=argv;job['interpreter']=sys.executable
+        _reseal(capsule)
+        source=_write(capsule['tmp']/'runner-source.json',dict(schema='bac-hardware-v1',kind='source-witness',
+            candidate=capsule['spec']['candidate'],source_freeze=capsule['spec']['source_freeze'],head='a'*40,tree='b'*40,
+            inventory=_read(capsule['grant'])['inputs'],at='2026-11-14T00:00:00.000000Z',process_identity=api._identity()))
+        _write(capsule['output']/'runtime-context.json',dict(schema='bac-hardware-identity-runtime-v1',
+            spec=context['spec'],command=context['command'],trusted_grant=context['trusted_grant'],policy=policy_ref,
+            runner_identity=api._identity(),runner_source_start=source))
+        with (capsule['tmp']/'pytest.log').open('wb') as log:
+            proc=subprocess.Popen(argv,cwd=capsule['root'],env=job['environment'],stdout=log,stderr=subprocess.STDOUT)
+            rc=proc.wait(timeout=20)
+>       assert rc==0,(capsule['tmp']/'pytest.log').read_text()
+E       AssertionError: ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+E         __main__.py: error: unrecognized arguments: --bac-identity-policy --bac-identity-policy-sha256 a23aa00908561c42102b9c084e9756adc9d70695a95eb96b0fb88827f9f9ab49 /workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_job
+E           inifile: /dev/null
+E           rootdir: /workspace/bac-review-2026-11-01/qualification
+E         
+E         
+E       assert 4 == 0
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:428: AssertionError
+___________ test_pytest_controller_workers_emit_closed_completion[2] ___________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-86/test_pytest_controller_workers1/source/pkg/inert-module.txt'), 'blo...t_controller_workers1/freeze.json', 'sha256': '815f69cf5bf53f1cfdeb187ebb8025082ce21b649e646472ed020ff5254c8f6c'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5d87dd4bb0>
+workers = 2
+
+    @pytest.mark.parametrize('workers',[0,2])
+    def test_pytest_controller_workers_emit_closed_completion(capsule,monkeypatch,workers):
+        api=_prepare(capsule,monkeypatch)
+        q=Path(__file__).parent;job=capsule['job'];context=capsule['context']
+        policy=dict(schema='bac-hardware-identity-policy-v1',spec_path=str(capsule['tmp']/'spec.json'),
+            command_path=str(capsule['output']/'command.json'),runtime_path=str(capsule['output']/'runtime-context.json'),
+            **{k:copy.deepcopy(context[k]) for k in ['job_id','role_id','required_imports','worker_roles','environment_delta']})
+        job['environment']['BAC_P3_INERT_SPEC']=policy['spec_path']
+        job['environment']['PYTHONPATH']=str(q)
+        if workers:
+            job['xdist_workers']=workers
+            job['roles'].append(dict(capsule['role'],id='workers',role='worker',count=workers))
+            job['budget']['cpu_slots']=1+workers
+            policy['worker_roles']=['workers']*workers
+        policy_ref=_write(capsule['tmp']/'policy.json',policy)
+        case='test_bac_hardware_identity_v1.py::test_inert_job'
+        job['required_collected_ids']=[case]
+        for obligation in job['obligations']:obligation['required_cases']=[case]
+        argv=[sys.executable,'-m','pytest','-c','/dev/null','--rootdir',str(q),'--noconftest','-p','no:cacheprovider',
+              '-p','xdist.plugin','-p','test_bac_hardware_identity_v1','-p','bac_hardware_identity_v1',
+              '--bac-identity-policy',policy_ref['path'],'--bac-identity-policy-sha256',policy_ref['sha256'],
+              '-q',str(q/'test_bac_hardware_identity_v1.py')+'::test_inert_job']
+        if workers:argv+=['-n',str(workers)]
+        job['argv']=argv;job['interpreter']=sys.executable
+        _reseal(capsule)
+        source=_write(capsule['tmp']/'runner-source.json',dict(schema='bac-hardware-v1',kind='source-witness',
+            candidate=capsule['spec']['candidate'],source_freeze=capsule['spec']['source_freeze'],head='a'*40,tree='b'*40,
+            inventory=_read(capsule['grant'])['inputs'],at='2026-11-14T00:00:00.000000Z',process_identity=api._identity()))
+        _write(capsule['output']/'runtime-context.json',dict(schema='bac-hardware-identity-runtime-v1',
+            spec=context['spec'],command=context['command'],trusted_grant=context['trusted_grant'],policy=policy_ref,
+            runner_identity=api._identity(),runner_source_start=source))
+        with (capsule['tmp']/'pytest.log').open('wb') as log:
+            proc=subprocess.Popen(argv,cwd=capsule['root'],env=job['environment'],stdout=log,stderr=subprocess.STDOUT)
+            rc=proc.wait(timeout=20)
+>       assert rc==0,(capsule['tmp']/'pytest.log').read_text()
+E       AssertionError: ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+E         __main__.py: error: unrecognized arguments: --bac-identity-policy --bac-identity-policy-sha256 a2be6459a8411c8cfbf242d1993f99b66695c4556ada0724192f979514f6dcc4 /workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_job
+E           inifile: /dev/null
+E           rootdir: /workspace/bac-review-2026-11-01/qualification
+E         
+E         
+E       assert 4 == 0
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:428: AssertionError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_pytest_hooks_are_available - As...
+FAILED test_bac_hardware_identity_v1.py::test_pytest_controller_workers_emit_closed_completion[0]
+FAILED test_bac_hardware_identity_v1.py::test_pytest_controller_workers_emit_closed_completion[2]
+3 failed, 28 passed, 3 deselected in 3.13s

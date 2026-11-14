@@ -1,0 +1,163 @@
+{
+  "records": [
+    {
+      "name": "ruff",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T08:14:34.454415+00:00",
+      "parent_pid": 198891,
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+      "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+      "pid": 198947,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T08:14:34.699396+00:00",
+      "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/ruff.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "mypy",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet",
+        "--show-error-codes",
+        "--no-incremental"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T08:14:34.699928+00:00",
+      "parent_pid": 198891,
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+      "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+      "pid": 198956,
+      "exit_code": 1,
+      "end_utc": "2026-11-14T08:15:05.197428+00:00",
+      "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/mypy.log",
+      "log_sha256": "ddf552be65c290932dd238ab8ad1347557d29011bdb2cacb18561db4097a6c23"
+    },
+    {
+      "name": "no-defaults",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T08:15:05.197841+00:00",
+      "parent_pid": 198891,
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+      "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+      "pid": 198980,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T08:15:06.202294+00:00",
+      "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/no-defaults.log",
+      "log_sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0"
+    },
+    {
+      "name": "black-0",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/config/exploration_policy.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T08:15:06.202608+00:00",
+      "parent_pid": 198891,
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+      "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+      "pid": 198981,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T08:15:06.601967+00:00",
+      "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/black-0.log",
+      "log_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "name": "black-1",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/exploration/scoped_curiosity.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T08:15:06.602347+00:00",
+      "parent_pid": 198891,
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+      "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+      "pid": 198982,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T08:15:07.082841+00:00",
+      "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/black-1.log",
+      "log_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "name": "black-2",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/exploration/parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T08:15:07.083140+00:00",
+      "parent_pid": 198891,
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+      "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+      "pid": 198983,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T08:15:07.329799+00:00",
+      "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/black-2.log",
+      "log_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "name": "black-3",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T08:15:07.330766+00:00",
+      "parent_pid": 198891,
+      "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+      "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+      "pid": 198984,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T08:15:07.682448+00:00",
+      "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/black-3.log",
+      "log_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    }
+  ],
+  "source_before_after": "PASS",
+  "scope": "Static gates only; failures retained, no acceptance"
+}

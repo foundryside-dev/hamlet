@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r119-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-collection-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "c1-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_install_has_no_postpublication_invalidation",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[runtime]",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[bank]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "--collect-only",
+        "-q"
+      ]
+    }
+  ]
+}

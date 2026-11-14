@@ -1,0 +1,1122 @@
+"""Independent BAC evidence verification, with no APP/hardware/executable dispatch.
+
+Only the root-authorized exact spec under no-writer custody is an authority input.
+Hashes detect observed changes; they are not proof of authorship. Common checks do
+not implement strict child/fork/phase, application or real CUDA case validators.
+"""
+
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+
+import bac_hardware_protocol_v1 as protocol
+
+COMMON = frozenset(("process-custody", "source-freeze", "required-cases"))
+PHASES = ("setup", "call", "teardown")
+PROTOCOL_SHA256 = "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+
+
+class IncompleteEvidence(ValueError):
+    """A terminal attempt lacks a witness; this is never qualification."""
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def exact(value, fields, label):
+    require(type(value) is dict and set(value) == set(fields.split()), label + ": exact fields required")
+
+
+def pairs(items):
+    result = {}
+    for key, value in items:
+        require(key not in result, "duplicate JSON key")
+        result[key] = value
+    return result
+
+
+def load(reference, kind=None):
+    protocol.validate_record("reference", reference)
+    path = Path(reference["path"])
+    try:
+        data = path.read_bytes()
+        require(
+            len(data) == reference["bytes"] and hashlib.sha256(data).hexdigest() == reference["sha256"], "reference changed while reading"
+        )
+        value = json.loads(data, object_pairs_hook=pairs, parse_constant=lambda _: (_ for _ in ()).throw(ValueError("nonfinite JSON")))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("unreadable JSON record") from exc
+    protocol.validate_record("reference", reference)
+    if kind:
+        protocol.validate_record(kind, value)
+    return value
+
+
+def ref(path):
+    return protocol.file_reference(Path(path))
+
+
+def key(value):
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def unique(values, label):
+    require(len(values) == len({key(v) for v in values}), label + ": duplicate")
+
+
+def same_set(first, second, label):
+    unique(first, label)
+    unique(second, label)
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+
+
+def bound(value, spec_ref, spec, job=None):
+    require(value["spec"] == spec_ref and value["attempt_id"] == spec["attempt_id"], "spec/attempt binding")
+    if job:
+        require(value["job_id"] == job["id"], "job binding")
+
+
+def utc():
+    return datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+def identity():
+    raw = Path("/proc/self/stat").read_text().rsplit(")", 1)[1].split()
+    return dict(
+        pid=os.getpid(),
+        ppid=os.getppid(),
+        start_identity=raw[19],
+        host=os.uname().nodename,
+        boot_id=Path("/proc/sys/kernel/random/boot_id").read_text().strip(),
+    )
+
+
+def _safe_parent(path):
+    raw = str(path)
+    require(
+        raw.startswith("/") and "\\" not in raw and "\x00" not in raw and all(p not in ("", ".", "..") for p in raw[1:].split("/")),
+        "unsafe destination",
+    )
+    fds = [os.open("/", os.O_RDONLY | os.O_DIRECTORY)]
+    try:
+        for part in raw[1:].split("/")[:-1]:
+            fds.append(os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fds[-1]))
+        return fds
+    except OSError as exc:
+        for fd in reversed(fds):
+            os.close(fd)
+        raise ValueError("unsafe receipt parent") from exc
+
+
+def publish(path, value):
+    fds = _safe_parent(path)
+    try:
+        fd = os.open(Path(path).name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=fds[-1])
+        with os.fdopen(fd, "wb") as output:
+            output.write((json.dumps(value, sort_keys=True, indent=2, allow_nan=False) + "\n").encode())
+            output.flush()
+            os.fsync(output.fileno())
+        # Revalidate namespace after publication; preserve incomplete artifacts.
+        check = _safe_parent(path)
+        try:
+            require(
+                all((os.fstat(a).st_dev, os.fstat(a).st_ino) == (os.fstat(b).st_dev, os.fstat(b).st_ino) for a, b in zip(fds, check)),
+                "receipt namespace changed",
+            )
+        finally:
+            for descriptor in reversed(check):
+                os.close(descriptor)
+        return ref(path)
+    except FileExistsError:
+        raise
+    except OSError as exc:
+        raise ValueError("receipt publication failed") from exc
+    finally:
+        for descriptor in reversed(fds):
+            os.close(descriptor)
+
+
+def source_check(reference, candidate_ref, candidate, freeze_ref, freeze, grant, expected_identity=None):
+    witness = load(reference, "source-witness")
+    require(witness["candidate"] == candidate_ref and witness["source_freeze"] == freeze_ref, "source binding")
+    require(witness["head"] == candidate["head"] and witness["tree"] == candidate["tree"], "source head/tree")
+    inputs = [row["reference"] for rows in candidate["inventory"].values() for row in rows]
+    same_set(witness["inventory"], inputs, "source inventory")
+    require(witness["at"] >= freeze["start"] and witness["at"] >= grant["start"], "source witness before freeze")
+    if freeze["end"]["state"] == "measured":
+        require(witness["at"] <= freeze["end"]["value"], "source freeze expired")
+    if grant["end"] is not None:
+        require(witness["at"] <= grant["end"], "grant expired")
+    if expected_identity is not None:
+        require(witness["process_identity"] == expected_identity, "source observer identity")
+    return witness
+
+
+def initial(spec_path, job_id):
+    spec_ref = ref(spec_path)
+    spec = load(spec_ref, "spec")
+    jobs = [j for j in spec["jobs"] if j["id"] == job_id]
+    require(len(jobs) == 1, "unknown job")
+    job = jobs[0]
+    tools = {t["name"]: t["reference"] for t in spec["tools"]}
+    require(tools["protocol"] == ref(protocol.__file__) and tools["protocol"]["sha256"] == PROTOCOL_SHA256, "unpinned protocol")
+    require(tools["verifier"] == ref(__file__), "verifier source mismatch")
+    require(tools["capture"]["sha256"] == "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a", "unpinned capture tool")
+    capture_result_ref = ref(Path(spec_path).parent / "result.json")
+    captured = load(capture_result_ref)
+    exact(captured, "schema disposition reasons admission spec", "capture terminal")
+    require(
+        captured
+        == dict(schema="bac-hardware-capture-result-v1", disposition="admitted", reasons=[], admission=spec["admission"], spec=spec_ref),
+        "capture terminal did not admit exact spec",
+    )
+    admission = load(spec["admission"], "admission")
+    require(
+        admission["disposition"] == "admitted"
+        and admission["profile"] == spec["profile"]
+        and admission["admitted_budget"] == spec["budget"],
+        "admission/spec binding",
+    )
+    require(admission["environment"] == spec["dependencies"], "dependency admission binding")
+    dependencies = load(spec["dependencies"], "environment")
+    require(dependencies["interpreter"]["path"] == job["interpreter"], "interpreter binding")
+    request = load(admission["request"], "admission-request")
+    for field in (
+        "attempt_id",
+        "profile",
+        "authorized_root",
+        "output_root",
+        "scratch_root",
+        "lease_root",
+        "source_freeze",
+        "tools",
+        "dependencies",
+    ):
+        require(request[field] == spec[field], "request/spec " + field)
+    require(request["requested_job_concurrency"] == spec["job_concurrency"], "concurrency binding")
+    require(len(request["jobs"]) == len(spec["jobs"]), "job inventory binding")
+    for requested, normalized in zip(request["jobs"], spec["jobs"]):
+        a, b = dict(requested), dict(normalized)
+        a["devices"] = [{k: v for k, v in d.items() if k != "mapping_provenance"} for d in a["devices"]]
+        b["devices"] = [{k: v for k, v in d.items() if k != "mapping_provenance"} for d in b["devices"]]
+        require(a == b, "normalized job differs from requested contract")
+        require(all(d in admission["devices"] for d in normalized["devices"]), "device assignment not admitted")
+    candidate = load(spec["candidate"], "candidate")
+    freeze = load(spec["source_freeze"], "source-freeze")
+    require(
+        candidate["authorized_root"] == freeze["authorized_root"] == spec["authorized_root"]
+        and candidate["source_freeze"] == spec["source_freeze"],
+        "candidate/freeze binding",
+    )
+    grant = load(freeze["grant"])
+    exact(
+        grant,
+        "schema authorized_root head tree import_roots inputs start end no_writer_barrier includes_untracked authority allocation_grant cpu_reservation_evidence",
+        "source grant",
+    )
+    require(
+        grant["schema"] == "bac-hardware-source-grant-v1" and grant["no_writer_barrier"] is True and grant["includes_untracked"] is True,
+        "root no-writer grant required",
+    )
+    for field in ("authorized_root", "head", "tree", "import_roots"):
+        require(grant[field] == candidate[field], "grant/candidate " + field)
+    inputs = [r["reference"] for rows in candidate["inventory"].values() for r in rows]
+    same_set(grant["inputs"], inputs, "grant inputs")
+    protocol.validate_record("reference", grant["allocation_grant"])
+    for item in grant["cpu_reservation_evidence"]:
+        protocol.validate_record("reference", item)
+    require(type(grant["authority"]) is str and grant["authority"].strip(), "missing authority statement")
+    require(grant["start"] <= freeze["start"], "freeze starts before grant")
+    return spec_ref, spec, job, tools, candidate, freeze, grant, dependencies, capture_result_ref
+
+
+def _policy(job, spec_ref):
+    args = job["argv"]
+    values = []
+    for flag in ("--bac-identity-policy", "--bac-identity-policy-sha256"):
+        require(args.count(flag) == 1 and not any(a.startswith(flag + "=") for a in args), "identity policy argv")
+        index = args.index(flag)
+        require(index + 1 < len(args), "missing policy argument")
+        values.append(args[index + 1])
+    policy_ref = ref(values[0])
+    require(policy_ref["sha256"] == values[1], "policy hash")
+    policy = load(policy_ref)
+    exact(policy, "schema spec_path command_path runtime_path job_id role_id required_imports worker_roles environment_delta", "policy")
+    require(
+        policy["schema"] == "bac-hardware-identity-policy-v1" and policy["spec_path"] == spec_ref["path"] and policy["job_id"] == job["id"],
+        "policy binding",
+    )
+    require(
+        policy["command_path"] == str(Path(job["output"]) / "command.json")
+        and policy["runtime_path"] == str(Path(job["output"]) / "runtime-context.json"),
+        "policy paths",
+    )
+    exact(policy["environment_delta"], "common worker", "environment delta")
+    for group, allowed in (("common", {"PYTEST_VERSION", "LC_CTYPE"}), ("worker", {"COLUMNS", "LINES"})):
+        values = policy["environment_delta"][group]
+        require(
+            type(values) is dict
+            and all(
+                type(k) is str and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", k) and type(v) is str and "\x00" not in v
+                for k, v in values.items()
+            ),
+            "environment delta types",
+        )
+        require(set(values) <= allowed and not (set(values) & set(job["environment"])), "environment additions")
+    roles = {r["id"]: r for r in job["roles"]}
+    require(policy["role_id"] in roles and roles[policy["role_id"]]["role"] == "controller", "policy controller")
+    require(type(policy["worker_roles"]) is list and len(policy["worker_roles"]) == job["xdist_workers"], "policy worker inventory")
+    for role in roles.values():
+        if role["role"] == "worker":
+            require(policy["worker_roles"].count(role["id"]) == role["count"], "worker role policy count")
+    unique([r["name"] for r in policy["required_imports"]], "required imports")
+    for required in policy["required_imports"]:
+        exact(required, "name reference phases", "required import")
+        protocol.validate_record("named-reference", {k: required[k] for k in ("name", "reference")})
+        unique(required["phases"], "import phases")
+        require(bool(required["phases"]) and set(required["phases"]) <= {"start", "end"}, "required import phases")
+    return policy_ref, policy
+
+
+def _worker(value, job):
+    exact(value, "workerid workercount testrunuid mainargv", "worker identity")
+    require(type(value["workerid"]) is str and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", value["workerid"]), "worker ID")
+    require(type(value["workercount"]) is int and value["workercount"] == job["xdist_workers"], "worker count")
+    require(
+        type(value["testrunuid"]) is str and len(value["testrunuid"]) == 32 and all(c in "0123456789abcdef" for c in value["testrunuid"]),
+        "worker run UID",
+    )
+    require(
+        type(value["mainargv"]) is list and value["mainargv"] and all(type(x) is str and x for x in value["mainargv"]), "worker main argv"
+    )
+
+
+def processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies):
+    policy_ref, policy = _policy(job, spec_ref)
+    require(policy_ref not in grant["inputs"], "policy cannot be candidate input")
+    runtime_ref = ref(policy["runtime_path"])
+    runtime = load(runtime_ref)
+    exact(runtime, "schema spec command trusted_grant policy runner_identity runner_source_start", "runtime")
+    require(
+        runtime["schema"] == "bac-hardware-identity-runtime-v1"
+        and runtime["spec"] == spec_ref
+        and runtime["command"] == command_ref
+        and runtime["trusted_grant"] == freeze["grant"]
+        and runtime["policy"] == policy_ref,
+        "runtime delegation",
+    )
+    protocol.validate_record("identity", runtime["runner_identity"])
+    runner_start = source_check(
+        runtime["runner_source_start"], spec["candidate"], candidate, spec["source_freeze"], freeze, grant, runtime["runner_identity"]
+    )
+    by_id, by_ref, raw_by_ref = {}, {}, {}
+    unique(result["process_records"], "process records")
+    roles = {r["id"]: r for r in job["roles"]}
+    allowed_imports = [r["reference"] for rows in candidate["inventory"].values() for r in rows] + [
+        d["reference"] for d in dependencies["dependencies"]
+    ]
+    for reference in result["process_records"]:
+        process = load(reference, "process")
+        bound(process, spec_ref, spec, job)
+        require(process["role_id"] in roles and process["role"] == roles[process["role_id"]]["role"], "process role")
+        role = roles[process["role_id"]]
+        require(
+            process["cwd"] == job["cwd"] and process["interpreter"] == dependencies["interpreter"] and process["devices"] == job["devices"],
+            "process execution context",
+        )
+        require(process["at"] >= runner_start["at"] and process["at"] >= result["start"], "process before launch")
+        if result["end"]["state"] == "measured":
+            require(process["at"] <= result["end"]["value"], "process after terminal")
+        source = source_check(
+            process["source_witness"], spec["candidate"], candidate, spec["source_freeze"], freeze, grant, process["identity"]
+        )
+        require(source["at"] <= process["at"], "source observation after process")
+        require(all(i["reference"] in allowed_imports for i in process["imports"]), "unexpected import origin")
+        for required in policy["required_imports"]:
+            if process["phase"] in required["phases"]:
+                require({k: required[k] for k in ("name", "reference")} in process["imports"], "required import absent")
+        provenances = [process[k]["provenance"] for k in ("intra_op", "inter_op", "debug")]
+        require(provenances[0] == provenances[1] == provenances[2], "fact provenance differs")
+        raw_ref = provenances[0]
+        require(
+            raw_ref["path"] == str(Path(job["output"]) / f"process-{process['process_id']}-observation-{process['phase']}.json"),
+            "raw observation path",
+        )
+        raw = load(raw_ref)
+        exact(raw, "schema context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at", "raw")
+        require(raw["schema"] == "bac-hardware-process-observation-v1", "raw schema")
+        for field in ("identity", "phase", "environment", "at"):
+            require(raw[field] == process[field], "raw/process " + field)
+        require(type(raw["torch_loaded"]) is bool and (raw["cuda_marker"] is None or type(raw["cuda_marker"]) is bool), "raw bool types")
+        require(type(raw["observation_limit"]) is str and raw["observation_limit"].strip(), "observation limitation required")
+        context = raw["context"]
+        exact(
+            context,
+            "schema spec command trusted_grant job_id role_id required_imports worker_roles environment_delta parent_start replacement_start lifecycle worker_identity policy runtime",
+            "context",
+        )
+        require(
+            context["schema"] == "bac-hardware-identity-context-v1"
+            and context["spec"] == spec_ref
+            and context["command"] == command_ref
+            and context["trusted_grant"] == freeze["grant"]
+            and context["job_id"] == job["id"]
+            and context["role_id"] == process["role_id"],
+            "context binding",
+        )
+        require(context["policy"] == [policy_ref] and context["runtime"] == [runtime_ref], "missing delegated policy/runtime provenance")
+        for field in ("required_imports", "worker_roles", "environment_delta"):
+            require(context[field] == policy[field], "derived policy mismatch")
+        for field in ("parent_start", "replacement_start", "lifecycle"):
+            require(type(context[field]) is list and len(context[field]) <= 1, "context reference cardinality")
+            for item in context[field]:
+                protocol.validate_record("reference", item)
+        expected_env = {**job["environment"], **policy["environment_delta"]["common"]}
+        if process["role"] == "controller":
+            require(process["argv"] == job["argv"] and process["role_id"] == policy["role_id"], "controller argv/role")
+            require(
+                not any(context[f] for f in ("parent_start", "replacement_start", "lifecycle")) and context["worker_identity"] is None,
+                "controller context ancestry",
+            )
+            require(not process["parent_identity"] and not process["replacement_of"], "controller parent fields")
+            require(
+                process["identity"]["ppid"] == runtime["runner_identity"]["pid"]
+                and all(process["identity"][k] == runtime["runner_identity"][k] for k in ("host", "boot_id")),
+                "controller runner identity",
+            )
+        elif process["role"] == "worker":
+            _worker(context["worker_identity"], job)
+            worker = context["worker_identity"]
+            expected_env.update(policy["environment_delta"]["worker"])
+            expected_env.update(
+                PYTEST_XDIST_WORKER=worker["workerid"],
+                PYTEST_XDIST_WORKER_COUNT=str(worker["workercount"]),
+                PYTEST_XDIST_TESTRUNUID=worker["testrunuid"],
+            )
+            require(len(context["parent_start"]) == len(context["lifecycle"]) == 1, "worker missing parent lifecycle")
+        else:
+            raise ValueError("child/observer owner delegation is unimplemented; P5 contract required")
+        require(
+            raw["worker_identity"] == context["worker_identity"] and process["environment"] == expected_env,
+            "actual environment/context mismatch",
+        )
+        if role["observer"] == "guard-only":
+            require(
+                process["torch_observation"] == "forbidden-inherited-module-witness" and process["cuda_observation"] == "forbidden",
+                "guard observations",
+            )
+        elif not raw["torch_loaded"]:
+            require(
+                process["torch_observation"] == "not-loaded"
+                and process["cuda_observation"] == "uninitialized"
+                and raw["cuda_marker"] is None,
+                "absent Torch observations",
+            )
+            require(
+                not (process["phase"] == "end" and (role["observer"] == "work" or role["torch_policy"] == "work")),
+                "work end has no Torch observations",
+            )
+        else:
+            require(
+                type(raw["cuda_marker"]) is bool
+                and process["cuda_observation"] == ("initialized" if raw["cuda_marker"] else "uninitialized"),
+                "CUDA marker",
+            )
+            require(role["cuda_policy"] != "no-initialize" or raw["cuda_marker"] is False, "observer initialized CUDA")
+            require(
+                process["torch_observation"]
+                == ("work" if role["observer"] == "work" or role["torch_policy"] == "work" else "loaded-without-calls"),
+                "Torch observation mode",
+            )
+        measured = raw["torch_loaded"] and process["torch_observation"] == "work"
+        for field in ("intra_op", "inter_op", "debug"):
+            fact = process[field]
+            require(fact["state"] == ("measured" if measured else "unavailable"), "role fact availability")
+            if measured:
+                require(type(fact["value"]) is type(role[field]) and fact["value"] == role[field], "role fact mismatch")
+        entry = by_id.setdefault(process["process_id"], {})
+        require(process["phase"] not in entry, "duplicate process phase")
+        entry[process["phase"]] = (reference, process, raw)
+        by_ref[key(reference)] = process
+        raw_by_ref[key(reference)] = raw
+    require(by_id, "missing process observations")
+    starts = []
+    for process_id, phases in by_id.items():
+        if set(phases) != {"start", "end"}:
+            raise IncompleteEvidence("missing process start/end")
+        sr, start, raw_start = phases["start"]
+        er, end, raw_end = phases["end"]
+        for field in (
+            "identity",
+            "role_id",
+            "role",
+            "parent_identity",
+            "replacement_of",
+            "interpreter",
+            "argv",
+            "cwd",
+            "environment",
+            "devices",
+        ):
+            require(start[field] == end[field], "start/end " + field)
+        require(raw_start["context"] == raw_end["context"], "start/end context")
+        require(
+            end["at"] >= start["at"]
+            and end["monotonic_ns"] >= start["monotonic_ns"]
+            and end["elapsed_ns"]["value"] == end["monotonic_ns"] - start["monotonic_ns"],
+            "process time",
+        )
+        starts.append((sr, start, raw_start))
+    unique([s[1]["identity"] for s in starts], "process identity")
+    unique([{k: s[1]["identity"][k] for k in ("pid", "start_identity", "host", "boot_id")} for s in starts], "process start token")
+    pid_lifetimes = {}
+    for _, process, _ in starts:
+        ident = process["identity"]
+        require(ident["start_identity"].isdigit(), "Linux process start token")
+        pid_lifetimes.setdefault((ident["pid"], ident["host"], ident["boot_id"]), []).append(by_id[process["process_id"]])
+    for lifetimes in pid_lifetimes.values():
+        ordered = sorted(lifetimes, key=lambda row: row["start"][1]["monotonic_ns"])
+        for earlier, later in zip(ordered, ordered[1:]):
+            require(
+                earlier["end"][1]["monotonic_ns"] <= later["start"][1]["monotonic_ns"]
+                and earlier["end"][1]["at"] <= later["start"][1]["at"],
+                "overlapping reused PID",
+            )
+    for role in roles.values():
+        rows = [s for s in starts if s[1]["role_id"] == role["id"]]
+        initial_rows = [s for s in rows if not s[1]["replacement_of"]]
+        require(
+            len(initial_rows) == role["count"] and len(rows) <= role["count"] + role["replacement_limit"], "role count/replacement limit"
+        )
+    _lifecycles(starts, by_ref, job, result)
+    return by_ref, raw_by_ref, runtime, policy, [s[0] for s in starts]
+
+
+def _lifecycles(starts, by_ref, job, result):
+    consumed = set()
+    lifecycle_records = {}
+    for reference in result["inventory"]:
+        if not reference["path"].endswith(".json"):
+            continue
+        item = load(reference)
+        if type(item) is dict and item.get("schema") == "bac-hardware-worker-lifecycle-v1":
+            exact(
+                item,
+                "schema phase controller_start worker_identity role_id predecessor_start process_start error at prior_lifecycle",
+                "lifecycle",
+            )
+            require(item["phase"] in ("configure", "down") and type(item["error"]) is str, "worker lifecycle types")
+            _worker(item["worker_identity"], job)
+            for field in ("predecessor_start", "process_start", "prior_lifecycle"):
+                require(type(item[field]) is list and len(item[field]) <= 1, "worker lifecycle reference cardinality")
+                for child in item[field]:
+                    protocol.validate_record("reference", child)
+            lifecycle_records[key(reference)] = item
+    used_lifecycles = set()
+    for reference, process, raw in starts:
+        if process["role"] != "worker":
+            continue
+        context = raw["context"]
+        parent_ref = context["parent_start"][0]
+        require(key(parent_ref) in by_ref, "worker parent not observed")
+        parent = by_ref[key(parent_ref)]
+        require(parent["role"] == "controller" and parent["phase"] == "start", "worker controller parent")
+        require(
+            process["parent_identity"] == [parent["identity"]] and process["identity"]["ppid"] == parent["identity"]["pid"],
+            "worker actual parent",
+        )
+        configure_ref = context["lifecycle"][0]
+        require(key(configure_ref) in lifecycle_records, "worker configure not inventoried")
+        used_lifecycles.add(key(configure_ref))
+        configure = load(configure_ref)
+        downs = [(r, d) for r, d in lifecycle_records.items() if d["phase"] == "down" and d["process_start"] == [reference]]
+        require(len(downs) == 1, "worker missing/duplicate down lifecycle")
+        down_ref, down = downs[0]
+        used_lifecycles.add(down_ref)
+        require(
+            down["controller_start"] == parent_ref
+            and down["role_id"] == process["role_id"]
+            and down["worker_identity"] == context["worker_identity"]
+            and down["prior_lifecycle"] == [configure_ref]
+            and down["predecessor_start"] == context["replacement_start"],
+            "worker down lifecycle binding",
+        )
+        ends = [v for v in by_ref.values() if v["process_id"] == process["process_id"] and v["phase"] == "end"]
+        parent_ends = [v for v in by_ref.values() if v["process_id"] == parent["process_id"] and v["phase"] == "end"]
+        require(
+            len(ends) == len(parent_ends) == 1 and process["at"] <= ends[0]["at"] <= down["at"] <= parent_ends[0]["at"],
+            "worker down lifecycle chronology",
+        )
+        require(all(process["identity"][k] == parent["identity"][k] for k in ("host", "boot_id")), "worker parent host/boot")
+        exact(
+            configure,
+            "schema phase controller_start worker_identity role_id predecessor_start process_start error at prior_lifecycle",
+            "lifecycle",
+        )
+        require(
+            configure["schema"] == "bac-hardware-worker-lifecycle-v1"
+            and configure["phase"] == "configure"
+            and configure["controller_start"] == parent_ref
+            and configure["worker_identity"] == context["worker_identity"]
+            and configure["role_id"] == process["role_id"]
+            and not configure["process_start"]
+            and configure["error"] == ""
+            and configure["predecessor_start"] == context["replacement_start"],
+            "worker configure binding",
+        )
+        require(parent["at"] <= configure["at"] <= process["at"], "lifecycle chronology")
+        if context["replacement_start"]:
+            require(len(configure["prior_lifecycle"]) == 1, "replacement prior lifecycle")
+            prior_ref = configure["prior_lifecycle"][0]
+            require(key(prior_ref) not in consumed, "replacement predecessor reused")
+            consumed.add(key(prior_ref))
+            prior = load(prior_ref)
+            exact(
+                prior,
+                "schema phase controller_start worker_identity role_id predecessor_start process_start error at prior_lifecycle",
+                "prior lifecycle",
+            )
+            predecessor_ref = context["replacement_start"][0]
+            require(key(predecessor_ref) in by_ref, "replacement predecessor missing")
+            predecessor = by_ref[key(predecessor_ref)]
+            require(
+                prior["schema"] == "bac-hardware-worker-lifecycle-v1"
+                and prior["phase"] == "down"
+                and prior["controller_start"] == parent_ref
+                and prior["role_id"] == process["role_id"]
+                and prior["process_start"] == [predecessor_ref]
+                and type(prior["error"]) is str
+                and bool(prior["error"]),
+                "replacement down binding",
+            )
+            require(
+                predecessor["phase"] == "start"
+                and predecessor["role_id"] == process["role_id"]
+                and predecessor["identity"] != process["identity"]
+                and process["replacement_of"] == [predecessor["identity"]],
+                "replacement identity",
+            )
+            require(predecessor["at"] <= prior["at"] <= configure["at"], "replacement ordering")
+            require(len(prior["prior_lifecycle"]) == 1, "down missing configure link")
+            old = load(prior["prior_lifecycle"][0])
+            require(
+                old["phase"] == "configure"
+                and old["worker_identity"] == prior["worker_identity"]
+                and old["controller_start"] == parent_ref,
+                "down configure ancestry",
+            )
+        else:
+            require(not configure["prior_lifecycle"] and not process["replacement_of"], "initial worker has predecessor")
+    require(used_lifecycles == set(lifecycle_records), "orphan worker lifecycle")
+
+
+def outcomes(result, job, processes_by_ref):
+    required = set(job["required_collected_ids"])
+    reasons = []
+    if set(result["collected_ids"]) != required:
+        reasons.append("required collection set mismatch")
+    if {o["case_id"] for o in result["outcomes"]} != required:
+        reasons.append("required outcomes missing; collection-only is unverified")
+    for outcome in result["outcomes"]:
+        phases = {}
+        for reference in outcome["evidence"]:
+            report = load(reference)
+            exact(report, "schema process case_id phase outcome longrepr at", "phase report")
+            require(
+                report["schema"] == "bac-hardware-pytest-report-v1"
+                and report["case_id"] == outcome["case_id"]
+                and report["phase"] in PHASES,
+                "report binding",
+            )
+            require(report["phase"] not in phases, "duplicate report phase")
+            require(key(report["process"]) in processes_by_ref, "report process not observed")
+            process = processes_by_ref[key(report["process"])]
+            require(process["phase"] == "start" and process["at"] <= report["at"], "report process lifecycle")
+            ends = [v for v in processes_by_ref.values() if v["process_id"] == process["process_id"] and v["phase"] == "end"]
+            require(len(ends) == 1 and report["at"] <= ends[0]["at"], "report outside process lifecycle")
+            require(report["outcome"] == outcome[report["phase"]], "report/outcome mismatch")
+            require(type(report["longrepr"]) is str, "report longrepr")
+            phases[report["phase"]] = report
+        for phase in PHASES:
+            if outcome[phase] != "not-run":
+                require(phase in phases, "phase report missing")
+            else:
+                require(phase not in phases, "not-run phase has report")
+        ordered = [phases[phase] for phase in PHASES if phase in phases]
+        require(len({key(r["process"]) for r in ordered}) <= 1, "case phase reports came from different processes")
+        require([r["at"] for r in ordered] == sorted(r["at"] for r in ordered), "report phase chronology")
+        if not all(outcome[phase] == "passed" for phase in PHASES):
+            reasons.append("required case not all passed: " + outcome["case_id"])
+    return reasons
+
+
+def _inventory_exact(references, root, excluded):
+    unique(references, "file inventory")
+    seen = []
+    for path in sorted(Path(root).rglob("*")):
+        require(not path.is_symlink(), "symlink in sealed output")
+        if path.is_file() and str(path) not in excluded:
+            seen.append(ref(path))
+        else:
+            require(path.is_dir() or str(path) in excluded, "nonregular sealed output")
+    same_set(references, seen, "sealed file inventory")
+
+
+def parent_observations(result, spec_ref, spec, job, command_ref):
+    launch_ref = ref(Path(job["output"]) / "launch.json")
+    launch = load(launch_ref)
+    exact(launch, "schema attempt_id job_id spec command identity affinity at monotonic_ns inherited_leases", "launch")
+    require(launch["schema"] == "bac-hardware-runner-launch-v1", "launch schema")
+    bound(launch, spec_ref, spec, job)
+    require(launch["command"] == command_ref, "launch command")
+    protocol.validate_record("identity", launch["identity"])
+    require(
+        type(launch["affinity"]) is list and bool(launch["affinity"]) and all(type(v) is int and v >= 0 for v in launch["affinity"]),
+        "launch affinity",
+    )
+    require(launch["affinity"] == sorted(set(launch["affinity"])), "launch affinity duplicates/order")
+    require(type(launch["monotonic_ns"]) is int and launch["monotonic_ns"] >= 0, "launch monotonic")
+    require(type(launch["inherited_leases"]) is list and launch["inherited_leases"], "launch leases absent")
+    for lease in launch["inherited_leases"]:
+        exact(lease, "fd lock_name device inode", "inherited lease")
+        require(
+            type(lease["fd"]) is int
+            and lease["fd"] > 2
+            and type(lease["device"]) is int
+            and lease["device"] >= 0
+            and type(lease["inode"]) is int
+            and lease["inode"] >= 0,
+            "lease identity types",
+        )
+        require(type(lease["lock_name"]) is str and re.fullmatch(r"[0-9a-f]{64}\.lock", lease["lock_name"]), "lease lock name")
+    unique([l["fd"] for l in launch["inherited_leases"]], "inherited descriptor")
+    unique([l["lock_name"] for l in launch["inherited_leases"]], "inherited lock")
+    waited = load(ref(Path(job["output"]) / "wait.json"))
+    exact(
+        waited,
+        "schema attempt_id job_id spec command launch identity exit_code signal interruption_reason start end start_monotonic_ns end_monotonic_ns",
+        "wait",
+    )
+    require(waited["schema"] == "bac-hardware-runner-wait-v1", "wait schema")
+    bound(waited, spec_ref, spec, job)
+    require(
+        waited["command"] == command_ref and waited["launch"] == launch_ref and waited["identity"] == launch["identity"],
+        "wait launch/identity binding",
+    )
+    require(
+        type(waited["exit_code"]) is int and type(waited["signal"]) is int and type(waited["interruption_reason"]) is str, "wait exit types"
+    )
+    require(waited["exit_code"] == result["exit_code"] and waited["signal"] == result["signal"], "wait/result exit mismatch")
+    require(waited["signal"] == max(0, -waited["exit_code"]), "wait signal mismatch")
+    for field in ("start_monotonic_ns", "end_monotonic_ns"):
+        require(type(waited[field]) is int and waited[field] >= 0, "wait monotonic type")
+    require(waited["start"] == result["start"] and waited["end"] == result["end"]["value"], "wait absolute times")
+    require(
+        waited["start_monotonic_ns"] <= launch["monotonic_ns"] <= waited["end_monotonic_ns"]
+        and result["elapsed_ns"]["value"] == waited["end_monotonic_ns"] - waited["start_monotonic_ns"],
+        "wait elapsed mismatch",
+    )
+    require(waited["start"] <= launch["at"] <= waited["end"], "wait chronology")
+    if waited["signal"] or waited["interruption_reason"]:
+        require(result["disposition"] == "interrupted", "interrupted wait relabeled")
+    elif waited["exit_code"]:
+        require(result["disposition"] == "completed-failed", "nonzero wait relabeled")
+    else:
+        require(result["disposition"] in ("successful", "completed-unverified"), "zero wait relabeled")
+    return launch
+
+
+def collections(result, job, by_ref):
+    rows = []
+    report_refs = []
+    for reference in result["inventory"]:
+        if not reference["path"].endswith(".json"):
+            continue
+        value = load(reference)
+        if type(value) is dict and value.get("schema") == "bac-hardware-pytest-report-v1":
+            report_refs.append(reference)
+        if type(value) is dict and value.get("schema") == "bac-hardware-pytest-collection-v1":
+            exact(value, "schema process ids", "collection")
+            require(key(value["process"]) in by_ref and by_ref[key(value["process"])]["phase"] == "start", "collection process")
+            require(type(value["ids"]) is list and all(type(x) is str and x for x in value["ids"]), "collection IDs")
+            same_set(value["ids"], result["collected_ids"], "actual collection/result")
+            rows.append(value)
+    expected = [
+        refkey
+        for refkey, process in by_ref.items()
+        if process["phase"] == "start" and process["role"] == ("worker" if job["xdist_workers"] else "controller")
+    ]
+    same_set([key(row["process"]) for row in rows], expected, "actual collection processes")
+    same_set(report_refs, [r for o in result["outcomes"] for r in o["evidence"]], "actual phase report inventory")
+
+
+def validator_inventory(job, tools):
+    inventories = []
+    for reference in job["prerequisites"]:
+        value = load(reference)
+        if type(value) is dict and value.get("schema") == "bac-hardware-validator-inventory-v1":
+            inventories.append((reference, value))
+    require(len(inventories) <= 1, "duplicate validator inventory")
+    if not inventories:
+        return None
+    reference, inventory = inventories[0]
+    exact(inventory, "schema authority validators", "validator inventory")
+    require(type(inventory["authority"]) is str and inventory["authority"].strip(), "inventory authority statement")
+    require(type(inventory["validators"]) is list and len(inventory["validators"]) == 1, "finite common validator inventory")
+    entry = inventory["validators"][0]
+    exact(entry, "id kinds validator dependencies contracts witness_schemas evidence_classes", "validator entry")
+    require(entry["id"] == "p4-common-v1", "unknown validator ID; arbitrary dispatch forbidden")
+    same_set(entry["kinds"], list(COMMON), "common validator kinds")
+    require(entry["validator"] == tools["verifier"] and entry["dependencies"] == [tools["protocol"]], "validator source/dependency pins")
+    require(entry["evidence_classes"] == ["cpu", "cpu-standin"], "common evidence classes")
+    for field in ("contracts", "witness_schemas"):
+        unique(entry[field], "validator " + field)
+        require(entry[field], "missing validator " + field)
+        for item in entry[field]:
+            protocol.validate_record("reference", item)
+    return entry
+
+
+def common_validation(
+    obligation, contract, evidence, entry, result, by_ref, spec_ref, job, validation_identity, validation_start, outcome_reasons
+):
+    require(obligation["kind"] in COMMON, "unknown built-in common validator kind")
+    require(load(contract["witness_schema"]) == {"schema": "bac-hardware-common-observation-v1"}, "common witness schema declaration")
+    require(
+        obligation["contract"] in entry["contracts"] and contract["witness_schema"] in entry["witness_schemas"],
+        "common contract/schema not authorized",
+    )
+    require(
+        obligation["validator"] == entry["validator"]
+        and obligation["evidence_class"] in entry["evidence_classes"]
+        and obligation["minimum_devices"] == 0,
+        "common validator binding/class",
+    )
+    require(len(evidence) == len(obligation["required_cases"]), "common evidence case inventory")
+    outcomes_by_case = {o["case_id"]: o for o in result["outcomes"]}
+    payloads = []
+    producers = []
+    for reference in evidence:
+        item = load(reference, "obligation-evidence")
+        require(item["case_id"] in outcomes_by_case, "common outcome absent")
+        outcome = outcomes_by_case[item["case_id"]]
+        payload = load(item["payload"])
+        exact(payload, "schema kind case_id reports processes source_witnesses", "common payload")
+        require(
+            payload["schema"] == "bac-hardware-common-observation-v1"
+            and payload["kind"] == obligation["kind"]
+            and payload["case_id"] == item["case_id"],
+            "common payload binding",
+        )
+        same_set(payload["reports"], outcome["evidence"], "common payload reports")
+        same_set(payload["processes"], result["process_records"], "common payload processes")
+        same_set(payload["source_witnesses"], result["source_witnesses"], "common payload source witnesses")
+        report_producers = {key(load(r)["process"]) for r in payload["reports"]}
+        require(key(item["producer_process"]) in report_producers, "common producer did not execute case reports")
+        require(all(by_ref[key(load(r)["process"])]["phase"] == "start" for r in payload["reports"]), "common report lifecycle")
+        require(not item["related_attempts"], "common unrelated attempt")
+        payloads.append(item["payload"])
+        if item["producer_process"] not in producers:
+            producers.append(item["producer_process"])
+    verdict = "unsatisfied" if outcome_reasons or result["exit_code"] != 0 or result["signal"] != 0 else "satisfied"
+    reasons = list(outcome_reasons)
+    if result["exit_code"] != 0 or result["signal"] != 0:
+        reasons.append("execution did not complete with ordinary zero exit")
+    return dict(
+        schema="bac-hardware-case-validator-receipt-v1",
+        validator_id="p4-common-v1",
+        validator=entry["validator"],
+        dependencies=entry["dependencies"],
+        spec=spec_ref,
+        job_id=job["id"],
+        obligation_id=obligation["id"],
+        contract=obligation["contract"],
+        witness_schema=contract["witness_schema"],
+        evidence_class=obligation["evidence_class"],
+        cases=obligation["required_cases"],
+        evidence=evidence,
+        payloads=payloads,
+        producer_processes=producers,
+        related_attempts=[],
+        validation_process=validation_identity,
+        start=validation_start,
+        end=utc(),
+        verdict=verdict,
+        reasons=reasons,
+    )
+
+
+def components(spec_ref, job, observed, obligations, validator_receipts):
+    common = [o for o in obligations if next(j for j in job["obligations"] if j["id"] == o["id"])["kind"] in COMMON]
+    strict_kinds = {"strict-child-core", "strict-child-producer", "rng-custody", "fork-three-trials", "phase-pair"}
+    strict = [o for o in obligations if next(j for j in job["obligations"] if j["id"] == o["id"])["kind"] in strict_kinds]
+
+    def state(rows):
+        return (
+            "satisfied"
+            if rows and all(r["disposition"] == "satisfied" for r in rows)
+            else "unsatisfied" if any(r["disposition"] == "unsatisfied" for r in rows) else "unrun"
+        )
+
+    hardware = [o for o in obligations if next(j for j in job["obligations"] if j["id"] == o["id"])["evidence_class"] == "real-cuda"]
+    complete = all(o["disposition"] == "satisfied" for o in obligations) and observed == "successful"
+    reason = (
+        []
+        if complete
+        else [
+            (
+                "aggregate obligation gate incomplete; common source/process custody independently satisfied"
+                if state(common) == "satisfied"
+                else "common or required case obligations incomplete"
+            )
+        ]
+    )
+    return dict(
+        schema="bac-hardware-component-classification-v1",
+        spec=spec_ref,
+        job_id=job["id"],
+        common_custody=state(common),
+        strict_custody=state(strict) if strict else "not-required",
+        test_outcome=observed,
+        hardware=state(hardware) if hardware else "unrun",
+        overall="satisfied" if complete else "incomplete",
+        reasons=reason,
+        validator_receipts=validator_receipts,
+    )
+
+
+def verify(spec_path, job_id, destination):
+    """Verify one exact root-authorized attempt; exclusive immutable receipt.
+
+    Invalid evidence raises ValueError. Well-formed observed failures retain their
+    terminal classification. Missing case validators never produce satisfaction.
+    """
+    require(type(spec_path) is str and type(job_id) is str and type(destination) is str, "string API arguments required")
+    # Reject destination aliases before any artifact can be created.
+    fds = _safe_parent(destination)
+    for descriptor in reversed(fds):
+        os.close(descriptor)
+    require(not os.path.lexists(destination), "receipt destination exists")
+    validation_start, validation_identity = utc(), identity()
+    spec_ref, spec, job, tools, candidate, freeze, grant, dependencies, capture_ref = initial(spec_path, job_id)
+    accepted_validator = validator_inventory(job, tools)
+    output = Path(job["output"])
+    require(
+        not Path(destination).is_relative_to(Path(spec["output_root"]))
+        and not Path(destination).is_relative_to(Path(spec["authorized_root"])),
+        "receipt inside sealed attempt/source",
+    )
+    result_ref = ref(output / "result.json")
+    result = load(result_ref, "job-result")
+    bound(result, spec_ref, spec, job)
+    command_ref = ref(output / "command.json")
+    command = load(command_ref, "command")
+    bound(command, spec_ref, spec, job)
+    require(result["command"] == command_ref and command["runner"] == tools["runner"], "command/runner reference")
+    for field in ("argv", "cwd", "environment", "seed"):
+        require(command[field] == job[field], "exact command " + field)
+    require(result["log"] == ref(output / "stdout.log"), "log binding")
+    start_ref = ref(output.parent / "start.json")
+    start = load(start_ref, "attempt-start")
+    bound(start, spec_ref, spec)
+    require(start["source_freeze"] == spec["source_freeze"], "attempt freeze")
+    seal_ref = ref(output.parent / "seal.json")
+    seal = load(seal_ref, "attempt-seal")
+    bound(seal, spec_ref, spec)
+    require(
+        seal["start"] == start_ref and seal["source_freeze"] == spec["source_freeze"] and result_ref in seal["job_results"], "seal binding"
+    )
+    require(seal["at"] >= start["at"] and command["at"] >= start["at"] and result["start"] >= command["at"], "attempt chronology")
+    if result["end"]["state"] == "measured":
+        require(seal["at"] >= result["end"]["value"], "seal before completion")
+    _inventory_exact(result["inventory"], output, {str(output / "result.json")})
+    require(capture_ref in seal["inventory"], "sealed capture terminal missing")
+    _inventory_exact([r for r in seal["inventory"] if r != capture_ref], output.parent, {str(output.parent / "seal.json")})
+    expected_results = [str(Path(j["output"]) / "result.json") for j in spec["jobs"]]
+    same_set([r["path"] for r in seal["job_results"]], expected_results, "sealed jobs")
+    statuses = []
+    for sealed_result_ref in seal["job_results"]:
+        sealed_result = load(sealed_result_ref, "job-result")
+        bound(sealed_result, spec_ref, spec)
+        require(
+            sealed_result_ref["path"]
+            == str(Path(next(j for j in spec["jobs"] if j["id"] == sealed_result["job_id"])["output"]) / "result.json"),
+            "sealed result job binding",
+        )
+        statuses.append(sealed_result["disposition"])
+    precedence = ("interrupted", "completed-failed", "completed-unverified", "refused", "unrun", "successful")
+    require(seal["disposition"] == next(status for status in precedence if status in statuses), "seal disposition mismatch")
+    source_check(start["source_witness"], spec["candidate"], candidate, spec["source_freeze"], freeze, grant)
+    source_rows = [source_check(r, spec["candidate"], candidate, spec["source_freeze"], freeze, grant) for r in result["source_witnesses"]]
+    require(source_rows, "missing source witnesses")
+    require(min(s["at"] for s in source_rows) <= result["start"], "missing prelaunch source witness")
+    if result["end"]["state"] == "measured":
+        require(max(s["at"] for s in source_rows) >= result["end"]["value"], "missing final source witness")
+    reasons = []
+    by_ref = {}
+    never_run = result["disposition"] in ("refused", "unrun")
+    generic_complete = False
+    if not never_run:
+        try:
+            launch = parent_observations(result, spec_ref, spec, job, command_ref)
+            if not (output / "completion.json").exists():
+                raise IncompleteEvidence("missing process completion envelope")
+            completion_ref = ref(output / "completion.json")
+            completion = load(completion_ref, "job-evidence")
+            for field in ("attempt_id", "job_id", "spec", "command", "collected_ids", "outcomes", "process_records", "obligation_records"):
+                require(completion[field] == result[field], "completion/result " + field)
+            by_ref, raws, runtime, policy, starts = processes(
+                result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies
+            )
+            controllers = [row for row in by_ref.values() if row["role"] == "controller" and row["phase"] == "start"]
+            require(len(controllers) == 1 and controllers[0]["identity"] == launch["identity"], "parent launch/controller identity")
+            require(launch["identity"]["ppid"] == runtime["runner_identity"]["pid"], "launch/runtime parent")
+            attempt_source = load(start["source_witness"], "source-witness")
+            require(attempt_source["process_identity"] == runtime["runner_identity"], "attempt/runner source identity")
+            runner_sources = [row for row in source_rows if row["process_identity"] == runtime["runner_identity"]]
+            require(
+                runner_sources
+                and min(row["at"] for row in runner_sources) <= result["start"]
+                and max(row["at"] for row in runner_sources) >= result["end"]["value"],
+                "runner pre/post source observations",
+            )
+            collections(result, job, by_ref)
+            reasons += outcomes(result, job, by_ref)
+            generic_complete = True
+        except IncompleteEvidence as exc:
+            if result["disposition"] not in ("interrupted", "completed-failed"):
+                raise
+            reasons.append(str(exc))
+    elif result["end"]["state"] == "unavailable":
+        reasons.append("absolute finish and duration unavailable: " + result["end"]["reason"])
+    observed = result["disposition"]
+    if observed == "successful" and reasons:
+        observed = "completed-unverified"
+    if observed != "successful":
+        reasons.append(result["reason"])
+    obligations = []
+    validation_receipts = []
+    for obligation in job["obligations"]:
+        contract = load(obligation["contract"], "case-contract")
+        for left, right in (
+            ("obligation_kind", "kind"),
+            ("required_cases", "required_cases"),
+            ("validator", "validator"),
+            ("evidence_class", "evidence_class"),
+            ("minimum_devices", "minimum_devices"),
+        ):
+            require(contract[left] == obligation[right], "case contract binding")
+        require(contract["roles"] == job["roles"], "case contract roles")
+        evidence = []
+        for reference in result["obligation_records"]:
+            item = load(reference, "obligation-evidence")
+            bound(item, spec_ref, spec, job)
+            require(item["obligation_id"] in {o["id"] for o in job["obligations"]}, "unknown obligation evidence")
+            if item["obligation_id"] != obligation["id"]:
+                continue
+            for left, right in (
+                ("obligation_kind", "kind"),
+                ("contract", "contract"),
+                ("validator", "validator"),
+                ("evidence_class", "evidence_class"),
+            ):
+                require(item[left] == obligation[right], "obligation evidence binding")
+            require(item["case_id"] in obligation["required_cases"], "obligation case")
+            if generic_complete:
+                require(
+                    key(item["producer_process"]) in by_ref and by_ref[key(item["producer_process"])]["phase"] == "start",
+                    "obligation producer missing",
+                )
+            evidence.append(reference)
+        unique([load(r)["case_id"] for r in evidence], "obligation cases")
+        disposition = dict(
+            id=obligation["id"],
+            disposition="unrun" if not evidence else "unsatisfied",
+            reason="required accepted case validator is unimplemented or lacks evidence",
+            contract=obligation["contract"],
+            validator=obligation["validator"],
+            evidence=evidence,
+            validator_receipt=[],
+        )
+        if accepted_validator and generic_complete and obligation["kind"] in COMMON and evidence:
+            validated = common_validation(
+                obligation,
+                contract,
+                evidence,
+                accepted_validator,
+                result,
+                by_ref,
+                spec_ref,
+                job,
+                validation_identity,
+                validation_start,
+                reasons,
+            )
+            validation_receipts.append((disposition, validated))
+            disposition["disposition"] = validated["verdict"]
+            disposition["reason"] = "" if validated["verdict"] == "satisfied" else "; ".join(validated["reasons"])
+        obligations.append(disposition)
+    assets = destination + ".components"
+    parent_fds = _safe_parent(assets)
+    try:
+        os.mkdir(Path(assets).name, 0o700, dir_fd=parent_fds[-1])
+    except OSError as exc:
+        raise ValueError("component destination occupied or unsafe") from exc
+    finally:
+        for fd in reversed(parent_fds):
+            os.close(fd)
+    retained_receipts = []
+    for disposition, validated in validation_receipts:
+        retained = publish(str(Path(assets) / (disposition["id"] + ".json")), validated)
+        retained_receipts.append(retained)
+        if disposition["disposition"] == "satisfied":
+            disposition["validator_receipt"] = [retained]
+    component = components(spec_ref, job, observed, obligations, retained_receipts)
+    component_ref = publish(str(Path(assets) / "classification.json"), component)
+    reasons += component["reasons"]
+    receipt = record_receipt(
+        spec,
+        job,
+        spec_ref,
+        tools["verifier"],
+        result_ref,
+        observed,
+        obligations,
+        reasons,
+        [spec_ref, result_ref, command_ref, start_ref, seal_ref, capture_ref, component_ref, *retained_receipts],
+    )
+    protocol.validate_record("receipt", receipt)
+    publish(destination, receipt)
+    return receipt
+
+
+def record_receipt(spec, job, spec_ref, verifier_ref, result_ref, observed, obligations, reasons, inventory):
+    return dict(
+        schema=protocol.SCHEMA,
+        kind="receipt",
+        attempt_id=spec["attempt_id"],
+        job_id=job["id"],
+        spec=spec_ref,
+        verifier=verifier_ref,
+        at=utc(),
+        result=result_ref,
+        custody="satisfied" if all(o["disposition"] == "satisfied" for o in obligations) else "unsatisfied",
+        test_outcome=observed,
+        hardware=(
+            "unsatisfied"
+            if any(
+                o["disposition"] == "unsatisfied"
+                and next(j for j in job["obligations"] if j["id"] == o["id"])["evidence_class"] == "real-cuda"
+                for o in obligations
+            )
+            else "unrun"
+        ),
+        obligations=obligations,
+        reasons=[r for r in reasons if r],
+        inventory=inventory,
+    )

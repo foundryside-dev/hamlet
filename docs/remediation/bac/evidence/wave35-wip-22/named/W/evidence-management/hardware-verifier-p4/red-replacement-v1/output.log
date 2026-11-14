@@ -1,0 +1,37 @@
+..............................................................F...       [100%]
+=================================== FAILURES ===================================
+______ test_pid_reuse_accepted_only_with_distinct_nonoverlapping_identity ______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-130/test_pid_reuse_accepted_only_w0')
+
+    def test_pid_reuse_accepted_only_with_distinct_nonoverlapping_identity(tmp_path):
+        evidence = Evidence(tmp_path, common=True, workers=1, replacement=True, reuse_pid=True)
+>       assert evidence.verify()["custody"] == "satisfied"
+               ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:513: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:245: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:621: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:320: in processes
+    unique([s[1]["identity"]["pid"] for s in starts], "PID reuse unsupported without disjoint lifecycle")
+verify_bac_hardware_v1.py:66: in unique
+    require(len(values) == len({key(v) for v in values}), label + ": duplicate")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+message = 'PID reuse unsupported without disjoint lifecycle: duplicate'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: PID reuse unsupported without disjoint lifecycle: duplicate
+
+verify_bac_hardware_v1.py:27: ValueError
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_pid_reuse_accepted_only_with_distinct_nonoverlapping_identity
+1 failed, 65 passed in 3.66s

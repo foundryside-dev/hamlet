@@ -1,0 +1,414 @@
+FFFFFFFFFFFFFF                                                           [100%]
+=================================== FAILURES ===================================
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[none] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf2374180>
+change = 'none'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1bb3bc0>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1bb3bc0> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[pid] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf22e9f30>
+change = 'pid'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1b6d640>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1b6d640> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[ppid] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf20b2330>
+change = 'ppid'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1b54140>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1b54140> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[start] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf20a2ad0>
+change = 'start'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1b5e340>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1b5e340> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[argv] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf20a2be0>
+change = 'argv'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1b64440>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1b64440> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[cwd] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf20e6d50>
+change = 'cwd'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1b67340>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1b67340> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[time] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf20e6f50>
+change = 'time'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1b4cac0>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1b4cac0> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[interpreter] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-wrapper-v1-fixtures/test_discovery_launch_binds_ac7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdaf1b0e120>
+change = 'interpreter'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+        tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+        _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        actual = dict(observation()["identity"], ppid=tool.os.getpid())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+        calls = []
+        class Child:
+            pid = 4321
+            returncode = 0
+            def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+            def communicate(self, timeout):
+                obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                        interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                        inherited_visibility=None, dependencies=env["dependencies"])
+                if change == "pid": obs["identity"]["pid"] = 9000
+                if change == "ppid": obs["identity"]["ppid"] = 9000
+                if change == "start": obs["identity"]["start_identity"] = "other-process"
+                if change == "argv": obs["argv"] = ["/inert/wrong"]
+                if change == "cwd": obs["cwd"] = "/inert/wrong"
+                if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+                if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+                return json.dumps(obs), "retained discovery stderr"
+        def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+        monkeypatch.setattr(tool.subprocess, "Popen", popen)
+        monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+        obs, command = tool.launch_discovery(request_path, req, env)
+>       assert command.get("schema") == "bac-hardware-discovery-command-v1"
+E       AssertionError: assert None == 'bac-hardware-discovery-command-v1'
+E        +  where None = <built-in method get of dict object at 0x7fdaf1db1700>('schema')
+E        +    where <built-in method get of dict object at 0x7fdaf1db1700> = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admissi..., 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...}.get
+
+test_capture_bac_hardware_v1.py:526: AssertionError
+______ test_discovery_preflight_bounds_expensive_probe_before_cuda[none] _______
+
+change = 'none'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:570: AssertionError
+_______ test_discovery_preflight_bounds_expensive_probe_before_cuda[cpu] _______
+
+change = 'cpu'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:570: AssertionError
+_______ test_discovery_preflight_bounds_expensive_probe_before_cuda[ram] _______
+
+change = 'ram'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:570: AssertionError
+_____ test_discovery_preflight_bounds_expensive_probe_before_cuda[scratch] _____
+
+change = 'scratch'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:570: AssertionError
+____ test_discovery_preflight_bounds_expensive_probe_before_cuda[affinity] _____
+
+change = 'affinity'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:570: AssertionError
+_____ test_discovery_preflight_bounds_expensive_probe_before_cuda[missing] _____
+
+change = 'missing'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:570: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[none]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[pid]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[ppid]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[start]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[argv]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[cwd]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[time]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[interpreter]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[none]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[cpu]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[ram]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[scratch]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[affinity]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[missing]
+14 failed, 71 deselected in 0.81s

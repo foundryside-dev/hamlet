@@ -1,0 +1,7 @@
+e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81  /workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py
+d9ee2216087d9906ac9e516d23f060c7d9e20c8213788b12328fc19a0e08f2f2  /workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py
+29942a92f779a15ae75fc626d98841d1d9d823cb30a4f21d93fee1dfb14ab9ea  .superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/REVIEW.md
+2f3e665c9d0d85100cddfe6b5064d0a1b03894e3a255e0657d1dc2b391edaa4a  .superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe.py.txt
+c7b7a2b474625f1b612fdd6ff81d477fdcb5783406f8526c25bd1837cb936835  .superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/execution.json
+18201bd6780ffd92152d2c48d1a4b008656a4bf1b2c0162db86cf7fa3cec6652  .superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probes.json
+6aefa1dd5bbe62ccc4fe1d08ee063d7b5dea433f8c262fe7eb65093a202cdb85  .superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite.log

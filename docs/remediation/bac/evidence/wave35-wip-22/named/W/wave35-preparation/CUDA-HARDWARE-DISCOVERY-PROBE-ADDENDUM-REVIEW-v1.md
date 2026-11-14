@@ -1,0 +1,16 @@
+# P1 real discovery private contract — targeted independent review
+
+2026-11-14T06:11:07.701356+00:00. **PASS for exact v2 metadata contract**, with actual implementation and independent synthetic verification still required. No additional P0 fields, tool/application body reads, imports, runtime or hardware operations occurred in this review.
+
+One concrete v1 mapping ambiguity was raised and resolved once with the author. CUDA_VISIBLE_DEVICES numeric ordinals are not necessarily nvidia-smi indices. V2 preserves requested visibility exactly and joins observed Torch logical UUIDs to driver UUID inventory, checks cardinality and authorized allocation, and checks exact token order for full UUID visibility. Driver index remains raw observation, never guessed CUDA pre-mask identity. Mixed token forms are explicitly unsupported/refused. The author committed to a synthetic case where Torch ordering differs from driver index ordering; final implementation review must verify it and duplicate/missing/unknown/unauthorized UUID rejection.
+
+The contract requires the real backend, not an unsupported stub substituted because hardware is absent. Its probe identities are concrete: root-authorized sealed dependency inventory pins actual Torch origin/version and explicit nvidia-smi executable/version. Pre/post origin and executable checks, fixed command argv, actual spawned process identity and raw output/time/exit observations bind discovery. No invented probe API or executable ID, implicit executable lookup, authority inferred from a hash, or unrelated application import is introduced. Missing/unsupported required facts fail closed and retain refusal evidence.
+
+V2's exact command records and reserved dependency names are finite closed consumer payload conventions under the existing P0 reference inventory. They do not create a new P0 record or weaken the existing dependency/authorization closure. P1 must reconcile observed versions/origins with the exact sealed inventory and actual process context, not merely check that referenced files exist. Actual discovery remains in its separate pinned process; CPU profile neither imports Torch nor invokes driver queries, preserving later cases' fresh state. Unsupported MIG/shared-parent mapping refuses.
+
+Device enumeration and mapped properties establish admission facts only. Neither an availability flag nor successful inventory queries qualify CUDA work or any of the six accepted hardware behavioral obligations. Real execution remains UNRUN until the authorized server is supplied and separately admitted. Existing source-freeze, root authorization, resource allocation, CPU-bound and lease requirements remain unchanged.
+
+Exact reviewed proposal identities:
+
+- `/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/discovery-probe-private-addendum-proposal-v1.md`: SHA-256 `b3f5d3e537fc8a0dc1a7b434d868044b44005b902087c65e4df236c90b9e62dc`.
+- `/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/discovery-probe-private-addendum-proposal-v2.md`: SHA-256 `306067e47bb21d589a622a75eb4cab9525ca32338d50b8cdcfc3412ebc70ee41`.

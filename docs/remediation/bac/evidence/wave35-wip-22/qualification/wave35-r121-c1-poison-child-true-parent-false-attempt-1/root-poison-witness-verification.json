@@ -1,0 +1,27 @@
+{
+  "status": "PASS; C1 component only",
+  "witness": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/parent-c1-child_true_parent_false.json",
+  "witness_sha256": "75408375f3d34be88e637486bda3e7573986753a51ab214f2d186215cfde9789",
+  "outer": {
+    "role": "child_true_parent_false",
+    "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-true-parent-false-attempt-1-spec.json",
+    "spec_sha256": "999460e8cbcbb06c66dc6ed824f1a45b37c5f80457605995cc47a96e23c072eb",
+    "argv": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-true-parent-false-attempt-1-spec.json"
+    ],
+    "start_utc": "2026-11-14T07:58:14.135811+00:00",
+    "environment_delta": {
+      "BAC_PARENT_C1_POISON_CASE": "child_true_parent_false"
+    },
+    "orchestrator_pid": 195421,
+    "script_sha256": "e92e0ad5a0d2a4a3f601936689567869aa0b8ee3ab3b008500fb041cf49c7e9a",
+    "launcher_pid": 195783,
+    "launcher_start_ticks": 12240447,
+    "exit_code": 0,
+    "end_utc": "2026-11-14T07:58:21.853545+00:00"
+  },
+  "qualification": "Actual fresh child ancestry, source, profile and assertions; CPU only, not CUDA qualification"
+}

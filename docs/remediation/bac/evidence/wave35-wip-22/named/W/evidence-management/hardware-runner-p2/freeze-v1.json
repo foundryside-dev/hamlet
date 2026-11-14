@@ -1,0 +1,109 @@
+{
+  "at": "2026-11-14T07:16:27.725977+00:00",
+  "status": "FROZEN FOR INDEPENDENT ASTRA REVIEW; NOT ROOT ADOPTED",
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "bytes": 2043,
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 75334,
+      "sha256": "c0ec80b6b632618e1c1b9cb373efcb61e3b3ccb9d3677be7a1129cf58ab60a5a"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 55611,
+      "sha256": "398dee45706bd1e85b3b15d8908103f484ccaceb637bbe6c7508bd87ece6b397"
+    }
+  ],
+  "line_counts": {
+    "run_bac_packet_checks_locked.py": 20,
+    "bac_hardware_protocol_v1.py": 520,
+    "run_bac_hardware_v1.py": 1161,
+    "test_run_bac_hardware_v1.py": 880
+  },
+  "total_lines": 2581,
+  "budget": {
+    "files": 4,
+    "maximum_lines": 3600
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/interface-contract-v1.json",
+    "bytes": 9803,
+    "sha256": "35e0547eac55727dc9063023f8e987cf86451c55e7197d6d7f12b5e16ee56a2c"
+  },
+  "last_tests": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/green-final-v1.json",
+    "bytes": 1903,
+    "sha256": "8d586e7123c3f4d4cbfc3cec64c63b4f2189eb84c705a8e44f236fa4c2bf994b"
+  },
+  "last_test_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/green-final-v1.log",
+    "bytes": 99,
+    "sha256": "dd8c5a19458f3dbb422d42b7046b3013696057c9aa09ab83866d8230fe1b3d39"
+  },
+  "result": "66 synthetic PASS",
+  "before": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/before-v1.json",
+    "bytes": 801,
+    "sha256": "084042d9f61374df1dee52d2e7f2151ccd254a4f55310c6f3ba709684fe41457"
+  },
+  "snapshots": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/run_bac_hardware_v1.py.green-final-v1.py.txt",
+      "bytes": 75334,
+      "sha256": "c0ec80b6b632618e1c1b9cb373efcb61e3b3ccb9d3677be7a1129cf58ab60a5a"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/test_run_bac_hardware_v1.py.green-final-v1.py.txt",
+      "bytes": 55611,
+      "sha256": "398dee45706bd1e85b3b15d8908103f484ccaceb637bbe6c7508bd87ece6b397"
+    }
+  ],
+  "dependencies": {
+    "P0 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+      "bytes": 4220,
+      "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+    },
+    "P0 interface": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+      "bytes": 13184,
+      "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+    },
+    "P1 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/root-adoption-v1.json",
+      "bytes": 12233,
+      "sha256": "6235ac38bb563d5676420cf932cdb09d7d54187ec1a60546aefe99f13ded6c96"
+    },
+    "P1 output": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+      "bytes": 5867,
+      "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+    },
+    "allocation and CPU bounds": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+      "bytes": 5739,
+      "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+    },
+    "P3 static/delegated context": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-v3.md",
+      "bytes": 5150,
+      "sha256": "1eb2d8b5e2e11621ce59aef78a7c982d2cafe4ab81117004897a6ed5a9447faf"
+    },
+    "P3 phase observation matrix": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/observation-matrix-v1.md",
+      "bytes": 1552,
+      "sha256": "6af9c6a3fef54b7faca5e4a97f2b536025d224cd8c43ac1281eea2bd50177bb1"
+    }
+  },
+  "root_owned_gate": "Fresh independent Astra review of exact frozen files; later root adoption. No changes after this freeze until concrete reviewed findings authorized.",
+  "remaining": "P3 actual end-to-end consumer integration and P4/P5 case/hardware qualification remain UNRUN; root owns execution selection and APP candidate."
+}

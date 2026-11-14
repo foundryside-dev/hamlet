@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-14T08:15:54.255621+00:00",
+  "attempt": "wave35-r122-c1-preflight-attempt-1/c1-ordinary",
+  "observation": "The cloned ordinary argv retained --basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r120-c1-ordinary-attempt-1 instead of a fresh R122 scratch path.",
+  "actual": "R122 command/result records preserve the actual argument. Its output/log/identity files are in exclusive R122 attempt paths; original R120/R121 attempts remain preserved. Current scratch contains no files; the current C1 test source has no tmp_path/tmpdir/tempfile use.",
+  "limitation": "No historical pre-run scratch inventory was recorded, so historical scratch contents/reuse effects are not retrospectively asserted. Collection/runtime source/config/artifact/index custody and outcomes were independently verified; this is a temporary-directory provenance limitation, not a fresh namespace claim.",
+  "future": "Always rewrite cloned --basetemp to a nonexistent attempt-specific path before launch. Do not rerun passed C1 solely to erase this historical observation."
+}

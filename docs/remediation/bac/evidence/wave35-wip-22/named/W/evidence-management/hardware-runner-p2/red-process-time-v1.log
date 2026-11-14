@@ -1,0 +1,28 @@
+............................................F                            [100%]
+=================================== FAILURES ===================================
+________________ test_resealed_future_process_times_cannot_pass ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-63/test_resealed_future_process_t0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fa8075d8980>
+
+    def test_resealed_future_process_times_cannot_pass(tmp_path, monkeypatch):
+        suffix = """
+    updated=[]
+    for name in ('process-start.json','process-end.json'):
+        v=json.loads((out/name).read_text());v['at']='2099-01-01T00:00:00.000000Z';v['monotonic_ns']+=10**18
+        updated.append(put(name,v))
+    v=json.loads((out/'completion.json').read_text());v['process_records']=updated
+    for index,item in enumerate(v['obligation_records']):
+        o=json.loads(Path(item['path']).read_text());o['producer_process']=updated[0];v['obligation_records'][index]=put(Path(item['path']).name,o)
+    v['inventory']=[fact,*sources,*updated,*v['obligation_records']];put('completion.json',v)
+    """
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+>       assert r.run(path) != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = <function run at 0x7fa8075ba2a0>(PosixPath('/tmp/pytest-of-agent/pytest-63/test_resealed_future_process_t0/metadata/spec.json'))
+E        +    where <function run at 0x7fa8075ba2a0> = <module 'p2_runner' from '/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py'>.run
+
+test_run_bac_hardware_v1.py:683: AssertionError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_resealed_future_process_times_cannot_pass
+1 failed, 44 passed in 6.67s

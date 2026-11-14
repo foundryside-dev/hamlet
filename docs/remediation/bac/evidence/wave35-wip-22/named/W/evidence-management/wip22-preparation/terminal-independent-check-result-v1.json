@@ -1,0 +1,59 @@
+{
+  "schema": "bac-independent-terminal-check-v1",
+  "status": "PASS",
+  "errors": [],
+  "references_rehashed": 10178,
+  "finite_Q_members": 82,
+  "checks": 48,
+  "attempts": 49,
+  "attempt_statuses": {
+    "PASSED": 31,
+    "FAILED": 6,
+    "UNRUN": 12
+  },
+  "descendant_files": 666,
+  "supporting_files": 9598,
+  "historical_aliases": 699,
+  "candidate_hash_inventories": {
+    "source_files": 821,
+    "configs": 573,
+    "artifacts": 13
+  },
+  "child_facts": [
+    {
+      "role": "body_distinct",
+      "pid": 197994,
+      "ppid": 197969,
+      "start_ticks": 12309460,
+      "scheduler_capacity": 2
+    },
+    {
+      "role": "body_same",
+      "pid": 197821,
+      "ppid": 197796,
+      "start_ticks": 12308579,
+      "scheduler_capacity": 2
+    },
+    {
+      "role": "child_false_parent_true",
+      "pid": 198081,
+      "ppid": 198056,
+      "start_ticks": 12310253,
+      "scheduler_capacity": 2
+    },
+    {
+      "role": "child_true_parent_false",
+      "pid": 198184,
+      "ppid": 198159,
+      "start_ticks": 12311208,
+      "scheduler_capacity": 2
+    },
+    {
+      "role": "install_completion",
+      "pid": 198257,
+      "ppid": 198232,
+      "start_ticks": 12311940,
+      "scheduler_capacity": 2
+    }
+  ]
+}

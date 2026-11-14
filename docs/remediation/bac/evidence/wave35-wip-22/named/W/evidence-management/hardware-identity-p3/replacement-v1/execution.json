@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "not probe"
+  ],
+  "pid": 187822,
+  "start": "2026-11-14T07:06:17.550703+00:00",
+  "end": "2026-11-14T07:06:25.250750+00:00",
+  "exit_code": 0,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "sha256": "67659d7a08597c6e978b3d31b740b54ace7a51a73b3478bd0e40087f327aef80"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "sha256": "eea435024a012cdaa5a95eacb8d4d477036b8bf937c6028c6d670afffa544e14"
+    }
+  ]
+}

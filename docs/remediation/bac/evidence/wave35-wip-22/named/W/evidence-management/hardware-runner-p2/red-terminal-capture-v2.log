@@ -1,0 +1,92 @@
+.......................................................FFFF......        [100%]
+=================================== FAILURES ===================================
+________ test_provisional_capture_spec_never_authorizes_launch[missing] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-102/test_provisional_capture_spec_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5fd93d8980>
+mutation = 'missing'
+
+    @pytest.mark.parametrize('mutation', ['missing', 'refused', 'other-spec', 'extra-field'])
+    def test_provisional_capture_spec_never_authorizes_launch(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        terminal = path.parent / 'result.json'; value = json.loads(terminal.read_text())
+        if mutation == 'missing': terminal.rename(path.parent / 'retained-terminal.json')
+        else:
+            if mutation == 'refused': value.update(disposition='refused', reasons=['late capture failure'], spec=None)
+            elif mutation == 'other-spec': value['spec'] = s['admission']
+            else: value['unexpected'] = True
+            terminal.write_text(json.dumps(value))
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:858: Failed
+________ test_provisional_capture_spec_never_authorizes_launch[refused] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-102/test_provisional_capture_spec_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5fd93a9c50>
+mutation = 'refused'
+
+    @pytest.mark.parametrize('mutation', ['missing', 'refused', 'other-spec', 'extra-field'])
+    def test_provisional_capture_spec_never_authorizes_launch(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        terminal = path.parent / 'result.json'; value = json.loads(terminal.read_text())
+        if mutation == 'missing': terminal.rename(path.parent / 'retained-terminal.json')
+        else:
+            if mutation == 'refused': value.update(disposition='refused', reasons=['late capture failure'], spec=None)
+            elif mutation == 'other-spec': value['spec'] = s['admission']
+            else: value['unexpected'] = True
+            terminal.write_text(json.dumps(value))
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:858: Failed
+______ test_provisional_capture_spec_never_authorizes_launch[other-spec] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-102/test_provisional_capture_spec_2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5fd9087700>
+mutation = 'other-spec'
+
+    @pytest.mark.parametrize('mutation', ['missing', 'refused', 'other-spec', 'extra-field'])
+    def test_provisional_capture_spec_never_authorizes_launch(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        terminal = path.parent / 'result.json'; value = json.loads(terminal.read_text())
+        if mutation == 'missing': terminal.rename(path.parent / 'retained-terminal.json')
+        else:
+            if mutation == 'refused': value.update(disposition='refused', reasons=['late capture failure'], spec=None)
+            elif mutation == 'other-spec': value['spec'] = s['admission']
+            else: value['unexpected'] = True
+            terminal.write_text(json.dumps(value))
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:858: Failed
+______ test_provisional_capture_spec_never_authorizes_launch[extra-field] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-102/test_provisional_capture_spec_3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5fd93aad60>
+mutation = 'extra-field'
+
+    @pytest.mark.parametrize('mutation', ['missing', 'refused', 'other-spec', 'extra-field'])
+    def test_provisional_capture_spec_never_authorizes_launch(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        terminal = path.parent / 'result.json'; value = json.loads(terminal.read_text())
+        if mutation == 'missing': terminal.rename(path.parent / 'retained-terminal.json')
+        else:
+            if mutation == 'refused': value.update(disposition='refused', reasons=['late capture failure'], spec=None)
+            elif mutation == 'other-spec': value['spec'] = s['admission']
+            else: value['unexpected'] = True
+            terminal.write_text(json.dumps(value))
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:858: Failed
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_provisional_capture_spec_never_authorizes_launch[missing]
+FAILED test_run_bac_hardware_v1.py::test_provisional_capture_spec_never_authorizes_launch[refused]
+FAILED test_run_bac_hardware_v1.py::test_provisional_capture_spec_never_authorizes_launch[other-spec]
+FAILED test_run_bac_hardware_v1.py::test_provisional_capture_spec_never_authorizes_launch[extra-field]
+4 failed, 61 passed in 9.46s

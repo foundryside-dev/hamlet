@@ -1,0 +1,32 @@
+{
+  "common_custody": "satisfied",
+  "hardware": "unrun",
+  "job_id": "job",
+  "overall": "satisfied",
+  "reasons": [],
+  "schema": "bac-hardware-component-classification-v1",
+  "spec": {
+    "bytes": 9395,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_two_worker_custody_is_ind0/capture/spec.json",
+    "sha256": "f34cd2b09841adf9e8a4a951615d800f4d8ffefff96b6bf01e1260b34b5d9581"
+  },
+  "strict_custody": "not-required",
+  "test_outcome": "successful",
+  "validator_receipts": [
+    {
+      "bytes": 3117,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_two_worker_custody_is_ind0/receipt.json.components/process-custody.json",
+      "sha256": "daa3877cdf6947d14b875cd1e79fd5b2c35278c913f964ee22f46e853160a7d6"
+    },
+    {
+      "bytes": 3109,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_two_worker_custody_is_ind0/receipt.json.components/source-freeze.json",
+      "sha256": "d78d08559d22f003af9d3db321ea4a2dec29e6d0e66081d770807ebe73d68626"
+    },
+    {
+      "bytes": 3113,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_two_worker_custody_is_ind0/receipt.json.components/required-cases.json",
+      "sha256": "74698460760576114f852120219974b43a7d5aa9791a1751a7226676280a8d7b"
+    }
+  ]
+}

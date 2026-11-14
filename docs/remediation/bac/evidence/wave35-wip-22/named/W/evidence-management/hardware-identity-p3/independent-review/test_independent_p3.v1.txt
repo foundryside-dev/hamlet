@@ -1,0 +1,8 @@
+from test_bac_hardware_identity_v1 import capsule, _prepare, _read, _replace_grant
+
+def test_p1_category_order(capsule, monkeypatch):
+    api = _prepare(capsule, monkeypatch)
+    candidate = _read(capsule['spec']['candidate'])
+    refs = [item['reference'] for category in ('source','tests','configs','scripts','ratchet','artifacts') for item in candidate['inventory'][category]]
+    _replace_grant(capsule, {'inputs': refs})
+    api.record_process(capsule['context'], 'start')

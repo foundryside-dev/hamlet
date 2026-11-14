@@ -1,0 +1,70 @@
+{
+  "cases": [
+    "test_inert"
+  ],
+  "contract": {
+    "bytes": 1314,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be1/source-freeze-contract.json",
+    "sha256": "eec81e9e83a678b18913e38be786f71ad1fa00ebabed495cba0879b07e74f7a8"
+  },
+  "dependencies": [
+    {
+      "bytes": 34237,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    }
+  ],
+  "end": "2026-11-14T08:04:51.093351Z",
+  "evidence": [
+    {
+      "bytes": 1745,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be1/source-freeze-evidence.json",
+      "sha256": "4d3a2b053c23e194bd84f6d9007ef5f01c10f0b5b76f8901076477bde6f45d87"
+    }
+  ],
+  "evidence_class": "cpu",
+  "job_id": "job",
+  "obligation_id": "source-freeze",
+  "payloads": [
+    {
+      "bytes": 2382,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be1/source-freeze-payload.json",
+      "sha256": "83c9f35ad8fd22085c535a4bf45c932af20f3e242f856522cc6ec509b9e336a7"
+    }
+  ],
+  "producer_processes": [
+    {
+      "bytes": 3666,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be1/out/attempt/job/process-c-start.json",
+      "sha256": "c0584012967c48bb17bb1d2bee4885bdaa348ba610facc9003eee800e259ce4c"
+    }
+  ],
+  "reasons": [],
+  "related_attempts": [],
+  "schema": "bac-hardware-case-validator-receipt-v1",
+  "spec": {
+    "bytes": 9448,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be1/capture/spec.json",
+    "sha256": "c14213ccf326c012d146d099334ea3b9ee184cc7e7f294b5f207bee14b485655"
+  },
+  "start": "2026-11-14T08:04:51.024944Z",
+  "validation_process": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 197228,
+    "ppid": 197227,
+    "start_identity": "12279690"
+  },
+  "validator": {
+    "bytes": 59234,
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+  },
+  "validator_id": "p4-common-v1",
+  "verdict": "satisfied",
+  "witness_schema": {
+    "bytes": 49,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be1/witness-schema.json",
+    "sha256": "ddd0237dff283dd4972504a0774dbe371b3806d218a6f9d1bf6c9c0b46bbc9da"
+  }
+}

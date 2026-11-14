@@ -1,0 +1,172 @@
+........................FFFFFFF                                          [100%]
+=================================== FAILURES ===================================
+____ test_raw_discovery_cannot_authorize_unobserved_capacity[raw-headroom] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-56/test_raw_discovery_cannot_auth0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5f6aa723f0>
+mutation = 'raw-headroom'
+
+    @pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+    def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        def change(admission, wrapper, raw):
+            if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+            elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+            elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+            elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+            elif mutation == 'raw-affinity': raw['affinity'] = []
+            elif mutation == 'raw-extra': raw['unrecognized'] = True
+            else: raw['dependencies'][0]['version'] = 'wrong'
+        reseal_admission(path, s, change)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:509: Failed
+_______ test_raw_discovery_cannot_authorize_unobserved_capacity[raw-cpu] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-56/test_raw_discovery_cannot_auth1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5f6aa71b80>
+mutation = 'raw-cpu'
+
+    @pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+    def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        def change(admission, wrapper, raw):
+            if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+            elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+            elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+            elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+            elif mutation == 'raw-affinity': raw['affinity'] = []
+            elif mutation == 'raw-extra': raw['unrecognized'] = True
+            else: raw['dependencies'][0]['version'] = 'wrong'
+        reseal_admission(path, s, change)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:509: Failed
+___ test_raw_discovery_cannot_authorize_unobserved_capacity[wrapper-parent] ____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-56/test_raw_discovery_cannot_auth2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5f6a526350>
+mutation = 'wrapper-parent'
+
+    @pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+    def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        def change(admission, wrapper, raw):
+            if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+            elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+            elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+            elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+            elif mutation == 'raw-affinity': raw['affinity'] = []
+            elif mutation == 'raw-extra': raw['unrecognized'] = True
+            else: raw['dependencies'][0]['version'] = 'wrong'
+        reseal_admission(path, s, change)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:509: Failed
+____ test_raw_discovery_cannot_authorize_unobserved_capacity[wrapper-tool] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-56/test_raw_discovery_cannot_auth3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5f6a524830>
+mutation = 'wrapper-tool'
+
+    @pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+    def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        def change(admission, wrapper, raw):
+            if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+            elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+            elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+            elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+            elif mutation == 'raw-affinity': raw['affinity'] = []
+            elif mutation == 'raw-extra': raw['unrecognized'] = True
+            else: raw['dependencies'][0]['version'] = 'wrong'
+        reseal_admission(path, s, change)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:509: Failed
+____ test_raw_discovery_cannot_authorize_unobserved_capacity[raw-affinity] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-56/test_raw_discovery_cannot_auth4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5f6acf3d40>
+mutation = 'raw-affinity'
+
+    @pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+    def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        def change(admission, wrapper, raw):
+            if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+            elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+            elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+            elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+            elif mutation == 'raw-affinity': raw['affinity'] = []
+            elif mutation == 'raw-extra': raw['unrecognized'] = True
+            else: raw['dependencies'][0]['version'] = 'wrong'
+        reseal_admission(path, s, change)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:509: Failed
+______ test_raw_discovery_cannot_authorize_unobserved_capacity[raw-extra] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-56/test_raw_discovery_cannot_auth5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5f6aaa1250>
+mutation = 'raw-extra'
+
+    @pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+    def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        def change(admission, wrapper, raw):
+            if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+            elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+            elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+            elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+            elif mutation == 'raw-affinity': raw['affinity'] = []
+            elif mutation == 'raw-extra': raw['unrecognized'] = True
+            else: raw['dependencies'][0]['version'] = 'wrong'
+        reseal_admission(path, s, change)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:509: Failed
+___ test_raw_discovery_cannot_authorize_unobserved_capacity[raw-dependency] ____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-56/test_raw_discovery_cannot_auth6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5f6aaa0410>
+mutation = 'raw-dependency'
+
+    @pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+    def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        def change(admission, wrapper, raw):
+            if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+            elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+            elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+            elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+            elif mutation == 'raw-affinity': raw['affinity'] = []
+            elif mutation == 'raw-extra': raw['unrecognized'] = True
+            else: raw['dependencies'][0]['version'] = 'wrong'
+        reseal_admission(path, s, change)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:509: Failed
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_raw_discovery_cannot_authorize_unobserved_capacity[raw-headroom]
+FAILED test_run_bac_hardware_v1.py::test_raw_discovery_cannot_authorize_unobserved_capacity[raw-cpu]
+FAILED test_run_bac_hardware_v1.py::test_raw_discovery_cannot_authorize_unobserved_capacity[wrapper-parent]
+FAILED test_run_bac_hardware_v1.py::test_raw_discovery_cannot_authorize_unobserved_capacity[wrapper-tool]
+FAILED test_run_bac_hardware_v1.py::test_raw_discovery_cannot_authorize_unobserved_capacity[raw-affinity]
+FAILED test_run_bac_hardware_v1.py::test_raw_discovery_cannot_authorize_unobserved_capacity[raw-extra]
+FAILED test_run_bac_hardware_v1.py::test_raw_discovery_cannot_authorize_unobserved_capacity[raw-dependency]
+7 failed, 24 passed in 4.41s

@@ -1,0 +1,66 @@
+.................F.....F                                                 [100%]
+=================================== FAILURES ===================================
+________________ test_public_run_seals_zero_exit_as_unverified _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-54/test_public_run_seals_zero_exi0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fecd3896c40>
+
+    def test_public_run_seals_zero_exit_as_unverified(tmp_path, monkeypatch):
+        r = implementation()
+        path, s, registry = sealed_fixture(tmp_path)
+        stub_source(monkeypatch, r, registry)
+>       assert r.run(path) != 0
+               ^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:405: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+spec_path = PosixPath('/tmp/pytest-of-agent/pytest-54/test_public_run_seals_zero_exi0/metadata/spec.json')
+
+    def run(spec_path: Path) -> int:
+        """Fail closed: the frozen P0 transport lacks required runner fields."""
+        value = json.loads(spec_path.read_text())
+        validate_spec(value)
+>       raise ValueError('P2 transport amendment and admission/grant integration are not adopted')
+E       ValueError: P2 transport amendment and admission/grant integration are not adopted
+
+run_bac_hardware_v1.py:348: ValueError
+_____ test_public_run_refuses_cross_binding_before_launch[allocation-busy] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-54/test_public_run_refuses_cross_5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fecd3607750>
+mutation = 'allocation-busy'
+
+    @pytest.mark.parametrize('mutation', ['admission-budget', 'candidate-freeze', 'affinity', 'bound-argv', 'expired-grant', 'allocation-busy'])
+    def test_public_run_refuses_cross_binding_before_launch(tmp_path, monkeypatch, mutation):
+        r = implementation()
+        path, s, registry = sealed_fixture(tmp_path)
+        stub_source(monkeypatch, r, registry)
+        import bac_hardware_protocol_v1 as p
+        held = None
+        if mutation == 'admission-budget':
+            s['budget']['cpu_slots'] = 3
+        elif mutation == 'candidate-freeze':
+            freeze = json.loads(Path(s['source_freeze']['path']).read_text())
+            freeze['retention'] = 'different reference'
+            other = path.parent / 'other-freeze.json'; other.write_text(json.dumps(freeze)); s['source_freeze'] = p.file_reference(other)
+        elif mutation == 'affinity':
+            monkeypatch.setattr(r.os, 'sched_getaffinity', lambda pid: set())
+        elif mutation == 'bound-argv':
+            # Re-seal the edited bound and grant chain: rejection must be semantic.
+            boundpath = path.parent / 'bound.json'; bound = json.loads(boundpath.read_text()); bound['argv'] = ['/wrong']
+            boundpath.write_text(json.dumps(bound))
+            s['jobs'][0]['roles'][0]['cpu_reservation_evidence'] = p.file_reference(boundpath)
+        elif mutation == 'expired-grant':
+            grantpath = path.parent / 'grant.json'; grant = json.loads(grantpath.read_text()); grant['end'] = '2020-01-02T00:00:00.000000Z'
+            grantpath.write_text(json.dumps(grant))
+        else:
+>           held = r.Leases(Path(s['lease_root'])).try_allocation(json.loads((path.parent / 'allocation.json').read_text()))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'Leases' object has no attribute 'try_allocation'
+
+test_run_bac_hardware_v1.py:446: AttributeError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_public_run_seals_zero_exit_as_unverified
+FAILED test_run_bac_hardware_v1.py::test_public_run_refuses_cross_binding_before_launch[allocation-busy]
+2 failed, 22 passed in 3.33s

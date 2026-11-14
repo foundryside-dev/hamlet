@@ -1,0 +1,179 @@
+{
+  "schema": "bac-hardware-identity-freeze-v1",
+  "at": "2026-11-14T07:13:15.700218+00:00",
+  "status": "FROZEN FOR FRESH INDEPENDENT REVIEW",
+  "counted_files": 4,
+  "counted_lines": 1711,
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+      "bytes": 2917,
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "lines": 60
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "lines": 520
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "bytes": 34941,
+      "sha256": "a47a69c1e6639dae842d76e4b8f87b8ef21ec99cf07e926cda595a01a2f9c048",
+      "lines": 610
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "bytes": 29497,
+      "sha256": "3ab11afad87ea26fb68f64aa01c2b520f135dcd8b3708e4444a4686ed4ac1af4",
+      "lines": 521
+    }
+  ],
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/interface-contract-v1.json",
+    "bytes": 3373,
+    "sha256": "aa7dbc4a754a136bec1a9e390183eff104d07bbb7ddb301619f60e441b652f60"
+  },
+  "report": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-IDENTITY-P3-REPORT-v1.md",
+    "bytes": 5632,
+    "sha256": "78d04bbe002f2230a7a6b5e9022c2832703dc569e4c0cd8d24ca83f6c34de011"
+  },
+  "ledger": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/progress.md",
+    "bytes": 2335,
+    "sha256": "f0dd3d7833eda8f2db074db4bfb84006bd0b7c17d3342c22850bf11d052cdf94"
+  },
+  "terminal_execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-suite-v1/execution.json",
+    "bytes": 1042,
+    "sha256": "77c2f76edbd6dabd3d246d737e0fc16fde3e4c80afa7cd90152f5f2700fd372e"
+  },
+  "terminal_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-suite-v1/stdout.log",
+    "bytes": 113,
+    "sha256": "c8ffde9b514215f603d3021d54885f80ef127c49d9fd708b97f23f724940a940"
+  },
+  "final_collection": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-collection-v1/execution.json",
+    "bytes": 909,
+    "sha256": "6d4bc4cdea09a2acac5f58c3d617a6f914f2ba127cc1d25a72d0b1fce7cd10f2"
+  },
+  "snapshots": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-suite-v1/bac_hardware_identity_v1.py.txt",
+      "bytes": 34941,
+      "sha256": "a47a69c1e6639dae842d76e4b8f87b8ef21ec99cf07e926cda595a01a2f9c048"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-suite-v1/test_bac_hardware_identity_v1.py.txt",
+      "bytes": 29497,
+      "sha256": "3ab11afad87ea26fb68f64aa01c2b520f135dcd8b3708e4444a4686ed4ac1af4"
+    }
+  ],
+  "attempts": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-collection-v1/execution.json",
+      "bytes": 909,
+      "sha256": "6d4bc4cdea09a2acac5f58c3d617a6f914f2ba127cc1d25a72d0b1fce7cd10f2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-suite-v1/execution.json",
+      "bytes": 1042,
+      "sha256": "77c2f76edbd6dabd3d246d737e0fc16fde3e4c80afa7cd90152f5f2700fd372e"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-adversarial-v1/execution.json",
+      "bytes": 887,
+      "sha256": "05144577974744cb8af52e8634b1ef7b73f139dc9d6b6d3b5036908f8dbfdd9f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-core-v1/execution.json",
+      "bytes": 887,
+      "sha256": "525df2961dc0a2f99861e95e44c7fbf44334817249e2b63b29ccba25adcbf22f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-core-v2/execution.json",
+      "bytes": 887,
+      "sha256": "c407784e04aae29cb10deb943dfd0b3e5a42da41700fcb2146eb8f3640f5856d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-core-v3/execution.json",
+      "bytes": 887,
+      "sha256": "9bb914e4826516e3862269214918f79bd9bb4d031155650ed8bbc6964cf41d52"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-core-v4/execution.json",
+      "bytes": 887,
+      "sha256": "34e8b30bf2e8bb7e31a597e493d126f79fab37793075990321e3fdcdc5ddaf31"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-hooks-v1/execution.json",
+      "bytes": 887,
+      "sha256": "8d2594c45a926abca04f8edf5ca2aeabf7b89f1b8551dcfc00b03b69d33611b3"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-hooks-v2/execution.json",
+      "bytes": 887,
+      "sha256": "bcb9cf3aab3b8a9adf3ce06256cddc8be9ab5a8d54a4982de5b16e1c004d4d49"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-interval-v1/execution.json",
+      "bytes": 887,
+      "sha256": "afc6baa8ebf3e3a51f58b72bb4f1b2155def985397c690875c7d450695288451"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/red-adversarial-v1/execution.json",
+      "bytes": 887,
+      "sha256": "ef7adb9994b69fdb94d0ef2362730b16513959cb6a52330d66e8383f01b2fc9d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/red-core-v1/execution.json",
+      "bytes": 788,
+      "sha256": "933b7fc55a78958cdaf3e7edd8e725e345172df8a61922db727285e8196804ef"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/red-hooks-v1/execution.json",
+      "bytes": 887,
+      "sha256": "f9d7f59d4e6a0ee67887feeb25eb741a812ce9580b09a3b0d79789dd2bb9e942"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/red-hooks-v2/execution.json",
+      "bytes": 887,
+      "sha256": "85fe560d77424ab2df19bcd2345a0fce8af88d667d1a9df658169daace464046"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/red-hooks-v3/execution.json",
+      "bytes": 887,
+      "sha256": "fa2dc69bebdc11fac5b7e63c689f906a9b558bf67cde44b0b1ee8227baae6f82"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/red-interval-v1/execution.json",
+      "bytes": 887,
+      "sha256": "fc15f3c478b93870419ee76ffe5a603e19c5137a1ec00eeb9599db9985a15de4"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/replacement-v1/execution.json",
+      "bytes": 887,
+      "sha256": "f29f200a94c102394724e8b1465f70bcc8cb4734bbcf1e2626d369408a3e2296"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/xdist-discovery-v1/execution.json",
+      "bytes": 4682,
+      "sha256": "f774d5fd2c3608037666c554421dc3ad9e3a4c81f83fde3f18930bb822d9744d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/xdist-discovery-v2/execution.json",
+      "bytes": 1404,
+      "sha256": "c8e3f57746c114ec88877a549178e0008e32c3a4608a4b28f69a61cbb4e2c8cc"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/xdist-discovery-v3/execution.json",
+      "bytes": 1396,
+      "sha256": "c791eac25a30859f77a77d173149306b3f4979a813b0c87500fe2e46c83d07b4"
+    }
+  ],
+  "retained_fixture_root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/final-fixtures-v1",
+  "boundary": "Synthetic/inert source metadata and real local Python processes only. No APP/Torch/CUDA work, server discovery, owner-specific child qualification or integration acceptance."
+}

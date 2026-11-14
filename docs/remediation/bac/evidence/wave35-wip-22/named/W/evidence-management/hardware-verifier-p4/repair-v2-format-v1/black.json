@@ -1,0 +1,43 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "black",
+    "--line-length",
+    "140",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+  ],
+  "pid": 194877,
+  "ppid": 194876,
+  "start": "2026-11-14T07:54:54.516218+00:00",
+  "end": "2026-11-14T07:54:56.146150+00:00",
+  "exit_code": 0,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "bytes": 3032,
+      "lines": 33,
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "lines": 520,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "bytes": 58853,
+      "lines": 1158,
+      "sha256": "e22e6a7d58ff2d2bbb28d41ca81a305fe4404fb53025d22d6dca76df72de7127"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "bytes": 53097,
+      "lines": 1315,
+      "sha256": "5cdf6ed1082d64e33b22c85c2a00e56b6066a12aabd4cfd4078692a44505ccad"
+    }
+  ]
+}

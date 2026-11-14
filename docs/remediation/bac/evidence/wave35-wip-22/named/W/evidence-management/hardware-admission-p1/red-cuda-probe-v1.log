@@ -1,0 +1,1855 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.....FFF........FFFFFFFFFF               [100%]
+=================================== FAILURES ===================================
+__________ test_admission_limits_nested_fraction_and_memory_headroom ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_nested_f0')
+
+    def test_admission_limits_nested_fraction_and_memory_headroom(tmp_path):
+>       result = assess(tmp_path)
+                 ^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+______ test_admission_limits_bounded_by_all_cpu_observations[affinity-1] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_bounded_0')
+change = 'affinity', want = 1
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_______ test_admission_limits_bounded_by_all_cpu_observations[cpuset-2] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_bounded_1')
+change = 'cpuset', want = 2
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_______ test_admission_limits_bounded_by_all_cpu_observations[quota-0.5] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_bounded_2')
+change = 'quota', want = 0.5
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+______ test_admission_limits_bounded_by_all_cpu_observations[unlimited-4] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_bounded_3')
+change = 'unlimited', want = 4
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+__ test_admission_limits_refuse_insufficient_required_facts[missing_cpu-cpu] ___
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i0')
+change = 'missing_cpu', reason = 'cpu'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[missing_memory-memory] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i1')
+change = 'missing_memory', reason = 'memory'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[missing_cpuset-cpuset] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i2')
+change = 'missing_cpuset', reason = 'cpuset'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[hidden_ancestor-ancestry] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i3')
+change = 'hidden_ancestor', reason = 'ancestry'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[missing_ancestor-ancestry] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i4')
+change = 'missing_ancestor', reason = 'ancestry'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[zero_period-period] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i5')
+change = 'zero_period', reason = 'period'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[low_ram-ram_bytes] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i6')
+change = 'low_ram', reason = 'ram_bytes'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[low_scratch-scratch_bytes] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i7')
+change = 'low_scratch', reason = 'scratch_bytes'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[low_inodes-scratch_inodes] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i8')
+change = 'low_inodes', reason = 'scratch_inodes'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[unknown_workload-competing] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i9')
+change = 'unknown_workload', reason = 'competing'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[unknown_memavailable-MemAvailable] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i10')
+change = 'unknown_memavailable', reason = 'MemAvailable'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[unknown_affinity-affinity] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i11')
+change = 'unknown_affinity', reason = 'affinity'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_refuse_insufficient_required_facts[probe_error-probe] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_refuse_i12')
+change = 'probe_error', reason = 'probe'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+________ test_admission_limits_concurrency_and_replacement_reservations ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_concurre0')
+
+    def test_admission_limits_concurrency_and_replacement_reservations(tmp_path):
+        req = request()
+        req["jobs"] *= 2
+        req["requested_job_concurrency"] = 2
+        req["jobs"][0]["budget"]["cpu_slots"] = 2
+>       result = assess(tmp_path, req=req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+______ test_profile_mapping_preserves_remapped_visibility_and_cpu_policy _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_preserves0')
+
+    def test_profile_mapping_preserves_remapped_visibility_and_cpu_policy(tmp_path):
+        req, obs = cuda_pair()
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+__________ test_profile_mapping_refuses_unproved_cuda[cpu_build-CUDA] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u0')
+change = 'cpu_build', reason = 'CUDA'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+______ test_profile_mapping_refuses_unproved_cuda[unknown_uuid-authoriz] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u1')
+change = 'unknown_uuid', reason = 'authoriz'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_____ test_profile_mapping_refuses_unproved_cuda[duplicate_uuid-duplicate] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u2')
+change = 'duplicate_uuid', reason = 'duplicate'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_____________ test_profile_mapping_refuses_unproved_cuda[mig-MIG] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u3')
+change = 'mig', reason = 'MIG'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_______ test_profile_mapping_refuses_unproved_cuda[inherited-visibility] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u4')
+change = 'inherited', reason = 'visibility'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_______ test_profile_mapping_refuses_unproved_cuda[effective-visibility] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u5')
+change = 'effective', reason = 'visibility'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+__________ test_profile_mapping_refuses_unproved_cuda[driver-driver] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u6')
+change = 'driver', reason = 'driver'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_________ test_profile_mapping_refuses_unproved_cuda[runtime-runtime] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u7')
+change = 'runtime', reason = 'runtime'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_________ test_profile_mapping_refuses_unproved_cuda[logical-logical] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u8')
+change = 'logical', reason = 'logical'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+__________ test_profile_mapping_refuses_unproved_cuda[job_device-job] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u9')
+change = 'job_device', reason = 'job'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+________ test_profile_mapping_refuses_unproved_cuda[job_visibility-job] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u10')
+change = 'job_visibility', reason = 'job'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+__________ test_profile_mapping_refuses_unproved_cuda[busy-competing] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_profile_mapping_refuses_u11')
+change = 'busy', reason = 'competing'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+__ test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_bytes] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_reserve_0')
+key = 'scratch_bytes'
+
+    @pytest.mark.parametrize("key", ["scratch_bytes", "scratch_inodes"])
+    def test_admission_limits_reserve_retained_scratch_for_all_jobs(tmp_path, key):
+        req = request()
+        req["jobs"] = [copy.deepcopy(req["jobs"][0]) for _ in range(2)]
+        req["requested_job_concurrency"] = 1
+        for job in req["jobs"]:
+            job["budget"][key] = 600 if key == "scratch_bytes" else 10
+>       result = assess(tmp_path, req=req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:194: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_ test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_inodes] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_reserve_1')
+key = 'scratch_inodes'
+
+    @pytest.mark.parametrize("key", ["scratch_bytes", "scratch_inodes"])
+    def test_admission_limits_reserve_retained_scratch_for_all_jobs(tmp_path, key):
+        req = request()
+        req["jobs"] = [copy.deepcopy(req["jobs"][0]) for _ in range(2)]
+        req["requested_job_concurrency"] = 1
+        for job in req["jobs"]:
+            job["budget"][key] = 600 if key == "scratch_bytes" else 10
+>       result = assess(tmp_path, req=req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:194: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+_____ test_admission_limits_reserve_each_role_peak_including_replacements ______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_admission_limits_reserve_2')
+
+    def test_admission_limits_reserve_each_role_peak_including_replacements(tmp_path):
+        req = request()
+        req["jobs"][0]["roles"][0].update(peak_cpu_slots=2, replacement_limit=1)
+        req["jobs"][0]["budget"]["cpu_slots"] = 2
+>       result = assess(tmp_path, req=req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:104: in assess_resources
+    validate_discovery(obs)
+capture_bac_hardware_v1.py:45: in validate_discovery
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'discovery exact fields required'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: discovery exact fields required
+
+capture_bac_hardware_v1.py:31: ValueError
+____ test_real_cuda_backend_constructs_pinned_queries_and_joins_actual_uuid ____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_constru0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cd503b0>
+
+    def test_real_cuda_backend_constructs_pinned_queries_and_joins_actual_uuid(tmp_path, monkeypatch):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, "none")
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:312: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_constru0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cd503b0>
+change = 'none'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+___ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[mig] ___
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cd06030>
+change = 'mig'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cd06030>
+change = 'mig'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+_ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[unknown] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cd049e0>
+change = 'unknown'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cd049e0>
+change = 'unknown'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+_ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[duplicate] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cdb2850>
+change = 'duplicate'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cdb2850>
+change = 'duplicate'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+_ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[cpu_build] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cdb2a50>
+change = 'cpu_build'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460cdb2a50>
+change = 'cpu_build'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+_ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[torch_origin] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c8e49b0>
+change = 'torch_origin'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c8e49b0>
+change = 'torch_origin'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+_ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[visibility] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c8e4f50>
+change = 'visibility'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c8e4f50>
+change = 'visibility'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+__ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[mixed] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c998e50>
+change = 'mixed'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c998e50>
+change = 'mixed'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+__ test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[vram] ___
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c999a90>
+change = 'vram'
+
+    @pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+    def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+>       tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:324: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_real_cuda_backend_refuses7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c999a90>
+change = 'vram'
+
+    def gpu_probe(tmp_path, monkeypatch, change):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+E       AssertionError: pinned CUDA backend missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'collect_gpu', None)
+
+test_capture_bac_hardware_v1.py:277: AssertionError
+_______ test_driver_query_retains_executable_actual_child_and_exact_argv _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-46/test_driver_query_retains_exec0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f460c7ca340>
+
+    def test_driver_query_retains_executable_actual_child_and_exact_argv(tmp_path, monkeypatch):
+        from types import SimpleNamespace
+        tool = module()
+>       assert callable(getattr(tool, "run_query", None)), "pinned query subprocess missing"
+E       AssertionError: pinned query subprocess missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'run_query', None)
+
+test_capture_bac_hardware_v1.py:331: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_nested_fraction_and_memory_headroom
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[affinity-1]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[cpuset-2]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[quota-0.5]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[unlimited-4]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_cpu-cpu]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_memory-memory]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_cpuset-cpuset]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[hidden_ancestor-ancestry]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_ancestor-ancestry]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[zero_period-period]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[low_ram-ram_bytes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[low_scratch-scratch_bytes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[low_inodes-scratch_inodes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[unknown_workload-competing]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[unknown_memavailable-MemAvailable]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[unknown_affinity-affinity]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[probe_error-probe]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_concurrency_and_replacement_reservations
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_preserves_remapped_visibility_and_cpu_policy
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[cpu_build-CUDA]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[unknown_uuid-authoriz]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[duplicate_uuid-duplicate]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[mig-MIG]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[inherited-visibility]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[effective-visibility]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[driver-driver]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[runtime-runtime]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[logical-logical]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[job_device-job]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[job_visibility-job]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[busy-competing]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_bytes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_inodes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_reserve_each_role_peak_including_replacements
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_constructs_pinned_queries_and_joins_actual_uuid
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[mig]
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[unknown]
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[duplicate]
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[cpu_build]
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[torch_origin]
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[visibility]
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[mixed]
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_refuses_unproved_driver_torch_correspondence[vram]
+FAILED test_capture_bac_hardware_v1.py::test_driver_query_retains_executable_actual_child_and_exact_argv
+45 failed, 13 passed in 1.30s

@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-body-distinct-attempt-1",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "c1-poison-body-distinct",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[distinct]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

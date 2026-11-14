@@ -1,0 +1,22 @@
+{
+  "job": "c1-poison-body-distinct",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "exit_code": 0,
+  "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 8.301722578005865,
+  "source_guards": 821,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

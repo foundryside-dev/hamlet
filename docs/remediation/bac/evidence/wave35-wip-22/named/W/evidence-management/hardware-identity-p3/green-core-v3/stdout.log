@@ -1,0 +1,153 @@
+F..........FFFF....                                                      [100%]
+=================================== FAILURES ===================================
+_____________________________ test_process_custody _____________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-78/test_process_custody0/source/pkg/inert-module.txt'), 'blobref': {'b...test_process_custody0/freeze.json', 'sha256': '6252589ddbe60915e99df15ba7668feb9889c65760410362ae4b2b88477524ac'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd9541dd6e0>
+
+    def test_process_custody(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch); c=capsule['context']
+>       start=_read(api.record_process(c,'start')); end=_read(api.record_process(c,'end'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:376: in record_process
+    actual_env = _environment(context,job)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:166: in _environment
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False
+message = 'actual environment differs from sealed launch and framework additions'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: actual environment differs from sealed launch and framework additions
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:35: ValueError
+_________________ test_end_requires_actual_same_process_start __________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-78/test_end_requires_actual_same_0/source/pkg/inert-module.txt'), 'blo...equires_actual_same_0/freeze.json', 'sha256': 'd621df5d5474cfcd912163ff55a732ae431ad52f9545183cb78389aad71d60e8'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd9542969c0>
+
+    def test_end_requires_actual_same_process_start(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        with pytest.raises(ValueError): api.record_process(capsule['context'],'end')
+>       start=api.record_process(capsule['context'],'start')
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:220: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:376: in record_process
+    actual_env = _environment(context,job)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:166: in _environment
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False
+message = 'actual environment differs from sealed launch and framework additions'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: actual environment differs from sealed launch and framework additions
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:35: ValueError
+__________________________ test_phase_specific_import __________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-78/test_phase_specific_import0/source/pkg/inert-module.txt'), 'blobref...hase_specific_import0/freeze.json', 'sha256': '3789f7ed69037932c3d2770be0014a4b6b5528124e27ee664b28e1327f5a4699'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd95427d190>
+
+    def test_phase_specific_import(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch);monkeypatch.delitem(sys.modules,'inert_module')
+>       api.record_process(capsule['context'],'start')
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:228: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:376: in record_process
+    actual_env = _environment(context,job)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:166: in _environment
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False
+message = 'actual environment differs from sealed launch and framework additions'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: actual environment differs from sealed launch and framework additions
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:35: ValueError
+_______________________ test_missing_end_remains_missing _______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-78/test_missing_end_remains_missi0/source/pkg/inert-module.txt'), 'blo...ng_end_remains_missi0/freeze.json', 'sha256': '6315d6b482a3545a2699f582dd34ae5c70202aa976a6129a50bf74f74b05105a'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd95427d3d0>
+
+    def test_missing_end_remains_missing(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch);api.record_process(capsule['context'],'start')
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:233: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:376: in record_process
+    actual_env = _environment(context,job)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:166: in _environment
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False
+message = 'actual environment differs from sealed launch and framework additions'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: actual environment differs from sealed launch and framework additions
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:35: ValueError
+_________________________ test_nonperturbing_observer __________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-78/test_nonperturbing_observer0/source/pkg/inert-module.txt'), 'blobre...nperturbing_observer0/freeze.json', 'sha256': 'b94ec7cdf5a605b555268285bbeb8ff8413f6d4fdd9d5fe292755ccdb53f2638'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd9541baf10>
+
+    def test_nonperturbing_observer(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda');cuda._initialized=False
+        def forbidden(*a,**k): raise AssertionError('observer called Torch or CUDA')
+        torch.__getattr__=forbidden;cuda.__getattr__=forbidden
+        for name in ['get_num_threads','get_num_interop_threads','is_anomaly_enabled']:setattr(torch,name,forbidden)
+        torch.cuda=cuda;monkeypatch.setitem(sys.modules,'torch',torch);monkeypatch.setitem(sys.modules,'torch.cuda',cuda)
+>       value=_read(api.record_process(capsule['context'],'start'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:376: in record_process
+    actual_env = _environment(context,job)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:166: in _environment
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False
+message = 'actual environment differs from sealed launch and framework additions'
+
+    def _require(ok, message):
+        if not ok:
+>           raise ValueError(message)
+E           ValueError: actual environment differs from sealed launch and framework additions
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:35: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_process_custody - ValueError: a...
+FAILED test_bac_hardware_identity_v1.py::test_end_requires_actual_same_process_start
+FAILED test_bac_hardware_identity_v1.py::test_phase_specific_import - ValueEr...
+FAILED test_bac_hardware_identity_v1.py::test_missing_end_remains_missing - V...
+FAILED test_bac_hardware_identity_v1.py::test_nonperturbing_observer - ValueE...
+5 failed, 14 passed, 3 deselected in 1.20s

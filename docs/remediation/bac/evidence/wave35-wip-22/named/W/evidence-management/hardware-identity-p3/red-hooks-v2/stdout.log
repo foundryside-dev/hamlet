@@ -1,0 +1,102 @@
+...................F.F.....F                                             [100%]
+=================================== FAILURES ===================================
+__________ test_actual_child_process_custody[spawn-child-spawn-False] __________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-85/test_actual_child_process_cust0/source/pkg/inert-module.txt'), 'blo...l_child_process_cust0/freeze.json', 'sha256': '80565015e61fc9145e91aa79bbbe6507e4327a6422be81978546b6afcb2c36b9'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f728d212bd0>
+kind = 'spawn-child', method = 'spawn', crash = False
+
+    @pytest.mark.parametrize('kind,method,crash',[('spawn-child','spawn',False),('fork-guard','fork',False),('spawn-child','spawn',True)])
+    def test_actual_child_process_custody(capsule,monkeypatch,kind,method,crash):
+        import multiprocessing
+        api=_prepare(capsule,monkeypatch);_strict_role(capsule,kind)
+        parent=api.record_process(capsule['context'],'start')
+        context=copy.deepcopy(capsule['context']);context['role_id']=kind;context['parent_start']=[parent]
+        mp=multiprocessing.get_context(method);receiver,sender=mp.Pipe(duplex=False)
+        process=mp.Process(target=_child_emit,args=(context,sender,crash));process.start();sender.close()
+        assert receiver.poll(10), 'child never emitted actual start'
+>       start=receiver.recv();assert 'error' not in start,start
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: {'env_diff': {'COLUMNS': [None, '80'], 'LINES': [None, '24']}, 'error': "ValueError('actual environment differs from sealed launch and framework additions')"}
+E       assert 'error' not in {'env_diff': {'COLUMNS': [None, '80'], 'LINES': [None, '24']}, 'error': "ValueError('actual environment differs from sealed launch and framework additions')"}
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:325: AssertionError
+----------------------------- Captured stderr call -----------------------------
+Process SpawnProcess-1:
+Traceback (most recent call last):
+--------------------------- Captured stderr teardown ---------------------------
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py", line 305, in _child_emit
+    start=api.record_process(context,'start');connection.send(start)
+  File "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py", line 376, in record_process
+    actual_env = _environment(context,job)
+  File "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py", line 166, in _environment
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py", line 35, in _require
+    raise ValueError(message)
+ValueError: actual environment differs from sealed launch and framework additions
+__________ test_actual_child_process_custody[spawn-child-spawn-True] ___________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-85/test_actual_child_process_cust2/source/pkg/inert-module.txt'), 'blo...l_child_process_cust2/freeze.json', 'sha256': '0bc2d5d2fc91ff01088af328e83ea0fa11b117dbc3561e9ee3008211b1d506d7'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f728d2532a0>
+kind = 'spawn-child', method = 'spawn', crash = True
+
+    @pytest.mark.parametrize('kind,method,crash',[('spawn-child','spawn',False),('fork-guard','fork',False),('spawn-child','spawn',True)])
+    def test_actual_child_process_custody(capsule,monkeypatch,kind,method,crash):
+        import multiprocessing
+        api=_prepare(capsule,monkeypatch);_strict_role(capsule,kind)
+        parent=api.record_process(capsule['context'],'start')
+        context=copy.deepcopy(capsule['context']);context['role_id']=kind;context['parent_start']=[parent]
+        mp=multiprocessing.get_context(method);receiver,sender=mp.Pipe(duplex=False)
+        process=mp.Process(target=_child_emit,args=(context,sender,crash));process.start();sender.close()
+        assert receiver.poll(10), 'child never emitted actual start'
+>       start=receiver.recv();assert 'error' not in start,start
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: {'env_diff': {'COLUMNS': [None, '80'], 'LINES': [None, '24']}, 'error': "ValueError('actual environment differs from sealed launch and framework additions')"}
+E       assert 'error' not in {'env_diff': {'COLUMNS': [None, '80'], 'LINES': [None, '24']}, 'error': "ValueError('actual environment differs from sealed launch and framework additions')"}
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:325: AssertionError
+----------------------------- Captured stderr call -----------------------------
+Process SpawnProcess-3:
+Traceback (most recent call last):
+--------------------------- Captured stderr teardown ---------------------------
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/usr/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py", line 305, in _child_emit
+    start=api.record_process(context,'start');connection.send(start)
+  File "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py", line 376, in record_process
+    actual_env = _environment(context,job)
+  File "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py", line 166, in _environment
+    _require(actual == expected, 'actual environment differs from sealed launch and framework additions')
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py", line 35, in _require
+    raise ValueError(message)
+ValueError: actual environment differs from sealed launch and framework additions
+_______________________ test_pytest_hooks_are_available ________________________
+
+    def test_pytest_hooks_are_available():
+        api=_api()
+        for name in ['pytest_addoption','pytest_configure','pytest_configure_node','pytest_testnodedown',
+                     'pytest_collection_finish','pytest_runtest_logreport','pytest_sessionfinish']:
+>           assert callable(getattr(api,name,None)), 'missing actual pytest hook '+name
+E           AssertionError: missing actual pytest hook pytest_addoption
+E           assert False
+E            +  where False = callable(None)
+E            +    where None = getattr(<module 'bac_hardware_identity_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py'>, 'pytest_addoption', None)
+
+test_bac_hardware_identity_v1.py:373: AssertionError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_actual_child_process_custody[spawn-child-spawn-False]
+FAILED test_bac_hardware_identity_v1.py::test_actual_child_process_custody[spawn-child-spawn-True]
+FAILED test_bac_hardware_identity_v1.py::test_pytest_hooks_are_available - As...
+3 failed, 25 passed, 3 deselected in 2.98s

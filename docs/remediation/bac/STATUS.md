@@ -1,5 +1,19 @@
 # BAC implementation status
 
+## 2026-11-14 — WIP22 checkpoint: R117–R122 bounded parent custody component
+
+Terminal R122 executed tree is `7d3be1eeda87015e939f1dd90275b05a1586676b`, based on `2f579092eae2b67eb3efd514aa7b61c909efa9f1`; candidate-manifest SHA256 is `6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e`. This finite R117–R122 checkpoint preserves earlier failed, intermediate and unrun attempts, including the failed R117 capture and all 12 automatic T21 templates. Execution and publication identities remain separate.
+
+The runtime/BANK parent custody component has **67 PASS: 62 ordinary cases and five fresh isolated poison cases**. Two independently authored expiration probes also pass and are reported separately. Collection of 67 is not another runtime result; earlier candidate results and repeated reviews are not added to this total. Global Ruff, four scoped Black checks and the defaults ratchet at 600 pass. Global mypy still fails with 15 diagnostics. See the [parent custody component contract](CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md).
+
+**Full C1 is not accepted.** R121's required owner run retains 215 FAIL / 266 PASS across nine groups: root reconciliation attributes 193 observed failures to stale fixture interfaces and 22 to POP production callers; 17 of the latter also expose a cleanup mismatch. This is retained R121 evidence, not a new R122 owner execution. POP step and restore lineage/fixtures, including cleanup, and the remaining owner/integration obligations remain required. The R122 ordinary command reused an R120 `--basetemp` argument; its exclusive result and identity paths are preserved, but no historical pre-run scratch inventory exists. No fresh scratch namespace or retrospective contents claim is made.
+
+P0 v4, P1 v2, P2 v2, P3 v2 and P4 v3 have bounded synthetic tooling adoptions. These do not qualify application or hardware execution. P3 owner amendments, P5 supplier/design work and actual hardware qualification remain pending or unrun. All prior tool REDs and failed attempts remain evidence. The offered 16-worker server has no established access or GPU topology. Actual CUDA, B6 post-poison capability, broader parent/recurrent/ordinary-runner integration, full/default suites, coverage ≥70%, slow/learning checks, global typing and final fresh review/CI remain open.
+
+The latest verified remote is WIP21 `2f579092eae2b67eb3efd514aa7b61c909efa9f1`: Config PASS, Lint FAIL with 15 mypy errors, and Tests FAIL. Test-log retrieval closed transport; the Tests cause remains unclassified. These are WIP21 observations, not R122 CI results. **28 qualified / 38 remaining / 66 original packages** is unchanged. This is durable work in progress, not whole-C1 or whole-BAC acceptance.
+
+The sections below retain their historical identities, results and remote observations.
+
 ## 2026-11-14 — WIP21 checkpoint: R114–R116 peer-observer and cold-import qualification
 
 As of the R116 root record on 14 November 2026 at 05:45 UTC, the peer-observer and bounded fresh-process cold-import gaps have qualified repairs in this finite R114–R116 checkpoint. The latest verified remote remains WIP20 `fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb`, publication tree `78a03477193aad645e95a5584ed02324dbcaade3`. Published R113 remains 1,203 PASS / 2 FAIL; later results do not rewrite that checkpoint.

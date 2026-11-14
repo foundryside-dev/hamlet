@@ -1,0 +1,22 @@
+{
+  "command": {
+    "bytes": 721,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/existing-fixtures/test_failure_and_exact_environ0/out/attempt/bad/command.json",
+    "sha256": "7834ef4973774d39e5e50301bc094e416084f3f944cc758f3064c0089f2028cb"
+  },
+  "disposition": "completed-failed",
+  "end": "2026-11-14T07:46:08.481875Z",
+  "exit_code": 7,
+  "job_id": "bad",
+  "log": {
+    "bytes": 370,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/existing-fixtures/test_failure_and_exact_environ0/out/attempt/bad/stdout.log",
+    "sha256": "4334828baf5f4bcf179eda0977d0a05ae438720a1c22fe0c0611a9ae12383062"
+  },
+  "monotonic_end_ns": 121678822333862,
+  "monotonic_start_ns": 121678737752300,
+  "process_records": [],
+  "reason": "command failed",
+  "signal": 0,
+  "start": "2026-11-14T07:46:08.397268Z"
+}

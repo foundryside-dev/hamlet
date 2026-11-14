@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r121-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-install-completion-attempt-1",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "c1-poison-install-completion",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_install_completion_failure_cannot_restore_healthy_latch",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

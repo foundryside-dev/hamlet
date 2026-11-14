@@ -1,0 +1,32 @@
+{
+  "name": "c1-ordinary",
+  "exit_code": 1,
+  "seconds": 30.263306403998286,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "-k",
+    "not test_body_and_completion_failure_identity and not test_child_false_outer_true_preserves_bank_health and not test_child_true_outer_false_retains_bank_uncertainty and not test_install_completion_failure_cannot_restore_healthy_latch",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r120-c1-ordinary-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-ordinary-attempt-1/c1-ordinary.log",
+  "sha256": "870ba1d9c06ba1a6aac35311a5c4dc25b914804b4d975308b45c5b89a0c103b1",
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

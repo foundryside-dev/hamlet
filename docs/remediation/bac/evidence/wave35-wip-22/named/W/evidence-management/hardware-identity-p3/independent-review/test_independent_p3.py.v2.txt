@@ -1,0 +1,82 @@
+from test_bac_hardware_identity_v1 import capsule, _prepare, _read, _replace_grant
+
+def test_p1_category_order(capsule, monkeypatch):
+    api = _prepare(capsule, monkeypatch)
+    candidate = _read(capsule['spec']['candidate'])
+    refs = [item['reference'] for category in ('source','tests','configs','scripts','ratchet','artifacts') for item in candidate['inventory'][category]]
+    _replace_grant(capsule, {'inputs': refs})
+    api.record_process(capsule['context'], 'start')
+
+import copy
+import json
+import os
+import select
+import time
+import pytest
+from test_bac_hardware_identity_v1 import _strict_role
+
+
+def test_unloaded_input_mutation_refuses(capsule, monkeypatch):
+    api = _prepare(capsule, monkeypatch)
+    candidate = _read(capsule['spec']['candidate'])
+    from pathlib import Path
+    Path(candidate['inventory']['configs'][0]['path']).write_text('changed inert config')
+    with pytest.raises(ValueError, match='reference digest/length mismatch'):
+        api.record_process(capsule['context'], 'start')
+
+
+def test_full_environment_deletion_refuses(capsule, monkeypatch):
+    api = _prepare(capsule, monkeypatch)
+    monkeypatch.delenv('OMP_NUM_THREADS')
+    with pytest.raises(ValueError, match='actual environment differs'):
+        api.record_process(capsule['context'], 'start')
+
+
+def test_actual_reparent_refuses_end(capsule, monkeypatch):
+    api = _prepare(capsule, monkeypatch)
+    _strict_role(capsule, 'fork-guard')
+    readfd, writefd = os.pipe()
+    readyread, readywrite = os.pipe()
+    parent = os.fork()
+    if parent == 0:
+        os.close(readfd)
+        try:
+            parent_ref = api.record_process(capsule['context'], 'start')
+            child = os.fork()
+            if child:
+                os.close(readywrite)
+                assert os.read(readyread, 1) == b'1'
+                os._exit(0)
+            os.close(readyread)
+            context = copy.deepcopy(capsule['context'])
+            context.update(role_id='fork-guard', parent_start=[parent_ref])
+            start = api.record_process(context, 'start')
+            old_parent = os.getppid()
+            os.write(readywrite, b'1')
+            deadline = time.monotonic() + 5
+            while os.getppid() == old_parent and time.monotonic() < deadline:
+                time.sleep(.01)
+            assert os.getppid() != old_parent
+            try:
+                api.record_process(context, 'end')
+            except ValueError as exc:
+                result = dict(refused=True, reason=str(exc), pid=os.getpid(), old_ppid=old_parent, new_ppid=os.getppid(), start=start)
+            else:
+                result = dict(refused=False)
+            os.write(writefd, json.dumps(result).encode())
+            os._exit(0)
+        except BaseException as exc:
+            os.write(writefd, json.dumps(dict(error=repr(exc))).encode())
+            os._exit(1)
+    os.close(writefd)
+    os.close(readyread)
+    os.close(readywrite)
+    assert select.select([readfd], [], [], 10)[0], 'reparent probe timed out'
+    result = json.loads(os.read(readfd, 65536))
+    os.close(readfd)
+    _, status = os.waitpid(parent, 0)
+    (capsule['tmp'] / 'reparent-result.json').write_text(json.dumps(result, indent=2))
+    assert status == 0
+    assert result.get('refused') is True, result
+    assert result['pid'] == _read(result['start'])['identity']['pid']
+    assert result['old_ppid'] == parent and result['new_ppid'] != parent

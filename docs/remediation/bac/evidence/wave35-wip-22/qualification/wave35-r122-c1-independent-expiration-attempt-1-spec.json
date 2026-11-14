@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-independent-expiration-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "c1-independent-expiration",
+      "args": [
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

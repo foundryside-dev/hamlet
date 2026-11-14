@@ -1,0 +1,116 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py F [ 50%]
+F                                                                        [100%]
+
+=================================== FAILURES ===================================
+__________ test_ordinary_contender_survives_scope_expiration[runtime] __________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd5f6f4b360>
+owner_name = 'runtime'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_ordinary_contender_survives_scope_expiration(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+        """A foreign lookup spanning real scope exit must wait/admit instead of raising KeyError."""
+        import townlet.exploration.parent_custody as custody
+    
+        rig = make_parent(compiled)
+        owner = getattr(rig, owner_name)
+        lookup = custody._lookup
+        captured, release, finished = Event(), Event(), Event()
+        errors: list[BaseException] = []
+        results: list[Any] = []
+    
+        def paused_lookup(candidate: Any) -> Any:
+            scope = lookup(candidate)
+            if candidate is owner and custody.current_thread() is thread and scope is not None:
+                captured.set()
+                if not release.wait(5):
+                    raise TimeoutError("issuer did not release captured scope")
+            return scope
+    
+        def contender() -> None:
+            try:
+                results.append(owner.checkpoint_state())
+            except BaseException as error:
+                errors.append(error)
+            finally:
+                finished.set()
+    
+        thread = Thread(target=contender, daemon=True)
+        monkeypatch.setattr(custody, "_lookup", paused_lookup)
+        try:
+            with rig.runtime.retain_parent_custody():
+                thread.start()
+                assert captured.wait(2), "contender did not capture actual issued scope"
+        finally:
+            release.set()
+        thread.join(2)
+>       assert finished.is_set() and not errors, repr(errors)
+E       AssertionError: [KeyError(<weakref at 0x7fd5f67bb380; to 'townlet.exploration.parent_custody.RuntimeParentCustody' at 0x7fd5ec40dcd0>)]
+E       assert (True and not [KeyError(<weakref at 0x7fd5f67bb380; to 'townlet.exploration.parent_custody.RuntimeParentCustody' at 0x7fd5ec40dcd0>)])
+E        +  where True = is_set()
+E        +    where is_set = <threading.Event at 0x7fd5ec4128b0: set>.is_set
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:564: AssertionError
+___________ test_ordinary_contender_survives_scope_expiration[bank] ____________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd5ec412fd0>
+owner_name = 'bank'
+
+    @pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+    def test_ordinary_contender_survives_scope_expiration(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+        """A foreign lookup spanning real scope exit must wait/admit instead of raising KeyError."""
+        import townlet.exploration.parent_custody as custody
+    
+        rig = make_parent(compiled)
+        owner = getattr(rig, owner_name)
+        lookup = custody._lookup
+        captured, release, finished = Event(), Event(), Event()
+        errors: list[BaseException] = []
+        results: list[Any] = []
+    
+        def paused_lookup(candidate: Any) -> Any:
+            scope = lookup(candidate)
+            if candidate is owner and custody.current_thread() is thread and scope is not None:
+                captured.set()
+                if not release.wait(5):
+                    raise TimeoutError("issuer did not release captured scope")
+            return scope
+    
+        def contender() -> None:
+            try:
+                results.append(owner.checkpoint_state())
+            except BaseException as error:
+                errors.append(error)
+            finally:
+                finished.set()
+    
+        thread = Thread(target=contender, daemon=True)
+        monkeypatch.setattr(custody, "_lookup", paused_lookup)
+        try:
+            with rig.runtime.retain_parent_custody():
+                thread.start()
+                assert captured.wait(2), "contender did not capture actual issued scope"
+        finally:
+            release.set()
+        thread.join(2)
+>       assert finished.is_set() and not errors, repr(errors)
+E       AssertionError: [KeyError(<weakref at 0x7fd5ec32d490; to 'townlet.exploration.parent_custody.BankParentCustody' at 0x7fd5eba1c260>)]
+E       assert (True and not [KeyError(<weakref at 0x7fd5ec32d490; to 'townlet.exploration.parent_custody.BankParentCustody' at 0x7fd5eba1c260>)])
+E        +  where True = is_set()
+E        +    where is_set = <threading.Event at 0x7fd5ec3a2030: set>.is_set
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:564: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[runtime]
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[bank]
+============================== 2 failed in 4.35s ===============================

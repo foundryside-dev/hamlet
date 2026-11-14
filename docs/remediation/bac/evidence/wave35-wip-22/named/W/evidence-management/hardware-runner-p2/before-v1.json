@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-14T05:53:44.974387+00:00",
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "bytes": 2043,
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+      "lines": 20
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 31365,
+      "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7",
+      "lines": 467
+    }
+  ],
+  "new_files": [
+    "run_bac_hardware_v1.py",
+    "test_run_bac_hardware_v1.py"
+  ],
+  "body_packet_maximum": {
+    "files": 4,
+    "lines": 3600
+  },
+  "boundary": "Synthetic inert subprocesses only; no APP/Torch/CUDA/server/Git writes; root owns integration and review."
+}

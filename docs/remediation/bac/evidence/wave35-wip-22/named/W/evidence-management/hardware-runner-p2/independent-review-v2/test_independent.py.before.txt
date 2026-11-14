@@ -1,0 +1,57 @@
+"""Independent repaired P2 probes; synthetic transport, inert children only."""
+import json
+import sys
+from pathlib import Path
+import pytest
+sys.path.insert(0, '/workspace/bac-review-2026-11-01/qualification')
+import test_run_bac_hardware_v1 as author
+
+@pytest.mark.parametrize('loaded,marker,declared,success', [
+    (False, None, 'uninitialized', True),
+    (True, False, 'uninitialized', True),
+    (True, True, 'uninitialized', False),
+    (True, False, 'initialized', False),
+    (True, True, 'initialized', False),
+    (True, None, 'uninitialized', False),
+    (False, True, 'uninitialized', False),
+])
+def test_marker_matrix(tmp_path, monkeypatch, loaded, marker, declared, success):
+    code = author.SUCCESS_CODE.replace("'torch_loaded':False,'cuda_marker':None", f"'torch_loaded':{loaded!r},'cuda_marker':{marker!r}")
+    code = code.replace("cuda_observation='uninitialized'", f"cuda_observation={declared!r}")
+    if loaded: code = code.replace("torch_observation='not-loaded'", "torch_observation='loaded-without-calls'")
+    r = author.implementation()
+    path, s, registry = author.sealed_fixture(tmp_path, code)
+    author.stub_source(monkeypatch, r, registry)
+    status = r.run(path)
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['exit_code'] == 0
+    assert (status == 0) is success
+    assert result['disposition'] == ('successful' if success else 'completed-unverified')
+
+@pytest.mark.parametrize('key', ['ram_bytes', 'scratch_bytes', 'scratch_inodes'])
+def test_ownership_credit_boundary(tmp_path, monkeypatch, key):
+    r = author.implementation()
+    path, s, registry = author.sealed_fixture(tmp_path, author.SUCCESS_CODE)
+    author.stub_source(monkeypatch, r, registry)
+    calls = []
+    def capacity(raw, scratch):
+        calls.append(1)
+        value = dict(cpu_slots=5, ram_bytes=3, scratch_bytes=3, scratch_inodes=3)
+        value[key] = 2 if len(calls) < 3 else 1
+        return value
+    # One unit of observed runner metadata/private RAM covers its own one-unit overhead.
+    # Job two-unit remaining demand fits two units free; final retains reserve zero.
+    monkeypatch.setattr(r, '_owned_resources', lambda *args: ({'_runner': 1}, {'_overhead': {key: 1}}))
+    monkeypatch.setattr(r, '_live_capacity', capacity)
+    assert r.run(path) == 0
+    assert len(calls) == 3
+
+
+def test_credit_capped_and_cpu_never_credited():
+    r = author.implementation()
+    keys = r.RESOURCE_KEYS
+    jobs = [{'id': 'a', 'budget': dict.fromkeys(keys, 4)}, {'id': 'b', 'budget': dict.fromkeys(keys, 6)}]
+    credit = {'_runner': 100, 'a': 100, 'b': 100}
+    storage = {name: dict.fromkeys(keys, 100) for name in ('_overhead', 'a', 'b')}
+    got = r._remaining_resources(jobs, ['b'], ['a'], 2, dict.fromkeys(keys, 2), dict.fromkeys(keys, 3), credit, storage)
+    assert got == dict(cpu_slots=15, ram_bytes=9, scratch_bytes=3, scratch_inodes=3)

@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "-p",
+    "pytest_cov",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/fixtures/green-review-repair-v1",
+    "-q"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+  },
+  "source_hashes_before": {
+    "run_bac_hardware_v1.py": "5a8ad16d391ce4c07b1bb19d00e408c6cb976c9a1e144c2cec75a37712164d82",
+    "test_run_bac_hardware_v1.py": "e7a8868e92666ba30d907a5a915ac6d56a4f4c92811f08b8e02c038a27f7928d",
+    "bac_hardware_protocol_v1.py": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+  },
+  "source_hashes_after": {
+    "run_bac_hardware_v1.py": "5a8ad16d391ce4c07b1bb19d00e408c6cb976c9a1e144c2cec75a37712164d82",
+    "test_run_bac_hardware_v1.py": "e7a8868e92666ba30d907a5a915ac6d56a4f4c92811f08b8e02c038a27f7928d",
+    "bac_hardware_protocol_v1.py": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+  },
+  "start": "2026-11-14T07:37:37.098067+00:00",
+  "end": "2026-11-14T07:37:48.345991+00:00",
+  "exit_code": 0,
+  "log_sha256": "b0fc930e912ba0f87722c0b7ddd6c10d3d207e7868ec159712254f27acd8e772"
+}

@@ -1,0 +1,66 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--noconftest",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-preflight-v1-fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "start": "2026-11-14T06:32:37.202727+00:00",
+  "end": "2026-11-14T06:32:38.415860+00:00",
+  "exit_code": 1,
+  "before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "033b8e0d4994b0fe50726706d50f325dc0fd55a198afa6c814784a2dbbf8df52",
+      "bytes": 52109
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "a942589b56f9563f94e245267d100a9ac9e3b6c364d4e6be48100f71e254e8f0",
+      "bytes": 39000
+    }
+  ],
+  "after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "033b8e0d4994b0fe50726706d50f325dc0fd55a198afa6c814784a2dbbf8df52",
+      "bytes": 52109
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "a942589b56f9563f94e245267d100a9ac9e3b6c364d4e6be48100f71e254e8f0",
+      "bytes": 39000
+    }
+  ],
+  "source_snapshots": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-discovery-preflight-v1-source",
+  "scope": "synthetic only"
+}

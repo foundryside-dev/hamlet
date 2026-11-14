@@ -1,0 +1,221 @@
+...............................FFFFFFF......F.....F                      [100%]
+=================================== FAILURES ===================================
+_________ test_public_run_success_requires_actual_controller_envelope __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_public_run_success_requir0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead4b26570>
+
+    def test_public_run_success_requires_actual_controller_envelope(tmp_path, monkeypatch):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE); stub_source(monkeypatch, r, registry)
+>       assert r.run(path) == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = <function run at 0x7fead4ad4a40>(PosixPath('/tmp/pytest-of-agent/pytest-79/test_public_run_success_requir0/metadata/spec.json'))
+E        +    where <function run at 0x7fead4ad4a40> = <module 'p2_runner' from '/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py'>.run
+
+test_run_bac_hardware_v1.py:560: AssertionError
+__ test_envelope_mutation_preserves_zero_exit_but_refuses_success[wrong-pid] ___
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_envelope_mutation_preserv0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead4b26830>
+change = 'wrong-pid'
+
+    @pytest.mark.parametrize('change', ['wrong-pid', 'missing-end', 'wrong-seed-command', 'skip', 'bad-obligation'])
+    def test_envelope_mutation_preserves_zero_exit_but_refuses_success(tmp_path, monkeypatch, change):
+        suffix = {
+            'wrong-pid': "v=json.loads((out/'process-start.json').read_text());v['identity']['pid']+=1;put('process-start.json',v)",
+            'missing-end': "v=json.loads((out/'completion.json').read_text());v['process_records']=v['process_records'][:1];put('completion.json',v)",
+            'wrong-seed-command': "v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)",
+            'skip': "v=json.loads((out/'completion.json').read_text());v['outcomes'][0]['call']='skipped';put('completion.json',v)",
+            'bad-obligation': "v=json.loads((out/'completion.json').read_text());v['obligation_records']=[];put('completion.json',v)",
+        }[change]
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + '\n' + suffix); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+>       assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+E       assert (1 == 0)
+
+test_run_bac_hardware_v1.py:581: AssertionError
+_ test_envelope_mutation_preserves_zero_exit_but_refuses_success[missing-end] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_envelope_mutation_preserv1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead516e030>
+change = 'missing-end'
+
+    @pytest.mark.parametrize('change', ['wrong-pid', 'missing-end', 'wrong-seed-command', 'skip', 'bad-obligation'])
+    def test_envelope_mutation_preserves_zero_exit_but_refuses_success(tmp_path, monkeypatch, change):
+        suffix = {
+            'wrong-pid': "v=json.loads((out/'process-start.json').read_text());v['identity']['pid']+=1;put('process-start.json',v)",
+            'missing-end': "v=json.loads((out/'completion.json').read_text());v['process_records']=v['process_records'][:1];put('completion.json',v)",
+            'wrong-seed-command': "v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)",
+            'skip': "v=json.loads((out/'completion.json').read_text());v['outcomes'][0]['call']='skipped';put('completion.json',v)",
+            'bad-obligation': "v=json.loads((out/'completion.json').read_text());v['obligation_records']=[];put('completion.json',v)",
+        }[change]
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + '\n' + suffix); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+>       assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+E       assert (1 == 0)
+
+test_run_bac_hardware_v1.py:581: AssertionError
+_ test_envelope_mutation_preserves_zero_exit_but_refuses_success[wrong-seed-command] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_envelope_mutation_preserv2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead4add8b0>
+change = 'wrong-seed-command'
+
+    @pytest.mark.parametrize('change', ['wrong-pid', 'missing-end', 'wrong-seed-command', 'skip', 'bad-obligation'])
+    def test_envelope_mutation_preserves_zero_exit_but_refuses_success(tmp_path, monkeypatch, change):
+        suffix = {
+            'wrong-pid': "v=json.loads((out/'process-start.json').read_text());v['identity']['pid']+=1;put('process-start.json',v)",
+            'missing-end': "v=json.loads((out/'completion.json').read_text());v['process_records']=v['process_records'][:1];put('completion.json',v)",
+            'wrong-seed-command': "v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)",
+            'skip': "v=json.loads((out/'completion.json').read_text());v['outcomes'][0]['call']='skipped';put('completion.json',v)",
+            'bad-obligation': "v=json.loads((out/'completion.json').read_text());v['obligation_records']=[];put('completion.json',v)",
+        }[change]
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + '\n' + suffix); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+>       assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+E       assert (1 == 0)
+
+test_run_bac_hardware_v1.py:581: AssertionError
+_____ test_envelope_mutation_preserves_zero_exit_but_refuses_success[skip] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_envelope_mutation_preserv3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead4fc30b0>
+change = 'skip'
+
+    @pytest.mark.parametrize('change', ['wrong-pid', 'missing-end', 'wrong-seed-command', 'skip', 'bad-obligation'])
+    def test_envelope_mutation_preserves_zero_exit_but_refuses_success(tmp_path, monkeypatch, change):
+        suffix = {
+            'wrong-pid': "v=json.loads((out/'process-start.json').read_text());v['identity']['pid']+=1;put('process-start.json',v)",
+            'missing-end': "v=json.loads((out/'completion.json').read_text());v['process_records']=v['process_records'][:1];put('completion.json',v)",
+            'wrong-seed-command': "v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)",
+            'skip': "v=json.loads((out/'completion.json').read_text());v['outcomes'][0]['call']='skipped';put('completion.json',v)",
+            'bad-obligation': "v=json.loads((out/'completion.json').read_text());v['obligation_records']=[];put('completion.json',v)",
+        }[change]
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + '\n' + suffix); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+>       assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+E       assert (1 == 0)
+
+test_run_bac_hardware_v1.py:581: AssertionError
+_ test_envelope_mutation_preserves_zero_exit_but_refuses_success[bad-obligation] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_envelope_mutation_preserv4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead51a4550>
+change = 'bad-obligation'
+
+    @pytest.mark.parametrize('change', ['wrong-pid', 'missing-end', 'wrong-seed-command', 'skip', 'bad-obligation'])
+    def test_envelope_mutation_preserves_zero_exit_but_refuses_success(tmp_path, monkeypatch, change):
+        suffix = {
+            'wrong-pid': "v=json.loads((out/'process-start.json').read_text());v['identity']['pid']+=1;put('process-start.json',v)",
+            'missing-end': "v=json.loads((out/'completion.json').read_text());v['process_records']=v['process_records'][:1];put('completion.json',v)",
+            'wrong-seed-command': "v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)",
+            'skip': "v=json.loads((out/'completion.json').read_text());v['outcomes'][0]['call']='skipped';put('completion.json',v)",
+            'bad-obligation': "v=json.loads((out/'completion.json').read_text());v['obligation_records']=[];put('completion.json',v)",
+        }[change]
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + '\n' + suffix); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+>       assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+E       assert (1 == 0)
+
+test_run_bac_hardware_v1.py:581: AssertionError
+_____________ test_same_command_rewritten_and_resealed_cannot_pass _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_same_command_rewritten_an0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead51a74d0>
+
+    def test_same_command_rewritten_and_resealed_cannot_pass(tmp_path, monkeypatch):
+        suffix = """
+    v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)
+    v=json.loads((out/'completion.json').read_text());v['command']=ref(out/'command.json');put('completion.json',v)
+    """
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+>       assert result['disposition'] == 'completed-unverified'
+E       AssertionError: assert 'completed-failed' == 'completed-unverified'
+E         
+E         - completed-unverified
+E         + completed-failed
+
+test_run_bac_hardware_v1.py:593: AssertionError
+________________ test_resealed_future_process_times_cannot_pass ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_resealed_future_process_t0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead4bcfc40>
+
+    def test_resealed_future_process_times_cannot_pass(tmp_path, monkeypatch):
+        suffix = """
+    updated=[]
+    for name in ('process-start.json','process-end.json'):
+        v=json.loads((out/name).read_text());v['at']='2099-01-01T00:00:00.000000Z';v['monotonic_ns']+=10**18
+        updated.append(put(name,v))
+    v=json.loads((out/'completion.json').read_text());v['process_records']=updated
+    for index,item in enumerate(v['obligation_records']):
+        o=json.loads(Path(item['path']).read_text());o['producer_process']=updated[0];v['obligation_records'][index]=put(Path(item['path']).name,o)
+    v['inventory']=[fact,*sources,*updated,*v['obligation_records']];put('completion.json',v)
+    """
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+>       assert result['disposition'] == 'completed-unverified'
+E       AssertionError: assert 'completed-failed' == 'completed-unverified'
+E         
+E         - completed-unverified
+E         + completed-failed
+
+test_run_bac_hardware_v1.py:696: AssertionError
+_______ test_runtime_descriptor_binds_authorized_grant_and_actual_runner _______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-79/test_runtime_descriptor_binds_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fead4968750>
+
+    def test_runtime_descriptor_binds_authorized_grant_and_actual_runner(tmp_path, monkeypatch):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        assert r.run(path) != 0
+        import bac_hardware_protocol_v1 as p
+        output = Path(s['jobs'][0]['output'])
+>       descriptor = json.loads((output / 'runtime-context.json').read_text())
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:808: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/pathlib/_local.py:548: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-agent/pytest-79/test_runtime_descriptor_binds_0/output/attempt/a/runtime-context.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-agent/pytest-79/test_runtime_descriptor_binds_0/output/attempt/a/runtime-context.json'
+
+/usr/lib/python3.13/pathlib/_local.py:539: FileNotFoundError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_public_run_success_requires_actual_controller_envelope
+FAILED test_run_bac_hardware_v1.py::test_envelope_mutation_preserves_zero_exit_but_refuses_success[wrong-pid]
+FAILED test_run_bac_hardware_v1.py::test_envelope_mutation_preserves_zero_exit_but_refuses_success[missing-end]
+FAILED test_run_bac_hardware_v1.py::test_envelope_mutation_preserves_zero_exit_but_refuses_success[wrong-seed-command]
+FAILED test_run_bac_hardware_v1.py::test_envelope_mutation_preserves_zero_exit_but_refuses_success[skip]
+FAILED test_run_bac_hardware_v1.py::test_envelope_mutation_preserves_zero_exit_but_refuses_success[bad-obligation]
+FAILED test_run_bac_hardware_v1.py::test_same_command_rewritten_and_resealed_cannot_pass
+FAILED test_run_bac_hardware_v1.py::test_resealed_future_process_times_cannot_pass
+FAILED test_run_bac_hardware_v1.py::test_runtime_descriptor_binds_authorized_grant_and_actual_runner
+9 failed, 42 passed in 8.09s

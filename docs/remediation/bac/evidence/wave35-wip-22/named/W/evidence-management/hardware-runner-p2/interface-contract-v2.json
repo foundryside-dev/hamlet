@@ -1,0 +1,134 @@
+{
+  "family": "bac-hardware-v1",
+  "packet": "P2",
+  "status": "FROZEN FOR INDEPENDENT REVIEW; ROOT ADOPTION PENDING",
+  "public_interface": "run(spec_path: Path) -> int; only this entry authenticates closed transport and root-delegated authority. execute_jobs is internal orchestration mechanics, not an admission/qualification API.",
+  "authority": "Root invocation authorizes exact spec/grants out of band. Self-declared authority strings and hashes do not authenticate authorship. Root no-writer source/allocation/namespace custody remains mandatory.",
+  "dependencies": {
+    "P0 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+      "bytes": 4220,
+      "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+    },
+    "P0 interface": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+      "bytes": 13184,
+      "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+    },
+    "P1 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/root-adoption-v1.json",
+      "bytes": 12233,
+      "sha256": "6235ac38bb563d5676420cf932cdb09d7d54187ec1a60546aefe99f13ded6c96"
+    },
+    "P1 output": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+      "bytes": 5867,
+      "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+    },
+    "allocation and CPU bounds": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+      "bytes": 5739,
+      "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+    },
+    "P3 static/delegated context": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-v3.md",
+      "bytes": 5150,
+      "sha256": "1eb2d8b5e2e11621ce59aef78a7c982d2cafe4ab81117004897a6ed5a9447faf"
+    },
+    "P3 phase observation matrix": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/observation-matrix-v1.md",
+      "bytes": 1552,
+      "sha256": "6af9c6a3fef54b7faca5e4a97f2b536025d224cd8c43ac1281eea2bd50177bb1"
+    },
+    "P3 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/root-adoption-v1.json",
+      "bytes": 2224,
+      "sha256": "d93c6db06f4411ff7d4eef909b1b440104f0c4f98187cdd3cf3c4b159decd7e8"
+    },
+    "P3 frozen interface": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/interface-contract-v2.json",
+      "bytes": 3756,
+      "sha256": "51369fe91bd72a44eaf1f8526f22ff7692fb5a62247a870c05d699f341b0d798"
+    }
+  },
+  "capture_gate": "spec_path.parent/result.json must be closed bac-hardware-capture-result-v1: schema,disposition,reasons,admission,spec; admitted, reasons empty, exact input spec/admission refs. Provisional or late-refused capture never launches. Terminal reference revalidated through final witness and included in attempt-seal inventory.",
+  "capture_fd_context": "Only wrapper environment adds BAC_CAPTURE_LEASE_FDS, exact json.dumps(list) default formatting, nonempty unique exact integers>2. Caller manifest/job environment cannot supply the reserved key. Capture argv/environment/raw identity/version/provenance/budgets are cross-bound. This validates retained P1 observations; it does not pretend to inspect terminated capture FDs.",
+  "layout": {
+    "attempt": "Exclusive output_root/attempt_id and scratch_root/attempt_id, mode0700; every job path exactly corresponding job.id. Existing or substituted paths refuse; partial reservations retained.",
+    "start.json": "P0 attempt-start; actual runner source-witness, exact spec/freeze and declared retention.",
+    "source-NNNN.json": "P0 source-witness emitted by actual runner before launch and finalization: read-only Git HEAD/index comparison, actual inventory hashes, actual own PID/PPID/stat22/host/boot. Not a child process emitter.",
+    "job/command.json": "P0 command, exclusively created exact argv/env/cwd/seed/spec/runner. No inherited job environment additions.",
+    "job/stdout.log": "Exclusive combined stdout/stderr FD. Actual partial bytes preserved.",
+    "job/runtime-context.json": "Exact P3v3 bac-hardware-identity-runtime-v1 before spawn: schema,spec,command,trusted_grant,policy,runner_identity,runner_source_start. Static policy CLI pin is acyclic and outside candidate inputs.",
+    "job/launch.json": "Closed parent-observed bac-hardware-runner-launch-v1; exact fields below.",
+    "job/wait.json": "Closed parent-observed bac-hardware-runner-wait-v1; exact fields below, emitted only after actual wait/group cleanup.",
+    "job/completion.json": "P0 job-evidence emitted exclusively by instrumented job; no exit/signal/log/end fields. Missing invalid proof never invented.",
+    "job/result.json": "P0 job-result; actual observed exit/end/elapsed, independent final log hash, parsed envelope fields only when valid.",
+    "seal.json": "P0 attempt-seal after all job results and actual final source witness. Includes all preseal regular attempt files and exact original capture-terminal reference. Missing seal leaves attempt incomplete."
+  },
+  "launch_exact_fields": {
+    "schema": "literal bac-hardware-runner-launch-v1",
+    "attempt_id": "P0 id",
+    "job_id": "P0 id",
+    "spec": "P0 reference",
+    "command": "P0 reference",
+    "identity": "P0 identity observed by parent from actual Popen child",
+    "affinity": "sorted actual CPU integer list; must equal allocation",
+    "at": "UTC",
+    "monotonic_ns": "uint",
+    "inherited_leases": "list of exact {fd:positive-int,lock_name:text,device:uint,inode:uint}; names are SHA256(lease key)+.lock and descriptors passed via actual Popen.pass_fds"
+  },
+  "wait_exact_fields": {
+    "schema": "literal bac-hardware-runner-wait-v1",
+    "attempt_id": "P0 id",
+    "job_id": "P0 id",
+    "spec": "P0 reference",
+    "command": "P0 reference",
+    "launch": "exact original launch reference",
+    "identity": "same observed child identity",
+    "exit_code": "actual wait integer",
+    "signal": "negative exit magnitude or zero",
+    "interruption_reason": "actual timeout/signal/active-abort reason, otherwise empty",
+    "start": "UTC immediately before Popen",
+    "end": "UTC after actual wait/group cleanup",
+    "start_monotonic_ns": "uint immediately before Popen",
+    "end_monotonic_ns": "uint after wait/group cleanup"
+  },
+  "process_identity": "Linux /proc/<pid>/stat field22 decimal start string, actual PID/PPID, socket hostname and boot_id. Job controller equals actual Popen child; root runner identity never consumes job controller role. Actual spawned affinity reobserved; no implicit affinity mutation.",
+  "framework_environment": "P3v3 policy/context/raw facts provenance required for controller/worker success. Actual full environment must equal sealed base plus only explicit observed common PYTEST_VERSION/LC_CTYPE additions and worker COLUMNS/LINES plus workerinput-bound PYTEST_XDIST_WORKER, PYTEST_XDIST_WORKER_COUNT, PYTEST_XDIST_TESTRUNUID. No base overrides. Raw observation fixed path and immutable runtime/policy/context/lifecycle refs cross-bound. Direct arbitrary child contexts are not a generic acceptance adapter; separately accepted owner integration remains required.",
+  "thread_observations": "Measured values equal exact role config. Truthful absent/uninitialized observer facts remain unavailable; work END cannot replace mandatory runtime facts with unavailable. No Torch/CUDA imports or calls by runner. Loaded Torch raw CUDA marker must be exact bool and equal the declared initialized/uninitialized state before role no-initialize policy can pass.",
+  "lease_keys": {
+    "filename": "SHA256(UTF8(key)).hexdigest()+.lock; no unlink/replacement",
+    "pool:<pool_id>": "EX exclusive-pool; SH root-proven-disjoint",
+    "allocation:<pool_id>:<allocation_id>": "EX throughout active runner; identical host-wide root namespace",
+    "host-timing": "EX exclusive-host; SH ordinary/qualified-corunning",
+    "device:<physical_parent_uuid>": "EX host-wide, including common parent identity",
+    "domain:<serialization_domain>": "EX host-wide",
+    "ordering": "pool then allocation; per-job host-timing then sorted device/domain keys; nonblocking skip allows unrelated CPU work"
+  },
+  "resource_rules": "Sealed role demand sums (count+replacement_limit)*peak_cpu_slots; coordinator overhead at least1. Active CPU/RAM reservations bounded; total retained scratch admission unchanged. Current cgroup/affinity/memory/statvfs capacity reobserved. Recheck free headroom against remaining demand, not the unused admission ceiling: CPU active demand plus top pending demand fitting remaining concurrency; RAM same minus observed active private-resident credit; scratch sums pending/active remaining growth, while completed retained use is not charged a second time. Add full reserves and remaining coordinator overhead. One active runner/allocation with root-proven partitions/shared-exclusive pool leases. Reservation accounting is not hard OS confinement.",
+  "termination": "Execution timeout begins only after Popen. SIGINT/SIGTERM or timeout applies TERM/sealed grace/KILL to owned group, retains leader PID using waitid WNOWAIT until teardown, then actual wait. Direct child inherits allocation/pool/job lease descriptors with no env changes; parent SIGKILL leaves incomplete evidence and cannot release leases still held by that direct controller. Deliberately FD-closing/escaped descendants and native hardware quiescence remain outside this guarantee.",
+  "dispositions": "actual signal/timeout/active abort interrupted; ordinary nonzero completed-failed; ordinary zero with missing/invalid proof completed-unverified. Refused/unrun have no invented process finish. Runner returns0 only when every job-result is successful; admission/runtime exceptions fail nonzero. P4/P5 independently classify custody, cases and hardware; transport success never grants those.",
+  "scope": "All author tests inert/synthetic, actual process controls only own generated runner/controller processes. No APP/Torch/CUDA/server execution, Git/index writes, branch/worktree/copy/deployment. P3 full producer integration and all actual hardware remain UNRUN. Strict owner bootstrap qualification remains pending; P3 debug fact semantics currently need a separate owner-contract amendment. No change to that semantic was inferred in this repair.",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/interface-contract-v1.json",
+    "bytes": 9803,
+    "sha256": "35e0547eac55727dc9063023f8e987cf86451c55e7197d6d7f12b5e16ee56a2c"
+  },
+  "P3_actual_integration_pin": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "bytes": 35014,
+    "sha256": "938d44339e6c0fdc5b7763eb2b33031bf3794a66e97064cf3601e7b3dbf9b445"
+  },
+  "resource_ownership_credit": "Private_Clean+Private_Dirty from /proc/<pid>/smaps_rollup, stable process identity and matching current cgroup; unreaped admitted process group only, unknown samples credit zero. Owned scratch uses same-filesystem allocated st_blocks and unique inode counts; links/shared-hardlinked regular files excluded. Each job scratch has its own bucket; capture/runner/output metadata uses overhead. Credits are individually capped at budget and conservatively bracket free-headroom sampling using the smaller observation. Sampling is not atomic confinement; escaped processes, private/filesystem accounting limits, future excess beyond declared budgets remain root-controlled qualification limits.",
+  "seal_disposition_precedence": [
+    "interrupted",
+    "completed-failed",
+    "completed-unverified",
+    "refused",
+    "unrun",
+    "successful"
+  ],
+  "seal_disposition_rule": "First member of precedence present among actual job-result dispositions; this matches runner return0 only for all-successful.",
+  "inherited_lease_set": "Exactly pool:<pool_id>, allocation:<pool_id>:<allocation_id>, host-timing, and unique device:<physical_parent_uuid>/domain:<serialization_domain> keys selected by the job; launch entries sorted by observed FD number. Terminated FDs are not retrospectively probed."
+}

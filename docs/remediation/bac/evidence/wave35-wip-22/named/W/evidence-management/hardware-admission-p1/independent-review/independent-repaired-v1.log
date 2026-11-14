@@ -1,0 +1,68 @@
+FF...                                                                    [100%]
+=================================== FAILURES ===================================
+____________ test_wrong_allocation_identity_refuses_preflight[host] ____________
+
+field = 'host'
+
+    @pytest.mark.parametrize('field', ['host', 'boot_id'])
+    def test_wrong_allocation_identity_refuses_preflight(field):
+        obs, req = fixtures.observation(), fixtures.request()
+        allocation = dict(host=obs['identity']['host'], boot_id=obs['identity']['boot_id'],
+            authorized_cpu_ids=[0, 1, 2, 3],
+            capacity=dict(cpu_slots=4, ram_bytes=1000, scratch_bytes=1000, scratch_inodes=20),
+            overhead=dict(cpu_slots=1, ram_bytes=100, scratch_bytes=100, scratch_inodes=1))
+        allocation[field] = 'wrong-allocation-identity'
+        with pytest.raises(ValueError):
+>           tool.discovery_preflight(obs, req, allocation)
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:871: in discovery_preflight
+    active(allocation, utc())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'authorized_cpu_ids': [0, 1, 2, 3], 'boot_id': 'inert-boot', 'capacity': {'cpu_slots': 4, 'ram_bytes': 1000, 'scratch_bytes': 1000, 'scratch_inodes': 20}, 'host': 'wrong-allocation-identity', ...}
+at = '2026-11-14T07:01:13.170837Z'
+
+    def active(value, at):
+        for key in ("start", "end"):
+>           if value[key] is not None:
+               ^^^^^^^^^^
+E           KeyError: 'start'
+
+capture_bac_hardware_v1.py:532: KeyError
+__________ test_wrong_allocation_identity_refuses_preflight[boot_id] ___________
+
+field = 'boot_id'
+
+    @pytest.mark.parametrize('field', ['host', 'boot_id'])
+    def test_wrong_allocation_identity_refuses_preflight(field):
+        obs, req = fixtures.observation(), fixtures.request()
+        allocation = dict(host=obs['identity']['host'], boot_id=obs['identity']['boot_id'],
+            authorized_cpu_ids=[0, 1, 2, 3],
+            capacity=dict(cpu_slots=4, ram_bytes=1000, scratch_bytes=1000, scratch_inodes=20),
+            overhead=dict(cpu_slots=1, ram_bytes=100, scratch_bytes=100, scratch_inodes=1))
+        allocation[field] = 'wrong-allocation-identity'
+        with pytest.raises(ValueError):
+>           tool.discovery_preflight(obs, req, allocation)
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:871: in discovery_preflight
+    active(allocation, utc())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'authorized_cpu_ids': [0, 1, 2, 3], 'boot_id': 'wrong-allocation-identity', 'capacity': {'cpu_slots': 4, 'ram_bytes': 1000, 'scratch_bytes': 1000, 'scratch_inodes': 20}, 'host': 'synthetic', ...}
+at = '2026-11-14T07:01:13.202828Z'
+
+    def active(value, at):
+        for key in ("start", "end"):
+>           if value[key] is not None:
+               ^^^^^^^^^^
+E           KeyError: 'start'
+
+capture_bac_hardware_v1.py:532: KeyError
+=========================== short test summary info ============================
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py::test_wrong_allocation_identity_refuses_preflight[host]
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py::test_wrong_allocation_identity_refuses_preflight[boot_id]
+2 failed, 3 passed in 0.26s

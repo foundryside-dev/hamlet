@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-14T07:51:22.938619+00:00",
+  "probe": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/diagnostics/test_owner_pin_referrers.py",
+  "probe_sha256": "2cc318c9598e3945e39cf283997c7d77baab4b03e4970e779cd2b574fb145cd0",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r120-candidate.json",
+  "manifest_sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-2-spec.json",
+  "spec_sha256": "8804074c95ba01832d1d1c119b9033b77050ba6584b95d476fa939e667070cbe",
+  "scope": "Diagnostic only; immutable R120 APP plus independently sealed auxiliaryv2. Not acceptance or changed R120 manifest."
+}

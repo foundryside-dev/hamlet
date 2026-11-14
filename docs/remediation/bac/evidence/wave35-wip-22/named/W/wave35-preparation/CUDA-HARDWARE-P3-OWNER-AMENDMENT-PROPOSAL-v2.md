@@ -1,0 +1,519 @@
+# P3 owner-process amendment proposal v2
+
+Status: one metadata-only design for independent root review. No implementation,
+imports, tests or source changes are authorized by this document. Existing P0/P2/
+P3 adoption, C1 source freeze and historical bytes remain intact. This supersedes
+the provisional owner transport suggestions in the bootstrap supplier capsule;
+it is not an alternate accepted transport or compatibility adapter.
+
+## Revision chain and fixed review decisions
+
+Predecessor v1 SHA256:
+16b5b16881c74276e30074976feae68124f4aacb7e525d12992d5a5cb21f0553.
+Independent review v1 SHA256:
+c5ea83e41d709481e46dc3efb5a4e4dbc55a50d75ce9c8496bfb0829668f43fe.
+Both files remain immutable. This full linked v2 resolves the three requested
+changes: actual call ownership, preparation/claim ordering, and bounded sampler
+custody. It retains the single selected protocol, actual child source checks,
+source/edit budget and every owner/hardware obligation.
+
+## Decision and scope
+
+Implement one current owner-launch protocol in the existing P3 module, with a
+prepared no-import execution path for actual fork guards. Keep P0 process/source/
+job-evidence schemas and actual child source verification unchanged. Separate
+Python assertions from Torch anomaly mode. Authorize the full inherited pytest
+phase/worker environment through a causal parent launch, not an environment
+whitelist, parent-generated child identity or rewritten job specification.
+
+The selected fork path performs its OWN read-only Git HEAD/index checks, own
+source/import hashes and own process/ancestry observations. Parent preparation
+validates only immutable input declarations and preloads machinery. It never
+supplies a substitute child's PID, start time, observed HEAD/tree or final witness.
+No inherited-source exception is proposed. A child unable to make an observation
+refuses; the corresponding mandatory owner obligation remains unqualified.
+
+Counted inspection remains five bodies / 2,723 lines:
+- historical bac_source_identity.py 60;
+- adopted bac_hardware_protocol_v1.py 520;
+- adopted bac_hardware_identity_v1.py 611;
+- its test_bac_hardware_identity_v1.py 534;
+- supplied test_world_rng_bootstrap.py 998.
+Only the existing identity and test bodies are proposed for edits in this packet.
+Projected ceilings are identity 1,100 + tests 1,200 + unchanged 1,578 = 3,878 lines,
+within 5,000 and five files. Excluding the bootstrap supplier body, the original
+four-body P3 packet remains at most 2,880/3,200. No extra helper/test/conftest body
+or production/producer edit is included. P2/P4 consumer edits require their own
+finite grants; source producer changes wait for C1 release and owner packets.
+
+## Immutable baselines and supplier facts
+
+- P0: adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c;
+  interface-contract-v4 and schema-inventory-v2 remain the transport authority.
+- P3 source: 938d44339e6c0fdc5b7763eb2b33031bf3794a66e97064cf3601e7b3dbf9b445;
+  tests: 5cb82462041e95dec1bd617cc05b4dd76988400611ee0ae3297038d95e8c11c7;
+  root-adoption-v1: d93c6db06f4411ff7d4eef909b1b440104f0c4f98187cdd3cf3c4b159decd7e8.
+- P2 interface-contract-v2: 9c7b4e37f07014f99237b9f6ae5f70bc70fb79eb67639779c534af17a0aeb43e;
+  root-adoption-v1: 6a2d6f1807a0557bca33ebd03f642e20804df381a2d7892a1872dbedc61b9b43.
+  Its current accepted correspondence rejects arbitrary owner-child contexts;
+  this design does not claim the adopted runner already implements this extension.
+- P4 repaired interface-contract-v3 (SHA256
+  77c4007c6ffefb5fdbaea45f8a3b7ae5efad4499d9c60f319fdbc15d9351aa6c)
+  requires actual P3 process/source identity correspondence,
+  exact raw/context/env/role/report/lifecycle bindings and immutable receipts.
+  Its reviewed repair is not asserted adopted by this proposal. Required
+  P5/app/hardware dependencies remain unimplemented/unrun in that interface.
+- Bootstrap supplier v1 identifies Python __debug__ as the existing strict debug
+  witness; it is not torch.is_anomaly_enabled. Direct/recurrent/producer suppliers
+  confirm spawn from the actual test call, no env rewrite, and intra-op=1/inter-op=5.
+  None establishes where inter-op=5 is set. The recorder must not set it.
+- Core supplier requires actual fork guards, no import/Torch/NumPy/Queue operations,
+  no inherited-scope unwind, three exact trials/actions and original pipe/wait
+  observations. P3's earlier synthetic fork test did not prove the no-import rule.
+
+## Public operations and authority
+
+Keep record_process(context,phase) for actual controller/worker/spawn/work roles.
+Add these operations in the same P3 body (new APIs, not existing behavior):
+
+1. current_process_context() -> {context,start} or None. None means no configured
+   current qualification process, never acceptance. A recorded active context is
+   returned only when its full actual PID/start/host/boot matches the caller.
+   Maintain a per-process registry after successful start emission for pytest AND
+   direct owner children, so a core spawn child can itself launch a fork guard.
+   Inherited registry entries cannot impersonate the parent after fork.
+2. prepare_owner_launch(parent_context,parent_start,owner_contract,case_id,
+   child_role_id,instance_id,start_method) -> OwnerLaunch. This actual parent-only
+   operation emits the immutable launch below and returns its reference plus an
+   exact derived child context. For fork only it also returns an opaque in-memory
+   ForkHandle. It validates the current process registry and all root/spec/contract/
+   phase/source bindings, samples actual parent facts, and makes no RNG draws.
+3. record_fork_process(handle,phase) -> P0 process reference. It accepts only a
+   handle issued by this module in the actual live parent and inherited by fork;
+   copied/unpickled/arbitrary handles refuse. It measures the caller itself.
+   Ordinary record_process rejects fork-guard entry and directs source owners to
+   this required prepared API; it never falls back to an import-capable path.
+
+The configured P3 plugin and its existing sealed --bac-identity-policy/sha256
+argv provide activation. No new environment marker or future context digest is
+needed. Producer helpers may observe the already-loaded plugin's public current
+context; absence is ordinary unqualified testing. Any attempted qualified emission
+without active context refuses, and retired BAC_QUAL_* transport is not accepted.
+No historical helper invocation, schema dispatcher or adapter remains in the
+upgraded strict qualification path.
+
+A direct owner launch is authorized only by an exact selected
+spec.job.obligation.contract. Parse that P0 case-contract and require case_id,
+role/config and obligation kind to match the job and actual launch. The following
+active-call rule independently authenticates caller-supplied case_id. Source-owned
+Process/fork observations remain additional P5 proof, not caller-supplied trust
+booleans. Root's exact-spec authority and no-writer interval remain external.
+
+## Actual call ownership, independently observed
+
+Add one wrapper hook in the existing P3 body: pytest_runtest_call(item). At the
+actual pytest call boundary, bind an active entry to this process's full actual
+identity and the actual item.nodeid; record phase=call and retain the actual item
+association internally. The wrapper must clear its own entry in finally on every
+normal, failed, skipped, interrupted or exceptional exit. It must reject stale,
+foreign-process or overlapping entries instead of inheriting them after fork.
+Existing report hooks continue to observe the later real report; no future report
+ref or new externally supplied active-call flag is used.
+
+For a pytest launcher, prepare_owner_launch must match caller case_id to this
+actual active entry AND the selected contract. Matching an env string and a case
+in the selection is insufficient. The environment check is a separate necessary
+check. A forged but selected case with a matching forged PYTEST_CURRENT_TEST must
+fail. Launch outside the active wrapper must fail, including after failure/skip.
+
+For a nested owner launcher, no pytest call entry is invented. Require the actual
+launcher's authenticated own start/context/owner-launch chain and its SAME case
+and call phase. An inherited pytest registry entry with the ancestor's identity
+cannot authorize it. The P3 start-method argument remains a declaration to check
+against P5's actual source-owned Process/context or os.fork observations; it is
+not proof of the operating-system method by itself.
+
+## Exact owner-launch and child derivation
+
+Every field is required; wrong exact types, unknown fields and duplicate IDs
+refuse. All refs are normal P0 path/bytes/SHA references.
+
+| Field | Exact type / binding |
+|---|---|
+| schema | literal bac-hardware-owner-launch-v1 |
+| spec, command | parent context's exact P0 refs |
+| owner_contract | selected job obligation's exact parsed P0 case-contract ref |
+| parent_process | this actual parent's P3 start ref |
+| source_witness | fresh actual source-witness from this same parent |
+| parent_identity | P0 identity sampled now, equal parent_process.identity |
+| parent_argv | actual /proc/self/cmdline text array |
+| case_id | exact selected node ID, independently supplied by actual pytest request/owner case binding |
+| pytest_phase | literal call for currently supplied launch sites |
+| child_role_id | exact admitted role ID/config, never an inferred worker label |
+| instance_id | unique P0 id in job output; no pre-guessed PID or random draw |
+| start_method | spawn or fork, tied to actual source-owned Process/context or os.fork observation |
+| environment | entire actual parent os.environ at the launch cut |
+| python_assertions_enabled | actual __debug__ bool; strict qualification requires True |
+| inherited_imports | unique actual loaded named-reference list; no forced child imports |
+| module_names_sha256 | SHA256 of ASCII json.dumps(sorted(sys.modules), ensure_ascii=True, separators=(',',':')) |
+| sampler_policy | required ref list: empty for spawn, singleton exact root-authorized fork sampler policy ref from this job's prerequisites |
+| owner_deadline_ns | required null for spawn; fork absolute monotonic limit = launch.monotonic_ns + policy.owner_deadline_ns |
+| sampler_cutoff_ns | required null for spawn; fork absolute cleanup cutoff = launch.monotonic_ns + policy.sampler_cutoff_ns |
+| at, monotonic_ns | actual parent UTC and monotonic observations |
+
+Write owner-launch-{instance_id}.json exclusively beneath the exact job.output.
+The parent passes the produced child context as an explicit Process argument; a
+fork branch retains the returned handle. The launch contains no future child or
+end reference and therefore introduces no hash cycle. Deadline fields are clearly
+declared limits, never fabricated completion observations.
+
+Child context retains the current exact context field set. Copy schema, spec,
+command, trusted_grant, job_id, required_imports, worker_roles, environment_delta
+from the authenticated parent's raw context. Set role_id=launch.child_role_id,
+parent_start=[launch.parent_process], lifecycle=[launch_ref], replacement_start=[],
+worker_identity=None, policy=[], runtime=[]. P3/P2/P4 independently require this
+exact derivation and owner contract. Follow parent links to the original delegated
+job controller; empty policy/runtime alone never authorizes a direct context.
+
+Parent identity is always the actual immediate launcher: worker if worker-launched,
+core spawn child if it forks, controller only when it actually launches. The child
+samples its own PID/PPID/start/host/boot/cwd/interpreter/argv/imports. A fork child
+also matches actual inherited argv and module snapshot to its launch; a spawned
+child records its different actual multiprocessing argv. P5 retains actual
+Process.pid/queue/pipe/wait/start-method correlations. No guess normalizes these
+into parent pytest argv.
+
+## Full environment derivation, including nested launches
+
+Base job.environment must not pre-authorize PYTEST_CURRENT_TEST or the three
+PYTEST_XDIST_* instance keys. Existing common/worker framework additions retain
+the adopted exact policy and actual-workerinput/lifecycle rules.
+
+For a pytest parent, the launch environment must equal its authorized P3 start
+map plus exactly PYTEST_CURRENT_TEST=case_id + ' (call)'. Independently bind case_id
+to the selected owner contract and real request. For an already-running owner
+child, its start environment already contains that phase key: require exact full
+map equality and the same inherited case/phase; do not add, replace or infer a
+new case. This permits core child -> fork guard without pretending it is pytest.
+
+Child start and end environments must equal launch.environment exactly. Inherited
+PYTEST_XDIST_WORKER, PYTEST_XDIST_WORKER_COUNT and PYTEST_XDIST_TESTRUNUID retain
+parent values and are accepted only through the authenticated parent lineage;
+they never change the child's own role to worker. No deletion, cleanup, projection,
+base override, arbitrary key addition or independent child whitelist is allowed.
+
+Root must explicitly seal observed startup values such as COLUMNS/LINES and
+applicable locale/version when needed, removing duplicate policy additions.
+Unexpected startup differences fail closed; no guessed compatibility allowances.
+Current supplied sites are call-only; a future setup/teardown launch requires its
+own source-backed protocol amendment, not a silent expansion of this enum.
+
+## Python debug and Torch anomaly are different observations
+
+Replace the current private raw schema with one current
+bac-hardware-process-observation-v2; new current consumers reject raw v1.
+Retain all existing raw fields, and require these additions:
+- python_debug: actual bool __debug__;
+- python_optimize: actual uint sys.flags.optimize;
+- torch_anomaly: P0 observed(bool) shape (measured bool/empty reason, or unavailable
+  null/exact no-call reason); never self-referential provenance;
+- source_method: literal direct-git;
+- recorder_mode: ordinary or fork-guard;
+- module_names_before_sha256 and module_names_after_sha256: actual module-name
+  snapshots using the launch's encoding rule. Equality is required for fork.
+
+For qualification require python_debug=True and python_optimize=0. For nonfork
+processes P0 process.debug is a measured Python-debug fact, compared to role.debug,
+with provenance pointing to raw v2. This fact needs no Torch import/call even for
+uninitialized roles. Current root role profiles/CPU bounds must declare the actual
+Python value; old anomaly-based profile inputs are not rerun as current evidence.
+
+For guard roles P0's existing invariant remains: intra_op/inter_op/debug are
+unavailable with reasons. Raw v2 and the strict owner payload independently retain
+actual Python debug/optimization values; there is no Torch debug getter.
+
+Work roles with already-loaded Torch measure intra/inter-op through existing
+getters and independently observe is_anomaly_enabled into raw.torch_anomaly.
+False is valid and must not fail role.debug=True. Observer/uninitialized/guard
+roles never call this getter; anomaly is unavailable with the exact reason.
+Torch absence at work START remains truthful; work END still requires the
+mandatory actual thread configuration. Preserve existing CUDA marker/no-init
+rules and all no-RNG/no-setter constraints. Identity never sets either thread
+count, anomaly mode or any RNG/device state.
+
+## Preparation ordering and one-launch/one-child custody
+
+The following order is mandatory; it applies before actual os.fork:
+1. Match the current parent and actual call or authenticated nested-owner context.
+   Complete all imports, sampler/encoding/date/ref machinery preload, full P0 and
+   private parsing, immutable-plan construction, role/resource policy checks and
+   actual parent source validation. This preparation stays inside the source
+   owner's existing parent RNG capture/assertion interval; it performs no RNG draw.
+2. Finish and seal the fresh parent source witness. Release EVERY recorder
+   metadata/index flock and close its held descriptor on success and all exception
+   paths. The returned handle carries no held metadata lock/open-description lock.
+   Do not close or release P2's separately owned resource/lease descriptors.
+3. With all final-emission/reference machinery already prepared, take the final
+   module-name/import/environment/parent snapshot and launch clock. Build and
+   exclusively emit the launch with primitive-only operations, hash its exact
+   bytes, construct the immutable handle, and recheck the module-name snapshot
+   over this ENTIRE final tail. Any module growth refuses preparation; do not
+   silently resnapshot, overwrite the launch or return a usable handle.
+4. Return only after verifying no recorder metadata lock remains held. The owner
+   then performs its actual fork/Process start. For fork, a delay consumes the
+   absolute launch deadline; it does not create a fresh sampler deadline. All clock/parent/
+   environment/source checks are repeated as applicable in the actual child.
+
+The handle is bound to the issuing actual parent identity and exact launch ref.
+It contains only fully validated immutable declarations and prebound machinery,
+not child observations. Retain its private issuance identity in the parent's
+registry; inherited parent entries never constitute the child's successful start.
+
+Every owner child, including fork guards, must atomically claim the launch before
+source sampling: exclusively create owner-claim-{instance_id}.json under the exact
+job.output using no-follow namespace checks. Exact claim fields are
+{schema='bac-hardware-owner-claim-v1', launch:ref, identity:P0 identity,
+role_id:id, at:UTC, monotonic_ns:uint}. These are sampled/written by the actual
+child. It is not a parent preclaim or a parent-predicted identity. Existing,
+partial, substituted or invalid claim files refuse; no retry overwrites them.
+
+Only one distinct child identity may claim a launch. Two fork children inheriting
+the same in-memory handle race on the exclusive file and at most one may proceed.
+At end require the same claim ref and full identity as that child's actual start;
+rehash the claim rather than trusting a copied in-memory flag. A failed claim or
+missing start/end is never repaired by a parent. Raw v2 gains required
+owner_claim:[ref], empty for controller/worker, singleton for owner children.
+P2/P4/P5 independently reconcile all launches/claims/processes in the full final
+inventory and reject reuse, extra identities, omitted claims and ambiguous chains.
+This closes cross-fork reuse; a parent-only mutable consumed flag would not.
+
+## Prepared fork recorder: actual source, zero forbidden effects
+
+First executable RED runs the currently frozen preloaded recorder under the
+strict traps and retains the exact failing operation. The implementation target
+is one narrow prepared kernel, not a weaker observation schema.
+
+The actual child never invokes generic recursive/date validators or decodes
+untrusted JSON. It rehashes EVERY metadata/tool/dependency/source ref parsed into
+its immutable plan through the adopted no-follow reference algorithm; any changed
+bytes or namespace refuse. P2/P4 later still perform complete P0/private validation.
+
+The child independently samples identity/ancestry/interpreter/cwd/argv/full env,
+Python flags, clock, inherited imports/module map and OS task count. It matches
+actual live parent, own claim, role, launch, single-task guard constraint and active
+root/freeze intervals. It obtains a FRESH no-follow regular-file index descriptor;
+it never uses an inherited held lock. It runs its OWN actual read-only
+`git rev-parse HEAD` and `git diff-index --cached --quiet <candidate.tree> --`,
+hashes its OWN source files in fixed P1 order and actual inherited imports, and
+rechecks source/namespace/interval currentness. Its source-witness contains its
+OWN identity and actual queried head/tree correspondence. No parent observation
+is substituted for a child query.
+
+The chosen source kernel uses prebound POSIX spawn/pipe/poll/read/wait and primitive
+encoding/hash operations, no Python import, shell, Torch/NumPy API, Queue or RNG
+operation. The exact timing, output and owned-process cleanup rules below apply
+to the whole path. Exclusive source/raw/process emission uses only the prepared
+primitive encoder and no-follow descriptors. Module-name before/after hashes must
+bracket the WHOLE recorder call, including final file write/reference hashing;
+imports in the last step cannot be hidden by an earlier snapshot.
+
+Start precedes strict actions. End follows actual guard actions/assertions and
+final source observation, with actual elapsed monotonic time. Keep every 4/7/5
+trial/action/counter, pipe/wait correlation and owner os._exit/no-unwind path.
+Identity completion is not owner success. Strict qualification traps EVERY
+builtins.__import__ call (including already-loaded modules), importlib entrypoints,
+and Torch/NumPy/Queue effects over both start and end. Module-map equality alone
+is never offered as no-import proof. Any unavoidable forbidden operation is a
+concrete failed gate, never an inherited-source exemption.
+
+## Bounded sampler policy inside the existing 10-second owner limit
+
+This policy applies ONLY to fork-guard launches/recordings. Outer spawn owners
+retain their supplied 90-second joins and legitimate work interval between start
+and end; they do not inherit the fork 8-second cutoff. Their required launch
+sampler_policy is [], both deadline fields are null, and raw.sampler is []. All
+owner children still require the exclusive actual-child launch claim. Ordinary
+source verification/runner timeout custody remains required for spawn without a
+new fork-specific deadline imposed on it.
+
+For fork, seal one closed bac-hardware-owner-sampler-policy-v1 record as a root-authorized
+job.prerequisites ref, created BEFORE argv/CPU bounds/grant/spec. The selected
+role CPU-bound justification also references it; no back-reference creates a
+cycle. Its exact fields are schema, role_ids (unique ids), owner_deadline_ns,
+sampler_cutoff_ns, sampler_total_ns, phase_ns, lock_wait_ns, command_run_ns,
+term_grace_ns, kill_reap_ns, emission_reserve_ns, stdout_limit_bytes,
+stderr_limit_bytes, max_input_bytes, cpu_slots, scratch_bytes, scratch_inodes.
+All numeric fields are exact positive integers; budget fields are explicit,
+not guessed defaults. max_input_bytes bounds the unique parsed metadata/tool/
+dependency/source/import input bytes consumed per phase. Its source/resource
+minima must be accepted for the exact frozen workload before qualification.
+
+Concrete timing/output profile proposed for the supplied guard owner:
+
+| Field | Explicit value |
+|---|---:|
+| owner_deadline_ns | 10,000,000,000 |
+| sampler_cutoff_ns | 8,000,000,000 |
+| sampler_total_ns | 6,000,000,000 across start plus end |
+| phase_ns | 3,000,000,000 per recorder call, including its cleanup |
+| lock_wait_ns | 250,000,000 maximum, also capped by remaining working time |
+| command_run_ns | 500,000,000 per Git command before termination |
+| term_grace_ns | 100,000,000 |
+| kill_reap_ns | 400,000,000 |
+| emission_reserve_ns | 250,000,000 |
+| stdout_limit_bytes / stderr_limit_bytes | 8,192 / 8,192 per command |
+
+The input-byte and CPU/scratch fields are root-supplied explicit values derived
+from the exact candidate and accepted role bound; they cannot be inferred from
+inter-op or assigned zero. Inert implementation tests supply concrete synthetic
+values. Field inequalities must keep commands/termination/emission within each
+phase and cumulative sampler budget and all sampler cleanup at or before the
+8-second absolute cutoff, leaving at least 2 seconds before the owner limit.
+The existing source owner must use min(its existing 10-second deadline,
+launch.owner_deadline_ns); it may not start a new later window or relax its limit.
+The launch sample precedes fork, so this is conservative, never an extension.
+
+Use ONE monotonic budget controller per actual fork guard for both phases. Every
+metadata/file-hash chunk, lock attempt, pipe poll and emission step checks its
+remaining phase, cumulative and absolute time. The working deadline reserves
+TERM + KILL/reap + emission margin. Do not begin another command unless that
+reserve remains. The end call inherits start's actual consumed sampler time;
+owner action time also consumes the absolute 8/10-second deadline.
+
+Lock acquisition is LOCK_NB in a bounded poll loop; never blocking flock.
+Failure to acquire by min(lock_wait, remaining working deadline) refuses and
+closes the fresh fd. Release/close all recorder lock fds in finally, including
+spawn failure, output cap, signal, timeout and encoding/ref failures.
+
+Git stdout and stderr use nonblocking pipes drained concurrently with bounded
+poll intervals. Retain capped exact output and explicit overflow/truncation facts;
+hitting a cap refuses immediately and enters cleanup. Never wait before draining
+both streams, never block on a full pipe and never collect unbounded output.
+Spawn with no setsid/new process group, preserving P2's owned group. Close sampler
+pipe ends and unrelated inherited fds in the Git exec actions; do not leak the
+owner acknowledgement pipe into Git or confuse resource leases with metadata locks.
+
+Track every actual sampler PID from spawn until an actual wait reaps it. On
+command deadline, output overflow, error or cancellation: TERM that still-owned
+unreaped PID, drain/poll through the explicit grace, then KILL if still alive,
+and use bounded nonblocking wait to observe/reap it. Never signal a PID after
+reaping. Do not report a measured exit or completed phase unless wait actually
+returned it. If cleanup cannot complete within its reserved bound, retain partial
+failure evidence, no successful child end, and let the owner/P2 cleanup classify
+incompleteness; a blocking final wait is forbidden.
+
+Abrupt SIGKILL of the guard cannot run its finally block and may leave a Git
+subprocess alive. This design makes no parent-death auto-kill claim. The unchanged
+P2 final OWNED PROCESS GROUP cleanup is the mandatory backstop; no sampler may
+escape that group. The owner retains its actual pipe/wait/TERM/KILL observations
+and does not accept an end that never happened. Integration tests must prove the
+backstop removes a deliberately stalled sampler after guard death. P3-only tests
+cannot claim that consumer guarantee as already qualified.
+
+Raw v2 additionally requires sampler:[ref], singleton for a successful fork-guard
+phase, empty for ordinary/controller/worker/spawn/work-child roles. The closed sampler observation records policy,
+launch, actual emitter identity/phase, phase start/end and cumulative monotonic
+elapsed, lock acquired/released times, actual per-command argv/PID/spawn/wait/
+exit/stdout/stderr refs and truncation facts. Exact command rows are
+{argv:[text],pid:positive-int,start_ns:uint,end_ns:uint,exit_code:int,
+stdout:ref,stderr:ref,stdout_truncated:bool,stderr_truncated:bool}; success requires
+actual reaping, nontruncated output and command exit0. The exact top-level fields
+are {schema='bac-hardware-owner-sampler-observation-v1',policy,launch,identity,
+phase,start_ns,end_ns,cumulative_ns,lock_acquired_ns,lock_released_ns,commands}.
+They must satisfy the sealed budget and source-witness correspondence; no wrapper
+status string substitutes for command facts. Failed/incomplete attempts may leave
+exclusive partial logs/diagnostics without this successful observation or P0 end.
+All output/claim/observation bytes and inodes, plus concurrent sampler process/CPU
+cost, belong in the exact accepted role and job resource reservations.
+
+## Consumer changes and acyclic construction
+
+P0: no source/schema mutation. process.debug's semantic definition is corrected
+in consumer metadata; guard unavailable constraints and all source invariants stay.
+
+P2 (separate bounded amendment): recognize raw v2, independently bind Python/anomaly
+facts, and accept direct child contexts only through the new closed owner-launch
+lineage. Preserve exact source/process identity, refs/times, actual full env,
+runner terminal/log ownership, resource accounting, inherited leases and final
+inventory. Do not invoke P3 as an acceptance oracle or fabricate missing records.
+
+P4 (separate bounded amendment): independently parse owner-launch/raw v2, rederive
+env/contexts, validate parent ancestry/source and report/case chronology, and
+reconcile guard Python flags with unavailable P0 runtime slots. P5 independently
+checks strict semantic/Process/queue/pipe/wait/phase receipts. Unknown owner or
+old raw schemas refuse; missing strict proofs remain unsatisfied/unrun.
+
+Construction order remains acyclic: frozen code/input/witness-schema/validator
+bytes -> static policy -> exact argv/env/role CPU bounds -> source grant/freeze/
+candidate/admission/spec -> runner command/runtime -> actual parent process/raw/
+source -> owner launch -> actual child start/source/raw/end -> owner terminal
+payload and actual pytest reports -> obligation envelope/strict receipts. No
+owner launch or current child context digest is placed into earlier argv/env.
+Parent strict terminal payload is written after final RNG/currentness assertions;
+its later report binding occurs only after that real phase report exists.
+
+## Executable adversarial acceptance within the two P3 files
+
+Every new behavior requires a retained exact-source RED before mutation, then
+focused GREEN and the bounded whole P3 suite. No new helper body, source checkout,
+Git init/write, application import or real Torch/CUDA operation is permitted.
+
+| Proposed test | Observable gate |
+|---|---|
+| test_python_debug_is_not_torch_anomaly | Python debug True + anomaly False records both truthfully; no anomaly setter |
+| test_optimized_python_cannot_qualify | actual pinned interpreter -O subprocess refuses, even with mocked anomaly True |
+| test_owner_launch_from_actual_worker | real inert pytest/xdist parent launches real spawn child; immediate parent identity and all worker/phase env keys preserved |
+| test_nested_owner_fork_parent_identity | actual spawn child launches actual fork guard; parent_start names the spawn child, not pytest |
+| test_owner_environment_mutations | case/phase mismatch, extra/deleted/changed key, wrong worker UID/count, role spoof and stale launch all refuse |
+| test_actual_call_registry_cannot_be_spoofed | selected-but-wrong case plus matching fabricated env refuses; calls outside wrapper and after all exit paths refuse; nested owner retains authenticated original case |
+| test_preparation_snapshot_and_lock_order | forced late module growth refuses handle; lock probe acquires after preparation; no recorder metadata fd is inherited held |
+| test_launch_cannot_qualify_two_children | two real forks of the same handle contend for exclusive claim; only one actual identity can emit start/end; inventory rejects duplicates/omissions |
+| test_sampler_deadline_and_output_caps | held lock, stalled Git and stdout/stderr flooding refuse within explicit policy bounds; both pipes drained, actual child reaped, partial logs retained |
+| test_spawn_keeps_its_owner_deadline | spawn launch has no fork sampler policy/deadlines; legitimate work beyond8s remains eligible under unchanged supplied90s owner/P2 limits |
+| test_sampler_guard_interruption_custody | kill guard with owned Git alive; no fabricated end; source-owner observations and P2 final owned-group cleanup are independently exercised |
+| test_owner_contract_and_reference_mutations | wrong contract/spec/grant/parent/start token/instance and changed raw/source/namespace refs refuse |
+| test_preloaded_fork_recorder_zero_imports | import/Torch/NumPy/Queue traps remain zero over actual start/end, single task, actual child Git/source queries and exclusive records |
+| test_fork_source_is_not_parent_replay | mutate inert source/metadata after preparation; change actual read-only Git outcome; child refuses despite valid earlier parent witness |
+| test_fork_reparent_and_missing_end | actual reparenting refuses end; killed/interrupted child retains start only; no parent-authored completion |
+| test_fork_no_rng_and_no_unwind | parent before/after RNG state unchanged with inert sentinels; pipe result and os._exit path preserve inherited scopes |
+| test_new_raw_schema_exactness | old/extra/missing fields and cross-wired anomaly/debug/source provenance reject in updated consumers |
+| test_owner_completion_integration | real inert controller/worker/spawn/fork records plus report/launch refs reach closed completion; P2 actual wait and P4/P5 remain independently required |
+
+The source sampler test uses inert candidate files and read-only commands against
+an explicitly root-supplied existing Git identity; root supplies current HEAD/tree
+metadata if needed. No test repository is initialized and no executable source is
+copied. A subprocess double alone cannot satisfy the final zero-import/direct-Git
+acceptance; actual local subprocess execution under the traps is mandatory.
+Actual producer/application and hardware suites are separate later gates.
+
+## Finite external fields still required before implementation/integration
+
+These are concrete owner inputs, not permission for further body reads:
+1. For SOURCE-OWNER QUALIFICATION (not inert P3 development), root/owners must
+   supply source-owned prework thread setup for exact role
+   profiles: where intra-op=1/inter-op=5 is established BEFORE the qualification
+   cut, measured in each actual child, with failure behavior. Existing suppliers
+   establish assertions but not inter-op setup. A future 16-worker host default
+   cannot be assumed. Recorder setters or weaker assertions are forbidden.
+2. Owners/P5 finalize exact case-role/start-method and loaded-module alias/ref
+   inventories, safe pre/post-patch emission cuts, and unchanged strict payload/
+   RNG/phase semantics. Replay/recurrent and flat/PER observed aliases are supplier
+   facts; no test module name is guessed by P3. Guard trial IDs/actions stay owned.
+3. P2/P4 confirm their finite corresponding schema/environment/debug changes and
+   source lifetime checks; their adopted current code stays frozen until separately
+   authorized. P2 supplied its exact source correspondence above; P4/P5 requests
+   are outstanding where not already specified by their interface metadata.
+4. Root supplies the immutable executable/interpreter/environment and read-only Git
+   identity used for inert fork qualification, plus any exact existing resource
+   bound updates needed for this sampler. No new server/access/install is implied.
+
+Root can review this single design now. These fields must be pinned before their
+relevant actual source execution/consumer integration, but they do not require speculative variants
+or expansion of this proposal. No current gate is waived, and no source/hardware
+qualification is claimed by the design document.
+
+Missing source-owned inter-op setup blocks only actual owner qualification. After
+root approves this design, inert P3 implementation may proceed with explicit
+synthetic runtime sentinels and concrete synthetic sampler policies. Neither that
+implementation nor these metadata refinements authorize thread setters, producer
+source edits, application execution or inherited-source substitutes.

@@ -1,0 +1,12 @@
+{
+  "changes": [
+    {
+      "scope": "W35-R0-CORE-PUBLIC-CONTRACT",
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "before": 240,
+      "after": 248
+    }
+  ],
+  "before_sha256": "7aeaed8ccd2498f3145d3e0734a59352a680c737837be35abfdfe7c32cbfa59c",
+  "after_sha256": "32459be2e1aa6e3f3ff1c1ca1c9ecd987382c20c6cfea24fa75e827485331587"
+}

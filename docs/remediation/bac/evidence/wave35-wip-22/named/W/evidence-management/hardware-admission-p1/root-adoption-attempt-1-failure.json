@@ -1,0 +1,5 @@
+{
+  "scope": "Root adoption attempt1; metadata checking only",
+  "error": "Naive recursive verifier compared prior author-suite-v2 supplementary probe reference with now revised live independent probe. Historical exact snapshot exists; no production source drift or missing executed bytes.",
+  "resolution": "Verify each historical attempt source against its own retained source snapshot and matching source_after; live frozen production pins verified separately. No test rerun or evidence rewrite."
+}

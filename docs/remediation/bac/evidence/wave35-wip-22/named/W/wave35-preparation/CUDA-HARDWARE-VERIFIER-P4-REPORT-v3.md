@@ -1,0 +1,15 @@
+# P4 verifier repair v3 — bounded ancestry repair
+
+Status: FROZEN FOR FRESH INDEPENDENT ASTRA REVIEW; NOT SELF-ADOPTED.
+
+The v2 independent review demonstrated that an external failed-down copy could authorize replacement even when the predecessor's actual inventoried down recorded normal shutdown. The finite repair requires configure.prior_lifecycle to equal the unique inventoried down reference associated with the exact predecessor start, and loads that already inventoried record. Single consumption now keys the actual predecessor start. Existing failure, parent/role/worker/configure linkage, absolute chronology and monotonic predecessor END/replacement START checks remain intact. No API, option, P0 or unrelated behavior change.
+
+Two coherent regressions cover the external-copy substitution for fresh and same-gateway replacements. Both retained actual inventoried error="" and external failed error text; reference DAGs and seals were refreshed. Focused RED failed twice with DID NOT RAISE (86 deselected), establishing causal acceptance on frozen v2 verifier bytes. After repair, focused replacement/PID-reuse selection passed10 (78 deselected), preserving accepted fresh and same-gateway replacements. The full owned suite ran once after the fix: 88 passed in12.11s, PID196576. Ruff and Black check exit0; no formatting mutation was needed. Focused checks overlap the full88 and are not added to a unique case count.
+
+Every source mutation and RED/GREEN attempt has an exclusive before snapshot of all four packet bodies. v2 freeze SHA5e395cfa90cc4620a53358628d69c2e731cb0f70a3cd84be6513e6ddf359cdce and its retained author snapshots were reverified unchanged. Wrapper and P0 remain byte-identical. An initial preservation command failed before any write because its orchestration string was unavailable; it was corrected and preservation completed before mutation. No pytest ran in that administrative failure.
+
+All test/check subprocesses ran sequentially on inherited affinity[0], with a single synthetic pytest process and OMP/MKL/OpenBLAS threads1. Actual argv/PID/PPID/UTC/exit/source/affinity records and stdout are retained. No APP/Torch/CUDA or actual producer toolchain imports/execution, no Git/index/branch/worktree/publication operations. Source edits remain limited to the two assigned Q bodies.
+
+The fifth logical body is the existing independent reviewer probe, whose immutable114-line ancestry snapshot is referenced for conservative accounting; this repair did not inspect or import that new probe version. Four packet bodies plus that probe total3172 lines, under five/5000. This replaces the mutable live probe reference used in older accounting with its immutable snapshot; no historical freeze is rewritten.
+
+P3 amendments, P5 owner semantics, six CUDA groups, source-qualified full producer integration and actual hardware remain pending/unrun. Producer inventory/source closure remains the explicit supplier-policy limit already recorded in v2. Root must obtain fresh exact-byte independent review, adopt the candidate, and only then author concrete authorized-job inventory. This report does not adopt or publish.

@@ -1,0 +1,715 @@
+"""Synthetic-only P1 qualification: inert files and stub commands, never CUDA.
+
+These tests prove refusal/arithmetic/custody behavior. They do not qualify an
+actual CPU host, GPU, application, driver, root grant, or discovery observation.
+"""
+import copy
+import importlib
+import json
+from pathlib import Path
+import sys
+
+import pytest
+
+import bac_hardware_protocol_v1 as protocol
+
+
+def module():
+    # A missing implementation is a behavioral RED, not a collection error.
+    try:
+        return importlib.import_module("capture_bac_hardware_v1")
+    except ModuleNotFoundError:
+        pytest.fail("P1 admission implementation is missing")
+
+
+def reference(path, content):
+    path.write_text(content)
+    return protocol.file_reference(path)
+
+
+def request():
+    return {"profile": "cpu", "requested_visibility": "", "authorized_devices": [],
+            "requested_job_concurrency": 1,
+            "minimum": {"cpu_slots": 1, "ram_bytes": 200, "scratch_bytes": 100, "scratch_inodes": 1},
+            "reserve": {"cpu_slots": 0, "ram_bytes": 100, "scratch_bytes": 50, "scratch_inodes": 2},
+            "jobs": [{"budget": {"cpu_slots": 1, "ram_bytes": 200, "scratch_bytes": 100, "scratch_inodes": 1},
+                      "roles": [{"count": 1, "replacement_limit": 0, "peak_cpu_slots": 1}], "profile": "cpu", "devices": [],
+                      "environment": {"CUDA_VISIBLE_DEVICES": ""}}]}
+
+
+def observation():
+    return {"schema": "bac-hardware-discovery-v1", "profile": "cpu",
+            "identity": {"pid": 4321, "ppid": 1234, "start_identity": "55", "host": "synthetic", "boot_id": "inert-boot"},
+            "at": "2026-11-14T00:00:00.000000Z", "argv": ["/inert/python", "--discover"],
+            "interpreter": "/inert/python", "cwd": "/inert", "inherited_visibility": None,
+            "effective_visibility": "", "tmpdir": "/inert/scratch", "cgroup_root": "/inert/cgroup",
+            "cgroup_leaf": "/inert/cgroup/parent/leaf", "ancestry_complete": True,
+            "cgroups": [
+                {"path": "/inert/cgroup", "cpu_max": "max 100000", "cpuset": "0-7", "memory_max": "max", "memory_current": "900"},
+                {"path": "/inert/cgroup/parent", "cpu_max": "350000 100000", "cpuset": "0-5", "memory_max": "2000", "memory_current": "1300"},
+                {"path": "/inert/cgroup/parent/leaf", "cpu_max": "max 100000", "cpuset": "0-4", "memory_max": "1000", "memory_current": "200"}],
+            "affinity": [0, 1, 2, 3], "meminfo": "MemTotal: 4 kB\nMemAvailable: 2 kB\n",
+            "scratch_free_bytes": 1000, "scratch_free_inodes": 20,
+            "cpu_topology": "synthetic", "numa_topology": "synthetic", "gpu_topology": None,
+            "competing_workloads": [], "torch_build": None, "cuda_runtime": None, "driver": None,
+            "devices": [], "probe_errors": [], "commands": [], "python_version": "3.13.5", "dependencies": [], "torch_origin": None}
+
+
+def assess(tmp_path, obs=None, req=None):
+    obs = observation() if obs is None else obs
+    ref = reference(tmp_path / "discovery.json", json.dumps(obs))
+    return module().assess_resources(request() if req is None else req, obs, ref)
+
+
+def test_admission_limits_nested_fraction_and_memory_headroom(tmp_path):
+    result = assess(tmp_path)
+    assert result["reasons"] == []
+    assert result["effective_cpu_capacity"]["value"] == 3.5
+    assert result["limited_ram_bytes"]["value"] == 1000
+    assert result["ram_current_bytes"]["value"] == 200
+    assert result["admitted_budget"] == {"cpu_slots": 3, "ram_bytes": 600, "scratch_bytes": 950, "scratch_inodes": 18}
+    assert result["cgroups"][0]["cpu_quota_us"]["state"] == "unlimited"
+    assert result["cgroups"][0]["memory_limit_bytes"]["state"] == "unlimited"
+
+
+@pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+    obs = observation()
+    if change == "affinity":
+        obs["affinity"] = [1]
+    elif change == "cpuset":
+        obs["cgroups"][1]["cpuset"] = "1-2"
+    elif change == "quota":
+        obs["cgroups"][0]["cpu_max"] = "50000 100000"
+    else:
+        for group in obs["cgroups"]:
+            group["cpu_max"] = "max 100000"
+    result = assess(tmp_path, obs)
+    assert result["effective_cpu_capacity"]["value"] == want
+    assert bool(result["reasons"]) == (want < 1)
+
+
+@pytest.mark.parametrize("change,reason", [
+    ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+    ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+    ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+    ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+    ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+])
+def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+    obs = observation()
+    if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+    if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+    if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+    if change == "hidden_ancestor": obs["ancestry_complete"] = False
+    if change == "missing_ancestor": obs["cgroups"].pop(1)
+    if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+    if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+    if change == "low_scratch": obs["scratch_free_bytes"] = 120
+    if change == "low_inodes": obs["scratch_free_inodes"] = 2
+    if change == "unknown_workload": obs["competing_workloads"] = None
+    if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+    if change == "unknown_affinity": obs["affinity"] = None
+    if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+    result = assess(tmp_path, obs)
+    assert result["reasons"]
+    assert reason.lower() in " ".join(result["reasons"]).lower()
+
+
+def test_admission_limits_concurrency_and_replacement_reservations(tmp_path):
+    req = request()
+    req["jobs"] *= 2
+    req["requested_job_concurrency"] = 2
+    req["jobs"][0]["budget"]["cpu_slots"] = 2
+    result = assess(tmp_path, req=req)
+    assert "cpu_slots" in " ".join(result["reasons"])
+    req = request()
+    req["jobs"][0]["roles"][0]["replacement_limit"] = 2
+    result = assess(tmp_path, req=req)
+    assert "replacement" in " ".join(result["reasons"])
+
+
+def cuda_pair():
+    req, obs = request(), observation()
+    req.update(profile="cuda", requested_visibility="1,0", authorized_devices=["GPU-b", "GPU-a"])
+    obs.update(profile="cuda", inherited_visibility="1,0", effective_visibility="1,0",
+               torch_build="2.9+cu128", cuda_runtime="12.8", driver="580.1", gpu_topology="synthetic")
+    obs["devices"] = [{"logical_index": i, "gpu_uuid": uuid, "mig_uuid": None,
+                       "physical_parent_uuid": uuid, "model": "simulated", "vram_bytes": 1000,
+                       "isolation": "physical-exclusive"} for i, uuid in enumerate(["GPU-b", "GPU-a"])]
+    req["jobs"][0].update(profile="cuda", devices=copy.deepcopy(obs["devices"]), environment={"CUDA_VISIBLE_DEVICES": "1,0"})
+    return req, obs
+
+
+def test_profile_mapping_preserves_remapped_visibility_and_cpu_policy(tmp_path):
+    req, obs = cuda_pair()
+    result = assess(tmp_path, obs, req)
+    assert result["reasons"] == []
+    assert result["effective_visibility"] == "1,0"
+    assert [d["gpu_uuid"] for d in result["devices"]] == ["GPU-b", "GPU-a"]
+    assert result["devices"][0]["mapping_provenance"]["path"] == str(tmp_path / "discovery.json")
+    result = assess(tmp_path, observation())
+    assert result["devices"] == [] and result["effective_visibility"] == ""
+
+
+@pytest.mark.parametrize("change,reason", [
+    ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+    ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+    ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+    ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+])
+def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+    req, obs = cuda_pair()
+    if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+    if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+    if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+    if change == "unrelated":
+        responses["--query-gpu=index,uuid,name,memory.total,driver_version,mig.mode.current"] += "2, GPU-c, Simulated C, 1000, 580.1, Disabled\n"
+        responses["--query-compute-apps=gpu_uuid,pid,process_name"] = "GPU-c, 999, unrelated-work\n"
+    if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+    if change == "inherited": obs["inherited_visibility"] = "0"
+    if change == "effective": obs["effective_visibility"] = "0,1"
+    if change == "driver": obs["driver"] = None
+    if change == "runtime": obs["cuda_runtime"] = None
+    if change == "logical": obs["devices"][0]["logical_index"] = 5
+    if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+    if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+    if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+    result = assess(tmp_path, obs, req)
+    assert reason.lower() in " ".join(result["reasons"]).lower()
+
+
+@pytest.mark.parametrize("field,value", [("scratch_free_bytes", True), ("scratch_free_inodes", -1),
+                                         ("affinity", [0, 0]), ("affinity", [False]), ("unknown", "field")])
+def test_discovery_closed_payload_rejects_wrong_types(tmp_path, field, value):
+    obs = observation()
+    obs[field] = value
+    with pytest.raises(ValueError): assess(tmp_path, obs)
+
+
+@pytest.mark.parametrize("key", ["scratch_bytes", "scratch_inodes"])
+def test_admission_limits_reserve_retained_scratch_for_all_jobs(tmp_path, key):
+    req = request()
+    req["jobs"] = [copy.deepcopy(req["jobs"][0]) for _ in range(2)]
+    req["requested_job_concurrency"] = 1
+    for job in req["jobs"]:
+        job["budget"][key] = 600 if key == "scratch_bytes" else 10
+    result = assess(tmp_path, req=req)
+    assert key in " ".join(result["reasons"])
+
+
+def test_admission_limits_reserve_each_role_peak_including_replacements(tmp_path):
+    req = request()
+    req["jobs"][0]["roles"][0].update(peak_cpu_slots=2, replacement_limit=1)
+    req["jobs"][0]["budget"]["cpu_slots"] = 2
+    result = assess(tmp_path, req=req)
+    assert "replacement" in " ".join(result["reasons"])
+
+
+def test_discovery_cgroup_parser_finds_full_nested_v2_ancestry():
+    tool = module()
+    assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+    root, leaf = tool.cgroup_paths(
+        "29 23 0:26 / /sys/fs/cgroup rw,nosuid,nodev,noexec - cgroup2 cgroup rw\n", "0::/parent/leaf\n")
+    assert str(root) == "/sys/fs/cgroup"
+    assert str(leaf) == "/sys/fs/cgroup/parent/leaf"
+
+
+@pytest.mark.parametrize("mounts,membership", [
+    ("29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/hidden/leaf\n"),
+    ("29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n", "2:cpu:/parent\n"),
+    ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/../../escape\n"),
+    ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/one\n0::/two\n"),
+    ("29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n", "0::/parent\n"),
+])
+def test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths(mounts, membership):
+    tool = module()
+    assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+    with pytest.raises(ValueError): tool.cgroup_paths(mounts, membership)
+
+
+def test_discovery_collects_nested_cpu_facts_without_torch_or_commands(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    tool = module()
+    assert callable(getattr(tool, "collect_discovery", None)), "separate discovery implementation missing"
+    raw = {"/proc/self/mountinfo": "29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n",
+           "/proc/self/cgroup": "0::/parent/leaf\n", "/proc/meminfo": "MemTotal: 4 kB\nMemAvailable: 2 kB\n",
+           "/proc/cpuinfo": "synthetic CPU topology", "/sys/devices/system/node/online": "0",
+           "/proc/2/stat": "2 (inert) S 1 0 0",
+           "/sys/fs/cgroup/cpu.max": "max 100000", "/sys/fs/cgroup/cpuset.cpus.effective": "0-7",
+           "/sys/fs/cgroup/memory.max": "max", "/sys/fs/cgroup/memory.current": "900"}
+    for suffix in ("/parent", "/parent/leaf"):
+        for field, value in [("cpu.max", "300000 100000"), ("cpuset.cpus.effective", "0-3"),
+                             ("memory.max", "2000"), ("memory.current", "300")]:
+            raw["/sys/fs/cgroup" + suffix + "/" + field] = value
+    monkeypatch.setattr(tool, "read_kernel", lambda path: raw[str(path)])
+    monkeypatch.setattr(tool, "kernel_pids", lambda: [2])
+    monkeypatch.setattr(tool, "process_identity", lambda pid: observation()["identity"])
+    monkeypatch.setattr(tool.os, "sched_getaffinity", lambda pid: {0, 1, 2, 3})
+    monkeypatch.setattr(tool.os, "statvfs", lambda path: SimpleNamespace(f_bavail=100, f_frsize=10, f_favail=20))
+    monkeypatch.setattr(tool.os, "readlink", lambda path: "cgroup:[synthetic]")
+    monkeypatch.setattr(tool, "dependency_observations", lambda environment: [])
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "")
+    monkeypatch.setenv("TMPDIR", str(tmp_path))
+    req = dict(request(), scratch_root=str(tmp_path))
+    obs = tool.collect_discovery(req, {"dependencies": []}, "0")
+    assert len(obs["cgroups"]) == 3 and obs["cgroups"][1]["path"] == "/sys/fs/cgroup/parent"
+    assert obs["affinity"] == [0, 1, 2, 3] and obs["scratch_free_bytes"] == 1000
+    assert obs["tmpdir"] == str(tmp_path) and obs["probe_errors"] == []
+    assert obs["devices"] == [] and obs["inherited_visibility"] == "0" and obs["effective_visibility"] == ""
+    assert "torch" not in sys.modules
+
+
+def test_discovery_dependency_versions_bind_actual_metadata_origin(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    tool = module()
+    assert callable(getattr(tool, "dependency_observations", None)), "dependency discovery missing"
+    metadata_path = tmp_path / "inert.dist-info" / "METADATA"
+    metadata_path.parent.mkdir()
+    reference(metadata_path, "Name: inert\nVersion: 7.2\n")
+    relative = Path("inert.dist-info/METADATA")
+    dist = SimpleNamespace(version="7.2", files=[relative], locate_file=lambda path: tmp_path / path)
+    monkeypatch.setattr(tool.metadata, "distribution", lambda name: dist)
+    observed = tool.dependency_observations({"dependencies": [{"name": "inert"}]})
+    assert observed == [{"name": "inert", "version": "7.2", "reference": protocol.file_reference(metadata_path)}]
+
+
+def gpu_probe(tmp_path, monkeypatch, change):
+    from types import SimpleNamespace
+    tool = module()
+    assert callable(getattr(tool, "collect_gpu", None)), "pinned CUDA backend missing"
+    driver = reference(tmp_path / "nvidia-smi", "inert driver executable")
+    torch = reference(tmp_path / "torch.py", "inert Torch module")
+    env = {"dependencies": [{"name": "nvidia-smi", "version": "580.1", "reference": driver},
+                            {"name": "torch", "version": "2.9+cu128", "reference": torch}]}
+    obs = observation(); obs.update(profile="cuda", effective_visibility="1,0")
+    responses = {"--version": "NVIDIA-SMI version  : 580.1\n",
+                 "--query-gpu=index,uuid,name,memory.total,driver_version,mig.mode.current":
+                 "0, GPU-a, Simulated A, 2000, 580.1, Disabled\n1, GPU-b, Simulated B, 1000, 580.1, Disabled\n",
+                 "--query-compute-apps=gpu_uuid,pid,process_name": "", "topo": "synthetic topology"}
+    # Actual logical UUIDs intentionally do NOT follow guessed numeric driver indices.
+    props = [SimpleNamespace(uuid="GPU-a", name="Simulated A", total_memory=1990*1024**2),
+             SimpleNamespace(uuid="GPU-b", name="Simulated B", total_memory=990*1024**2)]
+    fake = SimpleNamespace(__file__=torch["path"], __version__="2.9+cu128", version=SimpleNamespace(cuda="12.8"),
+                           cuda=SimpleNamespace(is_available=lambda: True, device_count=lambda: len(props),
+                                                get_device_properties=lambda i: props[i]))
+    if change == "unrelated":
+        responses["--query-gpu=index,uuid,name,memory.total,driver_version,mig.mode.current"] += "2, GPU-c, Simulated C, 1000, 580.1, Disabled\n"
+        responses["--query-compute-apps=gpu_uuid,pid,process_name"] = "GPU-c, 999, unrelated-work\n"
+    if change == "mig": responses[next(k for k in responses if k.startswith("--query-gpu"))] = responses[next(k for k in responses if k.startswith("--query-gpu"))].replace("Disabled", "Enabled")
+    if change == "unknown": props[0].uuid = "GPU-unknown"
+    if change == "duplicate": props[1].uuid = "GPU-a"
+    if change == "cpu_build": fake.version.cuda = None
+    if change == "torch_origin": fake.__file__ = str(tmp_path / "wrong.py")
+    if change == "visibility": obs["effective_visibility"] = "GPU-b,GPU-a"
+    if change == "mixed": obs["effective_visibility"] = "0,GPU-a"
+    if change == "vram": props[0].total_memory = 3000*1024**2
+    calls = []
+    def query(executable, tail, commands):
+        assert executable == driver
+        calls.append(tail)
+        return responses[tail[0]]
+    monkeypatch.setattr(tool, "run_query", query)
+    monkeypatch.setattr(tool, "load_torch", lambda reference: fake)
+    return tool, obs, env, calls
+
+
+def test_real_cuda_backend_constructs_pinned_queries_and_joins_actual_uuid(tmp_path, monkeypatch):
+    tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, "none")
+    tool.collect_gpu(obs, env, lambda: None)
+    assert [d["gpu_uuid"] for d in obs["devices"]] == ["GPU-a", "GPU-b"]
+    assert obs["effective_visibility"] == "1,0" and obs["torch_origin"] == env["dependencies"][1]["reference"]
+    assert obs["driver"] == "580.1" and obs["cuda_runtime"] == "12.8"
+    assert calls == [["--version"], ["--query-gpu=index,uuid,name,memory.total,driver_version,mig.mode.current", "--format=csv,noheader,nounits"],
+                     ["--query-compute-apps=gpu_uuid,pid,process_name", "--format=csv,noheader,nounits"], ["topo", "-m"]]
+    assert "torch" not in sys.modules
+
+
+@pytest.mark.parametrize("change", ["mig", "unknown", "duplicate", "cpu_build", "torch_origin", "visibility", "mixed", "vram"])
+def test_real_cuda_backend_refuses_unproved_driver_torch_correspondence(tmp_path, monkeypatch, change):
+    tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, change)
+    with pytest.raises(ValueError): tool.collect_gpu(obs, env, lambda: None)
+
+
+def test_driver_query_retains_executable_actual_child_and_exact_argv(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    tool = module()
+    assert callable(getattr(tool, "run_query", None)), "pinned query subprocess missing"
+    executable = reference(tmp_path / "driver", "inert executable")
+    calls = []
+    class Child:
+        pid = 4321
+        returncode = 0
+        def communicate(self, timeout): return "result", "diagnostic"
+    def popen(argv, **kwargs):
+        calls.append((argv, kwargs)); return Child()
+    monkeypatch.setattr(tool.subprocess, "Popen", popen)
+    identity = dict(observation()["identity"], ppid=tool.os.getpid())
+    monkeypatch.setattr(tool, "process_identity", lambda pid: identity)
+    monkeypatch.setattr(tool.os, "readlink", lambda path: executable["path"])
+    records = []
+    assert tool.run_query(executable, ["--version"], records) == "result"
+    assert calls[0][0] == [executable["path"], "--version"] and not calls[0][1].get("shell", False)
+    assert records[0]["identity"] == identity and records[0]["executable"] == executable
+    assert records[0]["stdout"] == "result" and records[0]["stderr"] == "diagnostic"
+
+
+def capture_fixture(tmp_path):
+    tool = module()
+    root = tmp_path / "source"; root.mkdir(); (root / "src").mkdir(); (root / "index.lock").write_text("")
+    for name in ("output", "scratch", "leases"):
+        (tmp_path / name).mkdir()
+    data = reference(tmp_path / "inert-evidence", "inert evidence")
+    refs = [reference(root / ("src/input" if i == 0 else f"input{i}"), f"inert source {i}") for i in range(6)]
+    interpreter = reference(tmp_path / "python", "inert interpreter")
+    budget = {"cpu_slots": 1, "ram_bytes": 200, "scratch_bytes": 100, "scratch_inodes": 1}
+    zero = {k: 0 for k in budget}
+    envvars = {"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "CUDA_VISIBLE_DEVICES": "", "LC_ALL": "C"}
+    argv = [interpreter["path"], "-m", "pytest", "inert-case"]
+    role = {"id": "main", "role": "controller", "count": 1, "replacement_limit": 0, "observer": "work", "intra_op": 1,
+            "inter_op": 1, "debug": False, "torch_policy": "work", "cuda_policy": "forbidden", "peak_cpu_slots": 1,
+            "cpu_reservation_basis": "accepted-case-contract"}
+    bound = {"schema": "bac-hardware-cpu-bound-v1", "basis": "accepted-case-contract", "role_id": "main",
+             **{k: role[k] for k in ("role", "observer", "intra_op", "inter_op", "debug", "torch_policy", "cuda_policy", "peak_cpu_slots")},
+             "argv": argv, "environment": envvars, "required_cases": ["inert-case"], "head": "a"*40, "tree": "b"*40,
+             "inputs": refs, "justification": [data], "authority": "synthetic root declaration", "bound_statement": "synthetic upper bound"}
+    role["cpu_reservation_evidence"] = reference(tmp_path / "cpu-bound.json", json.dumps(bound))
+    allocation = {"schema": "bac-hardware-resource-allocation-v1", "allocation_id": "allocation", "pool_id": "pool",
+                  "host": "synthetic", "boot_id": "inert-boot", "lease_root": str(tmp_path / "leases"),
+                  "capacity": {"cpu_slots": 4, "ram_bytes": 1000, "scratch_bytes": 1000000, "scratch_inodes": 100},
+                  "overhead": {"cpu_slots": 1, "ram_bytes": 50, "scratch_bytes": 100000, "scratch_inodes": 20}, "partition_basis": "exclusive-pool", "partition_evidence": [],
+                  "authorized_cpu_ids": [0, 1, 2, 3], "authorized_devices": [], "start": "2026-01-01T00:00:00.000000Z",
+                  "end": None, "authority": "synthetic root", "no_writer_barrier": True}
+    allocation_ref = reference(tmp_path / "allocation.json", json.dumps(allocation))
+    grant = {"schema": "bac-hardware-source-grant-v1", "authorized_root": str(root), "head": "a"*40, "tree": "b"*40,
+             "import_roots": [str(root / "src")], "inputs": refs, "start": "2026-01-01T00:00:00.000000Z", "end": None,
+             "no_writer_barrier": True, "includes_untracked": True, "authority": "synthetic root",
+             "allocation_grant": allocation_ref, "cpu_reservation_evidence": [role["cpu_reservation_evidence"]]}
+    grant_ref = reference(tmp_path / "grant.json", json.dumps(grant))
+    freeze = {"schema": protocol.SCHEMA, "kind": "source-freeze", "authorized_root": str(root), "grant": grant_ref,
+              "start": grant["start"], "end": {"state": "unavailable", "value": None, "reason": "synthetic active barrier"},
+              "no_writer_barrier": True, "includes_untracked": True, "index_lock": str(root / "index.lock"), "retention": "synthetic"}
+    freeze_ref = reference(tmp_path / "freeze.json", json.dumps(freeze))
+    registry_text = f"worktree {root}\nHEAD {'a'*40}\nbranch refs/heads/inert\n\n"
+    registry = reference(tmp_path / "registry.txt", registry_text)
+    availability = reference(tmp_path / "availability.json", json.dumps({"schema": "bac-hardware-availability-v1", "worktrees": [{"path": str(root), "directory_exists": True}]}))
+    candidate = {"schema": protocol.SCHEMA, "kind": "candidate", "head": "a"*40, "tree": "b"*40, "authorized_root": str(root),
+                 "import_roots": [str(root / "src")], "source_freeze": freeze_ref, "registry": registry, "availability": availability,
+                 "inventory": {k: [{"path": ref["path"], "reference": ref}] for k, ref in zip(("source", "tests", "configs", "scripts", "ratchet", "artifacts"), refs)}}
+    candidate_path = tmp_path / "candidate.json"; reference(candidate_path, json.dumps(candidate))
+    missing = {"state": "unavailable", "value": None, "reason": "CPU discovery does not import Torch", "provenance": data}
+    environment = {"schema": protocol.SCHEMA, "kind": "environment", "interpreter": interpreter, "python_version": "3.13.5",
+                   "dependencies": [{"name": "inert", "version": "1", "reference": data}], "environment": envvars,
+                   "platform": "synthetic", "torch_build": missing, "cuda_runtime": missing, "driver": missing}
+    env_ref = reference(tmp_path / "environment.json", json.dumps(environment))
+    tools = [{"name": name, "reference": protocol.file_reference(Path(path)) if path else data} for name, path in [
+        ("protocol", protocol.__file__), ("capture", tool.__file__), ("runner", None), ("identity", None), ("verifier", None), ("children-verifier", None)]]
+    obligations = [{"id": kind, "kind": kind, "required_cases": ["inert-case"], "contract": data, "validator": data,
+                    "evidence_class": "cpu", "minimum_devices": 0} for kind in ("process-custody", "source-freeze", "required-cases")]
+    job = {"id": "job", "profile": "cpu", "argv": argv, "interpreter": interpreter["path"], "cwd": str(root), "environment": envvars,
+           "seed": {"policy": "explicit", "python": 1, "numpy": 1, "torch": 1, "cuda": []}, "required_collected_ids": ["inert-case"],
+           "xdist_workers": 0, "roles": [role], "budget": budget, "devices": [], "serialization_domains": ["inert-rng"],
+           "timing": "ordinary", "timing_contract": [], "prerequisites": [], "obligations": obligations,
+           "output": str(tmp_path / "output/attempt/job"), "scratch": str(tmp_path / "scratch/attempt/job"),
+           "timeout_seconds": 10, "termination_grace_seconds": 1}
+    req = {"schema": protocol.SCHEMA, "kind": "admission-request", "attempt_id": "attempt", "lease_root": str(tmp_path / "leases"),
+           "authorized_root": str(root), "interpreter": interpreter, "scratch_root": str(tmp_path / "scratch"), "output_root": str(tmp_path / "output"),
+           "profile": "cpu", "requested_job_concurrency": 1, "minimum": budget,
+           "reserve": {"cpu_slots": 0, "ram_bytes": 100, "scratch_bytes": 50, "scratch_inodes": 2}, "authorized_devices": [],
+           "requested_visibility": "", "jobs": [job], "source_freeze": freeze_ref, "tools": tools, "dependencies": env_ref}
+    request_path = tmp_path / "request.json"; reference(request_path, json.dumps(req))
+    return candidate_path, request_path, candidate, req, environment, registry_text
+
+
+def stub_capture_observations(monkeypatch, tool, req, environment, registry_text):
+    def git(root, args):
+        if args == ["rev-parse", "HEAD"]: return "a"*40 + "\n"
+        if args == ["diff-index", "--cached", "--quiet", "b"*40, "--"]: return ""
+        if args == ["worktree", "list", "--porcelain"]: return registry_text
+        pytest.fail("forbidden Git operation: " + repr(args))
+    monkeypatch.setattr(tool, "git_read", git)
+    def discovery(request_path, request, env):
+        obs = observation(); obs.update(tmpdir=req["scratch_root"], dependencies=environment["dependencies"], at=tool.utc(), scratch_free_bytes=1000000, scratch_free_inodes=100)
+        return obs, {"synthetic": True, "errors": []}
+    monkeypatch.setattr(tool, "launch_discovery", discovery)
+    monkeypatch.setattr(tool.os, "sched_getaffinity", lambda pid: {0, 1, 2, 3})
+    monkeypatch.setattr(tool, "process_identity", lambda pid: dict(observation()["identity"], pid=pid, ppid=tool.os.getppid()))
+
+
+def test_read_only_capture_emits_bound_spec_and_exclusive_refusal(tmp_path, monkeypatch):
+    tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+    candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+    stub_capture_observations(monkeypatch, tool, req, env, registry)
+    before = {row["path"]: protocol.file_reference(Path(row["path"])) for rows in source["inventory"].values() for row in rows}
+    destination = tmp_path / "capture"
+    result = tool.capture(candidate, request_path, destination)
+    assert result["disposition"] == "admitted" and result["reasons"] == []
+    spec = json.loads(Path(result["spec"]["path"]).read_text()); protocol.validate_spec(spec)
+    admission = json.loads(Path(result["admission"]["path"]).read_text())
+    assert spec["attempt_id"] == "attempt" and spec["budget"] == admission["admitted_budget"]
+    assert admission["tmpdir"] == req["scratch_root"] and spec["candidate"] == protocol.file_reference(candidate)
+    assert before == {p: protocol.file_reference(Path(p)) for p in before}
+    with pytest.raises(ValueError): tool.capture(candidate, request_path, destination)
+
+
+@pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                         ("expired", "active"), ("allocation", "cpu_slots"), ("overhead", "overhead"), ("bound", "CPU"), ("dependency", "dependency")])
+def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+    tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+    candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+    stub_capture_observations(monkeypatch, tool, req, env, registry)
+    if change == "registry":
+        original = tool.git_read
+        monkeypatch.setattr(tool, "git_read", lambda root, args: "different" if args == ["worktree", "list", "--porcelain"] else original(root, args))
+    if change == "availability":
+        path = tmp_path / "availability.json"
+        payload = json.loads(path.read_text()); payload["worktrees"][0]["directory_exists"] = False
+        path.write_text(json.dumps(payload)); source["availability"] = protocol.file_reference(path)
+        candidate.write_text(json.dumps(source))
+    if change == "source": Path(source["inventory"]["source"][0]["path"]).write_text("drift")
+    if change in ("expired", "allocation", "overhead", "bound"):
+        # Re-seal a fully consistent synthetic reference graph; rejection must be semantic.
+        path = tmp_path / {"expired": "grant.json", "allocation": "allocation.json", "overhead": "allocation.json", "bound": "cpu-bound.json"}[change]
+        payload = json.loads(path.read_text())
+        if change == "expired": payload["end"] = "2026-01-02T00:00:00.000000Z"
+        if change == "allocation": payload["capacity"]["cpu_slots"] = 0
+        if change == "overhead": payload["overhead"]["scratch_bytes"] = 1
+        if change == "bound": payload["argv"] = [req["interpreter"]["path"], "different-workload"]
+        path.write_text(json.dumps(payload))
+        bound_ref = protocol.file_reference(tmp_path / "cpu-bound.json")
+        grant_path = tmp_path / "grant.json"; grant = json.loads(grant_path.read_text())
+        grant.update(allocation_grant=protocol.file_reference(tmp_path / "allocation.json"), cpu_reservation_evidence=[bound_ref])
+        grant_path.write_text(json.dumps(grant))
+        freeze_path = tmp_path / "freeze.json"; freeze = json.loads(freeze_path.read_text())
+        freeze["grant"] = protocol.file_reference(grant_path); freeze_path.write_text(json.dumps(freeze))
+        source["source_freeze"] = protocol.file_reference(freeze_path); candidate.write_text(json.dumps(source))
+        req["source_freeze"] = source["source_freeze"]; req["jobs"][0]["roles"][0]["cpu_reservation_evidence"] = bound_ref
+        request_path.write_text(json.dumps(req))
+    if change == "dependency": env["dependencies"][0]["version"] = "unexpected"
+    destination = tmp_path / "capture"
+    try:
+        result = tool.capture(candidate, request_path, destination)
+    except ValueError as exc:
+        assert change in ("source", "expired", "bound", "availability")
+        assert reason.lower() in str(exc).lower()
+    else:
+        assert result["disposition"] == "refused" and result["spec"] is None
+        assert reason.lower() in " ".join(result["reasons"]).lower()
+    assert not (destination / "spec.json").exists()
+
+
+@pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+    tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+    _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+    actual = dict(observation()["identity"], ppid=tool.os.getpid())
+    monkeypatch.setattr(tool, "process_identity", lambda pid: dict(actual, pid=pid))
+    calls = []
+    class Child:
+        pid = 4321
+        returncode = 0
+        def __init__(self, argv, kwargs): self.argv, self.kwargs = argv, kwargs
+        def communicate(self, timeout):
+            obs = observation(); obs.update(identity=copy.deepcopy(actual), at=tool.utc(), argv=self.argv,
+                    interpreter=req["interpreter"]["path"], cwd=req["authorized_root"], tmpdir=req["scratch_root"],
+                    inherited_visibility=None, dependencies=env["dependencies"])
+            if change == "pid": obs["identity"]["pid"] = 9000
+            if change == "ppid": obs["identity"]["ppid"] = 9000
+            if change == "start": obs["identity"]["start_identity"] = "other-process"
+            if change == "argv": obs["argv"] = ["/inert/wrong"]
+            if change == "cwd": obs["cwd"] = "/inert/wrong"
+            if change == "time": obs["at"] = "2025-01-01T00:00:00.000000Z"
+            if change == "interpreter": obs["interpreter"] = "/inert/wrong"
+            return json.dumps(obs), "retained discovery stderr"
+    def popen(argv, **kwargs): calls.append((argv, kwargs)); return Child(argv, kwargs)
+    monkeypatch.setattr(tool.subprocess, "Popen", popen)
+    monkeypatch.delenv("CUDA_VISIBLE_DEVICES", raising=False)
+    def no_group(pid, sig): raise ProcessLookupError
+    monkeypatch.setattr(tool.os, "killpg", no_group)
+    obs, command = tool.launch_discovery(request_path, req, env)
+    assert command.get("schema") == "bac-hardware-discovery-command-v1"
+    assert command["capture_identity"]["pid"] == tool.os.getpid()
+    assert command["request"] == protocol.file_reference(request_path) and command["executable"] == req["interpreter"]
+    assert command["capture"] == protocol.file_reference(Path(tool.__file__))
+    assert bool(command["errors"]) == (change != "none")
+    assert command["stderr"] == "retained discovery stderr" and json.loads(command["stdout"]) == obs
+    assert calls[0][0][0] == req["interpreter"]["path"] and calls[0][0][1:4] == ["-I", "-B", "-c"]
+    assert calls[0][1]["cwd"] == req["authorized_root"] and calls[0][1]["env"]["CUDA_VISIBLE_DEVICES"] == ""
+    assert not calls[0][1].get("shell", False)
+
+
+def test_read_only_capture_rejects_symlink_destination_parent(tmp_path, monkeypatch):
+    tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+    candidate, request_path, _, req, env, registry = capture_fixture(tmp_path)
+    stub_capture_observations(monkeypatch, tool, req, env, registry)
+    real = tmp_path / "real"; real.mkdir(); alias = tmp_path / "alias"; alias.symlink_to(real, target_is_directory=True)
+    with pytest.raises(ValueError): tool.capture(candidate, request_path, alias / "capture")
+    assert list(real.iterdir()) == []
+
+
+def test_real_cuda_backend_does_not_claim_unrelated_gpu_contention(tmp_path, monkeypatch):
+    tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, "unrelated")
+    tool.collect_gpu(obs, env, lambda: None)
+    assert obs["competing_workloads"] == []
+    assert [d["gpu_uuid"] for d in obs["devices"]] == ["GPU-a", "GPU-b"]
+
+
+def test_driver_query_refuses_wrong_actual_executable(tmp_path, monkeypatch):
+    tool = module(); assert callable(getattr(tool, "run_query", None)), "query backend missing"
+    executable = reference(tmp_path / "driver", "inert driver")
+    class Child:
+        pid = 4321
+        returncode = 0
+        def communicate(self, timeout): return "", ""
+    monkeypatch.setattr(tool.subprocess, "Popen", lambda argv, **kwargs: Child())
+    monkeypatch.setattr(tool, "process_identity", lambda pid: dict(observation()["identity"], ppid=tool.os.getpid()))
+    monkeypatch.setattr(tool.os, "readlink", lambda path: str(tmp_path / "different-executable"))
+    records = []
+    with pytest.raises(ValueError): tool.run_query(executable, ["--version"], records)
+    assert records and records[0]["errors"]
+
+
+@pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing", "host", "boot", "expired"])
+def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+    tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+    obs, req = observation(), request()
+    allocation = {"host": "synthetic", "boot_id": "inert-boot", "start": "2026-01-01T00:00:00.000000Z", "end": None, "authority": "synthetic",
+                  "authorized_cpu_ids": [0, 1, 2, 3], "capacity": {"cpu_slots": 4, "ram_bytes": 1000, "scratch_bytes": 1000, "scratch_inodes": 20},
+                  "overhead": {"cpu_slots": 1, "ram_bytes": 100, "scratch_bytes": 100, "scratch_inodes": 1}}
+    if change == "cpu": allocation["overhead"]["cpu_slots"] = 4
+    if change == "ram": obs["cgroups"][1]["memory_current"] = "1950"
+    if change == "scratch": allocation["overhead"]["scratch_bytes"] = 1000
+    if change == "affinity": allocation["authorized_cpu_ids"] = [0]
+    if change == "missing": obs["cgroups"][0]["cpu_max"] = None
+    if change == "host": allocation["host"] = "wrong-host"
+    if change == "boot": allocation["boot_id"] = "wrong-boot"
+    if change == "expired": allocation["end"] = "2026-01-02T00:00:00.000000Z"
+    if change == "none": tool.discovery_preflight(obs, req, allocation)
+    else:
+        with pytest.raises(ValueError): tool.discovery_preflight(obs, req, allocation)
+
+
+def test_read_only_capture_detects_source_drift_during_discovery(tmp_path, monkeypatch):
+    tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+    stub_capture_observations(monkeypatch, tool, req, env, registry)
+    original = tool.launch_discovery
+    def drift(*args):
+        result = original(*args)
+        Path(source["inventory"]["source"][0]["path"]).write_text("inert drift during discovery")
+        return result
+    monkeypatch.setattr(tool, "launch_discovery", drift)
+    destination = tmp_path / "capture"
+    result = tool.capture(candidate, request_path, destination)
+    assert result["disposition"] == "refused" and result["spec"] is None
+    assert "reference" in " ".join(result["reasons"])
+    assert (destination / "source-before.json").exists() and (destination / "discovery.json").exists()
+
+
+def test_capture_and_runner_share_pool_allocation_lock_names(tmp_path):
+    import fcntl
+    import hashlib
+    import os
+    tool = module(); lease_root = tmp_path / "leases"; lease_root.mkdir()
+    req = {"lease_root": str(lease_root), "jobs": []}
+    allocation = {"pool_id": "pool", "allocation_id": "one", "partition_basis": "exclusive-pool"}
+    with tool.leases(req, allocation):
+        name = hashlib.sha256(b"pool:pool").hexdigest() + ".lock"
+        fd = os.open(lease_root / name, os.O_RDWR)
+        try:
+            with pytest.raises(BlockingIOError): fcntl.flock(fd, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        finally: os.close(fd)
+        with pytest.raises(ValueError):
+            with tool.leases(req, dict(allocation, allocation_id="other", partition_basis="root-proven-disjoint")): pass
+    with tool.leases(req, dict(allocation, partition_basis="root-proven-disjoint")):
+        with tool.leases(req, dict(allocation, allocation_id="other", partition_basis="root-proven-disjoint")): pass
+
+
+def test_read_only_cuda_capture_normalizes_only_fresh_device_provenance(tmp_path, monkeypatch):
+    tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+    _, obs = cuda_pair()
+    data = protocol.file_reference(tmp_path / "inert-evidence")
+    req.update(profile="cuda", requested_visibility="1,0", authorized_devices=["GPU-b", "GPU-a"])
+    job = req["jobs"][0]; job.update(profile="cuda", devices=[dict(d, mapping_provenance=data) for d in obs["devices"]])
+    job["environment"]["CUDA_VISIBLE_DEVICES"] = "1,0"; job["roles"][0]["cuda_policy"] = "real-work"; job["seed"]["cuda"] = [1, 2]
+    bound_path = tmp_path / "cpu-bound.json"; bound = json.loads(bound_path.read_text())
+    bound.update(environment=job["environment"], cuda_policy="real-work"); bound_path.write_text(json.dumps(bound))
+    job["roles"][0]["cpu_reservation_evidence"] = protocol.file_reference(bound_path)
+    allocation_path = tmp_path / "allocation.json"; allocation = json.loads(allocation_path.read_text())
+    allocation["authorized_devices"] = req["authorized_devices"]; allocation_path.write_text(json.dumps(allocation))
+    grant_path = tmp_path / "grant.json"; grant = json.loads(grant_path.read_text())
+    grant.update(allocation_grant=protocol.file_reference(allocation_path), cpu_reservation_evidence=[protocol.file_reference(bound_path)])
+    grant_path.write_text(json.dumps(grant))
+    freeze_path = tmp_path / "freeze.json"; freeze = json.loads(freeze_path.read_text())
+    freeze["grant"] = protocol.file_reference(grant_path); freeze_path.write_text(json.dumps(freeze))
+    source["source_freeze"] = protocol.file_reference(freeze_path); candidate.write_text(json.dumps(source)); req["source_freeze"] = source["source_freeze"]
+    for key in ("torch_build", "cuda_runtime", "driver"):
+        env[key] = {"state": "measured", "value": obs[key], "reason": "", "provenance": data}
+    env_path = tmp_path / "environment.json"; env_path.write_text(json.dumps(env)); req["dependencies"] = protocol.file_reference(env_path)
+    request_path.write_text(json.dumps(req)); stub_capture_observations(monkeypatch, tool, req, env, registry)
+    obs.update(at=tool.utc(), tmpdir=req["scratch_root"], dependencies=env["dependencies"], scratch_free_bytes=1000000, scratch_free_inodes=100)
+    monkeypatch.setattr(tool, "launch_discovery", lambda *args: (obs, {"synthetic": True, "errors": []}))
+    result = tool.capture(candidate, request_path, tmp_path / "capture")
+    assert result["disposition"] == "admitted", result["reasons"]
+    spec = json.loads(Path(result["spec"]["path"]).read_text()); admission = json.loads(Path(result["admission"]["path"]).read_text())
+    assert spec["jobs"][0]["devices"] == admission["devices"]
+    normalized = copy.deepcopy(spec["jobs"][0])
+    for device, requested in zip(normalized["devices"], job["devices"]):
+        assert device["mapping_provenance"] != requested["mapping_provenance"]
+        device["mapping_provenance"] = requested["mapping_provenance"]
+    assert normalized == job
+
+
+@pytest.mark.parametrize("change", ["host", "boot_id"])
+def test_capture_binds_host_before_launching_discovery(tmp_path, monkeypatch, change):
+    tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+    stub_capture_observations(monkeypatch, tool, req, env, registry)
+    identity = dict(observation()["identity"], pid=tool.os.getpid(), ppid=tool.os.getppid())
+    identity[change] = "wrong"
+    monkeypatch.setattr(tool, "process_identity", lambda pid: identity)
+    def forbidden(*args): pytest.fail("discovery launched before actual capture host/boot authorization")
+    monkeypatch.setattr(tool, "launch_discovery", forbidden)
+    result = tool.capture(candidate, request_path, tmp_path / "capture")
+    assert result["disposition"] == "refused" and result["spec"] is None
+    assert "host" in " ".join(result["reasons"]) or "boot" in " ".join(result["reasons"])
+
+
+def test_capture_checks_held_lease_inode_before_publishing_spec(tmp_path, monkeypatch):
+    import hashlib
+    from types import SimpleNamespace
+    tool = module(); candidate, request_path, _, req, env, registry = capture_fixture(tmp_path)
+    stub_capture_observations(monkeypatch, tool, req, env, registry)
+    original_launch, original_stat, changed = tool.launch_discovery, tool.os.stat, []
+    name = hashlib.sha256(b"pool:pool").hexdigest() + ".lock"
+    def discovery(*args):
+        outcome = original_launch(*args); changed.append(True); return outcome
+    def replaced(path, *args, **kwargs):
+        value = original_stat(path, *args, **kwargs)
+        if changed and str(path) == name:
+            return SimpleNamespace(st_dev=value.st_dev, st_ino=value.st_ino+1, st_mode=value.st_mode, st_blocks=value.st_blocks)
+        return value
+    monkeypatch.setattr(tool, "launch_discovery", discovery); monkeypatch.setattr(tool.os, "stat", replaced)
+    destination = tmp_path / "capture"; result = tool.capture(candidate, request_path, destination)
+    assert result["disposition"] == "refused" and result["spec"] is None
+    assert not (destination / "spec.json").exists()
+    assert "lease" in " ".join(result["reasons"])
+
+
+def test_discovery_cancellation_terminates_owned_group_and_reaps(tmp_path, monkeypatch):
+    tool = module(); _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+    events = []
+    class Child:
+        pid = 4321
+        returncode = None
+        def communicate(self, timeout):
+            events.append(("communicate", timeout))
+            if len(events) == 1: raise KeyboardInterrupt
+            self.returncode = -15
+            return "partial observation", "canceled stderr"
+    monkeypatch.setattr(tool.subprocess, "Popen", lambda argv, **kwargs: Child())
+    monkeypatch.setattr(tool, "process_identity", lambda pid: dict(observation()["identity"], pid=pid, ppid=tool.os.getpid()))
+    monkeypatch.setattr(tool.os, "killpg", lambda pid, sig: events.append(("killpg", pid, sig)))
+    try: outcome = tool.launch_discovery(request_path, req, env)
+    except KeyboardInterrupt: outcome = None
+    assert any(row[0] == "killpg" for row in events), "cancellation left owned discovery group alive"
+    assert sum(row[0] == "communicate" for row in events) >= 2, "cancellation did not reap owned discovery"
+    assert outcome is not None and outcome[1]["errors"] and outcome[1]["stderr"] == "canceled stderr"

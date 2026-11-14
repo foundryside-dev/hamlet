@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-14T07:31:05.146540+00:00",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r120-candidate.json",
+  "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "auxiliary_harness": {
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py": "774219868be84b1f9d07f66a9edb9d677d97883cd8d7071f8f162fdeef188c87"
+  },
+  "status": "FINALIZED BEFORE R120 EXECUTION; ALL APP/CONFIG/INDEX FROZEN"
+}

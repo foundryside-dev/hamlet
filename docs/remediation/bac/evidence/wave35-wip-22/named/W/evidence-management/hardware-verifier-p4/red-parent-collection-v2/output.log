@@ -1,0 +1,141 @@
+...................................FFFFFFF...F                           [100%]
+=================================== FAILURES ===================================
+_________ test_parent_wait_cannot_be_rewritten_as_success[exit_code-7] _________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d88cd0>
+field = 'exit_code', value = 7
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:355: Failed
+__________ test_parent_wait_cannot_be_rewritten_as_success[signal-9] ___________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d88b90>
+field = 'signal', value = 9
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:355: Failed
+_______ test_parent_wait_cannot_be_rewritten_as_success[identity-value2] _______
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d89090>
+field = 'identity'
+value = {'boot_id': 'synthetic', 'host': 'synthetic', 'pid': 999, 'ppid': 100, ...}
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:355: Failed
+____ test_parent_wait_cannot_be_rewritten_as_success[end_monotonic_ns-999] _____
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d89810>
+field = 'end_monotonic_ns', value = 999
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:355: Failed
+______________ test_actual_collection_records_required[duplicate] ______________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d89e50>
+mutation = 'duplicate'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="collection"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:367: Failed
+_______________ test_actual_collection_records_required[missing] _______________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d89f90>
+mutation = 'missing'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="collection"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:367: Failed
+____________ test_actual_collection_records_required[wrong-process] ____________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d88e10>
+mutation = 'wrong-process'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="collection"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:367: Failed
+_________________ test_report_after_process_end_cannot_satisfy _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd823d8a210>
+
+    def test_report_after_process_end_cannot_satisfy(evidence):
+        report = json.loads(Path(evidence.reports[-1]["path"]).read_text())
+        report["at"] = T4
+        evidence.result["outcomes"][0]["evidence"][-1] = write(Path(evidence.reports[-1]["path"]), report)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:384: Failed
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[exit_code-7]
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[signal-9]
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[identity-value2]
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[end_monotonic_ns-999]
+FAILED test_verify_bac_hardware_v1.py::test_actual_collection_records_required[duplicate]
+FAILED test_verify_bac_hardware_v1.py::test_actual_collection_records_required[missing]
+FAILED test_verify_bac_hardware_v1.py::test_actual_collection_records_required[wrong-process]
+FAILED test_verify_bac_hardware_v1.py::test_report_after_process_end_cannot_satisfy
+8 failed, 38 passed in 2.63s

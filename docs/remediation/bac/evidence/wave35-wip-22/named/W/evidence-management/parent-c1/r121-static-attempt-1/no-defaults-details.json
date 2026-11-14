@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "scripts/no_defaults_lint.py",
+    "src/townlet/",
+    "--whitelist",
+    ".defaults-whitelist.txt",
+    "--ratchet",
+    ".defaults-ratchet",
+    "--show-whitelisted"
+  ],
+  "start": "2026-11-14T08:03:22.312867+00:00",
+  "pid": 196991,
+  "exit_code": 1,
+  "end": "2026-11-14T08:03:23.587528+00:00"
+}

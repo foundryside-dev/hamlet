@@ -1,0 +1,199 @@
+........................................................................ [ 83%]
+.FFFF.FFF.FFFF                                                           [100%]
+=================================== FAILURES ===================================
+____ test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[c-0-100] ____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_monotonic_lifetime_is_enc0')
+process_id = 'c', start = 0, end = 100
+
+    @pytest.mark.parametrize("process_id,start,end", [("c", 0, 100), ("c", 1000, 1100), ("w0", 190, 220), ("w0", 280, 310)])
+    def test_monotonic_lifetime_is_enclosed_by_actual_parent_interval(tmp_path, process_id, start, end):
+        evidence = Evidence(tmp_path, common=True, workers=int(process_id == "w0"))
+    
+        def mutate(path, value):
+            if path.name == "process-" + process_id + "-start.json":
+                value["monotonic_ns"] = start
+            if path.name == "process-" + process_id + "-end.json":
+                value.update(monotonic_ns=end, elapsed_ns=obs(end - start))
+    
+        coherent_change(evidence, mutate)
+>       with pytest.raises(ValueError, match="monotonic.*interval"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1237: Failed
+__ test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[c-1000-1100] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_monotonic_lifetime_is_enc1')
+process_id = 'c', start = 1000, end = 1100
+
+    @pytest.mark.parametrize("process_id,start,end", [("c", 0, 100), ("c", 1000, 1100), ("w0", 190, 220), ("w0", 280, 310)])
+    def test_monotonic_lifetime_is_enclosed_by_actual_parent_interval(tmp_path, process_id, start, end):
+        evidence = Evidence(tmp_path, common=True, workers=int(process_id == "w0"))
+    
+        def mutate(path, value):
+            if path.name == "process-" + process_id + "-start.json":
+                value["monotonic_ns"] = start
+            if path.name == "process-" + process_id + "-end.json":
+                value.update(monotonic_ns=end, elapsed_ns=obs(end - start))
+    
+        coherent_change(evidence, mutate)
+>       with pytest.raises(ValueError, match="monotonic.*interval"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1237: Failed
+__ test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[w0-190-220] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_monotonic_lifetime_is_enc2')
+process_id = 'w0', start = 190, end = 220
+
+    @pytest.mark.parametrize("process_id,start,end", [("c", 0, 100), ("c", 1000, 1100), ("w0", 190, 220), ("w0", 280, 310)])
+    def test_monotonic_lifetime_is_enclosed_by_actual_parent_interval(tmp_path, process_id, start, end):
+        evidence = Evidence(tmp_path, common=True, workers=int(process_id == "w0"))
+    
+        def mutate(path, value):
+            if path.name == "process-" + process_id + "-start.json":
+                value["monotonic_ns"] = start
+            if path.name == "process-" + process_id + "-end.json":
+                value.update(monotonic_ns=end, elapsed_ns=obs(end - start))
+    
+        coherent_change(evidence, mutate)
+>       with pytest.raises(ValueError, match="monotonic.*interval"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1237: Failed
+__ test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[w0-280-310] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_monotonic_lifetime_is_enc3')
+process_id = 'w0', start = 280, end = 310
+
+    @pytest.mark.parametrize("process_id,start,end", [("c", 0, 100), ("c", 1000, 1100), ("w0", 190, 220), ("w0", 280, 310)])
+    def test_monotonic_lifetime_is_enclosed_by_actual_parent_interval(tmp_path, process_id, start, end):
+        evidence = Evidence(tmp_path, common=True, workers=int(process_id == "w0"))
+    
+        def mutate(path, value):
+            if path.name == "process-" + process_id + "-start.json":
+                value["monotonic_ns"] = start
+            if path.name == "process-" + process_id + "-end.json":
+                value.update(monotonic_ns=end, elapsed_ns=obs(end - start))
+    
+        coherent_change(evidence, mutate)
+>       with pytest.raises(ValueError, match="monotonic.*interval"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1237: Failed
+_ test_workers_require_one_run_and_distinct_gateways[testrunuid-22222222222222222222222222222222] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_workers_require_one_run_a0')
+field = 'testrunuid', value = '22222222222222222222222222222222'
+
+    @pytest.mark.parametrize("field,value", [("testrunuid", "2" * 32), ("mainargv", ["pytest", "foreign"]), ("workerid", "gw0")])
+    def test_workers_require_one_run_and_distinct_gateways(tmp_path, field, value):
+        evidence = Evidence(tmp_path, common=True, workers=2)
+        change_worker_identity(evidence, "gw1", field, value)
+>       with pytest.raises(ValueError, match="worker.*(run|argv|gateway)"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1271: Failed
+_____ test_workers_require_one_run_and_distinct_gateways[mainargv-value1] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_workers_require_one_run_a1')
+field = 'mainargv', value = ['pytest', 'foreign']
+
+    @pytest.mark.parametrize("field,value", [("testrunuid", "2" * 32), ("mainargv", ["pytest", "foreign"]), ("workerid", "gw0")])
+    def test_workers_require_one_run_and_distinct_gateways(tmp_path, field, value):
+        evidence = Evidence(tmp_path, common=True, workers=2)
+        change_worker_identity(evidence, "gw1", field, value)
+>       with pytest.raises(ValueError, match="worker.*(run|argv|gateway)"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1271: Failed
+_______ test_workers_require_one_run_and_distinct_gateways[workerid-gw0] _______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_workers_require_one_run_a2')
+field = 'workerid', value = 'gw0'
+
+    @pytest.mark.parametrize("field,value", [("testrunuid", "2" * 32), ("mainargv", ["pytest", "foreign"]), ("workerid", "gw0")])
+    def test_workers_require_one_run_and_distinct_gateways(tmp_path, field, value):
+        evidence = Evidence(tmp_path, common=True, workers=2)
+        change_worker_identity(evidence, "gw1", field, value)
+>       with pytest.raises(ValueError, match="worker.*(run|argv|gateway)"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1271: Failed
+________ test_replacement_cannot_reuse_an_unrelated_predecessor_gateway ________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_replacement_cannot_reuse_0')
+
+    def test_replacement_cannot_reuse_an_unrelated_predecessor_gateway(tmp_path):
+        evidence = Evidence(tmp_path, common=True, workers=2, replacement=True)
+        change_worker_identity(evidence, "gw2", "workerid", "gw0")
+>       with pytest.raises(ValueError, match="worker.*gateway"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1284: Failed
+_________ test_replacement_monotonic_start_must_follow_predecessor_end _________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_replacement_monotonic_sta0')
+
+    def test_replacement_monotonic_start_must_follow_predecessor_end(tmp_path):
+        evidence = Evidence(tmp_path, common=True, workers=1, replacement=True)
+    
+        def mutate(path, value):
+            if path.name == "process-w1-start.json":
+                value["monotonic_ns"] = 215
+            if path.name == "process-w1-end.json":
+                value["elapsed_ns"] = obs(25)
+    
+        coherent_change(evidence, mutate)
+>       with pytest.raises(ValueError, match="replacement.*monotonic"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1298: Failed
+_____________ test_completion_source_witnesses_match_copied_result _____________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_completion_source_witness0')
+
+    def test_completion_source_witnesses_match_copied_result(tmp_path):
+        evidence = Evidence(tmp_path, common=True)
+        coherent_change(evidence, lambda path, value: value.update(source_witnesses=[]) if path.name == "completion.json" else None)
+>       with pytest.raises(ValueError, match="completion/result source_witnesses"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1305: Failed
+_______ test_completion_inventory_must_include_process_raw_observations ________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-red-v2/fixtures/test_completion_inventory_must0')
+
+    def test_completion_inventory_must_include_process_raw_observations(tmp_path):
+        evidence = Evidence(tmp_path, common=True)
+        coherent_change(
+            evidence, lambda path, value: value.update(inventory=[evidence.inert]) if path.name == "completion.json" else None
+        )
+>       with pytest.raises(ValueError, match="completion inventory.*raw"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:1314: Failed
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[c-0-100]
+FAILED test_verify_bac_hardware_v1.py::test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[c-1000-1100]
+FAILED test_verify_bac_hardware_v1.py::test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[w0-190-220]
+FAILED test_verify_bac_hardware_v1.py::test_monotonic_lifetime_is_enclosed_by_actual_parent_interval[w0-280-310]
+FAILED test_verify_bac_hardware_v1.py::test_workers_require_one_run_and_distinct_gateways[testrunuid-22222222222222222222222222222222]
+FAILED test_verify_bac_hardware_v1.py::test_workers_require_one_run_and_distinct_gateways[mainargv-value1]
+FAILED test_verify_bac_hardware_v1.py::test_workers_require_one_run_and_distinct_gateways[workerid-gw0]
+FAILED test_verify_bac_hardware_v1.py::test_replacement_cannot_reuse_an_unrelated_predecessor_gateway
+FAILED test_verify_bac_hardware_v1.py::test_replacement_monotonic_start_must_follow_predecessor_end
+FAILED test_verify_bac_hardware_v1.py::test_completion_source_witnesses_match_copied_result
+FAILED test_verify_bac_hardware_v1.py::test_completion_inventory_must_include_process_raw_observations
+11 failed, 75 passed in 10.99s

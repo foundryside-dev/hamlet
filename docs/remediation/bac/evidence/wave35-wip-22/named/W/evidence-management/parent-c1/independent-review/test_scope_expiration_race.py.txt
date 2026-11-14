@@ -1,0 +1,64 @@
+"""Independent causal contender/expiration schedule using actual issued custody."""
+
+from threading import Event, Thread, current_thread
+from typing import Any
+
+import pytest
+
+from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import compiled as compiled, make_parent
+import townlet.exploration.parent_custody as custody
+
+
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_contender_lookup_survives_issuer_scope_expiration(compiled: Any, monkeypatch: Any, owner_name: str) -> None:
+    rig = make_parent(compiled)
+    owner = getattr(rig, owner_name)
+
+    def ordinary_call() -> Any:
+        if owner_name == "runtime":
+            return owner.epsilon_tensor(batch_size=1, device="cpu")
+        return owner.checkpoint_state()
+
+    assert ordinary_call() is not None  # Genuine standalone fixture prerequisite.
+    looked_up, resume, finished = Event(), Event(), Event()
+    errors: list[BaseException] = []
+    returned: list[Any] = []
+    observed: list[Any] = []
+    original_lookup = custody._lookup
+
+    def lookup(actual_owner: Any) -> Any:
+        scope = original_lookup(actual_owner)
+        if actual_owner is owner and current_thread() is contender and scope is not None:
+            observed.append(scope)  # Observe actual issuer result, never construct authority.
+            looked_up.set()
+            if not resume.wait(5):
+                raise AssertionError("issuer did not release contender barrier")
+        return scope
+
+    def contend() -> None:
+        try:
+            returned.append(ordinary_call())
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            finished.set()
+
+    contender = Thread(target=contend, daemon=True)
+    monkeypatch.setattr(custody, "_lookup", lookup)
+    try:
+        with rig.runtime.retain_parent_custody():
+            contender.start()
+            assert looked_up.wait(5), "ordinary contender did not observe actual retained scope"
+            assert len(observed) == 1 and not finished.is_set()
+        # Actual context exit has now expired its real records. The ordinary
+        # contender has not acquired domain or owner locks and must continue
+        # with standalone admission, rather than indexing an expired record.
+        assert original_lookup(owner) is None
+    finally:
+        resume.set()
+        if contender.ident is not None:
+            contender.join(5)
+    assert finished.is_set(), "contender failed to finish after real custody release"
+    assert not errors, f"ordinary contender failed at legitimate scope expiration: {errors!r}"
+    assert len(returned) == 1 and returned[0] is not None
+    assert ordinary_call() is not None

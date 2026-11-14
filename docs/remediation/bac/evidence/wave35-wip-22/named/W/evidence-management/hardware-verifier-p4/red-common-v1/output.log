@@ -1,0 +1,99 @@
+..............................FFFFF                                      [100%]
+=================================== FAILURES ===================================
+________________ test_common_validators_recompute_actual_proof _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-118/test_common_validators_recompu0')
+
+    def test_common_validators_recompute_actual_proof(tmp_path):
+        evidence = Evidence(tmp_path, common=True)
+        receipt = evidence.verify()
+>       assert receipt["custody"] == "satisfied"
+E       AssertionError: assert 'unsatisfied' == 'satisfied'
+E         
+E         - satisfied
+E         + unsatisfied
+E         ? ++
+
+test_verify_bac_hardware_v1.py:293: AssertionError
+_________ test_common_payload_cannot_omit_actual_observations[reports] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-118/test_common_payload_cannot_omi0')
+field = 'reports'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:315: Failed
+________ test_common_payload_cannot_omit_actual_observations[processes] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-118/test_common_payload_cannot_omi1')
+field = 'processes'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:315: Failed
+____ test_common_payload_cannot_omit_actual_observations[source_witnesses] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-118/test_common_payload_cannot_omi2')
+field = 'source_witnesses'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:315: Failed
+____________ test_common_validator_does_not_execute_referenced_code ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-118/test_common_validator_does_not0')
+
+    def test_common_validator_does_not_execute_referenced_code(tmp_path):
+        evidence = Evidence(tmp_path, common=True)
+        # Registry authority is not inferred from a payload filename or execution claim.
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload["execute"] = "raise RuntimeError('never execute evidence')"
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:328: Failed
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_common_validators_recompute_actual_proof
+FAILED test_verify_bac_hardware_v1.py::test_common_payload_cannot_omit_actual_observations[reports]
+FAILED test_verify_bac_hardware_v1.py::test_common_payload_cannot_omit_actual_observations[processes]
+FAILED test_verify_bac_hardware_v1.py::test_common_payload_cannot_omit_actual_observations[source_witnesses]
+FAILED test_verify_bac_hardware_v1.py::test_common_validator_does_not_execute_referenced_code
+5 failed, 30 passed in 1.84s

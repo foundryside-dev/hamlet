@@ -1,0 +1,217 @@
+{
+  "schema": "bac-parent-c1-author-static-checks-v1",
+  "application_execution": false,
+  "attempts": [
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "--diff",
+        "src/townlet/config/exploration_policy.py",
+        "src/townlet/exploration/scoped_curiosity.py",
+        "src/townlet/exploration/parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 1,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-pre-r120.log",
+      "output_sha256": "730f1f0924f36296893bf0b600ad6b7c084457cecb4b0ac3c948a54ac57eced6"
+    },
+    {
+      "argv": [
+        ".venv/bin/ruff",
+        "check",
+        "src/townlet/config/exploration_policy.py",
+        "src/townlet/exploration/scoped_curiosity.py",
+        "src/townlet/exploration/parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 1,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/ruff-pre-r120.log",
+      "output_sha256": "32f626db025c6a38fd34c8ef4e277d6ce452cf6607770196469299d1a34a2e1d"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--workers",
+        "1",
+        "--check",
+        "--diff",
+        "src/townlet/config/exploration_policy.py",
+        "src/townlet/exploration/scoped_curiosity.py",
+        "src/townlet/exploration/parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 1,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-single-pre-r120.log",
+      "output_sha256": "730f1f0924f36296893bf0b600ad6b7c084457cecb4b0ac3c948a54ac57eced6"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "--diff",
+        "src/townlet/config/exploration_policy.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-0-pre-r120.log",
+      "output_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "--diff",
+        "src/townlet/exploration/scoped_curiosity.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-1-pre-r120.log",
+      "output_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "--diff",
+        "src/townlet/exploration/parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 1,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-2-pre-r120.log",
+      "output_sha256": "91a5726c6a07d9a0bc0cdb0a0f2c72104ee8dd5079f83be6b5665315c9d2a9db"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "--diff",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 1,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-3-pre-r120.log",
+      "output_sha256": "d87196ec4eeb2e4e30e8d401ddb4fadb7d7ea0669ac7f5fee8a92bb05ebfbbe5"
+    },
+    {
+      "argv": [
+        ".venv/bin/ruff",
+        "check",
+        "--fix",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/ruff-fix-r120.log",
+      "output_sha256": "aac3a0503d8b95052cc85fb9f1717dc82b74aa55853a5aa9749b41e30275d472"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "src/townlet/exploration/parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-format-helper-r120.log",
+      "output_sha256": "f55a56a4160f39f540818fdc12279d1595c552046ab8c491f876f973c53074c0"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-format-test-r120.log",
+      "output_sha256": "7a142d0b4c1e807e875559ad013bf025a222838077a7ebe60fa760beeb32cd92"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "src/townlet/config/exploration_policy.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-0-final-r120.log",
+      "output_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "src/townlet/exploration/scoped_curiosity.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-1-final-r120.log",
+      "output_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "src/townlet/exploration/parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-2-final-r120.log",
+      "output_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "argv": [
+        ".venv/bin/black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/black-one-3-final-r120.log",
+      "output_sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "argv": [
+        ".venv/bin/ruff",
+        "check",
+        "src/townlet/config/exploration_policy.py",
+        "src/townlet/exploration/scoped_curiosity.py",
+        "src/townlet/exploration/parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "exit_code": 0,
+      "output_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/ruff-final-r120.log",
+      "output_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    }
+  ],
+  "final_sources": {
+    "src/townlet/config/exploration_policy.py": {
+      "sha256": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9",
+      "lines": 1313
+    },
+    "src/townlet/exploration/scoped_curiosity.py": {
+      "sha256": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4",
+      "lines": 1443
+    },
+    "src/townlet/exploration/parent_custody.py": {
+      "sha256": "5b592ac955d8e45b3369d4dac3a1bc2996093dfaa8427d732183d321aada801a",
+      "lines": 236
+    },
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": {
+      "sha256": "579ade676a5d42a66ee24fcb6aa7743b3cc00739114aec0c685e8fa0bb6043e7",
+      "lines": 827
+    }
+  },
+  "input_snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/pre-r120-format/manifest.json",
+  "tools": {
+    ".venv/bin/black": "20db618f8db19de16449c4621769b0058f02609f1cfb82d449c8bbb1fce6f1dd",
+    ".venv/bin/ruff": "fc7c04958b31455b53dc9daf2ff2394e722a0abc07562b5a10414c34403f3a2d"
+  },
+  "notes": [
+    "Both multi-file Black invocations were blocked at multiprocessing manager socket creation. No escalation used. Single-file commands avoid that path.",
+    "All failures and exact preformat source snapshot retained. Final Ruff/Black checks all pass. AST parse/compile also passed without importing application modules."
+  ]
+}

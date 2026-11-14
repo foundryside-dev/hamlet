@@ -1,0 +1,32 @@
+{
+  "schema": "bac-root-tool-adoption-v1",
+  "at": "2026-11-14T07:20:47.204674+00:00",
+  "packet": "hardware-identity-P3",
+  "status": "ADOPTED BOUNDED SYNTHETIC PROCESS TOOL; INTEGRATION/HARDWARE OWED",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/freeze-v2.json",
+    "bytes": 4013,
+    "sha256": "536efffcd437970d8e6831100cb5697e3a9f3c606b60154cf7829f6dbba1b8af"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-INDEPENDENT-REVIEW-v1.md",
+    "bytes": 7673,
+    "sha256": "6c0a8a28ac40bfc38538bd71f98b122870e58c2e34a94295a84b668e53bcd5f0"
+  },
+  "evidence_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/evidence-inventory-v1.json",
+    "bytes": 263444,
+    "sha256": "c1e5bc00a41691f40e420154c86eb6f60735f9e9083514df92395e16806ad8a6"
+  },
+  "independent_execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-execution.json",
+    "bytes": 1866,
+    "sha256": "7c1045192b1a8ceef59108065ebf17886f7957b73b5a7b84574cc5cc97521c1f"
+  },
+  "verified_references": 774,
+  "author_result": "45 synthetic tests PASS",
+  "independent_result": "49 PASS = author45 plus reviewer4; three discovery-only probes deselected, their prior attempts retained. No aggregate BAC count.",
+  "fixed": "Exact P1 fixed source,tests,configs,scripts,ratchet,artifacts flatten order preserving category entry order; independent RED then fixed-source pass.",
+  "scope": "Actual inert spawned child/xdist worker/replacement identity and reparented final-witness refusal, role-specific nonperturbing synthetic observations. No APP/Torch/CUDA execution or strict owner three-fork qualification.",
+  "remaining": "P2-P3-P4 full synthetic toolchain integration; P5 strict/phase/owner interfaces; actual source/hardware admission and all required CUDA cases. Hash/process observations still rely on root out-of-band authority and no-writer custody."
+}

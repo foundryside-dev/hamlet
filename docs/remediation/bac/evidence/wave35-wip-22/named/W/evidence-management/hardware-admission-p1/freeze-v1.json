@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-14T06:40:55.715524+00:00",
+  "status": "FROZEN FOR FRESH INDEPENDENT ASTRA REVIEW; NOT ADOPTED",
+  "packet": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "bytes": 6277,
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "lines": 520
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 56496,
+      "sha256": "e4a94e819bb97e39c5f71cdb80eda8d309fcfaef70d15cc67daceb1d80acf751",
+      "lines": 862
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 42670,
+      "sha256": "04fe92dd1acc9fa6f91510c67af572c3ace9d5582adb510f1e090f5c8e90bfab",
+      "lines": 652
+    }
+  ],
+  "cap": {
+    "files": 4,
+    "lines": 2800
+  },
+  "actual_lines": 2137,
+  "existing_capture_unchanged": true,
+  "protocol_root_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+    "bytes": 4220,
+    "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+  },
+  "protocol_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/freeze-v4.json",
+    "bytes": 3836,
+    "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+  },
+  "accepted_private_contracts": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/private-payload-contract-proposal-v2.md",
+      "bytes": 5230,
+      "sha256": "b0754003f7c35b44b753f2cf61cdccb4feff59b8759318012e490c79f6bd3baf"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+      "bytes": 5739,
+      "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/discovery-probe-private-addendum-proposal-v2.md",
+      "bytes": 3473,
+      "sha256": "306067e47bb21d589a622a75eb4cab9525ca32338d50b8cdcfc3412ebc70ee41"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v1.json",
+      "bytes": 3816,
+      "sha256": "6dd60faefd4340e7e1d6cc305683493fce59dd2c4780e85ee00cd32aac4af266"
+    }
+  ],
+  "tests": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-capture-overhead-v1.json",
+    "bytes": 2516,
+    "sha256": "9eb876e1e8ce9cfa81801dfb5dbc2cae3193b0062e173641d31df15014726c7c"
+  },
+  "test_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-capture-overhead-v1.log",
+    "bytes": 179,
+    "sha256": "0f045d203e69de0bee73b9c1083b6eeb8801cb19891f845a2ac123e3de96a323"
+  },
+  "exact_source_snapshots": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-capture-overhead-v1-source/capture_bac_hardware_v1.py.txt",
+      "bytes": 56496,
+      "sha256": "e4a94e819bb97e39c5f71cdb80eda8d309fcfaef70d15cc67daceb1d80acf751"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-capture-overhead-v1-source/test_capture_bac_hardware_v1.py.txt",
+      "bytes": 42670,
+      "sha256": "04fe92dd1acc9fa6f91510c67af572c3ace9d5582adb510f1e090f5c8e90bfab"
+    }
+  ],
+  "classification": "87 synthetic tests passed. Actual CPU/server/CUDA/application qualification UNRUN. Actual CUDA probe implemented but tested only with inert fixtures, stub commands and simulated Torch properties. No APP imports or real discovery executed.",
+  "boundary": "Root owns out-of-band grant authority, source/namespace no-writer custody, actual hardware qualification, candidate/runtime/publication. This tool never stages source or mutates Git/index. No legacy adapters."
+}

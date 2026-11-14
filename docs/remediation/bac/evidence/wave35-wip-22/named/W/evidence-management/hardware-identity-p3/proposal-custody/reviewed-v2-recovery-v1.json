@@ -1,0 +1,19 @@
+{
+  "schema": "bac-reviewed-proposal-recovery-v1",
+  "at": "2026-11-14T08:19:53.624803+00:00",
+  "status": "EXACT REVIEWED BYTES RECOVERED AND HASH VERIFIED; not a contemporaneous pre-edit snapshot",
+  "recovered": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/proposal-custody/CUDA-HARDWARE-P3-OWNER-AMENDMENT-PROPOSAL-v2.reviewed-277e0581.md.txt",
+    "bytes": 34465,
+    "sha256": "277e0581c7728e2d72a0c381f4b2d0cfe79185183cefc28ac759327a7d7ebd63"
+  },
+  "current_unchanged": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-AMENDMENT-PROPOSAL-v2.md",
+    "bytes": 35319,
+    "sha256": "223951b0bbefb319892ecbd9c1b37b1cf686aea929546acffd652f9f68de57b3"
+  },
+  "method": "Applied exact inverse of the eight replacement pairs recorded in the preceding functions.exec edit of this proposal. Verified recovered digest equals the independently handed-off reviewed 277e0581... digest before writing, then rehashed stored bytes.",
+  "authorization": "Root explicitly requested exact reconstruction from prior read/edit bytes with SHA verification; no approximation.",
+  "historical_limitation": "No pre-edit file snapshot was taken before the fork-only correction overwrote the unapproved v2 draft. This recovery records that fact honestly and does not claim the prose snapshot existed at review time.",
+  "preservation_rule": "Current final v2 remains at 223951...; subsequent changes after hash handoff require a new linked version path."
+}

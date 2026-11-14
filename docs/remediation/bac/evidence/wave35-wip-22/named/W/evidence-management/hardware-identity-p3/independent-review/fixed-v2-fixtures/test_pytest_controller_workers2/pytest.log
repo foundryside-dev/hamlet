@@ -1,0 +1,12 @@
+bringing up nodes...
+bringing up nodes...
+
+[gw0] node down: Not properly terminated
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_______________________ test_bac_hardware_identity_v1.py _______________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+worker 'gw0' crashed while running 'test_bac_hardware_identity_v1.py::test_inert_replacement[1]'
+=========================== short test summary info ============================
+FAILED ../../../../../../../../../../bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_replacement[1]
+1 failed, 1 passed in 1.85s

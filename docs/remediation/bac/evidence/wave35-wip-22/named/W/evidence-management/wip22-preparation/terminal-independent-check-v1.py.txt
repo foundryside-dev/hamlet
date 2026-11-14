@@ -1,0 +1,115 @@
+import collections
+import hashlib
+import json
+from pathlib import Path
+
+R = Path('/workspace/hamlet')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+P = W / 'evidence-management/wip22-preparation'
+roots = dict(R=R, W=W, Q=Q)
+refs = {}
+errors = []
+
+def read(p):
+    return json.loads(p.read_text())
+
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+def require(condition, context):
+    if not condition:
+        errors.append(context)
+
+def walk(o):
+    if isinstance(o, dict):
+        if {'root', 'path', 'bytes', 'sha256'} <= o.keys() and o['root'] in roots:
+            refs[(o['root'], o['path'], o['sha256'])] = o
+        for v in o.values():
+            walk(v)
+    elif isinstance(o, list):
+        for v in o:
+            walk(v)
+
+receipt = read(P / 'root-reviewed-receipt-draft-v1.json')
+subject = read(P / 'root-qualification-subject-v1.json')
+contract = read(P / 'root-checkpoint-contract-v1.json')
+closure = read(P / 'packet-v3/supporting-closure-proposal-v1.json')
+for o in [receipt, subject, contract, closure]:
+    walk(o)
+require(subject['contract'] == receipt['contract'], 'subject/receipt contract')
+require(subject['candidate_tree'] == receipt['candidate_tree'], 'subject/receipt tree')
+for key in ['documents', 'execution_subtrees', 'overlap_accounting', 'package_accounting', 'required_next']:
+    require(subject[key] == receipt[key], 'subject/receipt ' + key)
+actual = {p.name for p in Q.iterdir() if any(p.name.startswith(f'wave35-r{n}-') for n in range(117, 123))}
+require(actual == {e['path'] for e in receipt['interval_entries']}, 'finite Q set')
+checks = receipt['attempt_index']
+status = collections.Counter()
+descendant_files = set()
+for c in checks:
+    require(c['terminal_attempt'] in [a['id'] for a in c['attempts']], c['check'] + ' terminal pointer')
+    for dep in c['required_dependencies']:
+        require(any(all(x.get(k) == dep.get(k) for k in ['root', 'path', 'sha256', 'bytes']) and c['check'] in x['required_by'] for x in receipt['dependencies']), c['check'] + ' helper closure')
+    for a in c['attempts']:
+        status[a['status']] += 1
+        if a['status'] == 'UNRUN':
+            require(all(a.get(k) is None for k in ['counts', 'exit_code', 'started_at', 'ended_at', 'duration_seconds']), a['id'] + ' unrun facts')
+            continue
+        actual_desc = {str(p.relative_to(Q)): 'directory' if p.is_dir() else 'file' for p in (Q / a['path']).rglob('*')}
+        require(actual_desc == {d['path']: d['type'] for d in a['descendants']}, a['id'] + ' descendants')
+        for d in a['descendants']:
+            if d['type'] == 'file':
+                walk(dict(d, root='Q'))
+                descendant_files.add(d['path'])
+        result = read(roots[a['result']['root']] / a['result']['path'])
+        require(a['exit_code'] == result['exit_code'], a['id'] + ' exit')
+        require(a['duration_seconds'] == result['seconds'], a['id'] + ' duration')
+        require(a['command'] == result['command'], a['id'] + ' argv')
+        require(a['candidate_tree'] == result['candidate_tree'], a['id'] + ' source')
+        require(sha(Path(result['log'])) == result['sha256'], a['id'] + ' log')
+        if a['status'] == 'PASSED':
+            require(a['exit_code'] == 0, a['id'] + ' pass exit')
+        if c['qualifying']:
+            require(a['counts']['passed'] > 0 and a['duration_seconds'] > 0, a['id'] + ' qualifying count/duration')
+            custody = read(roots[a['verifier']['root']] / a['verifier']['path'])
+            require(custody['counts'] == a['counts'], a['id'] + ' custody counts')
+            require(custody['process_identities'] == 1 + a['actual_worker_count'], a['id'] + ' process count')
+            require(custody['source_index_import_threads_fixture_custody'] == 'PASS', a['id'] + ' custody')
+child_facts = []
+for c in checks:
+    if not c['qualifying']:
+        continue
+    for child in c['expected_children']:
+        d = read(roots[child['witness']['root']] / child['witness']['path'])
+        walk(d)
+        w = read(roots[d['original_witness']['root']] / d['original_witness']['path'])
+        spec = read(roots[d['actual_spec']['root']] / d['actual_spec']['path'])
+        outer = read(W / 'evidence-management/parent-c1' / (Path(spec['output']).name + '-outer.json'))
+        require(d['actual_outer_record'] == outer, c['check'] + ' original outer')
+        require(d['actual_spec_fields'] == spec, c['check'] + ' original spec')
+        require(all(w[k] == v for k, v in d['original_fields'].items()), c['check'] + ' original witness')
+        require(w['ppid'] == outer['launcher_pid'] and w['start_ticks'] >= outer['launcher_start_ticks'], c['check'] + ' ancestry')
+        require(w['role'] == outer['role'] and w['expected_tree'] == subject['candidate_tree'], c['check'] + ' role/tree')
+        require(len(spec['jobs']) == 1 and w['orig_argv'][1:] == spec['jobs'][0]['args'], c['check'] + ' one actual job argv')
+        require(w['node'] in w['orig_argv'] and '-n' not in w['orig_argv'], c['check'] + ' node/no xdist')
+        require(Path(spec['output']).name + '--' + spec['jobs'][0]['name'] == child['attempt_id'], c['check'] + ' attempt linkage')
+        for path, expected in w['sha256'].items():
+            require(sha(Path(path)) == expected, c['check'] + ' child source ' + path)
+        child_facts.append(dict(role=w['role'], pid=w['pid'], ppid=w['ppid'], start_ticks=w['start_ticks'], scheduler_capacity=spec['workers']))
+require(len({x['pid'] for x in child_facts}) == 5, 'five distinct poison child PIDs')
+for alias in closure['historical_aliases']:
+    require(alias['expected_sha256'] == alias['resolved']['sha256'], 'historical alias hash')
+for o in refs.values():
+    path = roots[o['root']] / o['path']
+    require(path.is_file() and len(path.read_bytes()) == o['bytes'] and sha(path) == o['sha256'], 'reference ' + str(path))
+candidate = read(W / 'wave35/r122-candidate.json')
+source_counts = {}
+for key in ['source_files', 'configs', 'artifacts']:
+    for path, expected in candidate[key].items():
+        require(sha(R / path) == expected, key + ' ' + path)
+    source_counts[key] = len(candidate[key])
+report = dict(schema='bac-independent-terminal-check-v1', status='PASS' if not errors else 'FAIL', errors=errors, references_rehashed=len(refs), finite_Q_members=len(actual), checks=len(checks), attempts=sum(status.values()), attempt_statuses=dict(status), descendant_files=len(descendant_files), supporting_files=len(closure['files']), historical_aliases=len(closure['historical_aliases']), candidate_hash_inventories=source_counts, child_facts=child_facts)
+with (P / 'terminal-independent-check-result-v1.json').open('x') as out:
+    json.dump(report, out, indent=2)
+    out.write('\n')
+print(json.dumps(report, indent=2))

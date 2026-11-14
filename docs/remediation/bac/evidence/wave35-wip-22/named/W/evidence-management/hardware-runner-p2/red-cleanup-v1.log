@@ -1,0 +1,51 @@
+.......................................FF..                              [100%]
+=================================== FAILURES ===================================
+_______________ test_process_group_cleanup_precedes_pid_reaping ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-60/test_process_group_cleanup_pre0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcd5509e190>
+
+    def test_process_group_cleanup_precedes_pid_reaping(tmp_path, monkeypatch):
+        r = implementation(); events = []
+        actual_waitpid, actual_killpg = os.waitpid, os.killpg
+        def waitpid(pid, flags):
+            result = actual_waitpid(pid, flags)
+            if result[0] > 0: events.append('reaped')
+            return result
+        def killpg(pid, signum):
+            if signum == signal.SIGTERM: events.append('cleanup')
+            return actual_killpg(pid, signum)
+        monkeypatch.setattr(r.os, 'waitpid', waitpid); monkeypatch.setattr(r.os, 'killpg', killpg)
+        result = r.execute_jobs(spec(tmp_path, [job(tmp_path, 'short')]))[0]
+        assert result['exit_code'] == 0
+>       assert events.index('cleanup') < events.index('reaped'), 'PID was released before process-group ownership cleanup'
+                                         ^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: 'reaped' is not in list
+
+test_run_bac_hardware_v1.py:605: ValueError
+_______ test_post_spawn_observation_error_never_fabricates_nonexecution ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-60/test_post_spawn_observation_er0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcd54fd95c0>
+
+    def test_post_spawn_observation_error_never_fabricates_nonexecution(tmp_path, monkeypatch):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, 'import time; time.sleep(.5)'); stub_source(monkeypatch, r, registry)
+        original = r._identity
+        def observe(pid):
+            if pid != os.getpid(): raise OSError('synthetic post-spawn observation failure')
+            return original(pid)
+        monkeypatch.setattr(r, '_identity', observe)
+        with pytest.raises((ValueError, OSError)): r.run(path)
+        output = Path(s['jobs'][0]['output'])
+        assert (output / 'command.json').exists()
+        if (output / 'result.json').exists():
+            result = json.loads((output / 'result.json').read_text())
+>           assert result['disposition'] not in ('refused', 'unrun'), 'started child relabeled as nonexecution'
+E           AssertionError: started child relabeled as nonexecution
+E           assert 'refused' not in ('refused', 'unrun')
+
+test_run_bac_hardware_v1.py:620: AssertionError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_process_group_cleanup_precedes_pid_reaping
+FAILED test_run_bac_hardware_v1.py::test_post_spawn_observation_error_never_fabricates_nonexecution
+2 failed, 41 passed in 5.70s

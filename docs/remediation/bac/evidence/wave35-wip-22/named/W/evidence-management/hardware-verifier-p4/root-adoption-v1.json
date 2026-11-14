@@ -1,0 +1,39 @@
+{
+  "schema": "bac-root-tool-adoption-v1",
+  "at": "2026-11-14T08:08:44.378006+00:00",
+  "packet": "hardware-verifier-P4",
+  "status": "ADOPTED BOUNDED COMMON SYNTHETIC VERIFIER; REAL USE/INTEGRATION/HARDWARE OWED",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/freeze-v3.json",
+    "bytes": 18356,
+    "sha256": "32b0818346c54a35ce5471caad7fcb34ddd4b8331fe4aa566963e85ee3ee1bc1"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/REVIEW.md",
+    "bytes": 4552,
+    "sha256": "29942a92f779a15ae75fc626d98841d1d9d823cb30a4f21d93fee1dfb14ab9ea"
+  },
+  "evidence_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/root-independent-inventory-v3.json",
+    "bytes": 1837342,
+    "sha256": "e1d4a507955a8ddf79662eea73c6d2a3760c5552ef4dd6e4adba10af3f283099"
+  },
+  "independent_execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/execution.json",
+    "bytes": 2823,
+    "sha256": "c7b7a2b474625f1b612fdd6ff81d477fdcb5783406f8526c25bd1837cb936835"
+  },
+  "verified_references": 70,
+  "inventoried_review_files": 5481,
+  "author_result": "88 syntheticPASS",
+  "independent_result": "88 authorcases independently rerunPASS plus24semanticprobes with expecteddispositions; no uniqueaggregatecount",
+  "fixed": [
+    "Parent/controller/worker monotonic lifetime enclosure",
+    "RunUID/mainargv/gateway uniqueness and legalreplacement",
+    "Exactproducer-sourcearray andrawprovenanceinventory correspondence",
+    "Replacement binds exact uniqueinventoriedfailedpredecessordown"
+  ],
+  "scope": "Common source/process/report validators only; no APP/strict owner/realCUDA acceptance",
+  "limits": "Execution record argv is script sys.argv rather than full OS command; actual PID/PPID/UTC/affinity/source hashes recorded. Synthetic fixtures do not confer root execution authority. Producer andfinalinventories distinct byadoptedP2 contract.",
+  "remaining": "Root frozen synthetic integration/rerun before real use; exact rootvalidatorinventory afterfreeze; P3raw/owneramendments andcorrespondingP2/P4 changes; P5strictchild/RNG/fork/phase; actualsourcequalifiedowners andCUDA. Allmissingobligations remainunsatisfied/unrun."
+}

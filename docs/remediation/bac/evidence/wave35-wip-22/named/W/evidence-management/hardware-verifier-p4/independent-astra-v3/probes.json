@@ -1,0 +1,218 @@
+[
+  {
+    "name": "baseline",
+    "start": "2026-11-14T08:04:57.273272+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:04:57.393327+00:00"
+  },
+  {
+    "name": "late-launch",
+    "start": "2026-11-14T08:04:57.393392+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:04:57.556352+00:00"
+  },
+  {
+    "name": "process-monotonic-after-wait",
+    "start": "2026-11-14T08:04:57.556488+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "process monotonic lifetime outside parent wait interval",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1022, in verify\n    require(\n    ~~~~~~~^\n        all(process[\"identity\"][field] == runtime[\"runner_identity\"][field] for field in (\"host\", \"boot_id\"))\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        and waited[\"start_monotonic_ns\"] <= process[\"monotonic_ns\"] <= waited[\"end_monotonic_ns\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        \"process monotonic lifetime outside parent wait interval\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: process monotonic lifetime outside parent wait interval\n",
+    "end": "2026-11-14T08:04:57.683873+00:00"
+  },
+  {
+    "name": "completion-source-omission",
+    "start": "2026-11-14T08:04:57.684047+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "completion/result source_witnesses",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1014, in verify\n    require(completion[field] == result[field], \"completion/result \" + field)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: completion/result source_witnesses\n",
+    "end": "2026-11-14T08:04:57.777136+00:00"
+  },
+  {
+    "name": "completion-inventory-omission",
+    "start": "2026-11-14T08:04:57.777247+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "completion inventory missing process raw observation",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1027, in verify\n    require(\n    ~~~~~~~^\n        process[\"intra_op\"][\"provenance\"] in completion[\"inventory\"], \"completion inventory missing process raw observation\"\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: completion inventory missing process raw observation\n",
+    "end": "2026-11-14T08:04:57.875309+00:00"
+  },
+  {
+    "name": "foreign-worker-run",
+    "start": "2026-11-14T08:04:57.875479+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "worker run UID differs across job",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 515, in _lifecycles\n    require(worker[\"testrunuid\"] == first_identity[\"testrunuid\"], \"worker run UID differs across job\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: worker run UID differs across job\n",
+    "end": "2026-11-14T08:04:58.070426+00:00"
+  },
+  {
+    "name": "duplicate-worker-id",
+    "start": "2026-11-14T08:04:58.070545+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "worker gateway reused without its predecessor",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 519, in _lifecycles\n    require(context[\"replacement_start\"] == [gateways[gateway]], \"worker gateway reused without its predecessor\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: worker gateway reused without its predecessor\n",
+    "end": "2026-11-14T08:04:58.263364+00:00"
+  },
+  {
+    "name": "unknown-validator-id",
+    "start": "2026-11-14T08:04:58.263506+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "unknown validator ID; arbitrary dispatch forbidden",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 939, in verify\n    accepted_validator = validator_inventory(job, tools)\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 805, in validator_inventory\n    require(entry[\"id\"] == \"p4-common-v1\", \"unknown validator ID; arbitrary dispatch forbidden\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: unknown validator ID; arbitrary dispatch forbidden\n",
+    "end": "2026-11-14T08:04:58.405789+00:00"
+  },
+  {
+    "name": "wrong-validator-source",
+    "start": "2026-11-14T08:04:58.405896+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "validator source/dependency pins",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 939, in verify\n    accepted_validator = validator_inventory(job, tools)\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 807, in validator_inventory\n    require(entry[\"validator\"] == tools[\"verifier\"] and entry[\"dependencies\"] == [tools[\"protocol\"]], \"validator source/dependency pins\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: validator source/dependency pins\n",
+    "end": "2026-11-14T08:04:58.559466+00:00"
+  },
+  {
+    "name": "missing-inventory",
+    "start": "2026-11-14T08:04:58.559591+00:00",
+    "result": "accepted",
+    "custody": "unsatisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:04:58.736701+00:00"
+  },
+  {
+    "name": "missing-process-end",
+    "start": "2026-11-14T08:04:58.736820+00:00",
+    "result": "accepted",
+    "custody": "unsatisfied",
+    "outcome": "completed-unverified",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:04:58.846105+00:00"
+  },
+  {
+    "name": "p5-required",
+    "start": "2026-11-14T08:04:58.846248+00:00",
+    "result": "accepted",
+    "custody": "unsatisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:04:58.971914+00:00"
+  },
+  {
+    "name": "replacement-valid",
+    "start": "2026-11-14T08:04:58.972017+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:04:59.152567+00:00"
+  },
+  {
+    "name": "replacement-same-gateway",
+    "start": "2026-11-14T08:04:59.152668+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:04:59.585726+00:00"
+  },
+  {
+    "name": "replacement-unrelated-gateway",
+    "start": "2026-11-14T08:04:59.585896+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "worker gateway reused without its predecessor",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 519, in _lifecycles\n    require(context[\"replacement_start\"] == [gateways[gateway]], \"worker gateway reused without its predecessor\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: worker gateway reused without its predecessor\n",
+    "end": "2026-11-14T08:05:00.068366+00:00"
+  },
+  {
+    "name": "replacement-overlap",
+    "start": "2026-11-14T08:05:00.068501+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "replacement monotonic overlap",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 636, in _lifecycles\n    require(predecessor_end[\"monotonic_ns\"] <= process[\"monotonic_ns\"], \"replacement monotonic overlap\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: replacement monotonic overlap\n",
+    "end": "2026-11-14T08:05:00.257503+00:00"
+  },
+  {
+    "name": "worker-before-parent",
+    "start": "2026-11-14T08:05:00.257802+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "worker monotonic lifetime outside controller interval",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 575, in _lifecycles\n    require(\n    ~~~~~~~^\n        parent[\"monotonic_ns\"] <= process[\"monotonic_ns\"] <= ends[0][\"monotonic_ns\"] <= parent_ends[0][\"monotonic_ns\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        \"worker monotonic lifetime outside controller interval\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: worker monotonic lifetime outside controller interval\n",
+    "end": "2026-11-14T08:05:00.415589+00:00"
+  },
+  {
+    "name": "worker-mainargv",
+    "start": "2026-11-14T08:05:00.415681+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "worker main argv differs across job",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 516, in _lifecycles\n    require(worker[\"mainargv\"] == first_identity[\"mainargv\"], \"worker main argv differs across job\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: worker main argv differs across job\n",
+    "end": "2026-11-14T08:05:00.815238+00:00"
+  },
+  {
+    "name": "producer-minimal-inventory",
+    "start": "2026-11-14T08:05:00.815341+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T08:05:00.941086+00:00"
+  },
+  {
+    "name": "completion-source-reordered",
+    "start": "2026-11-14T08:05:00.941214+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "completion/result source_witnesses",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1014, in verify\n    require(completion[field] == result[field], \"completion/result \" + field)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: completion/result source_witnesses\n",
+    "end": "2026-11-14T08:05:01.024064+00:00"
+  },
+  {
+    "name": "empty-source-arrays",
+    "start": "2026-11-14T08:05:01.024141+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "success missing mandatory witnesses",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 947, in verify\n    result = load(result_ref, \"job-result\")\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 57, in load\n    protocol.validate_record(kind, value)\n    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py\", line 515, in validate_record\n    _check(kind, value, kind)\n    ~~~~~~^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py\", line 240, in _check\n    _semantic(rule, value)\n    ~~~~~~~~~^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py\", line 477, in _semantic\n    _require(bool(value[\"process_records\"]) and bool(value[\"source_witnesses\"]) and bool(value[\"obligation_records\"]),\n    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n             \"success missing mandatory witnesses\")\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py\", line 145, in _require\n    raise ValueError(message)\nValueError: success missing mandatory witnesses\n",
+    "end": "2026-11-14T08:05:01.100760+00:00"
+  },
+  {
+    "name": "replacement-external-down",
+    "start": "2026-11-14T08:05:01.100873+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "replacement prior is not exact inventoried predecessor down",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 608, in _lifecycles\n    require(\n    ~~~~~~~^\n        len(predecessor_downs) == 1 and key(prior_ref) == predecessor_downs[0][0],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        \"replacement prior is not exact inventoried predecessor down\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: replacement prior is not exact inventoried predecessor down\n",
+    "end": "2026-11-14T08:05:01.304806+00:00"
+  },
+  {
+    "name": "replacement-external-down-same",
+    "start": "2026-11-14T08:05:01.304928+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "replacement prior is not exact inventoried predecessor down",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 608, in _lifecycles\n    require(\n    ~~~~~~~^\n        len(predecessor_downs) == 1 and key(prior_ref) == predecessor_downs[0][0],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        \"replacement prior is not exact inventoried predecessor down\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: replacement prior is not exact inventoried predecessor down\n",
+    "end": "2026-11-14T08:05:01.764230+00:00"
+  },
+  {
+    "name": "replacement-duplicate-down",
+    "start": "2026-11-14T08:05:01.764379+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "worker missing/duplicate down lifecycle",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 110, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 1015, in verify\n    by_ref, _raws, runtime, _policy_record, _starts = processes(\n                                                      ~~~~~~~~~^\n        result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 503, in processes\n    _lifecycles(starts, by_ref, job, result)\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 558, in _lifecycles\n    require(len(downs) == 1, \"worker missing/duplicate down lifecycle\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: worker missing/duplicate down lifecycle\n",
+    "end": "2026-11-14T08:05:01.912219+00:00"
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/test_independent_p3.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+    "-k",
+    "not probe",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures"
+  ],
+  "pid": 189108,
+  "start": "2026-11-14T07:16:07.869283+00:00",
+  "end": "2026-11-14T07:16:17.244235+00:00",
+  "exit_code": 0,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "sha256": "938d44339e6c0fdc5b7763eb2b33031bf3794a66e97064cf3601e7b3dbf9b445",
+      "lines": 611
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "sha256": "5cb82462041e95dec1bd617cc05b4dd76988400611ee0ae3297038d95e8c11c7",
+      "lines": 534
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "lines": 520
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/test_independent_p3.py",
+      "sha256": "64ff0f4b73e7ffff65e4fca3e3dc7e88186044a5cdee5de1df5a4f3c0bbcf1f3",
+      "lines": 82
+    }
+  ],
+  "environment_additions": {
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  }
+}

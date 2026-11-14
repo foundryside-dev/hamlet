@@ -1,0 +1,112 @@
+"""Read-only lifetime diagnosis; root runs this separately from acceptance."""
+
+import gc
+import json
+import os
+import weakref
+from pathlib import Path
+from types import FrameType
+
+from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import compiled as compiled
+from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import make_parent
+from townlet.exploration import parent_custody as custody
+
+
+def kind(value):
+    cls = type(value)
+    return cls.__module__ + "." + cls.__qualname__
+
+
+def edge(parent, child):
+    if type(parent) is dict:
+        return [key if type(key) in (str, int) else "<" + kind(key) + ">" for key, value in parent.items() if value is child][:8]
+    if type(parent) in (list, tuple):
+        return [index for index, value in enumerate(parent) if value is child][:8]
+    return ["referent"]
+
+
+def referrer_paths(reference):
+    target = reference()
+    if target is None:
+        return {"direct": [], "global_paths": [], "visited": 0}
+    queue, seen, excluded = [], set(), set()
+    first = (target, [])
+    queue.append(first)
+    excluded.update((id(queue), id(first)))
+    direct, roots = [], []
+    cursor = 0
+    excluded.add(id(locals()))
+    while cursor < len(queue) and cursor < 160:
+        node = queue[cursor]
+        cursor += 1
+        current, path = node
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        parents = gc.get_referrers(current)
+        excluded.add(id(parents))
+        for parent in parents:
+            if id(parent) in excluded or parent is globals():
+                continue
+            step = {"type": kind(parent), "edge": edge(parent, current)}
+            if type(parent) is FrameType:
+                step["frame"] = {
+                    "file": parent.f_code.co_filename, "name": parent.f_code.co_name, "line": parent.f_lineno,
+                    "local_edges": [key for key, value in parent.f_locals.items() if value is current],
+                    "caller": None if parent.f_back is None else parent.f_back.f_code.co_filename + ":" + parent.f_back.f_code.co_name,
+                    "diagnostic": parent.f_code.co_filename == __file__,
+                }
+            if not path:
+                direct.append(step)
+            if type(parent) is FrameType and parent.f_code.co_filename == __file__:
+                continue
+            next_path = path + [step]
+            if type(parent) is dict and type(parent.get("__name__")) is str and "__package__" in parent:
+                roots.append({"module": parent["__name__"], "path": next_path})
+            elif len(next_path) < 7 and len(queue) < 300:
+                pending = (parent, next_path)
+                excluded.add(id(pending))
+                queue.append(pending)
+        if roots:
+            break
+    return {"direct": direct, "global_paths": roots, "visited": len(seen)}
+
+
+def make_refs(compiled, retain):
+    rig = make_parent(compiled)
+    references = (weakref.ref(rig.runtime), weakref.ref(rig.bank))
+    if not retain:
+        return references, None, None
+    with rig.runtime.retain_parent_custody() as scope:
+        del rig
+        gc.collect()
+        pinned = all(reference() is not None for reference in references)
+    return references, scope, pinned
+
+
+def registry_status():
+    return {
+        "record_count": len(custody._records), "scope_count": len(custody._scopes),
+        "records": [{"owner_type": kind(record.owner), "has_owner": record.owner is not None} for record in custody._records.values()],
+    }
+
+
+def test_owner_pin_referrers(compiled, request):
+    report = {"schema": "bac-c1-owner-pin-diagnostic-v1", "pid": os.getpid(), "node": request.node.nodeid, "before": registry_status()}
+    for label, retain in (("baseline", False), ("retained", True)):
+        references, scope, pinned = make_refs(compiled, retain)
+        collected = [gc.collect(), gc.collect()]
+        report[label] = {
+            "alive_after_gc": [reference() is not None for reference in references],
+            "pinned_inside": pinned, "gc_collected": collected, "registry": registry_status(),
+            "runtime_referrers": referrer_paths(references[0]), "bank_referrers": referrer_paths(references[1]),
+        }
+        if retain:
+            assert pinned is True
+            assert scope not in custody._records
+        del references, scope
+        gc.collect()
+    destination = Path(os.environ["BAC_QUAL_OUTPUT"]) / "c1-owner-pin-diagnostic.json"
+    with destination.open("x") as stream:
+        json.dump(report, stream, sort_keys=True)
+        stream.write("\n")

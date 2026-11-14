@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-14T08:32:15.801168+00:00",
+  "scope": "Exact packet-v3 draftselectedbytes; finalplanwillberehashedagain",
+  "aliases": 10404,
+  "unique": 8065,
+  "bytes": 59355335,
+  "possible_credential_patterns": [],
+  "backup_bundles": "excluded",
+  "qualification": "Publication hygiene only, no application or hardware acceptance"
+}

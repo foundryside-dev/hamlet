@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-14T06:19:53.220973+00:00",
+  "sources": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/bac_hardware_protocol_v1.py.before-exact-layout-test-edit.txt",
+      "sha256": "ea1187c4088c05e4009beb1667ed02a205285e42be671069724b651ce23faf68",
+      "bytes": 34204
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/test_bac_hardware_protocol_v1.py.before-exact-layout-test-edit.txt",
+      "sha256": "43942fe7231f1378028af1c12a12a34eacce9122d3d8ed95437db9faaf707425",
+      "bytes": 32638
+    }
+  ]
+}

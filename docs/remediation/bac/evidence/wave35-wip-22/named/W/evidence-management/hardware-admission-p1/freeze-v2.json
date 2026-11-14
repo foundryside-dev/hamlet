@@ -1,0 +1,95 @@
+{
+  "at": "2026-11-14T07:00:31.907836+00:00",
+  "status": "REPAIRED FROZEN BYTES FOR INDEPENDENT RERUN; NOT ADOPTED",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/freeze-v1.json",
+    "bytes": 4618,
+    "sha256": "d2e0a9b6897560e561a2fcc8178ae66275a4379214578d66684695152a75d0bf"
+  },
+  "packet": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "bytes": 6277,
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "lines": 520
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 59888,
+      "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a",
+      "lines": 922
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 49564,
+      "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b",
+      "lines": 756
+    }
+  ],
+  "cap": {
+    "files": 4,
+    "lines": 2800
+  },
+  "actual_lines": 2301,
+  "existing_capture_unchanged": true,
+  "protocol_root_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+    "bytes": 4220,
+    "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+  },
+  "protocol_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/freeze-v4.json",
+    "bytes": 3836,
+    "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+  },
+  "output_interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+    "bytes": 5867,
+    "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+  },
+  "author_red": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1.json",
+    "bytes": 2504,
+    "sha256": "569b9aa820264daf88f85047f3b4b31e455a90c93a5a2adfc67d2ab88efc44f8"
+  },
+  "author_red_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1.log",
+    "bytes": 14278,
+    "sha256": "3a9cf4a14f11a01855643b2410528533b43433cb89d37617a9ededf3f742f830"
+  },
+  "tests": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1.json",
+    "bytes": 2678,
+    "sha256": "328c72393b613aa6b947b775e434f922b5683046c97b6522f7320619d7dd5f92"
+  },
+  "test_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1.log",
+    "bytes": 179,
+    "sha256": "d1245cc37b98a1ac91142448d1296e73c681457a3b448763c01f5e16773aab3f"
+  },
+  "exact_source_snapshots": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1-source/capture_bac_hardware_v1.py.txt",
+      "bytes": 59888,
+      "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1-source/test_capture_bac_hardware_v1.py.txt",
+      "bytes": 49564,
+      "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b"
+    }
+  ],
+  "confirmed_fixes": [
+    "actual capture host/boot before launch; discovery host/boot and active source/grant/allocation/partition before expensive probes",
+    "held lease inode/root revalidation before publication; late failure refuses terminal result and preserves partial files",
+    "catchable cancellation/timeout owned-process-group cleanup and reaping while leases held; discovery and driver query inherit lease descriptors"
+  ],
+  "classification": "99 synthetic tests passed. Actual CPU/server/CUDA/application qualification UNRUN. No actual Torch/CUDA/APP imports, hardware probes or OS kill signals executed in tests.",
+  "limitations": "No blanket supervision guarantee for deliberately escaped/FD-closing native descendants or uncatchable controller death; incomplete attempts cannot qualify. Root out-of-band grant authorization and no-writer source/namespace custody remain mandatory. All executed source versions retained; early unexecuted intermediate test drafts were not each separately snapshotted."
+}

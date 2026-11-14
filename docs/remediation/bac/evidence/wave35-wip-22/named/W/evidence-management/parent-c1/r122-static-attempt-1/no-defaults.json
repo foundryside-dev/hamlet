@@ -1,0 +1,24 @@
+{
+  "name": "no-defaults",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "scripts/no_defaults_lint.py",
+    "src/townlet/",
+    "--whitelist",
+    ".defaults-whitelist.txt",
+    "--ratchet",
+    ".defaults-ratchet"
+  ],
+  "cwd": "/workspace/hamlet",
+  "start_utc": "2026-11-14T08:15:05.197841+00:00",
+  "parent_pid": 198891,
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+  "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+  "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+  "script_sha256": "ab693a795ac33570617489dde85faccd2e68ab1643385221c87d86d395924a9f",
+  "pid": 198980,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T08:15:06.202294+00:00",
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r122-static-attempt-1/no-defaults.log",
+  "log_sha256": "f3bb0e89a22efdfe68551800787f11d4872502873e21b7e6e9b6f12ae0b12fd0"
+}

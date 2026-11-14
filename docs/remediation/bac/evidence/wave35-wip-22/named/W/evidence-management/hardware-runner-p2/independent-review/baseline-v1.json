@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/baseline-fixtures-v1",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+  ],
+  "pid": 189746,
+  "start": "2026-11-14T07:19:35.215825+00:00",
+  "end": "2026-11-14T07:19:45.634793+00:00",
+  "exit_code": 0,
+  "source_hashes_after": {
+    "run_bac_hardware_v1.py": "c0ec80b6b632618e1c1b9cb373efcb61e3b3ccb9d3677be7a1129cf58ab60a5a",
+    "test_run_bac_hardware_v1.py": "398dee45706bd1e85b3b15d8908103f484ccaceb637bbe6c7508bd87ece6b397",
+    "bac_hardware_protocol_v1.py": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+  }
+}

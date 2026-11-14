@@ -1,0 +1,31 @@
+{
+  "utc": "2026-11-14T06:48:05.472937+00:00",
+  "pid": 185348,
+  "argv": [
+    "-"
+  ],
+  "exit": 0,
+  "classification": "Review authoring only; no source mutation",
+  "sources": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-red-v4-source/bac_hardware_protocol_v1.py.txt",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-red-v4-source/capture_bac_hardware_v1.py.txt",
+      "bytes": 56496,
+      "sha256": "e4a94e819bb97e39c5f71cdb80eda8d309fcfaef70d15cc67daceb1d80acf751"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-red-v4-source/test_capture_bac_hardware_v1.py.txt",
+      "bytes": 42670,
+      "sha256": "04fe92dd1acc9fa6f91510c67af572c3ace9d5582adb510f1e090f5c8e90bfab"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-red-v4-source/test_p1_independent.py.txt",
+      "bytes": 3697,
+      "sha256": "527b41f49e971e944ab8ea3c6d84b601d24da0305820851c395b208c819d3a2b"
+    }
+  ]
+}

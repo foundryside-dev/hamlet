@@ -1,0 +1,42 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-p",
+    "pytest_cov.plugin",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "--noconftest",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-q"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "pid": 190111,
+  "start": "2026-11-14T07:22:52.835808+00:00",
+  "end": "2026-11-14T07:22:55.783804+00:00",
+  "exit_code": 1,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "bytes": 49301,
+      "sha256": "9855574b0829e5ccb8857359f7c54ea0777387a42624d83203e138b5dd77a1a2"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "bytes": 32482,
+      "sha256": "89b671b0635a7fed19d51d24ff98fda5cd1deaa58d88c3ead388a5ff204512da"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "bytes": 3032,
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    }
+  ]
+}

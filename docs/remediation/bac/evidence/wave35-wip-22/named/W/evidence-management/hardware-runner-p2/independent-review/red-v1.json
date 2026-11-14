@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/probe-fixtures-v1",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/test_independent_p2.py"
+  ],
+  "pid": 189698,
+  "start": "2026-11-14T07:18:55.602869+00:00",
+  "end": "2026-11-14T07:18:55.626822+00:00",
+  "exit_code": 1,
+  "probe_sha256": "47bd050c0f23744f5af2115d2a738efb08269547a3cd2513528964538d152216"
+}

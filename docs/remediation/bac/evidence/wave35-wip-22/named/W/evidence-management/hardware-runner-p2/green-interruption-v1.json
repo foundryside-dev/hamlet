@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "-p",
+    "pytest_cov",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-q"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "source_hashes_before": {
+    "run_bac_hardware_v1.py": "e15f6712db026f059e31f86e6c9e4c2e5b0feb48af1f7c0d0f40564e4313dba6",
+    "test_run_bac_hardware_v1.py": "ed29118154aa77b8be5cfc7ca994f30084db83104d33f4d485a91c2d4c22ba9e",
+    "bac_hardware_protocol_v1.py": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7",
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+  },
+  "start": "2026-11-14T05:59:11.761462+00:00",
+  "end": "2026-11-14T05:59:14.997888+00:00",
+  "exit_code": 0,
+  "log_sha256": "7d329029c894324e1e609f30032671d554617418be3916175ba81bc76a42e735"
+}

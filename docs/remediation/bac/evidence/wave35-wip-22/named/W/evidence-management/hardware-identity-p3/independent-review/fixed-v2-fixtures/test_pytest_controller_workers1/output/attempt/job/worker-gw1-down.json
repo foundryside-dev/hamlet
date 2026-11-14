@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-14T07:16:13.815298Z",
+  "controller_start": {
+    "bytes": 9327,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers1/output/attempt/job/process-p-838234903fb1a16299a2ae48664a073cde8a02a1b62ab0905ac836b8c7e30d9b-start.json",
+    "sha256": "4e404ec84528f138afbfcf125e8815dd0703d404f0d0d332de103d2e4ce8aec2"
+  },
+  "error": "",
+  "phase": "down",
+  "predecessor_start": [],
+  "prior_lifecycle": [
+    {
+      "bytes": 1712,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers1/output/attempt/job/worker-gw1-configure.json",
+      "sha256": "30201c32191ca8c94153abc26db432976db2def8be4160812f8a4da9f15d5ce2"
+    }
+  ],
+  "process_start": [
+    {
+      "bytes": 8912,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers1/output/attempt/job/process-p-9484615fcfe30e88cbffef9a4963da4767ade1939065a6494eec47766c25a671-start.json",
+      "sha256": "66efc8caf3ce4edc5e9454b5adc15b4b29052a2ef3d11453304201328fa7e072"
+    }
+  ],
+  "role_id": "workers",
+  "schema": "bac-hardware-worker-lifecycle-v1",
+  "worker_identity": {
+    "mainargv": [
+      "/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest/__main__.py",
+      "-c",
+      "/dev/null",
+      "--rootdir",
+      "/workspace/bac-review-2026-11-01/qualification",
+      "--noconftest",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "xdist.plugin",
+      "-p",
+      "test_bac_hardware_identity_v1",
+      "-p",
+      "bac_hardware_identity_v1",
+      "--bac-identity-policy",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers1/policy.json",
+      "--bac-identity-policy-sha256",
+      "1f11d969a2479e0ea9f96cbed84cd0af4489a92bed61a6976d27d1d90643b010",
+      "-q",
+      "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_job",
+      "-n",
+      "2",
+      "--max-worker-restart",
+      "1"
+    ],
+    "testrunuid": "d05de93056e74b2daecd44574f504b82",
+    "workercount": 2,
+    "workerid": "gw1"
+  }
+}

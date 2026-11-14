@@ -1,0 +1,126 @@
+........................................FFFFFF                           [100%]
+=================================== FAILURES ===================================
+__________ test_discovery_cgroup_parser_finds_full_nested_v2_ancestry __________
+
+    def test_discovery_cgroup_parser_finds_full_nested_v2_ancestry():
+        tool = module()
+>       assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+E       AssertionError: cgroup discovery parser missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'cgroup_paths', None)
+
+test_capture_bac_hardware_v1.py:208: AssertionError
+_ test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n-0::/hidden/leaf\n] _
+
+mounts = '29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n'
+membership = '0::/hidden/leaf\n'
+
+    @pytest.mark.parametrize("mounts,membership", [
+        ("29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/hidden/leaf\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n", "2:cpu:/parent\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/../../escape\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/one\n0::/two\n"),
+        ("29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n", "0::/parent\n"),
+    ])
+    def test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths(mounts, membership):
+        tool = module()
+>       assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+E       AssertionError: cgroup discovery parser missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'cgroup_paths', None)
+
+test_capture_bac_hardware_v1.py:224: AssertionError
+_ test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n-2:cpu:/parent\n] _
+
+mounts = '29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n'
+membership = '2:cpu:/parent\n'
+
+    @pytest.mark.parametrize("mounts,membership", [
+        ("29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/hidden/leaf\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n", "2:cpu:/parent\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/../../escape\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/one\n0::/two\n"),
+        ("29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n", "0::/parent\n"),
+    ])
+    def test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths(mounts, membership):
+        tool = module()
+>       assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+E       AssertionError: cgroup discovery parser missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'cgroup_paths', None)
+
+test_capture_bac_hardware_v1.py:224: AssertionError
+_ test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n-0::/../../escape\n] _
+
+mounts = '29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'
+membership = '0::/../../escape\n'
+
+    @pytest.mark.parametrize("mounts,membership", [
+        ("29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/hidden/leaf\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n", "2:cpu:/parent\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/../../escape\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/one\n0::/two\n"),
+        ("29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n", "0::/parent\n"),
+    ])
+    def test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths(mounts, membership):
+        tool = module()
+>       assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+E       AssertionError: cgroup discovery parser missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'cgroup_paths', None)
+
+test_capture_bac_hardware_v1.py:224: AssertionError
+_ test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n-0::/one\n0::/two\n] _
+
+mounts = '29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'
+membership = '0::/one\n0::/two\n'
+
+    @pytest.mark.parametrize("mounts,membership", [
+        ("29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/hidden/leaf\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n", "2:cpu:/parent\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/../../escape\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/one\n0::/two\n"),
+        ("29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n", "0::/parent\n"),
+    ])
+    def test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths(mounts, membership):
+        tool = module()
+>       assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+E       AssertionError: cgroup discovery parser missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'cgroup_paths', None)
+
+test_capture_bac_hardware_v1.py:224: AssertionError
+_ test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n-0::/parent\n] _
+
+mounts = '29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n'
+membership = '0::/parent\n'
+
+    @pytest.mark.parametrize("mounts,membership", [
+        ("29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/hidden/leaf\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n", "2:cpu:/parent\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/../../escape\n"),
+        ("29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n", "0::/one\n0::/two\n"),
+        ("29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n", "0::/parent\n"),
+    ])
+    def test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths(mounts, membership):
+        tool = module()
+>       assert callable(getattr(tool, "cgroup_paths", None)), "cgroup discovery parser missing"
+E       AssertionError: cgroup discovery parser missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'cgroup_paths', None)
+
+test_capture_bac_hardware_v1.py:224: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_discovery_cgroup_parser_finds_full_nested_v2_ancestry
+FAILED test_capture_bac_hardware_v1.py::test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 /hidden /sys/fs/cgroup rw - cgroup2 cgroup rw\n-0::/hidden/leaf\n]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup rw - cgroup cgroup rw\n-2:cpu:/parent\n]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n-0::/../../escape\n]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n-0::/one\n0::/two\n]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_cgroup_parser_refuses_hidden_unsupported_ambiguous_paths[29 23 0:26 / /sys/fs/cgroup\\040alias rw - cgroup2 cgroup rw\n-0::/parent\n]
+6 failed, 40 passed in 0.47s

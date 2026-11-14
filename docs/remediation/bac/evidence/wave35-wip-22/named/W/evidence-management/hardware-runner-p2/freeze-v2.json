@@ -1,0 +1,148 @@
+{
+  "at": "2026-11-14T07:39:58.971096+00:00",
+  "status": "FROZEN LINKED TWO-FINDING REPAIR FOR INDEPENDENT ASTRA REVIEW; NOT ROOT ADOPTED",
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "bytes": 2043,
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 80466,
+      "sha256": "fc235ddfe853cab303c7299e782188e2e6c3fd895b16d1638d8525f2c152cedc"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 60938,
+      "sha256": "c01fbb52ac3f8b0509adfceb7417c65d0ba31704c058d039e2ab3759a04cda27"
+    }
+  ],
+  "line_counts": {
+    "run_bac_packet_checks_locked.py": 20,
+    "bac_hardware_protocol_v1.py": 520,
+    "run_bac_hardware_v1.py": 1249,
+    "test_run_bac_hardware_v1.py": 959
+  },
+  "total_lines": 2748,
+  "budget": {
+    "files": 4,
+    "maximum_lines": 3600
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/interface-contract-v2.json",
+    "bytes": 12881,
+    "sha256": "9c7b4e37f07014f99237b9f6ae5f70bc70fb79eb67639779c534af17a0aeb43e"
+  },
+  "last_tests": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/green-review-repair-v2.json",
+    "bytes": 1690,
+    "sha256": "034aa97a0fe44c0679742f49e8a3c627110797981553dc76ea34375b723a250b"
+  },
+  "last_test_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/green-review-repair-v2.log",
+    "bytes": 180,
+    "sha256": "745acbfedd99845d5ececcf58ecac1a4abd7e72b917d677028b1069bf8b1e9c5"
+  },
+  "result": "73 synthetic PASS",
+  "before": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/before-v1.json",
+    "bytes": 801,
+    "sha256": "084042d9f61374df1dee52d2e7f2151ccd254a4f55310c6f3ba709684fe41457"
+  },
+  "snapshots": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/run_bac_hardware_v1.py.green-review-repair-v2.py.txt",
+      "bytes": 80466,
+      "sha256": "fc235ddfe853cab303c7299e782188e2e6c3fd895b16d1638d8525f2c152cedc"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/test_run_bac_hardware_v1.py.green-review-repair-v2.py.txt",
+      "bytes": 60938,
+      "sha256": "c01fbb52ac3f8b0509adfceb7417c65d0ba31704c058d039e2ab3759a04cda27"
+    }
+  ],
+  "dependencies": {
+    "P0 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+      "bytes": 4220,
+      "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+    },
+    "P0 interface": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+      "bytes": 13184,
+      "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+    },
+    "P1 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/root-adoption-v1.json",
+      "bytes": 12233,
+      "sha256": "6235ac38bb563d5676420cf932cdb09d7d54187ec1a60546aefe99f13ded6c96"
+    },
+    "P1 output": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+      "bytes": 5867,
+      "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+    },
+    "allocation and CPU bounds": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+      "bytes": 5739,
+      "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+    },
+    "P3 static/delegated context": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-v3.md",
+      "bytes": 5150,
+      "sha256": "1eb2d8b5e2e11621ce59aef78a7c982d2cafe4ab81117004897a6ed5a9447faf"
+    },
+    "P3 phase observation matrix": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/observation-matrix-v1.md",
+      "bytes": 1552,
+      "sha256": "6af9c6a3fef54b7faca5e4a97f2b536025d224cd8c43ac1281eea2bd50177bb1"
+    },
+    "P3 adoption": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/root-adoption-v1.json",
+      "bytes": 2224,
+      "sha256": "d93c6db06f4411ff7d4eef909b1b440104f0c4f98187cdd3cf3c4b159decd7e8"
+    },
+    "P3 frozen interface": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/interface-contract-v2.json",
+      "bytes": 3756,
+      "sha256": "51369fe91bd72a44eaf1f8526f22ff7692fb5a62247a870c05d699f341b0d798"
+    }
+  },
+  "root_owned_gate": "Fresh independent Astra review of exact frozen files; later root adoption. No changes after this freeze until concrete reviewed findings authorized.",
+  "remaining": "All author tests inert/synthetic, actual process controls only own generated runner/controller processes. No APP/Torch/CUDA/server execution, Git/index writes, branch/worktree/copy/deployment. P3 full producer integration and all actual hardware remain UNRUN. Strict owner bootstrap qualification remains pending; P3 debug fact semantics currently need a separate owner-contract amendment. No change to that semantic was inferred in this repair.",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/freeze-v1.json",
+    "bytes": 5378,
+    "sha256": "480cf1de39248500a4be64b132f9f1076fcc205a58604bb86d4ed6219537348c"
+  },
+  "P3_actual_integration_pin": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "bytes": 35014,
+    "sha256": "938d44339e6c0fdc5b7763eb2b33031bf3794a66e97064cf3601e7b3dbf9b445"
+  },
+  "repair_red": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/red-review-repair-v1.json",
+    "bytes": 1877,
+    "sha256": "8e8a4cb12e6c0e845836064c63b99e1b17e736bc68f3598fa0eee783e0587e65"
+  },
+  "repair_red_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/red-review-repair-v1.log",
+    "bytes": 4981,
+    "sha256": "ba24b78a374684f41ab2e0dcd4eefbebfaf72e52ad0071976921fe34dd3ed5e1"
+  },
+  "repair_before": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/review-repair-before-v1.json",
+    "bytes": 982,
+    "sha256": "1467d6c56a4e3dd18d6f3d02d9422d684fd45fce3479ab0c18cb8c1a214f7872"
+  },
+  "repair_scope": [
+    "Phase-aware remaining resource headroom with owned-consumption credit and external insufficiency refusal",
+    "Cross-bind loaded Torch raw CUDA marker to observation and role policy"
+  ]
+}

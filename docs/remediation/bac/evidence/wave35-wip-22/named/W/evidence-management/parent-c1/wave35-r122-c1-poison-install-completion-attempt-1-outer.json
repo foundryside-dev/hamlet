@@ -1,0 +1,21 @@
+{
+  "role": "install_completion",
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-install-completion-attempt-1-spec.json",
+  "spec_sha256": "2247c2fed1f268958a24f725bb54703460fcf5220acefd30b3a37454b215fde7",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-install-completion-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T08:10:08.867726+00:00",
+  "environment_delta": {
+    "BAC_PARENT_C1_POISON_CASE": "install_completion"
+  },
+  "orchestrator_pid": 197792,
+  "script_sha256": "535c44f5701de108da810aa5aa177fe3cbebe2d91701774c49b8777b6c407b05",
+  "launcher_pid": 198232,
+  "launcher_start_ticks": 12311920,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T08:10:15.987361+00:00"
+}

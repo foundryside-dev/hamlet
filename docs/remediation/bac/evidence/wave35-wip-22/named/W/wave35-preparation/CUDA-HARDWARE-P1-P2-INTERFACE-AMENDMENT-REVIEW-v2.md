@@ -1,0 +1,9 @@
+# P1 private proposal v2 — metadata review addendum
+
+2026-11-14T05:59:33.734594+00:00. Reviewed exact proposal SHA-256 `b0754003f7c35b44b753f2cf61cdccb4feff59b8759318012e490c79f6bd3baf`. No new body reads, imports, execution or source edits.
+
+**PASS for the v2 clarification delta**, not yet PASS for overall P1/P2 integration. The actual spawned discovery identity/context binding, retained stdout/stderr/exit and actual interpreter/distribution versions/origin references address the observation clarification in the consolidated review. Capture must fail closed if the actual child start token cannot be sampled and independently recompute every derived fact from the retained raw payload. Dependency name/version/origin comparisons must match the exact sealed environment inventory, not a subset. Current HEAD and index equality to candidate.tree are correctly separate checks: an authorized staged tree may differ from HEAD tree. Out-of-band grant authority and no-writer barrier remain essential; references do not authenticate authorship or prevent writes.
+
+The unchanged v2 paragraphs still propose top-N scratch accounting, role-count-only CPU reservation and path-derived attempt_id. Those remain superseded by the recommended amendments in `CUDA-HARDWARE-P1-P2-INTERFACE-AMENDMENT-REVIEW-v1.md`, pending root's exact ruling. No new P0 fields beyond that review are requested by this v2 delta. Registry porcelain path parsing must either handle supported quoting/encoding exactly or refuse unsupported forms; a misleading path must never become an availability observation.
+
+Root should seal one consolidated consumer contract after choosing the field definitions and reservation rules, then authorize the linked P0 amendment. This review does not authorize editing historical frozen P0 v2 or imply hardware availability.

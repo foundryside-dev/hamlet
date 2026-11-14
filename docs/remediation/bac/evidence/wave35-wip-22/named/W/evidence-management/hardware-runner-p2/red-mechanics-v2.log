@@ -1,0 +1,230 @@
+FFFFFFFFFFF                                                              [100%]
+=================================== FAILURES ===================================
+______________________________ test_nested_budget ______________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_nested_budget0')
+
+    def test_nested_budget(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+_________________________ test_exclusive_attempt_race __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_exclusive_attempt_race0')
+
+    def test_exclusive_attempt_race(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+______________ test_occupied_destinations_are_preserved[attempt] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_occupied_destinations_are0')
+occupied = 'attempt'
+
+    @pytest.mark.parametrize('occupied', ['attempt', 'scratch', 'symlink'])
+    def test_occupied_destinations_are_preserved(tmp_path, occupied):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+______________ test_occupied_destinations_are_preserved[scratch] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_occupied_destinations_are1')
+occupied = 'scratch'
+
+    @pytest.mark.parametrize('occupied', ['attempt', 'scratch', 'symlink'])
+    def test_occupied_destinations_are_preserved(tmp_path, occupied):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+______________ test_occupied_destinations_are_preserved[symlink] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_occupied_destinations_are2')
+occupied = 'symlink'
+
+    @pytest.mark.parametrize('occupied', ['attempt', 'scratch', 'symlink'])
+    def test_occupied_destinations_are_preserved(tmp_path, occupied):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:84: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+__________ test_lease_domains_and_canonical_multi_device_acquisition ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_lease_domains_and_canonic0')
+
+    def test_lease_domains_and_canonical_multi_device_acquisition(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:99: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+_________________ test_scheduler_advances_cpu_past_blocked_gpu _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_scheduler_advances_cpu_pa0')
+
+    def test_scheduler_advances_cpu_past_blocked_gpu(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:122: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+______________________ test_failure_and_exact_environment ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_failure_and_exact_environ0')
+
+    def test_failure_and_exact_environment(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+___________________ test_zero_exit_does_not_invent_witnesses ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_zero_exit_does_not_invent0')
+
+    def test_zero_exit_does_not_invent_witnesses(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+________ test_timeout_preserves_actual_partial_and_kills_process_group _________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_timeout_preserves_actual_0')
+
+    def test_timeout_preserves_actual_partial_and_kills_process_group(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:170: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+_______________ test_runtime_cpu_capacity_and_persistent_scratch _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-33/test_runtime_cpu_capacity_and_0')
+
+    def test_runtime_cpu_capacity_and_persistent_scratch(tmp_path):
+>       r = implementation()
+            ^^^^^^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def implementation():
+>       assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+E       AssertionError: P2 runner mechanics are not implemented
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py').is_file
+
+test_run_bac_hardware_v1.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_nested_budget - AssertionError: P2 r...
+FAILED test_run_bac_hardware_v1.py::test_exclusive_attempt_race - AssertionEr...
+FAILED test_run_bac_hardware_v1.py::test_occupied_destinations_are_preserved[attempt]
+FAILED test_run_bac_hardware_v1.py::test_occupied_destinations_are_preserved[scratch]
+FAILED test_run_bac_hardware_v1.py::test_occupied_destinations_are_preserved[symlink]
+FAILED test_run_bac_hardware_v1.py::test_lease_domains_and_canonical_multi_device_acquisition
+FAILED test_run_bac_hardware_v1.py::test_scheduler_advances_cpu_past_blocked_gpu
+FAILED test_run_bac_hardware_v1.py::test_failure_and_exact_environment - Asse...
+FAILED test_run_bac_hardware_v1.py::test_zero_exit_does_not_invent_witnesses
+FAILED test_run_bac_hardware_v1.py::test_timeout_preserves_actual_partial_and_kills_process_group
+FAILED test_run_bac_hardware_v1.py::test_runtime_cpu_capacity_and_persistent_scratch
+11 failed in 0.46s

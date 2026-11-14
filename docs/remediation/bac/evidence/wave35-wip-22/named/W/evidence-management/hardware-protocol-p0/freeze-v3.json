@@ -1,0 +1,75 @@
+{
+  "at": "2026-11-14T06:17:39.656576+00:00",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/freeze-v2.json",
+    "bytes": 3093,
+    "sha256": "32c8f8fd80b6b9407c87aac6da4d8e74e7da1ac4aaad557bce79d360e62c5bd7"
+  },
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34204,
+      "sha256": "ea1187c4088c05e4009beb1667ed02a205285e42be671069724b651ce23faf68"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+      "bytes": 32638,
+      "sha256": "43942fe7231f1378028af1c12a12a34eacce9122d3d8ed95437db9faaf707425"
+    }
+  ],
+  "inert_sources": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/bac_hardware_protocol_v1.py.green-v1.txt",
+      "bytes": 34204,
+      "sha256": "ea1187c4088c05e4009beb1667ed02a205285e42be671069724b651ce23faf68"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/test_bac_hardware_protocol_v1.py.green-v1.txt",
+      "bytes": 32638,
+      "sha256": "43942fe7231f1378028af1c12a12a34eacce9122d3d8ed95437db9faaf707425"
+    }
+  ],
+  "line_counts": {
+    "bac_hardware_protocol_v1.py": 520,
+    "test_bac_hardware_protocol_v1.py": 601
+  },
+  "budget": {
+    "files": 2,
+    "maximum_lines": 1400
+  },
+  "schema": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/schema-inventory-v2.json",
+    "bytes": 22624,
+    "sha256": "d6882e7ab20c788299a9c29584920bdd8a76bd503c1a4ed12a0bff48f248e63d"
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v3.json",
+    "bytes": 12585,
+    "sha256": "b49e8ef58b6f92011760485b3a05a46eac2e0b93431fac5b4991347b97c19f45"
+  },
+  "authority": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-interface-amendment-decision-v1.json",
+    "bytes": 2511,
+    "sha256": "5b23d1616de3b2857026f315bbc4ad6b17a4017ad2d766ad78bf08d98d21bb4c"
+  },
+  "tests": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/green-v1.json",
+    "bytes": 1288,
+    "sha256": "945dd62b1633a4513a4ee0c1f532895064c67543a9f9f48620cbeefd45c7f9df"
+  },
+  "test_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/green-v1.log",
+    "bytes": 180,
+    "sha256": "79d68b7d46a9a2d3331d047b422fb6210335905c8bd726a913562ccd88f6c3fd"
+  },
+  "existing_tools_after": {
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "capture_wave14_round.py": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+    "bac_source_identity.py": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "verify_bac_run.py": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+    "verify_bac_replay_spawn_identity.py": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+    "verify_bac_failed_run.py": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+  },
+  "existing_tools_unchanged": true,
+  "source_boundary": "No P1/P2 source reads/edits; no APP read/edit/import/runtime; no hardware/server/Git writes. Historical exact snapshots and freezes preserved."
+}

@@ -1,0 +1,13 @@
+RUF059 Unpacked variable `policy` is never used
+   --> bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:974:37
+    |
+972 | …     for field in ("attempt_id", "job_id", "spec", "command", "collected_ids", "outcomes", "process_records", "obligation_records"):
+973 | …         require(completion[field] == result[field], "completion/result " + field)
+974 | …     by_ref, _raws, runtime, policy, _starts = processes(
+    |                               ^^^^^^
+975 | …         result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies
+976 | …     )
+    |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+Found 53 errors (52 fixed, 1 remaining).

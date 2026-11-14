@@ -1,0 +1,108 @@
+import contextlib, datetime, hashlib, json, os, sys, traceback
+from pathlib import Path
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+D = Path(__file__).parent.resolve().parent / 'independent-astra-v2'
+D.mkdir()
+sys.path.insert(0, str(Q))
+os.environ.update(PYTEST_DISABLE_PLUGIN_AUTOLOAD='1', PYTHONDONTWRITEBYTECODE='1')
+def now(): return datetime.datetime.now(datetime.UTC).isoformat()
+def digest(p):
+    b=p.read_bytes(); return {'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+def save(name, value): (D/name).write_text(json.dumps(value, indent=2)+'\n')
+meta={'argv':sys.argv,'pid':os.getpid(),'ppid':os.getppid(),'start':now(),'cwd':os.getcwd(),'affinity':sorted(os.sched_getaffinity(0)), 'environment_delta':{'PYTEST_DISABLE_PLUGIN_AUTOLOAD':'1','PYTHONDONTWRITEBYTECODE':'1'}}
+freeze=json.loads((D.parent/'freeze-v2.json').read_text())
+assert digest(D.parent/'freeze-v2.json')['sha256']=='5e395cfa90cc4620a53358628d69c2e731cb0f70a3cd84be6513e6ddf359cdce'
+interface=json.loads(Path(freeze['interface']['path']).read_text())
+for reference in [freeze['interface'],freeze['supplier_capsule'],*interface['metadata_dependencies']]:
+    assert digest(Path(reference['path']))==reference
+meta['sources']=[digest(Path(x['path'])) for x in freeze['body_inventory']]
+assert [x['sha256'] for x in meta['sources']]==[x['sha256'] for x in freeze['body_inventory']]
+meta['probe']=digest(Path(__file__).resolve())
+(D/'probe.py.txt').write_bytes(Path(__file__).read_bytes())
+meta['snapshots']=freeze['source_snapshots']
+for x in meta['snapshots']: assert digest(Path(x['path']))==x
+save('running.json',meta)
+import pytest
+args=['-p','pytest_cov.plugin',str(Q/'test_verify_bac_hardware_v1.py'),'--noconftest','--no-cov','-p','no:cacheprovider','-q','--basetemp',str(D/'suite-fixtures')]
+suite={'argv':[sys.executable,'pytest.main',*args],'pid':os.getpid(),'start':now()}
+with (D/'suite.log').open('w') as log,contextlib.redirect_stdout(log),contextlib.redirect_stderr(log): suite['exit_code']=int(pytest.main(args))
+suite['end']=now(); save('suite.json',suite)
+import test_verify_bac_hardware_v1 as t
+# Refresh all references by exact path to preserve coherent DAG mutations; do not alter source files.
+def refresh(root):
+    for _ in range(30):
+        changed=False
+        for path in sorted(root.rglob('*.json')):
+            value=json.loads(path.read_text())
+            def visit(x):
+                if type(x) is dict:
+                    if set(x)=={'path','bytes','sha256'}: return digest(Path(x['path']))
+                    return {k:visit(v) for k,v in x.items()}
+                if type(x) is list:return [visit(v) for v in x]
+                return x
+            updated=visit(value)
+            if updated!=value: t.write(path,updated); changed=True
+        if not changed:return
+    raise AssertionError('reference DAG did not converge')
+def change(path, fn):
+    v=json.loads(path.read_text()); fn(v); t.write(path,v)
+def reseal(e):
+    refresh(e.root)
+    e.result=json.loads((e.output/'result.json').read_text())
+    e.start_ref=digest(e.output.parent/'start.json')
+    e.seal(); refresh(e.root)
+results=[]
+cases=['baseline','late-launch','process-monotonic-after-wait','completion-source-omission','completion-inventory-omission','foreign-worker-run','duplicate-worker-id','unknown-validator-id','wrong-validator-source','missing-inventory','missing-process-end','p5-required']
+cases += ['replacement-valid','replacement-same-gateway','replacement-unrelated-gateway','replacement-overlap','worker-before-parent','worker-mainargv','producer-minimal-inventory','completion-source-reordered','empty-source-arrays']
+for name in cases:
+    root=D/('probe-'+name);root.mkdir()
+    row={'name':name,'start':now()}
+    try:
+        workers=2 if name in ('foreign-worker-run','duplicate-worker-id','worker-mainargv','replacement-unrelated-gateway') else int(name.startswith('replacement-') or name=='worker-before-parent')
+        e=t.Evidence(root,common=True,workers=workers,replacement=name.startswith('replacement-'),extra_kind='strict-child-core' if name=='p5-required' else None)
+        if name=='late-launch':change(e.output/'launch.json',lambda v:v.update(at=t.T3,monotonic_ns=300))
+        if name=='process-monotonic-after-wait':
+            for phase,n in [('start',1000),('end',1100)]:change(e.output/('process-c-'+phase+'.json'),lambda v,n=n:v.update(monotonic_ns=n))
+        if name in ('foreign-worker-run','duplicate-worker-id'):
+            field,value=('testrunuid','2'*32) if name=='foreign-worker-run' else ('workerid','gw0')
+            envkey='PYTEST_XDIST_TESTRUNUID' if field=='testrunuid' else 'PYTEST_XDIST_WORKER'
+            for path in e.output.glob('*.json'):
+                v=json.loads(path.read_text())
+                def swap(x):
+                    if type(x) is dict:
+                        if x.get('workerid')=='gw1':x[field]=value
+                        if x.get('PYTEST_XDIST_WORKER')=='gw1':x[envkey]=value
+                        for y in x.values():swap(y)
+                    elif type(x) is list:
+                        for y in x:swap(y)
+                swap(v);t.write(path,v)
+        if name in ('unknown-validator-id','wrong-validator-source'):
+            change(root/'validator-inventory.json',lambda v:v['validators'][0].update(**({'id':'arbitrary-v9'} if name=='unknown-validator-id' else {'validator':e.inert})))
+        if name=='missing-inventory':
+            for path in (root/'request.json',e.spec_path):change(path,lambda v:v['jobs'][0].update(prerequisites=[]))
+        if name=='missing-process-end':change(e.output/'result.json',lambda v:v.update(process_records=[v['process_records'][0]]))
+        if name in ('replacement-same-gateway','replacement-unrelated-gateway'):
+            t.change_worker_identity(e,'gw'+str(workers),'workerid','gw0')
+        if name=='worker-mainargv':t.change_worker_identity(e,'gw1','mainargv',['pytest','different'])
+        if name in ('worker-before-parent','replacement-overlap'):
+            ident,start,end=('w0',190,220) if name=='worker-before-parent' else ('w1',215,240)
+            change(e.output/('process-'+ident+'-start.json'),lambda v:v.update(monotonic_ns=start))
+            change(e.output/('process-'+ident+'-end.json'),lambda v:v.update(monotonic_ns=end,elapsed_ns=t.obs(end-start)))
+        reseal(e)
+        if name=='completion-source-omission':change(e.output/'completion.json',lambda v:v.update(source_witnesses=[]))
+        if name=='completion-inventory-omission':change(e.output/'completion.json',lambda v:v.update(inventory=[e.inert]))
+        if name=='producer-minimal-inventory':
+            raw=[digest(p) for p in e.output.glob('process-*-observation-*.json')]
+            change(e.output/'completion.json',lambda v:v.update(inventory=[*raw,e.inert]))
+        if name=='completion-source-reordered':change(e.output/'completion.json',lambda v:v['source_witnesses'].reverse())
+        if name=='empty-source-arrays':
+            for path in (e.output/'completion.json',e.output/'result.json'):change(path,lambda v:v.update(source_witnesses=[]))
+        refresh(root)
+        receipt=e.verify()
+        row.update(result='accepted',custody=receipt['custody'],outcome=receipt['test_outcome'],hardware=receipt['hardware'])
+    except Exception as exc:
+        row.update(result='refused',exception=type(exc).__name__,message=str(exc),traceback=traceback.format_exc())
+    row['end']=now();results.append(row)
+save('probes.json',results)
+meta.update(end=now(),exit_code=0,suite_exit_code=suite['exit_code']);save('execution.json',meta)
+print(json.dumps({'suite':suite,'probes':[{k:v for k,v in x.items() if k!='traceback'} for x in results]},indent=2))

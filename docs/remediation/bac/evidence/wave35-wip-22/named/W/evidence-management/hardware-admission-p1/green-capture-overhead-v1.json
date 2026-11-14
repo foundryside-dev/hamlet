@@ -1,0 +1,66 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--noconftest",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-capture-overhead-v1-fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "start": "2026-11-14T06:40:18.177752+00:00",
+  "end": "2026-11-14T06:40:19.311593+00:00",
+  "exit_code": 0,
+  "before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "e4a94e819bb97e39c5f71cdb80eda8d309fcfaef70d15cc67daceb1d80acf751",
+      "bytes": 56496
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "04fe92dd1acc9fa6f91510c67af572c3ace9d5582adb510f1e090f5c8e90bfab",
+      "bytes": 42670
+    }
+  ],
+  "after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "e4a94e819bb97e39c5f71cdb80eda8d309fcfaef70d15cc67daceb1d80acf751",
+      "bytes": 56496
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "04fe92dd1acc9fa6f91510c67af572c3ace9d5582adb510f1e090f5c8e90bfab",
+      "bytes": 42670
+    }
+  ],
+  "source_snapshots": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-capture-overhead-v1-source",
+  "scope": "synthetic only"
+}

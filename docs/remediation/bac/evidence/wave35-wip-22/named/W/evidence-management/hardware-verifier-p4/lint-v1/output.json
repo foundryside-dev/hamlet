@@ -1,0 +1,1828 @@
+[
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 37,
+      "row": 10
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import copy\nimport importlib\nimport importlib.util\nimport json\nfrom pathlib import Path\n\nimport bac_hardware_protocol_v1 as p\nimport pytest\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 3
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 3
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "name": "unsorted-imports",
+    "noqa_row": 3,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 18,
+      "row": 89
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                    \"logical_index\": 0,\n                    \"gpu_uuid\": \"GPU-inert\",\n                    \"mig_uuid\": None,\n                    \"physical_parent_uuid\": \"GPU-inert\",\n                    \"model\": \"inert-metadata-only\",\n                    \"vram_bytes\": 100,\n                    \"isolation\": \"physical-exclusive\",\n                    \"mapping_provenance\": self.inert,\n                }",
+          "end_location": {
+            "column": 18,
+            "row": 89
+          },
+          "location": {
+            "column": 17,
+            "row": 80
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 17,
+      "row": 80
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 80,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 91,
+      "row": 94
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"cpu_slots\": 1, \"ram_bytes\": 10, \"scratch_bytes\": 10, \"scratch_inodes\": 10}",
+          "end_location": {
+            "column": 91,
+            "row": 94
+          },
+          "location": {
+            "column": 23,
+            "row": 94
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 23,
+      "row": 94
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 94,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 14,
+      "row": 110
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                \"id\": \"controller\",\n                \"role\": \"controller\",\n                \"count\": 1,\n                \"replacement_limit\": 0,\n                \"observer\": \"uninitialized\",\n                \"intra_op\": 1,\n                \"inter_op\": 1,\n                \"debug\": False,\n                \"torch_policy\": \"observe-loaded\",\n                \"cuda_policy\": \"no-initialize\",\n                \"peak_cpu_slots\": 1,\n                \"cpu_reservation_basis\": \"accepted-case-contract\",\n                \"cpu_reservation_evidence\": self.inert,\n            }",
+          "end_location": {
+            "column": 14,
+            "row": 110
+          },
+          "location": {
+            "column": 13,
+            "row": 96
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 13,
+      "row": 96
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 96,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 129
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"schema\": \"bac-hardware-identity-policy-v1\",\n            \"spec_path\": str(self.spec_path),\n            \"command_path\": str(self.output / \"command.json\"),\n            \"runtime_path\": str(self.output / \"runtime-context.json\"),\n            \"job_id\": \"job\",\n            \"role_id\": \"controller\",\n            \"required_imports\": [],\n            \"worker_roles\": [\"workers\"] * workers,\n            \"environment_delta\": {\"common\": {}, \"worker\": {}},\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 129
+          },
+          "location": {
+            "column": 23,
+            "row": 119
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 23,
+      "row": 119
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 119,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 14,
+      "row": 156
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                \"schema\": \"bac-hardware-source-grant-v1\",\n                \"authorized_root\": str(self.src),\n                \"head\": \"a\" * 40,\n                \"tree\": \"b\" * 40,\n                \"import_roots\": [str(self.src / \"imports\")],\n                \"inputs\": self.inputs,\n                \"start\": T0,\n                \"end\": None,\n                \"no_writer_barrier\": True,\n                \"includes_untracked\": True,\n                \"authority\": \"synthetic root fixture\",\n                \"allocation_grant\": self.inert,\n                \"cpu_reservation_evidence\": [self.inert],\n            }",
+          "end_location": {
+            "column": 14,
+            "row": 156
+          },
+          "location": {
+            "column": 13,
+            "row": 142
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 13,
+      "row": 142
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 142,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 84,
+      "row": 192
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"name\": \"inert\", \"version\": \"1\", \"reference\": self.inert}",
+          "end_location": {
+            "column": 84,
+            "row": 192
+          },
+          "location": {
+            "column": 31,
+            "row": 192
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 31,
+      "row": 192
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 192,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 121,
+      "row": 217
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"schema\": \"unknown\" if bad_schema else \"bac-hardware-common-observation-v1\"}",
+          "end_location": {
+            "column": 121,
+            "row": 217
+          },
+          "location": {
+            "column": 43,
+            "row": 217
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 43,
+      "row": 217
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 217,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 18,
+      "row": 244
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                    \"id\": kind,\n                    \"kind\": kind,\n                    \"required_cases\": [\"test_inert\"],\n                    \"contract\": contract,\n                    \"validator\": self.validator,\n                    \"evidence_class\": evidence_class,\n                    \"minimum_devices\": minimum_devices,\n                }",
+          "end_location": {
+            "column": 18,
+            "row": 244
+          },
+          "location": {
+            "column": 17,
+            "row": 236
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 17,
+      "row": 236
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 236,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 22,
+      "row": 265
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                        \"schema\": \"bac-hardware-validator-inventory-v1\",\n                        \"authority\": \"synthetic exact-spec authorization\",\n                        \"validators\": [\n                            dict(\n                                id=\"p4-common-v1\",\n                                kinds=[\"process-custody\", \"source-freeze\", \"required-cases\"],\n                                validator=self.validator,\n                                dependencies=[p.file_reference(Path(p.__file__))],\n                                contracts=[o[\"contract\"] for o in self.obligations],\n                                witness_schemas=[self.witness_schema],\n                                evidence_classes=[\"cpu\", \"cpu-standin\"],\n                            )\n                        ],\n                    }",
+          "end_location": {
+            "column": 22,
+            "row": 265
+          },
+          "location": {
+            "column": 21,
+            "row": 251
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 21,
+      "row": 251
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 251,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 30,
+      "row": 263
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                                \"id\": \"p4-common-v1\",\n                                \"kinds\": [\"process-custody\", \"source-freeze\", \"required-cases\"],\n                                \"validator\": self.validator,\n                                \"dependencies\": [p.file_reference(Path(p.__file__))],\n                                \"contracts\": [o[\"contract\"] for o in self.obligations],\n                                \"witness_schemas\": [self.witness_schema],\n                                \"evidence_classes\": [\"cpu\", \"cpu-standin\"],\n                            }",
+          "end_location": {
+            "column": 30,
+            "row": 263
+          },
+          "location": {
+            "column": 29,
+            "row": 255
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 29,
+      "row": 255
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 255,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 290
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"id\": \"job\",\n            \"profile\": self.profile,\n            \"argv\": self.argv,\n            \"interpreter\": self.interpreter[\"path\"],\n            \"cwd\": str(self.src),\n            \"environment\": self.environment,\n            \"seed\": dict(policy=\"explicit\", python=1, numpy=2, torch=3, cuda=[]),\n            \"required_collected_ids\": [\"test_inert\"],\n            \"xdist_workers\": workers,\n            \"roles\": self.roles,\n            \"budget\": self.budget,\n            \"devices\": self.devices,\n            \"serialization_domains\": [\"rng\"],\n            \"timeout_seconds\": 10,\n            \"termination_grace_seconds\": 1,\n            \"timing\": \"ordinary\",\n            \"timing_contract\": [],\n            \"prerequisites\": prerequisites,\n            \"obligations\": self.obligations,\n            \"output\": str(self.output),\n            \"scratch\": str(root / \"scratch\" / \"attempt\" / \"job\"),\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 290
+          },
+          "location": {
+            "column": 20,
+            "row": 268
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 20,
+      "row": 268
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 268,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 78,
+      "row": 275
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"policy\": \"explicit\", \"python\": 1, \"numpy\": 2, \"torch\": 3, \"cuda\": []}",
+          "end_location": {
+            "column": 78,
+            "row": 275
+          },
+          "location": {
+            "column": 18,
+            "row": 275
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 18,
+      "row": 275
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 275,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 22,
+      "row": 330
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                        \"path\": \"/cgroup\",\n                        \"cpu_quota_us\": self.fact(100),\n                        \"cpu_period_us\": self.fact(100),\n                        \"memory_limit_bytes\": self.fact(100),\n                        \"cpuset\": self.fact([0]),\n                    }",
+          "end_location": {
+            "column": 22,
+            "row": 330
+          },
+          "location": {
+            "column": 21,
+            "row": 324
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 21,
+      "row": 324
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 324,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 140,
+      "row": 374
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"schema\": \"bac-hardware-capture-result-v1\", \"disposition\": \"admitted\", \"reasons\": [], \"admission\": self.admission, \"spec\": self.spec_ref}",
+          "end_location": {
+            "column": 140,
+            "row": 374
+          },
+          "location": {
+            "column": 13,
+            "row": 374
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 13,
+      "row": 374
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 374,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 116,
+      "row": 389
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"pid\": 100, \"ppid\": 90, \"start_identity\": \"1000\", \"host\": \"synthetic\", \"boot_id\": \"synthetic\"}",
+          "end_location": {
+            "column": 116,
+            "row": 389
+          },
+          "location": {
+            "column": 32,
+            "row": 389
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 32,
+      "row": 389
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 389,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 110,
+      "row": 390
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"pid\": 101, \"ppid\": 100, \"start_identity\": \"1010\", \"host\": \"synthetic\", \"boot_id\": \"synthetic\"}",
+          "end_location": {
+            "column": 110,
+            "row": 390
+          },
+          "location": {
+            "column": 25,
+            "row": 390
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 25,
+      "row": 390
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 390,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 439
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"schema\": \"bac-hardware-identity-runtime-v1\",\n            \"spec\": self.spec_ref,\n            \"command\": self.command_ref,\n            \"trusted_grant\": self.grant,\n            \"policy\": self.policy_ref,\n            \"runner_identity\": self.runner_identity,\n            \"runner_source_start\": self.runner_start,\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 439
+          },
+          "location": {
+            "column": 24,
+            "row": 431
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 24,
+      "row": 431
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 431,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 457
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"schema\": \"bac-hardware-identity-context-v1\",\n            \"spec\": self.spec_ref,\n            \"command\": self.command_ref,\n            \"trusted_grant\": self.grant,\n            \"job_id\": \"job\",\n            \"role_id\": \"controller\",\n            \"required_imports\": [],\n            \"worker_roles\": [\"workers\"] * workers,\n            \"environment_delta\": {\"common\": {}, \"worker\": {}},\n            \"parent_start\": [],\n            \"replacement_start\": [],\n            \"lifecycle\": [],\n            \"worker_identity\": None,\n            \"policy\": [self.policy_ref],\n            \"runtime\": [self.runtime_ref],\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 457
+          },
+          "location": {
+            "column": 24,
+            "row": 441
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 24,
+      "row": 441
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 441,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 469
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"schema\": \"bac-hardware-runner-launch-v1\",\n            \"attempt_id\": \"attempt\",\n            \"job_id\": \"job\",\n            \"spec\": self.spec_ref,\n            \"command\": self.command_ref,\n            \"identity\": self.identity,\n            \"affinity\": [0],\n            \"at\": T1,\n            \"monotonic_ns\": 100,\n            \"inherited_leases\": [dict(fd=10, lock_name=\"a\" * 64 + \".lock\", device=1, inode=1)],\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 469
+          },
+          "location": {
+            "column": 23,
+            "row": 458
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 23,
+      "row": 458
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 458,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 91,
+      "row": 468
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"fd\": 10, \"lock_name\": \"a\" * 64 + \".lock\", \"device\": 1, \"inode\": 1}",
+          "end_location": {
+            "column": 91,
+            "row": 468
+          },
+          "location": {
+            "column": 31,
+            "row": 468
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 31,
+      "row": 468
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 468,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 486
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"schema\": \"bac-hardware-runner-wait-v1\",\n            \"attempt_id\": \"attempt\",\n            \"job_id\": \"job\",\n            \"spec\": self.spec_ref,\n            \"command\": self.command_ref,\n            \"launch\": self.launch_ref,\n            \"identity\": self.identity,\n            \"exit_code\": 0,\n            \"signal\": 0,\n            \"interruption_reason\": \"\",\n            \"start\": T1,\n            \"end\": T4,\n            \"start_monotonic_ns\": 100,\n            \"end_monotonic_ns\": 400,\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 486
+          },
+          "location": {
+            "column": 21,
+            "row": 471
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 21,
+      "row": 471
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 471,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 135,
+      "row": 494
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"workerid\": \"gw\" + str(index), \"workercount\": workers, \"testrunuid\": \"1\" * 32, \"mainargv\": [\"pytest\", \"inert\"]}",
+          "end_location": {
+            "column": 135,
+            "row": 494
+          },
+          "location": {
+            "column": 31,
+            "row": 494
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 31,
+      "row": 494
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 494,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 18,
+      "row": 508
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                    \"schema\": \"bac-hardware-worker-lifecycle-v1\",\n                    \"phase\": \"configure\",\n                    \"controller_start\": self.processes[0],\n                    \"worker_identity\": worker_identity,\n                    \"role_id\": \"workers\",\n                    \"predecessor_start\": [previous_start] if replacing else [],\n                    \"process_start\": [],\n                    \"error\": \"\",\n                    \"at\": \"2026-11-14T00:00:02.400000Z\" if replacing else T2,\n                    \"prior_lifecycle\": [previous_down] if replacing else [],\n                }",
+          "end_location": {
+            "column": 18,
+            "row": 508
+          },
+          "location": {
+            "column": 17,
+            "row": 497
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 17,
+      "row": 497
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 497,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 14,
+      "row": 526
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                \"pid\": 200 if reuse_pid else 200 + index, \"ppid\": 101, \"start_identity\": str(2000 + index), \"host\": \"synthetic\", \"boot_id\": \"synthetic\"\n            }",
+          "end_location": {
+            "column": 14,
+            "row": 526
+          },
+          "location": {
+            "column": 21,
+            "row": 524
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 21,
+      "row": 524
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 524,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 18,
+      "row": 562
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                    \"schema\": \"bac-hardware-worker-lifecycle-v1\",\n                    \"phase\": \"down\",\n                    \"controller_start\": self.processes[0],\n                    \"worker_identity\": worker_identity,\n                    \"role_id\": \"workers\",\n                    \"predecessor_start\": [previous_start] if replacing else [],\n                    \"process_start\": [start_worker],\n                    \"error\": \"synthetic gateway failure\" if replacement and not replacing else \"\",\n                    \"at\": end_at,\n                    \"prior_lifecycle\": [configure],\n                }",
+          "end_location": {
+            "column": 18,
+            "row": 562
+          },
+          "location": {
+            "column": 17,
+            "row": 551
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 17,
+      "row": 551
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 551,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 18,
+      "row": 577
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                    \"schema\": \"bac-hardware-pytest-report-v1\",\n                    \"process\": report_process,\n                    \"case_id\": \"test_inert\",\n                    \"phase\": phase,\n                    \"outcome\": \"passed\",\n                    \"longrepr\": \"\",\n                    \"at\": T3,\n                }",
+          "end_location": {
+            "column": 18,
+            "row": 577
+          },
+          "location": {
+            "column": 17,
+            "row": 569
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 17,
+      "row": 569
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 569,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 138,
+      "row": 582
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"schema\": \"bac-hardware-pytest-collection-v1\", \"process\": report_process, \"ids\": [\"test_inert\"]}",
+          "end_location": {
+            "column": 138,
+            "row": 582
+          },
+          "location": {
+            "column": 46,
+            "row": 582
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 46,
+      "row": 582
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 582,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 107,
+      "row": 587
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"schema\": \"bac-hardware-pytest-collection-v1\", \"process\": worker_start, \"ids\": [\"test_inert\"]}",
+          "end_location": {
+            "column": 107,
+            "row": 587
+          },
+          "location": {
+            "column": 17,
+            "row": 587
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 17,
+      "row": 587
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 587,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 125,
+      "row": 589
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"case_id\": \"test_inert\", \"setup\": \"passed\", \"call\": \"passed\", \"teardown\": \"passed\", \"evidence\": self.reports}",
+          "end_location": {
+            "column": 125,
+            "row": 589
+          },
+          "location": {
+            "column": 26,
+            "row": 589
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 26,
+      "row": 589
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 589,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 22,
+      "row": 625
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                        \"schema\": \"bac-hardware-common-observation-v1\",\n                        \"kind\": obligation[\"kind\"],\n                        \"case_id\": \"test_inert\",\n                        \"reports\": self.reports,\n                        \"processes\": self.processes,\n                        \"source_witnesses\": self.result[\"source_witnesses\"],\n                    }",
+          "end_location": {
+            "column": 22,
+            "row": 625
+          },
+          "location": {
+            "column": 21,
+            "row": 618
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 21,
+      "row": 618
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 618,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 85,
+      "row": 663
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"state\": \"measured\", \"value\": value, \"reason\": \"\", \"provenance\": self.inert}",
+          "end_location": {
+            "column": 85,
+            "row": 663
+          },
+          "location": {
+            "column": 16,
+            "row": 663
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 16,
+      "row": 663
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 663,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 14,
+      "row": 698
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                \"schema\": \"bac-hardware-process-observation-v1\",\n                \"context\": context,\n                \"identity\": actual_identity,\n                \"phase\": phase,\n                \"environment\": environment,\n                \"worker_identity\": context[\"worker_identity\"],\n                \"torch_loaded\": False,\n                \"cuda_marker\": None,\n                \"observation_limit\": \"synthetic only\",\n                \"at\": at,\n            }",
+          "end_location": {
+            "column": 14,
+            "row": 698
+          },
+          "location": {
+            "column": 13,
+            "row": 687
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 13,
+      "row": 687
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 687,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 113,
+      "row": 794
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"policy\": \"explicit\", \"python\": 99, \"numpy\": 2, \"torch\": 3, \"cuda\": []}",
+          "end_location": {
+            "column": 113,
+            "row": 794
+          },
+          "location": {
+            "column": 52,
+            "row": 794
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 52,
+      "row": 794
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 794,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 82,
+      "row": 852
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"name\": \"foreign\", \"reference\": evidence.policy_ref}",
+          "end_location": {
+            "column": 82,
+            "row": 852
+          },
+          "location": {
+            "column": 31,
+            "row": 852
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 31,
+      "row": 852
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 852,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 14,
+      "row": 874
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                \"schema\": \"bac-hardware-capture-result-v1\",\n                \"disposition\": \"refused\",\n                \"reasons\": [\"late failure\"],\n                \"admission\": evidence.admission,\n                \"spec\": None,\n            }",
+          "end_location": {
+            "column": 14,
+            "row": 874
+          },
+          "location": {
+            "column": 13,
+            "row": 868
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 13,
+      "row": 868
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 868,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 14,
+      "row": 885
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n                \"schema\": \"bac-hardware-capture-result-v1\",\n                \"disposition\": \"admitted\",\n                \"reasons\": [],\n                \"admission\": evidence.admission,\n                \"spec\": evidence.inert,\n            }",
+          "end_location": {
+            "column": 14,
+            "row": 885
+          },
+          "location": {
+            "column": 13,
+            "row": 879
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 13,
+      "row": 879
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 879,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 104,
+      "row": 971
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"pid\": 999, \"ppid\": 100, \"start_identity\": \"x\", \"host\": \"synthetic\", \"boot_id\": \"synthetic\"}",
+          "end_location": {
+            "column": 104,
+            "row": 971
+          },
+          "location": {
+            "column": 22,
+            "row": 971
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 22,
+      "row": 971
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 971,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 1075
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"schema\": \"bac-hardware-pytest-report-v1\",\n            \"process\": evidence.processes[0],\n            \"case_id\": \"hidden_failure\",\n            \"phase\": \"call\",\n            \"outcome\": \"failed\",\n            \"longrepr\": \"retained failure\",\n            \"at\": T3,\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 1075
+          },
+          "location": {
+            "column": 9,
+            "row": 1067
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 9,
+      "row": 1067
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 1067,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 44,
+      "row": 15
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "import datetime\nimport hashlib\nimport json\nimport os\nimport re\nfrom pathlib import Path\n\nimport bac_hardware_protocol_v1 as protocol\n\n",
+          "end_location": {
+            "column": 1,
+            "row": 17
+          },
+          "location": {
+            "column": 1,
+            "row": 8
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 1,
+      "row": 8
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "name": "unsorted-imports",
+    "noqa_row": 8,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 6,
+      "row": 96
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n        \"pid\": os.getpid(),\n        \"ppid\": os.getppid(),\n        \"start_identity\": raw[19],\n        \"host\": os.uname().nodename,\n        \"boot_id\": Path(\"/proc/sys/kernel/random/boot_id\").read_text().strip(),\n    }",
+          "end_location": {
+            "column": 6,
+            "row": 96
+          },
+          "location": {
+            "column": 12,
+            "row": 90
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 12,
+      "row": 90
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 90,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 137,
+      "row": 175
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\"schema\": \"bac-hardware-capture-result-v1\", \"disposition\": \"admitted\", \"reasons\": [], \"admission\": spec[\"admission\"], \"spec\": spec_ref}",
+          "end_location": {
+            "column": 137,
+            "row": 175
+          },
+          "location": {
+            "column": 12,
+            "row": 175
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 12,
+      "row": 175
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 175,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "PERF102",
+    "end_location": {
+      "column": 42,
+      "row": 449
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "phases",
+          "end_location": {
+            "column": 27,
+            "row": 449
+          },
+          "location": {
+            "column": 9,
+            "row": 449
+          }
+        },
+        {
+          "content": "values",
+          "end_location": {
+            "column": 42,
+            "row": 449
+          },
+          "location": {
+            "column": 37,
+            "row": 449
+          }
+        }
+      ],
+      "message": "Replace `.items()` with `.values()`"
+    },
+    "location": {
+      "column": 31,
+      "row": 449
+    },
+    "message": "When using only the values of a dict use the `values()` method",
+    "name": "incorrect-dict-iterator",
+    "noqa_row": 449,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/incorrect-dict-iterator"
+  },
+  {
+    "cell": null,
+    "code": "RUF059",
+    "end_location": {
+      "column": 11,
+      "row": 453
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_er",
+          "end_location": {
+            "column": 11,
+            "row": 453
+          },
+          "location": {
+            "column": 9,
+            "row": 453
+          }
+        }
+      ],
+      "message": "Prefix it with an underscore or any other dummy variable pattern"
+    },
+    "location": {
+      "column": 9,
+      "row": 453
+    },
+    "message": "Unpacked variable `er` is never used",
+    "name": "unused-unpacked-variable",
+    "noqa_row": 453,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-unpacked-variable"
+  },
+  {
+    "cell": null,
+    "code": "RUF007",
+    "end_location": {
+      "column": 34,
+      "row": 484
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "import itertools\n",
+          "end_location": {
+            "column": 1,
+            "row": 16
+          },
+          "location": {
+            "column": 1,
+            "row": 16
+          }
+        },
+        {
+          "content": "itertools.pairwise(ordered)",
+          "end_location": {
+            "column": 56,
+            "row": 484
+          },
+          "location": {
+            "column": 31,
+            "row": 484
+          }
+        }
+      ],
+      "message": "Replace `zip()` with `itertools.pairwise()`"
+    },
+    "location": {
+      "column": 31,
+      "row": 484
+    },
+    "message": "Prefer `itertools.pairwise()` over `zip()` when iterating over successive pairs",
+    "name": "zip-instead-of-pairwise",
+    "noqa_row": 484,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/zip-instead-of-pairwise"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 6,
+      "row": 851
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n        \"schema\": \"bac-hardware-case-validator-receipt-v1\",\n        \"validator_id\": \"p4-common-v1\",\n        \"validator\": entry[\"validator\"],\n        \"dependencies\": entry[\"dependencies\"],\n        \"spec\": spec_ref,\n        \"job_id\": job[\"id\"],\n        \"obligation_id\": obligation[\"id\"],\n        \"contract\": obligation[\"contract\"],\n        \"witness_schema\": contract[\"witness_schema\"],\n        \"evidence_class\": obligation[\"evidence_class\"],\n        \"cases\": obligation[\"required_cases\"],\n        \"evidence\": evidence,\n        \"payloads\": payloads,\n        \"producer_processes\": producers,\n        \"related_attempts\": [],\n        \"validation_process\": validation_identity,\n        \"start\": validation_start,\n        \"end\": utc(),\n        \"verdict\": verdict,\n        \"reasons\": reasons,\n    }",
+          "end_location": {
+            "column": 6,
+            "row": 851
+          },
+          "location": {
+            "column": 12,
+            "row": 830
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 12,
+      "row": 830
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 830,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 6,
+      "row": 890
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n        \"schema\": \"bac-hardware-component-classification-v1\",\n        \"spec\": spec_ref,\n        \"job_id\": job[\"id\"],\n        \"common_custody\": state(common),\n        \"strict_custody\": state(strict) if strict else \"not-required\",\n        \"test_outcome\": observed,\n        \"hardware\": state(hardware) if hardware else \"unrun\",\n        \"overall\": \"satisfied\" if complete else \"incomplete\",\n        \"reasons\": reason,\n        \"validator_receipts\": validator_receipts,\n    }",
+          "end_location": {
+            "column": 6,
+            "row": 890
+          },
+          "location": {
+            "column": 12,
+            "row": 879
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 12,
+      "row": 879
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 879,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "RUF059",
+    "end_location": {
+      "column": 25,
+      "row": 973
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_raws",
+          "end_location": {
+            "column": 25,
+            "row": 973
+          },
+          "location": {
+            "column": 21,
+            "row": 973
+          }
+        }
+      ],
+      "message": "Prefix it with an underscore or any other dummy variable pattern"
+    },
+    "location": {
+      "column": 21,
+      "row": 973
+    },
+    "message": "Unpacked variable `raws` is never used",
+    "name": "unused-unpacked-variable",
+    "noqa_row": 973,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-unpacked-variable"
+  },
+  {
+    "cell": null,
+    "code": "RUF059",
+    "end_location": {
+      "column": 42,
+      "row": 973
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": null,
+    "location": {
+      "column": 36,
+      "row": 973
+    },
+    "message": "Unpacked variable `policy` is never used",
+    "name": "unused-unpacked-variable",
+    "noqa_row": 973,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-unpacked-variable"
+  },
+  {
+    "cell": null,
+    "code": "RUF059",
+    "end_location": {
+      "column": 50,
+      "row": 973
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_starts",
+          "end_location": {
+            "column": 50,
+            "row": 973
+          },
+          "location": {
+            "column": 44,
+            "row": 973
+          }
+        }
+      ],
+      "message": "Prefix it with an underscore or any other dummy variable pattern"
+    },
+    "location": {
+      "column": 44,
+      "row": 973
+    },
+    "message": "Unpacked variable `starts` is never used",
+    "name": "unused-unpacked-variable",
+    "noqa_row": 973,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-unpacked-variable"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 10,
+      "row": 1045
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n            \"id\": obligation[\"id\"],\n            \"disposition\": \"unrun\" if not evidence else \"unsatisfied\",\n            \"reason\": \"required accepted case validator is unimplemented or lacks evidence\",\n            \"contract\": obligation[\"contract\"],\n            \"validator\": obligation[\"validator\"],\n            \"evidence\": evidence,\n            \"validator_receipt\": [],\n        }",
+          "end_location": {
+            "column": 10,
+            "row": 1045
+          },
+          "location": {
+            "column": 23,
+            "row": 1037
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 23,
+      "row": 1037
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 1037,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  },
+  {
+    "cell": null,
+    "code": "C408",
+    "end_location": {
+      "column": 6,
+      "row": 1122
+    },
+    "filename": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "{\n        \"schema\": protocol.SCHEMA,\n        \"kind\": \"receipt\",\n        \"attempt_id\": spec[\"attempt_id\"],\n        \"job_id\": job[\"id\"],\n        \"spec\": spec_ref,\n        \"verifier\": verifier_ref,\n        \"at\": utc(),\n        \"result\": result_ref,\n        \"custody\": \"satisfied\" if all(o[\"disposition\"] == \"satisfied\" for o in obligations) else \"unsatisfied\",\n        \"test_outcome\": observed,\n        \"hardware\": (\n            \"unsatisfied\"\n            if any(\n                o[\"disposition\"] == \"unsatisfied\"\n                and next(j for j in job[\"obligations\"] if j[\"id\"] == o[\"id\"])[\"evidence_class\"] == \"real-cuda\"\n                for o in obligations\n            )\n            else \"unrun\"\n        ),\n        \"obligations\": obligations,\n        \"reasons\": [r for r in reasons if r],\n        \"inventory\": inventory,\n    }",
+          "end_location": {
+            "column": 6,
+            "row": 1122
+          },
+          "location": {
+            "column": 12,
+            "row": 1099
+          }
+        }
+      ],
+      "message": "Rewrite as a literal"
+    },
+    "location": {
+      "column": 12,
+      "row": 1099
+    },
+    "message": "Unnecessary `dict()` call (rewrite as a literal)",
+    "name": "unnecessary-collection-call",
+    "noqa_row": 1099,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unnecessary-collection-call"
+  }
+]

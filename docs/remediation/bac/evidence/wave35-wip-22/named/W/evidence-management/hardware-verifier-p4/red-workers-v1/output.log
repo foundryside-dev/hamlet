@@ -1,0 +1,119 @@
+...............................................FFFFF                     [100%]
+=================================== FAILURES ===================================
+________________ test_worker_lifecycle_mutations[missing-down] _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-125/test_worker_lifecycle_mutation0')
+mutation = 'missing-down'
+
+    @pytest.mark.parametrize("mutation", ["missing-down", "wrong-down-role", "wrong-worker-count", "wrong-down-controller", "unlinked-configure"])
+    def test_worker_lifecycle_mutations(tmp_path, mutation):
+        evidence = Evidence(tmp_path, common=True, workers=1)
+        path = evidence.output / "worker-0-down.json"
+        value = json.loads(path.read_text())
+        if mutation == "missing-down": value["schema"] = "not-a-lifecycle"
+        if mutation == "wrong-down-role": value["role_id"] = "controller"
+        if mutation == "wrong-worker-count": value["worker_identity"]["workercount"] = 7
+        if mutation == "wrong-down-controller": value["controller_start"] = evidence.worker_starts[0]
+        if mutation == "unlinked-configure": value["prior_lifecycle"] = []
+        write(path, value)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="lifecycle|worker"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:432: Failed
+_______________ test_worker_lifecycle_mutations[wrong-down-role] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-125/test_worker_lifecycle_mutation1')
+mutation = 'wrong-down-role'
+
+    @pytest.mark.parametrize("mutation", ["missing-down", "wrong-down-role", "wrong-worker-count", "wrong-down-controller", "unlinked-configure"])
+    def test_worker_lifecycle_mutations(tmp_path, mutation):
+        evidence = Evidence(tmp_path, common=True, workers=1)
+        path = evidence.output / "worker-0-down.json"
+        value = json.loads(path.read_text())
+        if mutation == "missing-down": value["schema"] = "not-a-lifecycle"
+        if mutation == "wrong-down-role": value["role_id"] = "controller"
+        if mutation == "wrong-worker-count": value["worker_identity"]["workercount"] = 7
+        if mutation == "wrong-down-controller": value["controller_start"] = evidence.worker_starts[0]
+        if mutation == "unlinked-configure": value["prior_lifecycle"] = []
+        write(path, value)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="lifecycle|worker"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:432: Failed
+_____________ test_worker_lifecycle_mutations[wrong-worker-count] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-125/test_worker_lifecycle_mutation2')
+mutation = 'wrong-worker-count'
+
+    @pytest.mark.parametrize("mutation", ["missing-down", "wrong-down-role", "wrong-worker-count", "wrong-down-controller", "unlinked-configure"])
+    def test_worker_lifecycle_mutations(tmp_path, mutation):
+        evidence = Evidence(tmp_path, common=True, workers=1)
+        path = evidence.output / "worker-0-down.json"
+        value = json.loads(path.read_text())
+        if mutation == "missing-down": value["schema"] = "not-a-lifecycle"
+        if mutation == "wrong-down-role": value["role_id"] = "controller"
+        if mutation == "wrong-worker-count": value["worker_identity"]["workercount"] = 7
+        if mutation == "wrong-down-controller": value["controller_start"] = evidence.worker_starts[0]
+        if mutation == "unlinked-configure": value["prior_lifecycle"] = []
+        write(path, value)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="lifecycle|worker"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:432: Failed
+____________ test_worker_lifecycle_mutations[wrong-down-controller] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-125/test_worker_lifecycle_mutation3')
+mutation = 'wrong-down-controller'
+
+    @pytest.mark.parametrize("mutation", ["missing-down", "wrong-down-role", "wrong-worker-count", "wrong-down-controller", "unlinked-configure"])
+    def test_worker_lifecycle_mutations(tmp_path, mutation):
+        evidence = Evidence(tmp_path, common=True, workers=1)
+        path = evidence.output / "worker-0-down.json"
+        value = json.loads(path.read_text())
+        if mutation == "missing-down": value["schema"] = "not-a-lifecycle"
+        if mutation == "wrong-down-role": value["role_id"] = "controller"
+        if mutation == "wrong-worker-count": value["worker_identity"]["workercount"] = 7
+        if mutation == "wrong-down-controller": value["controller_start"] = evidence.worker_starts[0]
+        if mutation == "unlinked-configure": value["prior_lifecycle"] = []
+        write(path, value)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="lifecycle|worker"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:432: Failed
+_____________ test_worker_lifecycle_mutations[unlinked-configure] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-125/test_worker_lifecycle_mutation4')
+mutation = 'unlinked-configure'
+
+    @pytest.mark.parametrize("mutation", ["missing-down", "wrong-down-role", "wrong-worker-count", "wrong-down-controller", "unlinked-configure"])
+    def test_worker_lifecycle_mutations(tmp_path, mutation):
+        evidence = Evidence(tmp_path, common=True, workers=1)
+        path = evidence.output / "worker-0-down.json"
+        value = json.loads(path.read_text())
+        if mutation == "missing-down": value["schema"] = "not-a-lifecycle"
+        if mutation == "wrong-down-role": value["role_id"] = "controller"
+        if mutation == "wrong-worker-count": value["worker_identity"]["workercount"] = 7
+        if mutation == "wrong-down-controller": value["controller_start"] = evidence.worker_starts[0]
+        if mutation == "unlinked-configure": value["prior_lifecycle"] = []
+        write(path, value)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="lifecycle|worker"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:432: Failed
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_worker_lifecycle_mutations[missing-down]
+FAILED test_verify_bac_hardware_v1.py::test_worker_lifecycle_mutations[wrong-down-role]
+FAILED test_verify_bac_hardware_v1.py::test_worker_lifecycle_mutations[wrong-worker-count]
+FAILED test_verify_bac_hardware_v1.py::test_worker_lifecycle_mutations[wrong-down-controller]
+FAILED test_verify_bac_hardware_v1.py::test_worker_lifecycle_mutations[unlinked-configure]
+5 failed, 47 passed in 2.56s

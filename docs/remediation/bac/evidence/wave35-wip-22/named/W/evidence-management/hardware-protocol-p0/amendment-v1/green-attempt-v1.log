@@ -1,0 +1,37 @@
+........................................................................ [ 59%]
+..............................................F...                       [100%]
+=================================== FAILURES ===================================
+_______________ test_serial_cpu_ram_and_retained_scratch_budgets _______________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_serial_cpu_ram_and_retained_scratch_budgets(protocol, records):
+        value = two_jobs(records)
+>       protocol.validate_spec(value)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:500: in validate_spec
+    validate_record("spec", spec)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:495: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:389: in _semantic
+    _planned_budget(value["jobs"], value["job_concurrency"], value["budget"])
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:307: in _planned_budget
+    _require(required <= budget[key], f"planned {key} exceeds budget")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'planned scratch_bytes exceeds budget'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: planned scratch_bytes exceeds budget
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_serial_cpu_ram_and_retained_scratch_budgets
+1 failed, 121 passed in 1.67s

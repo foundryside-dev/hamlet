@@ -1,0 +1,25 @@
+{
+  "name": "c1-poison-child-false-parent-true",
+  "exit_code": 0,
+  "seconds": 9.310351227002684,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_child_false_outer_true_preserves_bank_health",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true.log",
+  "sha256": "993dbd285530e76a7b3c7a0fda1b4b4ae0b3d39128d5012ed2314429eba2d0f1",
+  "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

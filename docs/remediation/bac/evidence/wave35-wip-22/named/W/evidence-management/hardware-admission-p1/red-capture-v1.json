@@ -1,0 +1,71 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--noconftest",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "start": "2026-11-14T06:24:12.034612+00:00",
+  "end": "2026-11-14T06:24:13.176133+00:00",
+  "exit_code": 1,
+  "before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "832abd0ecc14f4ed312a382da9e378faff07b9116e8b8a8e68e42e0883667810",
+      "bytes": 27974
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "cf5227e98a4ee43e1b1f8cae14df946c3718136054e3458bbad38b37923b0e24",
+      "bytes": 35887
+    }
+  ],
+  "after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "832abd0ecc14f4ed312a382da9e378faff07b9116e8b8a8e68e42e0883667810",
+      "bytes": 27974
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "cf5227e98a4ee43e1b1f8cae14df946c3718136054e3458bbad38b37923b0e24",
+      "bytes": 35887
+    }
+  ],
+  "source_snapshots": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-source",
+  "environment": {
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification"
+  },
+  "scope": "synthetic only"
+}

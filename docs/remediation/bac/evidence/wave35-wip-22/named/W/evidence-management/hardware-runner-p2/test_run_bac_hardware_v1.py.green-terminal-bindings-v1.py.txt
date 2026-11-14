@@ -1,0 +1,589 @@
+"""P2 inert subprocess checks; no application or hardware imports/execution."""
+import importlib.util
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import threading
+import time
+
+import pytest
+
+Q = Path(__file__).parent
+RUNNER = Q / 'run_bac_hardware_v1.py'
+
+
+def implementation():
+    assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+    spec = importlib.util.spec_from_file_location('p2_runner', RUNNER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def job(tmp_path, name, *, cpu=1, devices=(), domains=(), timing='ordinary', code=None, timeout=4, grace=.05):
+    return {'id': name, 'argv': [sys.executable, '-c', code or 'print("observed", flush=True)'],
+            'interpreter': sys.executable, 'cwd': str(tmp_path),
+            'environment': {'OMP_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1',
+                            'CUDA_VISIBLE_DEVICES': '', 'PYTHONHASHSEED': '17'},
+            'seed': {'policy': 'explicit', 'python': 17, 'numpy': 18, 'torch': 19, 'cuda': []},
+            'roles': [{'count': 1, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1, 'peak_cpu_slots': 1}],
+            'budget': {'cpu_slots': cpu, 'ram_bytes': 2, 'scratch_bytes': 2, 'scratch_inodes': 2},
+            'devices': [{'physical_parent_uuid': d} for d in devices], 'serialization_domains': list(domains),
+            'timing': timing, 'output': str(tmp_path / 'out' / 'attempt' / name),
+            'scratch': str(tmp_path / 'scratch' / 'attempt' / name),
+            'timeout_seconds': timeout, 'termination_grace_seconds': grace}
+
+
+def spec(tmp_path, jobs, *, cpu=4, concurrency=4):
+    (tmp_path / 'out').mkdir(exist_ok=True)
+    (tmp_path / 'scratch').mkdir(exist_ok=True)
+    (tmp_path / 'leases').mkdir(exist_ok=True)
+    return {'attempt_id': 'attempt', 'output_root': str(tmp_path / 'out'), 'scratch_root': str(tmp_path / 'scratch'),
+            'lease_root': str(tmp_path / 'leases'), 'job_concurrency': concurrency,
+            'budget': {'cpu_slots': cpu, 'ram_bytes': 100, 'scratch_bytes': 100, 'scratch_inodes': 100}, 'jobs': jobs}
+
+
+def test_nested_budget(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'nested', cpu=16)
+    j['roles'] = [{'count': 1, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1, 'peak_cpu_slots': 1},
+                  {'count': 16, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1, 'peak_cpu_slots': 1}]
+    with pytest.raises(ValueError, match='CPU'):
+        r.check_resources(spec(tmp_path, [j], cpu=16, concurrency=16))
+    j['roles'] = [{'count': 1, 'replacement_limit': 1, 'intra_op': 1, 'inter_op': 5, 'peak_cpu_slots': 1}]
+    j['budget']['cpu_slots'] = 1
+    with pytest.raises(ValueError, match='CPU'):
+        r.check_resources(spec(tmp_path, [j]))
+
+
+def test_exclusive_attempt_race(tmp_path):
+    r = implementation()
+    s = spec(tmp_path, [job(tmp_path, 'a')])
+    barrier = threading.Barrier(2)
+    results = []
+    def reserve():
+        barrier.wait()
+        try:
+            a = r.Attempt(s)
+            results.append(a)
+        except (ValueError, FileExistsError):
+            results.append(None)
+    threads = [threading.Thread(target=reserve) for _ in range(2)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    assert sum(v is not None for v in results) == 1
+    for value in results:
+        if value is not None: value.close()
+
+
+@pytest.mark.parametrize('occupied', ['attempt', 'scratch', 'symlink'])
+def test_occupied_destinations_are_preserved(tmp_path, occupied):
+    r = implementation()
+    s = spec(tmp_path, [job(tmp_path, 'a')])
+    target = tmp_path / ('scratch' if occupied == 'scratch' else 'out') / 'attempt'
+    if occupied == 'symlink':
+        other = tmp_path / 'other'; other.mkdir()
+        target.symlink_to(other, target_is_directory=True)
+    else:
+        target.mkdir()
+    (target / 'stdout.log').write_text('do not overwrite')
+    with pytest.raises((ValueError, FileExistsError)):
+        r.Attempt(s)
+    assert (target / 'stdout.log').read_text() == 'do not overwrite'
+
+
+def test_lease_domains_and_canonical_multi_device_acquisition(tmp_path):
+    r = implementation()
+    root = tmp_path / 'leases'; root.mkdir()
+    first = r.Leases(root)
+    second = r.Leases(root)
+    a = job(tmp_path, 'a', devices=('GPU-B', 'GPU-A'), domains=('rng-shared',))
+    b = job(tmp_path, 'b', devices=('GPU-A', 'GPU-B'), domains=('rng-other',))
+    with first.try_acquire(a) as held:
+        assert held
+        assert second.try_acquire(b) is None
+        assert second.try_acquire(job(tmp_path, 'rng', domains=('rng-shared',))) is None
+        with second.try_acquire(job(tmp_path, 'cpu')) as cpu:
+            assert cpu
+        with second.try_acquire(job(tmp_path, 'other', devices=('GPU-C',))) as gpu:
+            assert gpu
+        assert second.try_acquire(job(tmp_path, 'timing', timing='exclusive-host')) is None
+    with second.try_acquire(b) as recovered:
+        assert recovered
+    with first.try_acquire(job(tmp_path, 'timing', timing='exclusive-host')):
+        assert second.try_acquire(job(tmp_path, 'cpu')) is None
+    first.close(); second.close()
+
+
+def test_scheduler_advances_cpu_past_blocked_gpu(tmp_path):
+    r = implementation()
+    gpu = job(tmp_path, 'gpu', devices=('GPU-A',), domains=('gpu-rng',))
+    cpu = job(tmp_path, 'cpu', domains=('cpu-rng',), code='from pathlib import Path; Path("cpu-ran").write_text("yes")')
+    s = spec(tmp_path, [gpu, cpu], concurrency=2)
+    lease = r.Leases(Path(s['lease_root']))
+    held = lease.try_acquire(gpu)
+    outcomes = []
+    thread = threading.Thread(target=lambda: outcomes.extend(r.execute_jobs(s)))
+    thread.start()
+    deadline = time.monotonic() + 5
+    while not (tmp_path / 'cpu-ran').exists() and time.monotonic() < deadline:
+        time.sleep(.01)
+    assert (tmp_path / 'cpu-ran').is_file(), 'CPU stalled behind an unrelated physical-device lease'
+    held.close(); lease.close(); thread.join(5)
+    assert not thread.is_alive()
+    assert {x['job_id'] for x in outcomes} == {'cpu', 'gpu'}
+
+
+def test_failure_and_exact_environment(tmp_path):
+    r = implementation()
+    code = 'import os,json,sys; print(json.dumps({"cwd":os.getcwd(),"env":dict(os.environ),"argv":sys.argv}),flush=True); sys.exit(7)'
+    j = job(tmp_path, 'bad', code=code)
+    s = spec(tmp_path, [j])
+    os.environ['P2_MUST_NOT_LEAK'] = 'secret-sentinel'
+    results = r.execute_jobs(s)
+    assert results[0]['exit_code'] == 7
+    assert results[0]['disposition'] == 'completed-failed'
+    output = Path(j['output'])
+    observed = json.loads((output / 'stdout.log').read_text())
+    assert observed['cwd'] == str(tmp_path)
+    assert 'P2_MUST_NOT_LEAK' not in observed['env']
+    assert observed['env']['PYTHONHASHSEED'] == '17'
+    command = json.loads((output / 'command.json').read_text())
+    assert command['argv'] == j['argv'] and command['environment'] == j['environment'] and command['seed'] == j['seed']
+    assert not (output / 'completion.json').exists()
+
+
+def test_zero_exit_does_not_invent_witnesses(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'zero')
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == 0
+    assert result['disposition'] == 'completed-unverified'
+    assert result['process_records'] == []
+    assert not (Path(j['output']) / 'completion.json').exists()
+
+
+def test_timeout_preserves_actual_partial_and_kills_process_group(tmp_path):
+    r = implementation()
+    code = ('import os,signal,time; from pathlib import Path; '
+            'signal.signal(signal.SIGTERM,signal.SIG_IGN); '
+            'Path("partial").write_text("actual partial"); print("before timeout",flush=True); time.sleep(20)')
+    j = job(tmp_path, 'timeout', code=code, timeout=.2, grace=.05)
+    started = time.monotonic()
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert time.monotonic() - started < 3
+    assert result['disposition'] == 'interrupted'
+    assert result['exit_code'] == -signal.SIGKILL
+    assert 'timeout' in result['reason']
+    assert (tmp_path / 'partial').read_text() == 'actual partial'
+    assert (Path(j['output']) / 'stdout.log').read_text() == 'before timeout\n'
+    assert not (Path(j['output']) / 'completion.json').exists()
+
+
+def test_runtime_cpu_capacity_and_persistent_scratch(tmp_path):
+    r = implementation()
+    code = 'import time; print("begin",flush=True); time.sleep(.15); print("end",flush=True)'
+    jobs = [job(tmp_path, name, cpu=2, code=code) for name in ('a', 'b', 'c')]
+    results = r.execute_jobs(spec(tmp_path, jobs, cpu=2, concurrency=3))
+    times = sorted((v['monotonic_start_ns'], v['monotonic_end_ns']) for v in results)
+    assert all(a[1] <= b[0] for a, b in zip(times, times[1:]))
+    other = tmp_path / 'other'; other.mkdir()
+    jobs = [job(other, name) for name in ('a', 'b')]
+    s = spec(other, jobs); s['budget']['scratch_bytes'] = 3
+    with pytest.raises(ValueError, match='scratch'):
+        r.execute_jobs(s)
+
+
+def test_signal_preserves_started_and_unrun_evidence(tmp_path):
+    implementation()
+    first = job(tmp_path, 'active', code='import time; print("ready",flush=True); time.sleep(30)', timeout=10)
+    pending = job(tmp_path, 'pending')
+    s = spec(tmp_path, [first, pending], cpu=1, concurrency=1)
+    source = tmp_path / 'mechanics-input.json'; source.write_text(json.dumps(s))
+    code = ('import json,sys; from pathlib import Path; '
+            'sys.path.insert(0,sys.argv[1]); import run_bac_hardware_v1 as r; '
+            'results=r.execute_jobs(json.loads(Path(sys.argv[2]).read_text())); '
+            'sys.exit(1 if any(x["disposition"]!="successful" for x in results) else 0)')
+    child = subprocess.Popen([sys.executable, '-c', code, str(Q), str(source)],
+                             env={'PATH': '/usr/bin:/bin', 'PYTHONDONTWRITEBYTECODE': '1'},
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        log = Path(first['output']) / 'stdout.log'
+        deadline = time.monotonic() + 5
+        while (not log.exists() or 'ready' not in log.read_text()) and time.monotonic() < deadline:
+            time.sleep(.01)
+        assert log.exists() and log.read_text() == 'ready\n'
+        child.send_signal(signal.SIGTERM)
+        stdout, stderr = child.communicate(timeout=4)
+        assert child.returncode == 1, (stdout, stderr, child.returncode)
+        active = json.loads((Path(first['output']) / 'result.json').read_text())
+        unrun = json.loads((Path(pending['output']) / 'result.json').read_text())
+        assert active['disposition'] == 'interrupted'
+        assert active['exit_code'] == -signal.SIGTERM
+        assert unrun['disposition'] == 'unrun' and unrun['exit_code'] is None
+        assert not (Path(pending['output']) / 'command.json').exists()
+    finally:
+        if child.poll() is None:
+            child.kill(); child.wait()
+
+
+def test_launch_error_is_retained_and_other_jobs_finish(tmp_path):
+    r = implementation()
+    broken = job(tmp_path, 'missing')
+    broken['argv'][0] = broken['interpreter'] = str(tmp_path / 'missing-executable')
+    good = job(tmp_path, 'good')
+    results = {x['job_id']: x for x in r.execute_jobs(spec(tmp_path, [broken, good]))}
+    assert results['missing']['disposition'] == 'refused'
+    assert results['missing']['exit_code'] is None
+    assert 'launch' in results['missing']['reason']
+    assert results['good']['exit_code'] == 0
+    assert (Path(broken['output']) / 'command.json').is_file()
+
+
+def test_negative_command_signal_is_interrupted(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'signal', code='import os,signal; os.kill(os.getpid(),signal.SIGTERM)')
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == -signal.SIGTERM
+    assert result['disposition'] == 'interrupted'
+
+
+def test_descendant_cannot_outlive_controller_and_lease(tmp_path):
+    r = implementation()
+    code = ('import subprocess,sys; '
+            'subprocess.Popen([sys.executable,"-c",'
+            '"import time; from pathlib import Path; time.sleep(.6); Path(\'orphan-side-effect\').write_text(\'bad\')"]); '
+            'print("controller finished",flush=True)')
+    j = job(tmp_path, 'orphan', code=code)
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == 0
+    assert result['disposition'] == 'completed-unverified'
+    time.sleep(.7)
+    assert not (tmp_path / 'orphan-side-effect').exists(), 'lease released while a child could continue work'
+
+
+def test_occupied_log_and_result_refuse_overwrite(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'a')
+    a = r.Attempt(spec(tmp_path, [j]))
+    try:
+        with pytest.raises(FileExistsError): a.open_file('a', 'stdout.log')
+        a.write('a', 'result.json', {'original': 1})
+        with pytest.raises(FileExistsError): a.write('a', 'result.json', {'replacement': 2})
+        assert json.loads((Path(j['output']) / 'result.json').read_text()) == {'original': 1}
+        old = Path(j['output']); moved = old.with_name('moved')
+        old.rename(moved); old.mkdir()
+        with pytest.raises(ValueError, match='namespace replaced'): a.open_file('a', 'late.json')
+        assert not (old / 'late.json').exists() and not (moved / 'late.json').exists()
+    finally: a.close()
+
+
+def test_cpu_ram_and_timing_overlap_are_observed(tmp_path):
+    r = implementation()
+    code = 'import time; time.sleep(.15)'
+    jobs = [job(tmp_path, name, code=code) for name in ('a', 'b')]
+    results = r.execute_jobs(spec(tmp_path, jobs, cpu=2, concurrency=2))
+    times = sorted((x['monotonic_start_ns'], x['monotonic_end_ns']) for x in results)
+    assert times[1][0] < times[0][1], 'independent work was serialized'
+    other = tmp_path / 'timed'; other.mkdir()
+    jobs = [job(other, 'timing', code=code, timing='exclusive-host'), job(other, 'cpu', code=code)]
+    results = r.execute_jobs(spec(other, jobs, cpu=2, concurrency=2))
+    times = sorted((x['monotonic_start_ns'], x['monotonic_end_ns']) for x in results)
+    assert times[0][1] <= times[1][0]
+
+
+# The public-run fixtures are closed synthetic records. Git observations are
+# inert command stubs; actual PID/start/affinity and filesystem observations remain real.
+def sealed_fixture(tmp_path, code='print("sealed child",flush=True)'):
+    import bac_hardware_protocol_v1 as p
+    root = tmp_path / 'source'; root.mkdir()
+    for name in ('output', 'scratch', 'leases', 'metadata'): (tmp_path / name).mkdir()
+    meta = tmp_path / 'metadata'
+    def put(name, value):
+        path = meta / name
+        path.write_text(json.dumps(value, sort_keys=True))
+        return p.file_reference(path)
+    def measured(value, provenance):
+        return {'state': 'measured', 'value': value, 'reason': '', 'provenance': provenance}
+    def record(kind, **values): return {'schema': 'bac-hardware-v1', 'kind': kind, **values}
+    inert = root / 'inert.txt'; inert.write_text('synthetic input only')
+    input_ref = p.file_reference(inert)
+    input_inventory = {}
+    for category in ('source', 'tests', 'configs', 'scripts', 'ratchet', 'artifacts'):
+        path = root / (category + '.txt'); path.write_text('inert ' + category)
+        input_inventory[category] = [{'path': str(path), 'reference': p.file_reference(path)}]
+    inputs = [entry['reference'] for values in input_inventory.values() for entry in values]
+    interpreter = p.file_reference(Path(sys.executable).resolve())
+    times = {'start': '2020-01-01T00:00:00.000000Z', 'end': None}
+    budget = {'cpu_slots': 4, 'ram_bytes': 10000000, 'scratch_bytes': 10000000, 'scratch_inodes': 1000}
+    overhead = {key: 1 for key in budget}
+    allocation = put('allocation.json', {'schema': 'bac-hardware-resource-allocation-v1', 'allocation_id': 'allocation',
+        'pool_id': 'pool', 'host': os.uname().nodename, 'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+        'lease_root': str(tmp_path / 'leases'), 'capacity': {key: budget[key] + 1 for key in budget}, 'overhead': overhead,
+        'partition_basis': 'exclusive-pool', 'partition_evidence': [], 'authorized_cpu_ids': sorted(os.sched_getaffinity(0)),
+        'authorized_devices': [], **times, 'authority': 'synthetic root authorization', 'no_writer_barrier': True})
+    j = job(root, 'a', code=code)
+    j.update(interpreter=interpreter['path'], argv=[interpreter['path'], '-c', code], profile='cpu',
+             output=str(tmp_path / 'output' / 'attempt' / 'a'), scratch=str(tmp_path / 'scratch' / 'attempt' / 'a'),
+             required_collected_ids=['synthetic::case'], xdist_workers=0, timing_contract=[], prerequisites=[],
+             serialization_domains=['synthetic-rng'])
+    role = {'id': 'controller', 'role': 'controller', 'count': 1, 'replacement_limit': 0,
+            'observer': 'work', 'intra_op': 1, 'inter_op': 1, 'debug': False, 'torch_policy': 'forbidden',
+            'cuda_policy': 'forbidden', 'peak_cpu_slots': 1, 'cpu_reservation_basis': 'accepted-case-contract'}
+    bound = put('bound.json', {'schema': 'bac-hardware-cpu-bound-v1', 'basis': 'accepted-case-contract',
+        'role_id': 'controller', **{key: role[key] for key in ('role', 'observer', 'intra_op', 'inter_op', 'debug',
+        'torch_policy', 'cuda_policy', 'peak_cpu_slots')}, 'argv': j['argv'], 'environment': j['environment'],
+        'required_cases': j['required_collected_ids'], 'head': 'a' * 40, 'tree': 'b' * 40, 'inputs': inputs,
+        'justification': [input_ref], 'authority': 'synthetic accepted bound', 'bound_statement': 'serial inert subprocess upper bound'})
+    role['cpu_reservation_evidence'] = bound
+    j['roles'] = [role]
+    j['obligations'] = [{'id': key, 'kind': key, 'required_cases': ['synthetic::case'], 'contract': input_ref,
+        'validator': input_ref, 'evidence_class': 'cpu', 'minimum_devices': 0}
+        for key in ('process-custody', 'source-freeze', 'required-cases')]
+    grant = put('grant.json', {'schema': 'bac-hardware-source-grant-v1', 'authorized_root': str(root),
+        'head': 'a' * 40, 'tree': 'b' * 40, 'import_roots': [str(root / 'source.txt')], 'inputs': inputs,
+        **times, 'no_writer_barrier': True, 'includes_untracked': True, 'authority': 'synthetic root',
+        'allocation_grant': allocation, 'cpu_reservation_evidence': [bound]})
+    freeze = put('freeze.json', record('source-freeze', authorized_root=str(root), grant=grant,
+        start=times['start'], end={'state': 'unavailable', 'value': None, 'reason': 'active root barrier'},
+        no_writer_barrier=True, includes_untracked=True, index_lock=str(meta / 'index.lock'), retention='root no-writer retained'))
+    registry_path = meta / 'registry.txt'; registry_path.write_text('worktree ' + str(root) + '\nHEAD ' + 'a' * 40 + '\n\n')
+    registry = p.file_reference(registry_path)
+    availability = put('availability.json', {'schema': 'bac-hardware-availability-v1',
+        'worktrees': [{'path': str(root), 'directory_exists': True}]})
+    candidate = put('candidate.json', record('candidate', head='a' * 40, tree='b' * 40, authorized_root=str(root),
+        import_roots=[str(root / 'source.txt')], inventory=input_inventory, registry=registry,
+        availability=availability, source_freeze=freeze))
+    environment = put('environment.json', record('environment', interpreter=interpreter, python_version='synthetic',
+        dependencies=[{'name': 'synthetic', 'version': '1', 'reference': input_ref}], environment=j['environment'],
+        platform='synthetic-linux', torch_build=measured('no torch imported', input_ref),
+        cuda_runtime=measured('none', input_ref), driver=measured('none', input_ref)))
+    tools = [{'name': name, 'reference': p.file_reference(Q / filename) if filename else input_ref}
+             for name, filename in [('protocol', 'bac_hardware_protocol_v1.py'), ('runner', 'run_bac_hardware_v1.py'),
+             ('capture', None), ('identity', None), ('verifier', None), ('children-verifier', None)]]
+    minimum = dict(j['budget'])
+    request = put('request.json', record('admission-request', attempt_id='attempt', lease_root=str(tmp_path / 'leases'),
+        authorized_root=str(root), interpreter=interpreter, scratch_root=str(tmp_path / 'scratch'),
+        output_root=str(tmp_path / 'output'), profile='cpu', requested_job_concurrency=1, minimum=minimum,
+        reserve={key: 0 for key in budget}, authorized_devices=[], requested_visibility='', jobs=[j],
+        source_freeze=freeze, tools=tools, dependencies=environment))
+    def identity(pid):
+        data = Path(f'/proc/{pid}/stat').read_text(); parts = data[data.rfind(')') + 2:].split()
+        return {'pid': pid, 'ppid': int(parts[1]), 'start_identity': parts[19], 'host': os.uname().nodename,
+                'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+    bootstrap = 'import sys;sys.path.insert(0,' + repr(str(Path(input_ref['path']).parent)) + ');from capture_bac_hardware_v1 import discovery_main;discovery_main()'
+    discovery_argv = [interpreter['path'], '-I', '-B', '-c', bootstrap, request['path'], 'null']
+    raw_value = {'schema': 'bac-hardware-discovery-v1', 'profile': 'cpu', 'identity': identity(os.getpid()),
+        'at': '2026-01-01T00:00:00.000000Z', 'argv': discovery_argv, 'interpreter': interpreter['path'], 'cwd': str(root),
+        'inherited_visibility': None, 'effective_visibility': '', 'tmpdir': str(tmp_path / 'scratch'),
+        'cgroup_root': str(meta), 'cgroup_leaf': str(meta), 'ancestry_complete': True,
+        'cgroups': [{'path': str(meta), 'cpu_max': '500000 100000', 'cpuset': ','.join(map(str, sorted(os.sched_getaffinity(0)))),
+                    'memory_max': '10000001', 'memory_current': '0'}], 'affinity': sorted(os.sched_getaffinity(0)),
+        'meminfo': 'MemTotal: 10000 kB\nMemAvailable: 10000 kB\n', 'scratch_free_bytes': 10000001, 'scratch_free_inodes': 1001,
+        'cpu_topology': 'synthetic', 'numa_topology': 'synthetic', 'gpu_topology': 'none', 'torch_build': 'no torch imported',
+        'cuda_runtime': 'none', 'driver': 'none', 'competing_workloads': [], 'devices': [], 'probe_errors': [],
+        'commands': [], 'python_version': 'synthetic', 'dependencies': [{'name': 'synthetic', 'version': '1', 'reference': input_ref}],
+        'torch_origin': None}
+    raw = put('raw.json', raw_value)
+    wrapper = put('discovery-command.json', {'schema': 'bac-hardware-discovery-command-v1', 'request': request,
+        'capture': input_ref, 'executable': interpreter, 'capture_identity': identity(os.getppid()),
+        'argv': discovery_argv, 'cwd': str(root), 'environment': {**j['environment'], 'TMPDIR': str(tmp_path / 'scratch')},
+        'start': raw_value['at'], 'end': raw_value['at'], 'identity': raw_value['identity'], 'exit_code': 0,
+        'stdout': json.dumps(raw_value), 'stderr': '', 'errors': []})
+    admission = put('admission.json', record('admission', request=request, discovery_process=wrapper,
+        at='2026-01-01T00:00:00.000000Z', profile='cpu', disposition='admitted', reasons=[],
+        cgroups=[{'path': str(meta), 'cpu_quota_us': measured(500000, raw), 'cpu_period_us': measured(100000, raw),
+                  'memory_limit_bytes': measured(10000001, raw), 'cpuset': measured(sorted(os.sched_getaffinity(0)), raw)}],
+        affinity=measured(sorted(os.sched_getaffinity(0)), raw), effective_cpu_capacity=measured(5, raw),
+        host_ram_bytes=measured(10240000, raw), limited_ram_bytes=measured(10000001, raw), ram_current_bytes=measured(0, raw),
+        scratch_free_bytes=measured(10000001, raw), scratch_free_inodes=measured(1001, raw), tmpdir=str(tmp_path / 'scratch'),
+        cpu_topology=measured('synthetic', raw), numa_topology=measured('synthetic', raw), gpu_topology=measured('none', raw),
+        environment=environment, requested_visibility='', effective_visibility='', devices=[],
+        competing_workloads=measured([], raw), probe_errors=[], minimum=minimum, reserve={key: 0 for key in budget}, admitted_budget=budget))
+    value = record('spec', attempt_id='attempt', lease_root=str(tmp_path / 'leases'), candidate=candidate, tools=tools,
+        dependencies=environment, admission=admission, profile='cpu', authorized_root=str(root), output_root=str(tmp_path / 'output'),
+        scratch_root=str(tmp_path / 'scratch'), job_concurrency=1, budget=budget, jobs=[j], source_freeze=freeze)
+    path = meta / 'spec.json'; path.write_text(json.dumps(value))
+    p.validate_spec(value)
+    return path, value, registry_path.read_text()
+
+
+def stub_source(monkeypatch, runner, registry):
+    def git(root, args):
+        if args == ['rev-parse', 'HEAD']: return 'a' * 40 + '\n'
+        if args == ['worktree', 'list', '--porcelain']: return registry
+        assert args in (['diff-index', '--cached', '--quiet', 'b' * 40, '--'], ['diff', '--quiet', '--'])
+        return ''
+    monkeypatch.setattr(runner, '_git', git, raising=False)
+    monkeypatch.setattr(runner, '_live_capacity', lambda raw, scratch: {'cpu_slots': 1024, 'ram_bytes': 10**12, 'scratch_bytes': 10**12, 'scratch_inodes': 10**9}, raising=False)
+
+
+def test_public_run_seals_zero_exit_as_unverified(tmp_path, monkeypatch):
+    r = implementation()
+    path, s, registry = sealed_fixture(tmp_path)
+    stub_source(monkeypatch, r, registry)
+    assert r.run(path) != 0
+    output = Path(s['output_root']) / 'attempt'
+    import bac_hardware_protocol_v1 as p
+    start = json.loads((output / 'start.json').read_text()); p.validate_record('attempt-start', start)
+    result = json.loads((output / 'a' / 'result.json').read_text()); p.validate_record('job-result', result)
+    seal = json.loads((output / 'seal.json').read_text()); p.validate_record('attempt-seal', seal)
+    assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+    assert result['process_records'] == []
+    assert seal['disposition'] == 'completed-unverified'
+    witness = json.loads(Path(start['source_witness']['path']).read_text())
+    assert witness['process_identity']['pid'] == os.getpid()
+    assert witness['process_identity']['ppid'] == os.getppid()
+    assert witness['head'] == 'a' * 40 and witness['tree'] == 'b' * 40
+    assert start['spec'] == p.file_reference(path)
+    assert result['command']['sha256'] == p.file_reference(output / 'a' / 'command.json')['sha256']
+
+
+@pytest.mark.parametrize('mutation', ['admission-budget', 'candidate-freeze', 'affinity', 'bound-argv', 'expired-grant', 'allocation-busy'])
+def test_public_run_refuses_cross_binding_before_launch(tmp_path, monkeypatch, mutation):
+    r = implementation()
+    path, s, registry = sealed_fixture(tmp_path)
+    stub_source(monkeypatch, r, registry)
+    import bac_hardware_protocol_v1 as p
+    held = None
+    if mutation == 'admission-budget':
+        s['budget']['cpu_slots'] = 3
+    elif mutation == 'candidate-freeze':
+        freeze = json.loads(Path(s['source_freeze']['path']).read_text())
+        freeze['retention'] = 'different reference'
+        other = path.parent / 'other-freeze.json'; other.write_text(json.dumps(freeze)); s['source_freeze'] = p.file_reference(other)
+    elif mutation == 'affinity':
+        monkeypatch.setattr(r.os, 'sched_getaffinity', lambda pid: set())
+    elif mutation == 'bound-argv':
+        # Re-seal the edited bound and grant chain: rejection must be semantic.
+        boundpath = path.parent / 'bound.json'; bound = json.loads(boundpath.read_text()); bound['argv'] = ['/wrong']
+        boundpath.write_text(json.dumps(bound))
+        s['jobs'][0]['roles'][0]['cpu_reservation_evidence'] = p.file_reference(boundpath)
+    elif mutation == 'expired-grant':
+        grantpath = path.parent / 'grant.json'; grant = json.loads(grantpath.read_text()); grant['end'] = '2020-01-02T00:00:00.000000Z'
+        grantpath.write_text(json.dumps(grant))
+    else:
+        held = r.Leases(Path(s['lease_root'])).try_allocation(json.loads((path.parent / 'allocation.json').read_text()))
+    path.write_text(json.dumps(s))
+    try:
+        with pytest.raises((ValueError, OSError)): r.run(path)
+        assert not (Path(s['jobs'][0]['output']) / 'command.json').exists()
+    finally:
+        if held: held.close()
+
+
+def reseal_admission(path, spec, mutation):
+    import bac_hardware_protocol_v1 as p
+    admission_path = Path(spec['admission']['path'])
+    admission = json.loads(admission_path.read_text())
+    wrapper_path = Path(admission['discovery_process']['path'])
+    wrapper = json.loads(wrapper_path.read_text())
+    raw_path = Path(admission['affinity']['provenance']['path'])
+    raw = json.loads(raw_path.read_text())
+    mutation(admission, wrapper, raw)
+    raw_path.write_text(json.dumps(raw)); ref = p.file_reference(raw_path)
+    wrapper['stdout'] = json.dumps(raw); wrapper_path.write_text(json.dumps(wrapper))
+    for value in admission.values():
+        if type(value) is dict and 'provenance' in value: value['provenance'] = ref
+    for group in admission['cgroups']:
+        for value in group.values():
+            if type(value) is dict and 'provenance' in value: value['provenance'] = ref
+    admission['discovery_process'] = p.file_reference(wrapper_path)
+    admission_path.write_text(json.dumps(admission)); spec['admission'] = p.file_reference(admission_path)
+    path.write_text(json.dumps(spec))
+
+
+@pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+    def change(admission, wrapper, raw):
+        if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+        elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+        elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+        elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+        elif mutation == 'raw-affinity': raw['affinity'] = []
+        elif mutation == 'raw-extra': raw['unrecognized'] = True
+        else: raw['dependencies'][0]['version'] = 'wrong'
+    reseal_admission(path, s, change)
+    with pytest.raises(ValueError): r.run(path)
+    assert not (Path(s['jobs'][0]['output']) / 'command.json').exists()
+
+
+SUCCESS_CODE = r'''
+import os,json,time,hashlib,socket,sys
+from pathlib import Path
+from datetime import datetime,timezone
+specpath=Path.cwd().parent/'metadata'/'spec.json'
+s=json.loads(specpath.read_text()); j=s['jobs'][0]; out=Path(j['output'])
+def ref(path):
+    p=Path(path); b=p.read_bytes(); return {'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+def put(name,v):
+    p=out/name;p.write_text(json.dumps(v));return ref(p)
+def utc():return datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+def record(kind,**kw):return {'schema':'bac-hardware-v1','kind':kind,**kw}
+raw=Path('/proc/self/stat').read_text();parts=raw[raw.rfind(')')+2:].split()
+identity={'pid':os.getpid(),'ppid':os.getppid(),'start_identity':parts[19],'host':socket.gethostname(),'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+c=json.loads(Path(s['candidate']['path']).read_text());e=json.loads(Path(s['dependencies']['path']).read_text())
+inventory=[x['reference'] for rows in c['inventory'].values() for x in rows]
+fact=put('observed.json',{'synthetic':'inert actual subprocess observation','pid':os.getpid()})
+def measured(v):return {'state':'measured','value':v,'reason':'','provenance':fact}
+process=[];sources=[];start=time.monotonic_ns()
+for phase in ('start','end'):
+    at=utc();ns=time.monotonic_ns()
+    if phase=='start':start=ns
+    witness=put('source-'+phase+'.json',record('source-witness',candidate=s['candidate'],source_freeze=s['source_freeze'],head=c['head'],tree=c['tree'],inventory=inventory,at=at,process_identity=identity))
+    sources.append(witness)
+    process.append(put('process-'+phase+'.json',record('process',attempt_id=s['attempt_id'],job_id=j['id'],spec=ref(specpath),process_id='actual-controller',role_id='controller',role='controller',phase=phase,identity=identity,parent_identity=[],replacement_of=[],interpreter=e['interpreter'],argv=j['argv'],cwd=os.getcwd(),imports=[],source_witness=witness,environment=j['environment'],devices=j['devices'],intra_op=measured(1),inter_op=measured(1),debug=measured(False),torch_observation='not-loaded',cuda_observation='uninitialized',at=at,monotonic_ns=ns,elapsed_ns={'state':'unavailable','value':None,'reason':'start'} if phase=='start' else {'state':'measured','value':ns-start,'reason':''})))
+obligations=[]
+for o in j['obligations']:
+    obligations.append(put(o['id']+'.json',record('obligation-evidence',attempt_id=s['attempt_id'],job_id=j['id'],spec=ref(specpath),obligation_id=o['id'],obligation_kind=o['kind'],contract=o['contract'],validator=o['validator'],case_id='synthetic::case',evidence_class='cpu',payload=fact,producer_process=process[0],related_attempts=[])))
+put('completion.json',record('job-evidence',attempt_id=s['attempt_id'],job_id=j['id'],spec=ref(specpath),command=ref(out/'command.json'),collected_ids=['synthetic::case'],outcomes=[{'case_id':'synthetic::case','setup':'passed','call':'passed','teardown':'passed','evidence':[fact]}],process_records=process,obligation_records=obligations,source_witnesses=sources,inventory=[fact,*sources,*process,*obligations]))
+'''
+
+
+def test_public_run_success_requires_actual_controller_envelope(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE); stub_source(monkeypatch, r, registry)
+    assert r.run(path) == 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['exit_code'] == 0 and result['disposition'] == 'successful'
+    identity = json.loads(Path(result['process_records'][0]['path']).read_text())['identity']
+    assert identity['pid'] != os.getpid() and identity['ppid'] == os.getpid()
+    import bac_hardware_protocol_v1 as p
+    p.validate_record('job-result', result)
+
+
+@pytest.mark.parametrize('change', ['wrong-pid', 'missing-end', 'wrong-seed-command', 'skip', 'bad-obligation'])
+def test_envelope_mutation_preserves_zero_exit_but_refuses_success(tmp_path, monkeypatch, change):
+    suffix = {
+        'wrong-pid': "v=json.loads((out/'process-start.json').read_text());v['identity']['pid']+=1;put('process-start.json',v)",
+        'missing-end': "v=json.loads((out/'completion.json').read_text());v['process_records']=v['process_records'][:1];put('completion.json',v)",
+        'wrong-seed-command': "v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)",
+        'skip': "v=json.loads((out/'completion.json').read_text());v['outcomes'][0]['call']='skipped';put('completion.json',v)",
+        'bad-obligation': "v=json.loads((out/'completion.json').read_text());v['obligation_records']=[];put('completion.json',v)",
+    }[change]
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + '\n' + suffix); stub_source(monkeypatch, r, registry)
+    assert r.run(path) != 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+    assert 'evidence incomplete' in result['reason']
+
+
+def test_same_command_rewritten_and_resealed_cannot_pass(tmp_path, monkeypatch):
+    suffix = """
+v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)
+v=json.loads((out/'completion.json').read_text());v['command']=ref(out/'command.json');put('completion.json',v)
+"""
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+    assert r.run(path) != 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['disposition'] == 'completed-unverified'
+
+
+def test_live_capacity_drop_refuses_before_job_launch(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+    monkeypatch.setattr(r, '_live_capacity', lambda raw, scratch: {key: 0 for key in s['budget']}, raising=False)
+    with pytest.raises(ValueError): r.run(path)
+    assert not (Path(s['jobs'][0]['output']) / 'command.json').exists()

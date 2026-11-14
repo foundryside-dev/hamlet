@@ -1,0 +1,35 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-q"
+  ],
+  "cwd": "/tmp",
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "start": "2026-11-14T06:19:53.263957+00:00",
+  "end": "2026-11-14T06:19:55.628370+00:00",
+  "exit": 1,
+  "sources_before": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/bac_hardware_protocol_v1.py.red-exact-layout-v1.txt",
+      "bytes": 34204,
+      "sha256": "ea1187c4088c05e4009beb1667ed02a205285e42be671069724b651ce23faf68"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/amendment-v1/test_bac_hardware_protocol_v1.py.red-exact-layout-v1.txt",
+      "bytes": 33165,
+      "sha256": "f602359decd4a73626a737f186501f2f2e6e2a8d81f3cfdd354b4749f98f0899"
+    }
+  ],
+  "source_after_hashes": {
+    "bac_hardware_protocol_v1.py": "ea1187c4088c05e4009beb1667ed02a205285e42be671069724b651ce23faf68",
+    "test_bac_hardware_protocol_v1.py": "f602359decd4a73626a737f186501f2f2e6e2a8d81f3cfdd354b4749f98f0899"
+  }
+}

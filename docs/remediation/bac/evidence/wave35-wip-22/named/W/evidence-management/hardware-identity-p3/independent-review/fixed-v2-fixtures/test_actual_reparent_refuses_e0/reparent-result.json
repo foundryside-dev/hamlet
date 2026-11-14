@@ -1,0 +1,12 @@
+{
+  "refused": true,
+  "reason": "actual parent process identity mismatch",
+  "pid": 189110,
+  "old_ppid": 189109,
+  "new_ppid": 1,
+  "start": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_actual_reparent_refuses_e0/output/attempt/job/process-p-62c8fd956d785b93fa0035b1a20f6bb042dfb59b6e36e176380c82805b3ccebd-start.json",
+    "bytes": 9014,
+    "sha256": "79a1f9337cea3de9365135848ff7e807f0a38e4df1b3ceb7f04542bc4527ae95"
+  }
+}

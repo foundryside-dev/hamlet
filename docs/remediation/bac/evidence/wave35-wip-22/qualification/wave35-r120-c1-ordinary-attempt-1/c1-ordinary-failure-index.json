@@ -1,0 +1,45 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "unique_node_phase_failures": 4,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: RNG operation lineage is foreign or expired",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_scope_forgery_expired_lineage_and_pid_refuse",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_retained_scope_requires_binding_and_expires",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Failed: CPU route accessed CUDA: __class__",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_empty_cpu_and_refusals_never_touch_cuda",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f73b1cbb410> = <weakref at 0x7f73b1c66b10; to 'townlet.config.exploration_policy.ExplorationRuntime' at 0x7f73b1cbb410>()",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_scope_releases_owner_pin",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

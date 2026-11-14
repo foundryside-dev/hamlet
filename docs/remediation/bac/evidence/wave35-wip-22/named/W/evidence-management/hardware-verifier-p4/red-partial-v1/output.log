@@ -1,0 +1,49 @@
+......................................................FF                 [100%]
+=================================== FAILURES ===================================
+__________ test_interrupted_missing_end_retains_terminal_unqualified ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-127/test_interrupted_missing_end_r0')
+
+    def test_interrupted_missing_end_retains_terminal_unqualified(tmp_path):
+        evidence = Evidence(tmp_path, terminal="interrupted")
+        evidence.result["process_records"] = evidence.processes[:1]
+        evidence.seal()
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:457: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:231: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:611: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:307: in processes
+    require(set(phases) == {"start", "end"}, "missing process start/end")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'missing process start/end'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: missing process start/end
+
+verify_bac_hardware_v1.py:23: ValueError
+________ test_success_cannot_ignore_uninventoried_extra_outcome_report _________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7fd5decc1590>
+
+    def test_success_cannot_ignore_uninventoried_extra_outcome_report(evidence):
+        write(evidence.output / "extra-report.json", dict(schema="bac-hardware-pytest-report-v1", process=evidence.processes[0], case_id="hidden_failure", phase="call", outcome="failed", longrepr="retained failure", at=T3))
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:467: Failed
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_interrupted_missing_end_retains_terminal_unqualified
+FAILED test_verify_bac_hardware_v1.py::test_success_cannot_ignore_uninventoried_extra_outcome_report
+2 failed, 54 passed in 2.60s

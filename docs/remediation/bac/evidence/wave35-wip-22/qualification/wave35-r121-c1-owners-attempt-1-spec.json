@@ -1,0 +1,35 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r121-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-owners-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "c1-owners",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "-k",
+        "not test_body_and_completion_failure_identity and not test_child_false_outer_true_preserves_bank_health and not test_child_true_outer_false_retains_bank_uncertainty and not test_install_completion_failure_cannot_restore_healthy_latch"
+      ]
+    }
+  ]
+}

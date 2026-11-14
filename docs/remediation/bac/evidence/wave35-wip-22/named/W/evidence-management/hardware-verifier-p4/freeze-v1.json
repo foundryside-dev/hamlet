@@ -1,0 +1,97 @@
+{
+  "at": "2026-11-14T07:36:04.999912+00:00",
+  "body_inventory": [
+    {
+      "bytes": 3032,
+      "lines": 33,
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 34237,
+      "lines": 520,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "bytes": 56901,
+      "lines": 1127,
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "sha256": "029274afdf79d51b8c02c6b1f2bd2e72a0946cdee708a1604b10e48afb324961"
+    },
+    {
+      "bytes": 48037,
+      "lines": 1196,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "sha256": "e2d17f43a0066f7a9f4a3788a9542efc2d59cd0b832ea607f6f0ac5004bde7a5"
+    }
+  ],
+  "boundary": "Common verifier packet only. P5/owner semantics, root concrete inventory after review, full toolchain and actual hardware remain outstanding. No self-adoption.",
+  "checks": [
+    {
+      "bytes": 1589,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/pytest.json",
+      "sha256": "23ba15890b567992c76528dc93d34fa484c58bc3cc00ecc57e7efcd77d558cf0"
+    },
+    {
+      "bytes": 179,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/pytest.log",
+      "sha256": "4b3f64368c486d1691b678a14f7c1b56557c56b394cb809fc58d1d2b05010d18"
+    },
+    {
+      "bytes": 1422,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/ruff.json",
+      "sha256": "059c9b3845b93c70e6c13d24cfcfb93bdfbb4ce0f22d8024f6d105f60b8ed521"
+    },
+    {
+      "bytes": 19,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 1439,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/black.json",
+      "sha256": "859daaf87918766e34be18b304fc7750d5fa1f081ba160f6177ce7ac3bcb8f64"
+    },
+    {
+      "bytes": 56,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/black.log",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+    }
+  ],
+  "interface": {
+    "bytes": 12730,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/interface-contract-v1.json",
+    "sha256": "e81217eaad30f7d157cd0de7c0c0553e20986115d7aa86e3f62a8c491e4dbb63"
+  },
+  "report": {
+    "bytes": 6388,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-VERIFIER-P4-REPORT-v1.md",
+    "sha256": "0c0621b89eee2e09299a1c05c3b37687e01f8e9ce1eb54a02a1eb2a0ab2a7206"
+  },
+  "result": "73 synthetic PASS; Ruff PASS; Black PASS",
+  "schema": "bac-hardware-p4-author-freeze-v1",
+  "source_snapshots": [
+    {
+      "bytes": 3032,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/verify_bac_run.py.txt",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 34237,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/bac_hardware_protocol_v1.py.txt",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "bytes": 56901,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/verify_bac_hardware_v1.py.txt",
+      "sha256": "029274afdf79d51b8c02c6b1f2bd2e72a0946cdee708a1604b10e48afb324961"
+    },
+    {
+      "bytes": 48037,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/green-final-v4/test_verify_bac_hardware_v1.py.txt",
+      "sha256": "e2d17f43a0066f7a9f4a3788a9542efc2d59cd0b832ea607f6f0ac5004bde7a5"
+    }
+  ],
+  "status": "FROZEN FOR FRESH INDEPENDENT ASTRA REVIEW; ROOT ADOPTION REQUIRED"
+}

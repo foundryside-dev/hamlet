@@ -1,0 +1,44 @@
+.....................................FF                                  [100%]
+=================================== FAILURES ===================================
+__ test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_bytes] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-38/test_admission_limits_reserve_0')
+key = 'scratch_bytes'
+
+    @pytest.mark.parametrize("key", ["scratch_bytes", "scratch_inodes"])
+    def test_admission_limits_reserve_retained_scratch_for_all_jobs(tmp_path, key):
+        req = request()
+        req["jobs"] = [copy.deepcopy(req["jobs"][0]) for _ in range(2)]
+        req["requested_job_concurrency"] = 1
+        for job in req["jobs"]:
+            job["budget"][key] = 600 if key == "scratch_bytes" else 10
+        result = assess(tmp_path, req=req)
+>       assert key in " ".join(result["reasons"])
+E       AssertionError: assert 'scratch_bytes' in ''
+E        +  where '' = <built-in method join of str object at 0xa51ad8>([])
+E        +    where <built-in method join of str object at 0xa51ad8> = ' '.join
+
+test_capture_bac_hardware_v1.py:195: AssertionError
+_ test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_inodes] __
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-38/test_admission_limits_reserve_1')
+key = 'scratch_inodes'
+
+    @pytest.mark.parametrize("key", ["scratch_bytes", "scratch_inodes"])
+    def test_admission_limits_reserve_retained_scratch_for_all_jobs(tmp_path, key):
+        req = request()
+        req["jobs"] = [copy.deepcopy(req["jobs"][0]) for _ in range(2)]
+        req["requested_job_concurrency"] = 1
+        for job in req["jobs"]:
+            job["budget"][key] = 600 if key == "scratch_bytes" else 10
+        result = assess(tmp_path, req=req)
+>       assert key in " ".join(result["reasons"])
+E       AssertionError: assert 'scratch_inodes' in ''
+E        +  where '' = <built-in method join of str object at 0xa51ad8>([])
+E        +    where <built-in method join of str object at 0xa51ad8> = ' '.join
+
+test_capture_bac_hardware_v1.py:195: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_bytes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_reserve_retained_scratch_for_all_jobs[scratch_inodes]
+2 failed, 37 passed in 0.56s

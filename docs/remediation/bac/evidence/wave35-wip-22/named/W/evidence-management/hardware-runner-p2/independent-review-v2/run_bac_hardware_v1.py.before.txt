@@ -1,0 +1,1249 @@
+"""BAC hardware P2 orchestration with root-adopted, closed v1 transport.
+
+No application, Torch, CUDA, historical tool or plugin imports. Structured
+completion is orchestration evidence; independent P3/P4/P5 qualification remains
+mandatory. Root must authorize the exact spec/grants and maintain their barriers.
+"""
+from contextlib import AbstractContextManager
+import fcntl
+import hashlib
+import json
+import math
+import re
+import socket
+import os
+from pathlib import Path
+import signal
+import stat
+import subprocess
+import threading
+import time
+
+import bac_hardware_protocol_v1 as protocol
+from bac_hardware_protocol_v1 import file_reference, validate_record, validate_spec
+
+
+RESOURCE_KEYS = ('cpu_slots', 'ram_bytes', 'scratch_bytes', 'scratch_inodes')
+
+
+def _require(condition, reason):
+    if not condition:
+        raise ValueError(reason)
+
+
+def _directory(path):
+    """Walk the live namespace through no-follow directory descriptors."""
+    raw = str(path)
+    _require(raw.startswith('/') and all(p not in ('', '.', '..') for p in raw[1:].split('/')), 'unsafe directory path')
+    current = os.open('/', os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for name in raw[1:].split('/'):
+            child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=current)
+            os.close(current)
+            current = child
+        return current
+    except BaseException:
+        os.close(current)
+        raise
+
+
+def _same_directory(path, fd):
+    live = _directory(path)
+    try:
+        old, new = os.fstat(fd), os.fstat(live)
+        _require((old.st_dev, old.st_ino) == (new.st_dev, new.st_ino), 'directory namespace replaced')
+    finally:
+        os.close(live)
+
+
+def _create_below(base, fd, relative):
+    """Exclusively create every component; siblings may share owned ancestors."""
+    _same_directory(base, fd)
+    current = os.dup(fd)
+    try:
+        for name in relative.parts:
+            _require(name not in ('', '.', '..'), 'unsafe relative directory')
+            os.mkdir(name, mode=0o700, dir_fd=current)
+            child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=current)
+            os.close(current)
+            current = child
+        return current
+    except BaseException:
+        os.close(current)
+        raise
+
+
+class Attempt:
+    """Own exclusively-created attempt roots and direct job directories.
+
+    Failed reservation is deliberately retained. No cleanup deletes evidence.
+    """
+    def __init__(self, spec):
+        self.fds = {}
+        self.paths = {}
+        self.logs = {}
+        self.closed = False
+        try:
+            attempt_id = spec['attempt_id']
+            _require(type(attempt_id) is str and attempt_id not in ('', '.', '..') and '/' not in attempt_id, 'unsafe attempt ID')
+            planned = []
+            for kind, root_key, job_key in (('output', 'output_root', 'output'), ('scratch', 'scratch_root', 'scratch')):
+                base = Path(spec[root_key])
+                attempt_path = base / attempt_id
+                for job in spec['jobs']:
+                    path = Path(job[job_key])
+                    _require(path.parent == attempt_path, 'job directory must be a direct child of its attempt')
+                    _require(path.name not in ('', '.', '..'), 'unsafe job directory')
+                    planned.append(path)
+                root_fd = _directory(base)
+                try:
+                    fd = _create_below(base, root_fd, Path(attempt_id))
+                finally:
+                    os.close(root_fd)
+                self.fds[kind] = fd
+                self.paths[kind] = attempt_path
+            _require(len(set(planned)) == len(planned), 'overlapping job destinations')
+            for job in spec['jobs']:
+                for kind in ('output', 'scratch'):
+                    path = Path(job[kind])
+                    key = (kind, job['id'])
+                    self.fds[key] = _create_below(self.paths[kind], self.fds[kind], Path(path.name))
+                    self.paths[key] = path
+                self.logs[job['id']] = self.open_file(job['id'], 'stdout.log')
+        except BaseException:
+            self.close()
+            raise
+
+    def check(self):
+        for key, fd in self.fds.items():
+            _same_directory(self.paths[key], fd)
+
+    def open_file(self, job_id, name):
+        _require('/' not in name and name not in ('', '.', '..'), 'unsafe evidence name')
+        self.check()
+        return os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600,
+                       dir_fd=self.fds[('output', job_id)])
+
+    def write(self, job_id, name, value):
+        fd = self.open_file(job_id, name)
+        with os.fdopen(fd, 'w') as output:
+            json.dump(value, output, sort_keys=True, indent=2, allow_nan=False)
+            output.write('\n')
+            output.flush()
+            os.fsync(output.fileno())
+
+    def write_attempt(self, name, value):
+        self.check()
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=self.fds['output'])
+        with os.fdopen(fd, 'w') as output:
+            json.dump(value, output, sort_keys=True, indent=2, allow_nan=False)
+            output.write('\n')
+            output.flush()
+            os.fsync(output.fileno())
+        return file_reference(self.paths['output'] / name)
+
+    def close(self):
+        if not self.closed:
+            for fd in list(self.logs.values()) + list(self.fds.values()):
+                os.close(fd)
+            self.closed = True
+
+
+class HeldLeases(AbstractContextManager):
+    def __init__(self, descriptors, root, root_fd, names):
+        self.descriptors = descriptors
+        self.root = root
+        self.root_fd = os.dup(root_fd)
+        self.names = names
+
+    def check(self):
+        _same_directory(self.root, self.root_fd)
+        for descriptor, name in zip(self.descriptors, self.names):
+            current = os.stat(name, dir_fd=self.root_fd, follow_symlinks=False)
+            retained = os.fstat(descriptor)
+            _require(stat.S_ISREG(current.st_mode) and (current.st_dev, current.st_ino) ==
+                     (retained.st_dev, retained.st_ino), 'held lease pathname replaced')
+
+    def close(self):
+        for descriptor in reversed(self.descriptors):
+            os.close(descriptor)
+        self.descriptors.clear()
+        if self.root_fd is not None:
+            os.close(self.root_fd)
+            self.root_fd = None
+
+    def __exit__(self, *args):
+        self.close()
+
+
+class Leases:
+    """Cooperating physical-parent/RNG/host timing leases in one owned namespace.
+
+    The root authority must supply one shared namespace for the entire host and
+    prohibit its mutation while admitted work is active. This is coordination,
+    not isolation from noncooperating external GPU workloads.
+    """
+    def __init__(self, root):
+        self.root = Path(root)
+        self.fd = _directory(self.root)
+
+    def try_acquire(self, job):
+        names = {'device:' + d['physical_parent_uuid'] for d in job['devices']}
+        names.update('domain:' + value for value in job['serialization_domains'])
+        host_mode = fcntl.LOCK_EX if job['timing'] == 'exclusive-host' else fcntl.LOCK_SH
+        keys = [('host-timing', host_mode)] + [(key, fcntl.LOCK_EX) for key in sorted(names)]
+        return self._acquire(keys)
+
+    def try_allocation(self, allocation):
+        mode = fcntl.LOCK_EX if allocation['partition_basis'] == 'exclusive-pool' else fcntl.LOCK_SH
+        return self._acquire([('pool:' + allocation['pool_id'], mode),
+                              ('allocation:' + allocation['pool_id'] + ':' + allocation['allocation_id'], fcntl.LOCK_EX)])
+
+    def _acquire(self, keys):
+        _same_directory(self.root, self.fd)
+        descriptors = []
+        names = []
+        try:
+            for key, mode in keys:
+                name = hashlib.sha256(key.encode()).hexdigest() + '.lock'
+                fd = os.open(name, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600, dir_fd=self.fd)
+                descriptors.append(fd)
+                names.append(name)
+                _require(stat.S_ISREG(os.fstat(fd).st_mode), 'lease must be a regular file')
+                try:
+                    fcntl.flock(fd, mode | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    for item in reversed(descriptors): os.close(item)
+                    return None
+                live = os.stat(name, dir_fd=self.fd, follow_symlinks=False)
+                opened = os.fstat(fd)
+                _require((live.st_dev, live.st_ino) == (opened.st_dev, opened.st_ino), 'lease replaced during acquisition')
+            _same_directory(self.root, self.fd)
+            return HeldLeases(descriptors, self.root, self.fd, names)
+        except BaseException:
+            for item in reversed(descriptors): os.close(item)
+            raise
+
+    def close(self):
+        os.close(self.fd)
+
+
+def check_resources(spec):
+    """Check static reservations; active CPU/RAM sums are enforced by scheduling."""
+    for key in RESOURCE_KEYS:
+        _require(type(spec['budget'][key]) is int and spec['budget'][key] >= 0, 'invalid admitted budget')
+    _require(type(spec['job_concurrency']) is int and spec['job_concurrency'] > 0, 'invalid job concurrency')
+    _require(len({j['id'] for j in spec['jobs']}) == len(spec['jobs']), 'duplicate job ID')
+    for job in spec['jobs']:
+        for key in RESOURCE_KEYS:
+            value = job['budget'][key]
+            _require(type(value) is int and 0 <= value <= spec['budget'][key], 'job exceeds admitted ' + key)
+        required = sum((role['count'] + role['replacement_limit']) * role['peak_cpu_slots'] for role in job['roles'])
+        _require(job['budget']['cpu_slots'] >= required > 0, 'CPU reservation omits controller/worker/child/replacement overlap')
+        for key in ('timeout_seconds', 'termination_grace_seconds'):
+            value = job[key]
+            _require(type(value) in (int, float) and math.isfinite(value) and value >= 0, 'invalid ' + key)
+        _require(job['timeout_seconds'] > 0, 'timeout must be positive')
+        _require(job['argv'][0] == job['interpreter'], 'interpreter mismatch')
+        for key in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS'):
+            _require(job['environment'].get(key) == '1', 'one-thread environment required')
+    # Scratch survives completed jobs, so it cannot be released for the next job.
+    for key in ('scratch_bytes', 'scratch_inodes'):
+        _require(sum(job['budget'][key] for job in spec['jobs']) <= spec['budget'][key], 'persistent ' + key + ' reservation exceeds admission')
+
+
+def _utc():
+    import datetime
+    return datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+def _terminate(process, grace):
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    deadline = time.monotonic() + grace
+    while time.monotonic() < deadline:
+        try:
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            break
+        time.sleep(min(.01, max(0, deadline - time.monotonic())))
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    return process.wait()
+
+
+def execute_jobs(spec, cancel_event=None, custody=None):
+    """Run admitted mechanics, returning actual observations for transport sealing.
+
+    This entry point does not authenticate admission and is not a qualification
+    entry point. Only run() may eventually integrate the root-approved transport.
+    """
+    check_resources(spec)
+    stop = cancel_event if cancel_event is not None else threading.Event()
+    attempt = Attempt(spec)
+    try:
+        leases = Leases(Path(spec['lease_root']))
+    except BaseException:
+        attempt.close()
+        raise
+    previous_handlers = {}
+    if threading.current_thread() is threading.main_thread():
+        for signum in (signal.SIGINT, signal.SIGTERM):
+            previous_handlers[signum] = signal.getsignal(signum)
+            signal.signal(signum, lambda received, frame: stop.set())
+    pending = list(spec['jobs'])
+    active = []
+    results = []
+    try:
+        if custody is not None:
+            source = custody.source(attempt, pending, active)
+            start_record = {'schema': 'bac-hardware-v1', 'kind': 'attempt-start', 'attempt_id': spec['attempt_id'],
+                            'spec': custody.spec_ref, 'at': _utc(), 'source_witness': source,
+                            'source_freeze': spec['source_freeze'], 'retention': custody.freeze['retention']}
+            validate_record('attempt-start', start_record)
+            start_ref = attempt.write_attempt('start.json', start_record)
+            for job in pending:
+                command = {'schema': 'bac-hardware-v1', 'kind': 'command', 'attempt_id': spec['attempt_id'],
+                           'job_id': job['id'], 'spec': custody.spec_ref, 'runner': custody.runner_ref, 'at': _utc(),
+                           **{key: job[key] for key in ('argv', 'environment', 'cwd', 'seed')}}
+                validate_record('command', command)
+                attempt.write(job['id'], 'command.json', command)
+                custody.commands[job['id']] = file_reference(Path(job['output']) / 'command.json')
+        while pending or active:
+            now = time.monotonic()
+            for state in list(active):
+                job, process = state['job'], state['process']
+                state['held'].check()
+                # Observe terminal status without reaping: retain the leader PID
+                # until group cleanup so it cannot name a recycled process group.
+                status = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                code = None if status is None else (status.si_status if status.si_code == os.CLD_EXITED else -status.si_status)
+                reason = ''
+                terminated = False
+                if code is None and (stop.is_set() or now - state['started'] >= job['timeout_seconds']):
+                    reason = 'runner interruption' if stop.is_set() else 'job timeout'
+                    code = _terminate(process, job['termination_grace_seconds'])
+                    terminated = True
+                if code is None:
+                    continue
+                if code < 0 and not reason:
+                    reason = 'command terminated by signal'
+                # A completed leader does not mean its descendants released the
+                # device. Reap the group before releasing any resource leases.
+                if not terminated:
+                    code = _terminate(process, job['termination_grace_seconds'])
+                end_ns = time.monotonic_ns()
+                # Never turn a real zero command exit into invented process evidence.
+                disposition = 'interrupted' if reason else ('completed-failed' if code else 'completed-unverified')
+                result = {'job_id': job['id'], 'exit_code': code, 'signal': -code if code < 0 else 0,
+                          'disposition': disposition, 'reason': reason or ('command failed' if code else 'completion transport not integrated'),
+                          'start': state['at'], 'end': _utc(), 'monotonic_start_ns': state['start_ns'],
+                          'monotonic_end_ns': end_ns, 'process_records': [],
+                          'command': file_reference(Path(job['output']) / 'command.json'),
+                          'log': file_reference(Path(job['output']) / 'stdout.log')}
+                if custody is not None:
+                    wait_record = {'schema': 'bac-hardware-runner-wait-v1', 'attempt_id': spec['attempt_id'], 'job_id': job['id'],
+                                   'spec': custody.spec_ref, 'command': custody.commands[job['id']], 'launch': custody.launches[job['id']],
+                                   'identity': custody.processes[job['id']], 'exit_code': code, 'signal': result['signal'],
+                                   'interruption_reason': reason, 'start': result['start'], 'end': result['end'],
+                                   'start_monotonic_ns': result['monotonic_start_ns'], 'end_monotonic_ns': result['monotonic_end_ns']}
+                    attempt.write(job['id'], 'wait.json', wait_record)
+                    result = custody.result(job, result, attempt)
+                attempt.write(job['id'], 'result.json', result)
+                results.append(result)
+                state['held'].check()
+                state['held'].close()
+                active.remove(state)
+            for job in list(pending):
+                if stop.is_set():
+                    result = {'job_id': job['id'], 'exit_code': None, 'signal': 0,
+                              'disposition': 'unrun', 'reason': 'runner interrupted',
+                              'process_records': []}
+                    if custody is not None:
+                        result = custody.result(job, result, attempt)
+                    attempt.write(job['id'], 'result.json', result)
+                    results.append(result)
+                    pending.remove(job)
+                    continue
+                if len(active) >= spec['job_concurrency']:
+                    continue
+                if any(sum(state['job']['budget'][key] for state in active) + job['budget'][key] > spec['budget'][key]
+                       for key in ('cpu_slots', 'ram_bytes')):
+                    continue
+                held = leases.try_acquire(job)
+                if held is None:
+                    continue
+                try:
+                    attempt.check()
+                    command = {key: job[key] for key in ('argv', 'environment', 'cwd', 'seed')}
+                    command['at'] = _utc()
+                    if custody is None:
+                        attempt.write(job['id'], 'command.json', command)
+                    else:
+                        source = custody.source(attempt, pending, active)
+                        custody.prepare_identity(job, attempt, source)
+                    launch_at = _utc()
+                    start_ns = time.monotonic_ns()
+                    inherited = list(zip(held.descriptors, held.names))
+                    if custody is not None:
+                        inherited += list(zip(custody.allocation_lease.descriptors, custody.allocation_lease.names))
+                    pass_fds = tuple(sorted(fd for fd, name in inherited))
+                    process = subprocess.Popen(job['argv'], cwd=job['cwd'], env=job['environment'],
+                                               stdin=subprocess.DEVNULL, stdout=attempt.logs[job['id']],
+                                               stderr=subprocess.STDOUT, start_new_session=True, close_fds=True, pass_fds=pass_fds)
+                    active.append({'job': job, 'process': process, 'held': held, 'start_ns': start_ns,
+                                   'started': time.monotonic(), 'at': launch_at})
+                    pending.remove(job)
+                    if custody is not None:
+                        custody.processes[job['id']] = _identity(process.pid)
+                        affinity = custody.affinity(process.pid)
+                        launch = {'schema': 'bac-hardware-runner-launch-v1', 'attempt_id': spec['attempt_id'], 'job_id': job['id'],
+                                  'spec': custody.spec_ref, 'command': custody.commands[job['id']],
+                                  'identity': custody.processes[job['id']], 'affinity': affinity, 'at': _utc(),
+                                  'monotonic_ns': time.monotonic_ns(), 'inherited_leases': [
+                                      {'fd': fd, 'lock_name': name, 'device': os.fstat(fd).st_dev, 'inode': os.fstat(fd).st_ino}
+                                      for fd, name in sorted(inherited)]}
+                        attempt.write(job['id'], 'launch.json', launch)
+                        custody.launches[job['id']] = file_reference(Path(job['output']) / 'launch.json')
+                except OSError as exc:
+                    if any(state['held'] is held for state in active):
+                        raise  # A launched process cannot be relabeled refused.
+                    result = {'job_id': job['id'], 'exit_code': None, 'signal': 0,
+                              'disposition': 'refused', 'reason': 'launch refused: ' + str(exc),
+                              'process_records': []}
+                    if custody is not None:
+                        result = custody.result(job, result, attempt)
+                    attempt.write(job['id'], 'result.json', result)
+                    results.append(result)
+                    pending.remove(job)
+                    held.close()
+                except BaseException:
+                    if not any(state['held'] is held for state in active):
+                        held.close()
+                    raise
+            if pending or active:
+                time.sleep(.01)
+        if custody is not None:
+            custody.source(attempt, pending, active)
+            inventory = _inventory(attempt.paths['output']) + [custody.capture_terminal_ref]
+            dispositions = {value['disposition'] for value in results}
+            final = next(value for value in ('interrupted', 'completed-failed', 'completed-unverified', 'refused', 'unrun', 'successful')
+                         if value in dispositions)
+            seal = {'schema': 'bac-hardware-v1', 'kind': 'attempt-seal', 'attempt_id': spec['attempt_id'],
+                    'spec': custody.spec_ref, 'start': start_ref, 'disposition': final,
+                    'job_results': [file_reference(Path(j['output']) / 'result.json') for j in spec['jobs']],
+                    'inventory': inventory, 'at': _utc(), 'source_freeze': spec['source_freeze']}
+            validate_record('attempt-seal', seal)
+            attempt.write_attempt('seal.json', seal)
+        return results
+    finally:
+        for state in active:
+            _terminate(state['process'], state['job']['termination_grace_seconds'])
+            state['held'].close()
+        leases.close()
+        attempt.close()
+        for signum, handler in previous_handlers.items():
+            signal.signal(signum, handler)
+
+
+def _json(path):
+    def pairs(items):
+        value = {}
+        for key, item in items:
+            _require(key not in value, 'duplicate JSON field')
+            value[key] = item
+        return value
+    return json.loads(path.read_text(), object_pairs_hook=pairs,
+                      parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
+
+
+def _read(reference, kind=None):
+    validate_record('reference', reference)
+    value = _json(Path(reference['path']))
+    validate_record('reference', reference)
+    if kind is not None:
+        validate_record(kind, value)
+    return value
+
+
+def _closed(value, keys, schema):
+    _require(type(value) is dict and set(value) == set(keys.split()) | {'schema'}, 'closed private ' + schema)
+    _require(value['schema'] == schema, 'unsupported private schema')
+
+
+def _active(value):
+    for key in ('start', 'end'):
+        if value[key] is not None:
+            _require(type(value[key]) is str and re.fullmatch(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z', value[key]), 'invalid grant time')
+    _require(value['start'] <= _utc() and (value['end'] is None or _utc() <= value['end']), 'inactive authority interval')
+    _require(type(value['authority']) is str and bool(value['authority'].strip()), 'missing root authority declaration')
+
+
+def _unique(values, reason):
+    _require(len(values) == len({json.dumps(v, sort_keys=True) for v in values}), reason)
+
+
+def _identity(pid):
+    # /proc stat's comm can contain spaces or parentheses; split after final ')'.
+    raw = Path(f'/proc/{pid}/stat').read_text()
+    fields = raw[raw.rfind(')') + 2:].split()
+    return {'pid': pid, 'ppid': int(fields[1]), 'start_identity': fields[19],
+            'host': socket.gethostname(), 'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+
+
+def _git(root, args):
+    env = {'PATH': '/usr/bin:/bin', 'GIT_OPTIONAL_LOCKS': '0', 'LC_ALL': 'C'}
+    result = subprocess.run(['/usr/bin/git', *args], cwd=root, env=env, stdin=subprocess.DEVNULL,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30, check=False)
+    _require(result.returncode == 0, 'read-only Git observation failed: ' + result.stderr.strip())
+    return result.stdout
+
+
+def _budget_check(value):
+    validate_record('budget', value)
+
+
+def _inventory(root):
+    result = []
+    for current, directories, files in os.walk(root, followlinks=False):
+        for name in directories:
+            _require(not (Path(current) / name).is_symlink(), 'symlink in evidence directory')
+        for name in sorted(files):
+            result.append(file_reference(Path(current) / name))
+    return sorted(result, key=lambda item: item['path'])
+
+
+def _observed(value=None, reason='not observed'):
+    return {'state': 'unavailable', 'value': None, 'reason': reason} if value is None else {'state': 'measured', 'value': value, 'reason': ''}
+
+
+def _cpus(text):
+    _require(type(text) is str and text.strip(), 'missing cpuset')
+    values = []
+    for term in text.strip().split(','):
+        _require(re.fullmatch(r'\d+(?:-\d+)?', term) is not None, 'invalid cpuset')
+        parts = [int(x) for x in term.split('-')]
+        start, end = parts[0], parts[-1]
+        _require(0 <= start <= end < 1048576, 'unbounded cpuset')
+        values.extend(range(start, end + 1))
+    _unique(values, 'duplicate cpuset CPU')
+    return set(values)
+
+
+def _raw_capacity(raw):
+    _require(raw['ancestry_complete'] is True, 'incomplete cgroup ancestry')
+    _require(type(raw['affinity']) is list and raw['affinity'] and all(type(v) is int and v >= 0 for v in raw['affinity']), 'missing raw affinity')
+    _unique(raw['affinity'], 'duplicate raw affinity')
+    cpus = set(raw['affinity']); quotas = []; limits = []; headroom = []
+    memory = {}
+    _require(type(raw['meminfo']) is str, 'missing raw meminfo')
+    for line in raw['meminfo'].splitlines():
+        fields = line.split()
+        if fields and fields[0] in ('MemTotal:', 'MemAvailable:'):
+            _require(len(fields) == 3 and fields[1].isdigit() and fields[2] == 'kB', 'invalid raw meminfo')
+            _require(fields[0] not in memory, 'duplicate meminfo field')
+            memory[fields[0]] = int(fields[1]) * 1024
+    _require(set(memory) == {'MemTotal:', 'MemAvailable:'}, 'missing memory observations')
+    groups = raw['cgroups']; _require(type(groups) is list and groups, 'missing cgroups')
+    expected = []; current = Path(raw['cgroup_leaf']); root = Path(raw['cgroup_root'])
+    _require(current.is_relative_to(root), 'cgroup leaf outside observed root')
+    while True:
+        expected.append(str(current))
+        if current == root: break
+        current = current.parent
+    _require({g['path'] for g in groups} == set(expected) and len(groups) == len(expected), 'missing/duplicate cgroup ancestor')
+    parsed = {}
+    for group in groups:
+        _require(set(group) == {'path', 'cpu_max', 'cpuset', 'memory_max', 'memory_current'}, 'closed raw cgroup')
+        cpuset = _cpus(group['cpuset']); cpus &= cpuset
+        _require(type(group['cpu_max']) is str, 'missing CPU quota')
+        quota = group['cpu_max'].split()
+        _require(len(quota) == 2 and quota[1].isdigit() and int(quota[1]) > 0, 'invalid CPU period')
+        _require(quota[0] == 'max' or quota[0].isdigit() and int(quota[0]) > 0, 'invalid CPU quota')
+        if quota[0] != 'max': quotas.append(int(quota[0]) / int(quota[1]))
+        _require(type(group['memory_current']) is str and group['memory_current'].isdigit(), 'missing memory current')
+        usage = int(group['memory_current'])
+        limit = group['memory_max']
+        _require(type(limit) is str and (limit == 'max' or limit.isdigit()), 'missing memory limit')
+        if limit != 'max':
+            limits.append(int(limit)); headroom.append(max(0, int(limit) - usage))
+        parsed[group['path']] = {'quota': None if quota[0] == 'max' else int(quota[0]), 'period': int(quota[1]),
+                                 'cpuset': sorted(cpuset), 'limit': None if limit == 'max' else int(limit), 'usage': usage}
+    _require(cpus, 'no effective CPUs')
+    cpu = min([len(cpus), *quotas])
+    for key in ('scratch_free_bytes', 'scratch_free_inodes'):
+        _require(type(raw[key]) is int and raw[key] >= 0, 'missing scratch observation')
+    return ({'cpu_slots': math.floor(cpu), 'ram_bytes': min([memory['MemAvailable:'], *headroom]),
+             'scratch_bytes': raw['scratch_free_bytes'], 'scratch_inodes': raw['scratch_free_inodes']},
+            {'effective_cpu_capacity': cpu, 'host_ram_bytes': memory['MemTotal:'],
+             'limited_ram_bytes': min([memory['MemTotal:'], *limits]), 'ram_current_bytes': parsed[raw['cgroup_leaf']]['usage']}, parsed)
+
+
+def _kernel(path):
+    return Path(path).read_text()
+
+
+def _live_capacity(raw, scratch):
+    """Read current CPU/memory/storage headroom without importing hardware code."""
+    membership = [line.split(':', 2)[2] for line in _kernel('/proc/self/cgroup').splitlines() if line.startswith('0::')]
+    mounts = []
+    for line in _kernel('/proc/self/mountinfo').splitlines():
+        before, separator, after = line.partition(' - ')
+        if separator and after.split()[0] == 'cgroup2':
+            fields = before.split()
+            _require(len(fields) >= 5 and fields[3] == '/' and '\\' not in fields[4], 'unsupported/hidden cgroup ancestry')
+            mounts.append(fields[4])
+    _require(len(membership) == len(mounts) == 1 and membership[0].startswith('/') and
+             '..' not in Path(membership[0]).parts, 'ambiguous current cgroup')
+    leaf = str(Path(mounts[0]) / membership[0].lstrip('/'))
+    _require(raw['cgroup_root'] == mounts[0] and raw['cgroup_leaf'] == leaf, 'runner moved to different cgroup')
+    current = json.loads(json.dumps(raw))
+    current['affinity'] = sorted(os.sched_getaffinity(0))
+    current['meminfo'] = _kernel('/proc/meminfo')
+    for group in current['cgroups']:
+        for key, filename in (('cpu_max', 'cpu.max'), ('cpuset', 'cpuset.cpus.effective'),
+                              ('memory_max', 'memory.max'), ('memory_current', 'memory.current')):
+            group[key] = _kernel(str(Path(group['path']) / filename)).strip()
+    stats = os.statvfs(scratch)
+    current['scratch_free_bytes'] = stats.f_bavail * stats.f_frsize
+    current['scratch_free_inodes'] = stats.f_favail
+    return _raw_capacity(current)[0]
+
+
+def _remaining_resources(jobs, pending, active, concurrency, overhead, reserve, ram, storage):
+    """Remaining growth, not the admission ceiling, must fit current free space.
+
+    CPU slots are capacity, never consumption credit. Completed RAM is released;
+    completed scratch remains allocated, but needs no second fresh reservation.
+    Unknown ownership earns zero credit; every credit is capped at its budget.
+    """
+    indexed = {job['id']: job['budget'] for job in jobs}
+    waiting = max(0, concurrency - len(active))
+    result = {}
+    for key in RESOURCE_KEYS:
+        credit = ram.get('_runner', 0) if key == 'ram_bytes' else storage.get('_overhead', {}).get(key, 0)
+        result[key] = reserve[key] + max(0, overhead[key] - (0 if key == 'cpu_slots' else credit))
+        if key in ('cpu_slots', 'ram_bytes'):
+            result[key] += sum(max(0, indexed[name][key] - (ram.get(name, 0) if key == 'ram_bytes' else 0)) for name in active)
+            result[key] += sum(sorted((indexed[name][key] for name in pending), reverse=True)[:waiting])
+        else:
+            result[key] += sum(max(0, indexed[name][key] - storage.get(name, {}).get(key, 0)) for name in [*pending, *active])
+    return result
+
+
+def _private_resident(identity):
+    """Conservative resident credit; shared pages and unreadable samples earn none."""
+    try:
+        if _identity(identity['pid']) != identity: return 0
+        membership = Path(f"/proc/{identity['pid']}/cgroup").read_text()
+        if membership != Path('/proc/self/cgroup').read_text(): return 0
+        lines = Path(f"/proc/{identity['pid']}/smaps_rollup").read_text().splitlines()
+        values = {line.split(':', 1)[0]: line.split(':', 1)[1].split() for line in lines if ':' in line}
+        private = sum(int(values[key][0]) * 1024 for key in ('Private_Clean', 'Private_Dirty')
+                      if len(values.get(key, [])) == 2 and values[key][1] == 'kB')
+        return private if (_identity(identity['pid']) == identity and
+                           Path(f"/proc/{identity['pid']}/cgroup").read_text() == membership) else 0
+    except (OSError, ValueError, KeyError):
+        return 0
+
+
+def _owned_resources(spec, spec_ref, active):
+    ram = {'_runner': _private_resident(_identity(os.getpid()))}
+    for state in active:
+        leader = state['process'].pid
+        total = 0
+        # The unreaped leader keeps this admitted process-group ID from reuse.
+        for entry in Path('/proc').iterdir():
+            if not entry.name.isdigit(): continue
+            try:
+                identity = _identity(int(entry.name))
+                raw = (entry / 'stat').read_text()
+                if int(raw[raw.rfind(')') + 2:].split()[2]) == leader:
+                    total += _private_resident(identity)
+            except (OSError, ValueError):
+                continue
+        ram[state['job']['id']] = total
+    storage, seen = {}, set()
+    filesystem = Path(spec['scratch_root']).stat().st_dev
+    def scan(path, bucket):
+        try:
+            item = path.lstat()
+            identity = (item.st_dev, item.st_ino)
+            if identity in seen or item.st_dev != filesystem or stat.S_ISLNK(item.st_mode): return
+            if not (stat.S_ISDIR(item.st_mode) or (stat.S_ISREG(item.st_mode) and item.st_nlink == 1)): return
+            seen.add(identity)
+            bucket['scratch_bytes'] += item.st_blocks * 512
+            bucket['scratch_inodes'] += 1
+            if stat.S_ISDIR(item.st_mode):
+                for child in path.iterdir(): scan(child, bucket)
+        except OSError:
+            pass  # A vanished or unreadable inode earns no additional credit.
+    for job in spec['jobs']:
+        storage[job['id']] = {'scratch_bytes': 0, 'scratch_inodes': 0}
+        scan(Path(job['scratch']), storage[job['id']])
+    storage['_overhead'] = {'scratch_bytes': 0, 'scratch_inodes': 0}
+    for path in (Path(spec['output_root']) / spec['attempt_id'], Path(spec['scratch_root']) / spec['attempt_id'], Path(spec_ref['path']).parent):
+        scan(path, storage['_overhead'])
+    return ram, storage
+
+
+def _environment_expected(base, delta, worker):
+    _require(type(delta) is dict and set(delta) == {'common', 'worker'}, 'closed environment delta')
+    for group, allowed in (('common', {'PYTEST_VERSION', 'LC_CTYPE'}), ('worker', {'COLUMNS', 'LINES'})):
+        _require(type(delta[group]) is dict and set(delta[group]) <= allowed and
+                 all(type(v) is str for v in delta[group].values()), 'unaccepted framework environment addition')
+        _require(not set(delta[group]) & set(base), 'framework delta overrides sealed environment')
+    expected = {**base, **delta['common']}
+    if worker is not None:
+        _require(type(worker) is dict and set(worker) == {'workerid', 'workercount', 'testrunuid', 'mainargv'}, 'closed worker identity')
+        _require(type(worker['workerid']) is str and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}', worker['workerid']) and
+                 type(worker['workercount']) is int and worker['workercount'] > 0 and
+                 type(worker['testrunuid']) is str and re.fullmatch(r'[0-9a-f]{32}', worker['testrunuid']) and
+                 type(worker['mainargv']) is list and worker['mainargv'] and all(type(v) is str and v for v in worker['mainargv']), 'invalid worker identity')
+        dynamic = {'PYTEST_XDIST_WORKER': worker['workerid'], 'PYTEST_XDIST_WORKER_COUNT': str(worker['workercount']),
+                   'PYTEST_XDIST_TESTRUNUID': worker['testrunuid']}
+        _require(not set(dynamic) & set(base), 'worker delta overrides sealed environment')
+        expected.update(delta['worker']); expected.update(dynamic)
+    return expected
+
+
+class Custody:
+    """Recheck sealed authority and observations, never infer authority from hashes.
+
+    Calling run with a spec is an assertion that root has authorized its exact
+    grant and subordinate payload references out of band. These checks reconcile
+    that declaration; they cannot authenticate its author or prevent root writes.
+    """
+    def __init__(self, path):
+        self.spec_ref = file_reference(path)
+        self.spec = _read(self.spec_ref, 'spec')
+        s = self.spec
+        self.capture_terminal_ref = file_reference(path.parent / 'result.json')
+        terminal = _read(self.capture_terminal_ref)
+        _closed(terminal, 'disposition reasons admission spec', 'bac-hardware-capture-result-v1')
+        _require(terminal['disposition'] == 'admitted' and terminal['reasons'] == [] and terminal['spec'] == self.spec_ref and
+                 terminal['admission'] == s['admission'], 'capture terminal record does not admit exact spec/admission')
+        self.candidate = _read(s['candidate'], 'candidate')
+        self.freeze = _read(s['source_freeze'], 'source-freeze')
+        self.environment = _read(s['dependencies'], 'environment')
+        _require('BAC_CAPTURE_LEASE_FDS' not in self.environment['environment'] and
+                 all('BAC_CAPTURE_LEASE_FDS' not in job['environment'] for job in s['jobs']), 'caller supplied capture-only reserved environment key')
+        self.admission = _read(s['admission'], 'admission')
+        self.request = _read(self.admission['request'], 'admission-request')
+        self.grant = _read(self.freeze['grant'])
+        _closed(self.grant, 'authorized_root head tree import_roots inputs start end no_writer_barrier includes_untracked authority allocation_grant cpu_reservation_evidence',
+                'bac-hardware-source-grant-v1')
+        self.allocation = _read(self.grant['allocation_grant'])
+        a = self.allocation
+        _closed(a, 'allocation_id pool_id host boot_id lease_root capacity overhead partition_basis partition_evidence authorized_cpu_ids authorized_devices start end authority no_writer_barrier',
+                'bac-hardware-resource-allocation-v1')
+        _budget_check(a['capacity']); _budget_check(a['overhead'])
+        _require(a['overhead']['cpu_slots'] >= 1, 'allocation overhead omits active orchestration controller')
+        for key in ('allocation_id', 'pool_id'):
+            _require(type(a[key]) is str and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,127}', a[key]), 'invalid allocation ID')
+        _require(a['partition_basis'] in ('exclusive-pool', 'root-proven-disjoint'), 'unknown partition basis')
+        _require(type(a['partition_evidence']) is list and len(a['partition_evidence']) == (a['partition_basis'] == 'root-proven-disjoint'), 'partition evidence cardinality')
+        _require(type(a['authorized_cpu_ids']) is list and a['authorized_cpu_ids'] and
+                 all(type(i) is int and i >= 0 for i in a['authorized_cpu_ids']), 'invalid authorized affinity')
+        _unique(a['authorized_cpu_ids'], 'duplicate authorized CPU')
+        _require(type(a['authorized_devices']) is list and all(type(x) is str and x for x in a['authorized_devices']), 'invalid authorized devices')
+        _unique(a['authorized_devices'], 'duplicate authorized device')
+        _require(a['no_writer_barrier'] is True and self.grant['no_writer_barrier'] is True and self.grant['includes_untracked'] is True,
+                 'missing root barriers')
+        self.inputs = [entry['reference'] for entries in self.candidate['inventory'].values() for entry in entries]
+        _unique([v['path'] for v in self.inputs], 'duplicate cross-category candidate input')
+        _require(sorted(self.inputs, key=lambda v: v['path']) == sorted(self.grant['inputs'], key=lambda v: v['path']), 'grant input mismatch')
+        for key in ('authorized_root', 'head', 'tree', 'import_roots'):
+            _require(self.grant[key] == self.candidate[key], 'grant candidate mismatch: ' + key)
+        _require(self.candidate['authorized_root'] == s['authorized_root'] == self.freeze['authorized_root'], 'authorized source mismatch')
+        _require(self.candidate['source_freeze'] == s['source_freeze'] == self.request['source_freeze'], 'source freeze binding mismatch')
+        _require(a['lease_root'] == s['lease_root'] == self.request['lease_root'], 'lease namespace mismatch')
+        _require(self.admission['disposition'] == 'admitted', 'admission refused')
+        _require(s['budget'] == self.admission['admitted_budget'], 'spec/admission budget mismatch')
+        _require(s['dependencies'] == self.admission['environment'] == self.request['dependencies'], 'environment binding mismatch')
+        for key in ('attempt_id', 'authorized_root', 'output_root', 'scratch_root', 'profile', 'tools'):
+            _require(s[key] == self.request[key], 'request/spec mismatch: ' + key)
+        _require(s['job_concurrency'] == self.request['requested_job_concurrency'], 'concurrency mismatch')
+        _require(self.request['interpreter'] == self.environment['interpreter'], 'interpreter binding mismatch')
+        _require(self.request['minimum'] == self.admission['minimum'] and self.request['reserve'] == self.admission['reserve'], 'reserve/minimum binding mismatch')
+        _require(self.admission['profile'] == s['profile'] and self.admission['tmpdir'] == s['scratch_root'], 'admission profile/TMPDIR mismatch')
+        _require(self.request['requested_visibility'] == self.admission['requested_visibility'] == self.admission['effective_visibility'], 'visibility changed during admission')
+        for tool in s['tools']:
+            if tool['name'] in ('runner', 'protocol'):
+                actual = Path(__file__) if tool['name'] == 'runner' else Path(protocol.__file__)
+                _require(tool['reference'] == file_reference(actual), 'loaded tool differs from sealed tool')
+        _require(file_reference(Path(protocol.__file__))['sha256'] == 'adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c',
+                 'unadopted protocol bytes')
+        self.runner_ref = next(t['reference'] for t in s['tools'] if t['name'] == 'runner')
+        _require(len(s['jobs']) == len(self.request['jobs']), 'request job inventory mismatch')
+        accepted_bounds = self.grant['cpu_reservation_evidence']
+        _unique(accepted_bounds, 'duplicate accepted CPU bound')
+        used_bounds = []
+        self.policies = {}
+        self.runtimes = {}
+        for j, requested in zip(s['jobs'], self.request['jobs']):
+            normalized = json.loads(json.dumps(requested))
+            if j['profile'] == 'cuda':
+                _require(j['devices'] == self.admission['devices'], 'CUDA job mapping differs from admission')
+                _require(len(normalized['devices']) == len(j['devices']), 'CUDA mapping cardinality changed')
+                for device, admitted in zip(normalized['devices'], j['devices']):
+                    device['mapping_provenance'] = admitted['mapping_provenance']
+                _require(j['environment'].get('CUDA_VISIBLE_DEVICES') == self.admission['effective_visibility'], 'CUDA visibility mismatch')
+            _require(j == normalized, 'request job changed beyond measured mapping provenance')
+            self.policies[j['id']] = self.identity_policy(j)
+            _require(j['interpreter'] == self.environment['interpreter']['path'], 'job interpreter mismatch')
+            for device in j['devices']:
+                _require(device['gpu_uuid'] in a['authorized_devices'] and device['gpu_uuid'] in self.request['authorized_devices'], 'device not authorized')
+                _require(device['mig_uuid'] is None and device['physical_parent_uuid'] == device['gpu_uuid'], 'unsupported physical mapping')
+            for role in j['roles']:
+                evidence = role['cpu_reservation_evidence']
+                _require(evidence in accepted_bounds, 'CPU bound not root accepted')
+                if evidence not in used_bounds: used_bounds.append(evidence)
+                bound = _read(evidence)
+                _closed(bound, 'basis role_id role observer intra_op inter_op debug torch_policy cuda_policy peak_cpu_slots argv environment required_cases head tree inputs justification authority bound_statement',
+                        'bac-hardware-cpu-bound-v1')
+                for key in ('role', 'observer', 'intra_op', 'inter_op', 'debug', 'torch_policy', 'cuda_policy', 'peak_cpu_slots'):
+                    _require(type(bound[key]) is type(role[key]) and bound[key] == role[key], 'CPU bound role configuration mismatch')
+                _require(bound['role_id'] == role['id'] and bound['basis'] == role['cpu_reservation_basis'], 'CPU bound identity mismatch')
+                _require(bound['argv'] == j['argv'] and bound['environment'] == j['environment'] and bound['required_cases'] == j['required_collected_ids'], 'CPU bound workload mismatch')
+                _require(bound['head'] == self.candidate['head'] and bound['tree'] == self.candidate['tree'] and
+                         sorted(bound['inputs'], key=lambda v: v['path']) == sorted(self.inputs, key=lambda v: v['path']), 'CPU bound source mismatch')
+                _require(type(bound['justification']) is list and bound['justification'] and
+                         type(bound['authority']) is str and bound['authority'].strip() and
+                         type(bound['bound_statement']) is str and bound['bound_statement'].strip(), 'missing CPU bound justification')
+                for ref in bound['justification']: validate_record('reference', ref)
+            for ref in j['prerequisites'] + j['timing_contract']:
+                receipt = _read(ref, 'receipt')
+                _require(receipt['custody'] == 'satisfied' and receipt['test_outcome'] == 'successful' and
+                         all(o['disposition'] == 'satisfied' for o in receipt['obligations']), 'prerequisite receipt unsatisfied')
+        _require(sorted(used_bounds, key=lambda v: v['path']) == sorted(accepted_bounds, key=lambda v: v['path']), 'accepted CPU inventory mismatch')
+        if a['partition_evidence']:
+            partition = _read(a['partition_evidence'][0])
+            _closed(partition, 'pool_id host boot_id lease_root pool_capacity allocations start end authority', 'bac-hardware-capacity-partition-v1')
+            _active(partition); _budget_check(partition['pool_capacity'])
+            for key in ('pool_id', 'host', 'boot_id', 'lease_root'):
+                _require(partition[key] == a[key], 'partition allocation mismatch')
+            rows = partition['allocations']
+            _require(type(rows) is list and rows, 'empty partition')
+            for row in rows:
+                _require(type(row) is dict and set(row) == {'allocation_id', 'capacity', 'authorized_cpu_ids', 'authorized_devices'}, 'closed partition row')
+                _budget_check(row['capacity'])
+            for key in ('allocation_id', 'authorized_cpu_ids', 'authorized_devices'):
+                flattened = [x for row in rows for x in (row[key] if type(row[key]) is list else [row[key]])]
+                _unique(flattened, 'overlapping partition')
+            _require({key: a[key] for key in rows[0]} in rows, 'allocation absent from partition')
+            for key in RESOURCE_KEYS:
+                _require(sum(row['capacity'][key] for row in rows) <= partition['pool_capacity'][key], 'partition overcommitted')
+        self.partition = partition if a['partition_evidence'] else None
+        self._admitted_arithmetic()
+        self.sequence = 0
+        self.witnesses = []
+        self.processes = {}
+        self.launches = {}
+        self.commands = {}
+        self.observations = {}
+
+    def _admitted_arithmetic(self):
+        a, admission = self.allocation, self.admission
+        wrapper = _read(admission['discovery_process'])
+        _closed(wrapper, 'request capture executable capture_identity argv cwd environment start end identity exit_code stdout stderr errors',
+                'bac-hardware-discovery-command-v1')
+        capture = next(t['reference'] for t in self.spec['tools'] if t['name'] == 'capture')
+        _require(wrapper['request'] == admission['request'] and wrapper['capture'] == capture and
+                 wrapper['executable'] == self.environment['interpreter'], 'discovery executable/request binding mismatch')
+        _require(type(wrapper['exit_code']) is int and wrapper['exit_code'] == 0 and wrapper['errors'] == [], 'discovery did not complete cleanly')
+        validate_record('identity', wrapper['capture_identity']); validate_record('identity', wrapper['identity'])
+        _require(wrapper['identity']['ppid'] == wrapper['capture_identity']['pid'], 'discovery PPID mismatch')
+        for key in ('host', 'boot_id'):
+            _require(wrapper['identity'][key] == wrapper['capture_identity'][key] == a[key], 'discovery host/boot mismatch')
+        raw_ref = admission['affinity']['provenance']
+        raw = _read(raw_ref)
+        _closed(raw, 'profile identity at argv interpreter cwd inherited_visibility effective_visibility tmpdir cgroup_root cgroup_leaf ancestry_complete cgroups affinity meminfo scratch_free_bytes scratch_free_inodes cpu_topology numa_topology gpu_topology torch_build cuda_runtime driver competing_workloads devices probe_errors commands python_version dependencies torch_origin',
+                'bac-hardware-discovery-v1')
+        bootstrap = 'import sys;sys.path.insert(0,' + repr(str(Path(capture['path']).parent)) + ');from capture_bac_hardware_v1 import discovery_main;discovery_main()'
+        _require(wrapper['argv'] == [wrapper['executable']['path'], '-I', '-B', '-c', bootstrap,
+                                    admission['request']['path'], json.dumps(raw['inherited_visibility'])], 'unpinned discovery argv')
+        expected_environment = {**self.environment['environment'], 'CUDA_VISIBLE_DEVICES': self.request['requested_visibility'], 'TMPDIR': self.spec['scratch_root']}
+        descriptor_text = wrapper['environment'].get('BAC_CAPTURE_LEASE_FDS')
+        _require(type(descriptor_text) is str, 'capture inherited lease observations missing')
+        descriptors = json.loads(descriptor_text)
+        _require(type(descriptors) is list and descriptors and all(type(fd) is int and fd > 2 for fd in descriptors), 'invalid inherited capture lease descriptors')
+        _unique(descriptors, 'duplicate inherited capture lease descriptors')
+        _require(json.dumps(descriptors) == descriptor_text, 'noncanonical capture lease descriptors')
+        expected_environment['BAC_CAPTURE_LEASE_FDS'] = descriptor_text
+        _require(wrapper['environment'] == expected_environment, 'discovery environment differs from sealed environment')
+        # Parse via the same strict JSON loader without using stdout as a file.
+        def pairs(items):
+            value = {}
+            for key, item in items:
+                _require(key not in value, 'duplicate discovery stdout field'); value[key] = item
+            return value
+        stdout = json.loads(wrapper['stdout'], object_pairs_hook=pairs, parse_constant=lambda text: (_ for _ in ()).throw(ValueError('nonfinite stdout')))
+        _require(stdout == raw, 'raw discovery differs from actual retained stdout')
+        _require(raw['identity'] == wrapper['identity'] and raw['argv'] == wrapper['argv'], 'raw discovery process/argv mismatch')
+        _require(wrapper['cwd'] == raw['cwd'] == self.spec['authorized_root'] and raw['interpreter'] == wrapper['executable']['path'], 'discovery context mismatch')
+        _require(type(raw['at']) is str and wrapper['start'] <= raw['at'] <= wrapper['end'], 'discovery timestamp outside launch')
+        _require(raw['profile'] == self.spec['profile'] and raw['tmpdir'] == self.spec['scratch_root'], 'discovery profile/TMPDIR mismatch')
+        _require(wrapper['environment'].get('TMPDIR') == raw['tmpdir'] and wrapper['environment'].get('CUDA_VISIBLE_DEVICES') == raw['effective_visibility'], 'discovery environment mismatch')
+        _require(raw['effective_visibility'] == admission['effective_visibility'] and raw['probe_errors'] == [], 'discovery errors or visibility drift')
+        if raw['inherited_visibility'] is not None and raw['profile'] == 'cuda':
+            _require(raw['inherited_visibility'] == raw['effective_visibility'], 'expanded inherited CUDA visibility')
+        _require(raw['python_version'] == self.environment['python_version'] and raw['dependencies'] == self.environment['dependencies'], 'discovery dependency inventory mismatch')
+        _require(raw['competing_workloads'] == [], 'competing workload not admitted')
+        measured, facts, groups = _raw_capacity(raw)
+        facts.update({key: raw[key] for key in ('affinity', 'scratch_free_bytes', 'scratch_free_inodes', 'competing_workloads', 'cpu_topology', 'numa_topology', 'gpu_topology')})
+        for key, expected in facts.items():
+            fact = admission[key]
+            _require(fact['provenance'] == raw_ref, 'fact provenance mismatch')
+            _require((expected is None and fact['state'] in ('unavailable', 'unsupported')) or
+                     (expected is not None and fact['state'] == 'measured' and fact['value'] == expected), 'derived admission fact mismatch: ' + key)
+        _require({g['path'] for g in admission['cgroups']} == set(groups), 'admission ancestry mismatch')
+        for group in admission['cgroups']:
+            parsed = groups[group['path']]
+            for key, expected in (('cpu_quota_us', parsed['quota']), ('cpu_period_us', parsed['period']), ('cpuset', parsed['cpuset']), ('memory_limit_bytes', parsed['limit'])):
+                fact = group[key]
+                _require(fact['provenance'] == raw_ref and ((expected is None and fact['state'] == 'unlimited') or
+                         (expected is not None and fact['state'] == 'measured' and fact['value'] == expected)), 'derived cgroup fact mismatch')
+        devices = [{**device, 'mapping_provenance': raw_ref} for device in raw['devices']]
+        _require(devices == admission['devices'], 'device provenance/mapping mismatch')
+        if self.spec['profile'] == 'cpu':
+            _require(raw['devices'] == [] and raw['torch_origin'] is None and raw['commands'] == [], 'CPU discovery touched device backend')
+        else:
+            torch = next((d for d in self.environment['dependencies'] if d['name'] == 'torch'), None)
+            driver = next((d for d in self.environment['dependencies'] if d['name'] == 'nvidia-smi'), None)
+            _require(torch is not None and driver is not None and raw['torch_origin'] == torch['reference'], 'unpinned CUDA backend')
+            _require(raw['torch_build'] == self.environment['torch_build']['value'] and raw['cuda_runtime'] == self.environment['cuda_runtime']['value'] and
+                     raw['driver'] == self.environment['driver']['value'], 'CUDA backend version mismatch')
+            _require(raw['commands'], 'missing CUDA backend observations')
+            for command in raw['commands']:
+                _require(set(command) == {'argv', 'executable', 'identity', 'start', 'end', 'exit_code', 'stdout', 'stderr', 'errors'}, 'closed backend command')
+                _require(command['executable'] == driver['reference'] and command['argv'][0] == driver['reference']['path'], 'backend executable mismatch')
+                validate_record('identity', command['identity'])
+        self.raw = raw
+        self.raw_ref = raw_ref
+        _require(set(admission['affinity']['value']) == set(a['authorized_cpu_ids']), 'admission affinity outside allocation')
+        for key, available in measured.items():
+            maximum = max(0, min(available, a['capacity'][key]) - admission['reserve'][key] - a['overhead'][key])
+            _require(admission['admitted_budget'][key] == maximum, 'admitted budget differs from sealed measurements/allocation')
+
+    def source(self, attempt, pending, active):
+        s = self.spec
+        self.allocation_lease.check()
+        validate_record('reference', self.spec_ref)
+        validate_record('reference', self.capture_terminal_ref)
+        validate_spec(s)
+        validate_record('environment', self.environment)
+        validate_record('reference', self.raw_ref)
+        validate_record('reference', self.admission['discovery_process'])
+        for ref in (self.freeze['grant'], self.grant['allocation_grant'], *self.grant['cpu_reservation_evidence']):
+            validate_record('reference', ref)
+        _active(self.grant); _active(self.allocation)
+        if self.partition is not None:
+            _active(self.partition)
+            validate_record('reference', self.allocation['partition_evidence'][0])
+        _require(self.freeze['start'] <= _utc() and (self.freeze['end']['state'] == 'unavailable' or _utc() <= self.freeze['end']['value']), 'inactive source freeze')
+        actual = _identity(os.getpid())
+        _require(actual['host'] == self.allocation['host'] and actual['boot_id'] == self.allocation['boot_id'], 'allocation host/boot mismatch')
+        self.affinity(os.getpid())
+        # Already resident/allocated owned resources are absent from free headroom.
+        # Bracket its sample and use only the smaller observed ownership credit.
+        before_ram, before_storage = _owned_resources(s, self.spec_ref, active)
+        available = _live_capacity(self.raw, s['scratch_root'])
+        after_ram, after_storage = _owned_resources(s, self.spec_ref, active)
+        ram = {key: min(value, after_ram.get(key, 0)) for key, value in before_ram.items()}
+        storage = {name: {key: min(value, after_storage.get(name, {}).get(key, 0)) for key, value in values.items()}
+                   for name, values in before_storage.items()}
+        required = _remaining_resources(s['jobs'], [j['id'] for j in pending], [v['job']['id'] for v in active],
+                                        s['job_concurrency'], self.allocation['overhead'], self.request['reserve'], ram, storage)
+        for key in RESOURCE_KEYS:
+            _require(available[key] >= required[key], 'current capacity below remaining reservation: ' + key)
+        head = _git(s['authorized_root'], ['rev-parse', 'HEAD']).strip()
+        _require(head == self.candidate['head'], 'source HEAD drift')
+        _git(s['authorized_root'], ['diff-index', '--cached', '--quiet', self.candidate['tree'], '--'])
+        _git(s['authorized_root'], ['diff', '--quiet', '--'])
+        registry = _git(s['authorized_root'], ['worktree', 'list', '--porcelain'])
+        _require(registry.encode() == Path(self.candidate['registry']['path']).read_bytes(), 'worktree registry changed')
+        paths = []
+        for line in registry.splitlines():
+            if line.startswith('worktree '):
+                path = line[9:]
+                _require(path.startswith('/') and not any(c in path for c in ('"', '\\', '\t')), 'unsupported registry path encoding')
+                paths.append(path)
+        availability = _read(self.candidate['availability'])
+        _closed(availability, 'worktrees', 'bac-hardware-availability-v1')
+        _require(availability['worktrees'] == [{'path': path, 'directory_exists': Path(path).is_dir()} for path in paths], 'worktree availability changed')
+        observed = [file_reference(Path(v['path'])) for v in self.inputs]
+        _require(observed == self.inputs, 'source inventory drift')
+        record = {'schema': 'bac-hardware-v1', 'kind': 'source-witness', 'candidate': s['candidate'],
+                  'source_freeze': s['source_freeze'], 'head': head, 'tree': self.candidate['tree'],
+                  'inventory': observed, 'at': _utc(), 'process_identity': actual}
+        validate_record('source-witness', record)
+        self.sequence += 1
+        ref = attempt.write_attempt(f'source-{self.sequence:04d}.json', record)
+        self.witnesses.append(ref)
+        return ref
+
+    def affinity(self, pid):
+        actual = sorted(os.sched_getaffinity(pid))
+        _require(set(actual) == set(self.allocation['authorized_cpu_ids']), 'actual affinity differs from authorized allocation')
+        return actual
+
+    def identity_policy(self, job):
+        options = ('--bac-identity-policy', '--bac-identity-policy-sha256')
+        if not any(option in job['argv'] for option in options):
+            _require(job['xdist_workers'] == 0, 'worker jobs require sealed identity policy')
+            return None
+        values = []
+        for option in options:
+            _require(job['argv'].count(option) == 1, 'ambiguous identity policy option')
+            index = job['argv'].index(option)
+            _require(index + 1 < len(job['argv']), 'missing identity policy option value')
+            values.append(job['argv'][index + 1])
+        reference = file_reference(Path(values[0]))
+        _require(reference['sha256'] == values[1], 'identity policy hash mismatch')
+        _require(reference['path'] not in {r['path'] for r in self.inputs}, 'identity policy creates candidate reference cycle')
+        policy = _read(reference)
+        _closed(policy, 'spec_path command_path runtime_path job_id role_id required_imports worker_roles environment_delta', 'bac-hardware-identity-policy-v1')
+        _require(policy['spec_path'] == self.spec_ref['path'] and policy['job_id'] == job['id'] and
+                 policy['command_path'] == str(Path(job['output']) / 'command.json') and
+                 policy['runtime_path'] == str(Path(job['output']) / 'runtime-context.json'), 'identity policy path/job mismatch')
+        roles = {r['id']: r for r in job['roles']}
+        _require(policy['role_id'] in roles and roles[policy['role_id']]['role'] == 'controller', 'policy controller role mismatch')
+        _require(type(policy['worker_roles']) is list and len(policy['worker_roles']) == job['xdist_workers'], 'policy worker inventory mismatch')
+        for role_id in set(policy['worker_roles']):
+            _require(role_id in roles and roles[role_id]['role'] == 'worker' and
+                     policy['worker_roles'].count(role_id) == roles[role_id]['count'], 'policy worker role mismatch')
+        _environment_expected(job['environment'], policy['environment_delta'], None)
+        _require(type(policy['required_imports']) is list, 'invalid required imports')
+        _unique([entry['name'] for entry in policy['required_imports']], 'duplicate required import')
+        for entry in policy['required_imports']:
+            _require(set(entry) == {'name', 'reference', 'phases'} and type(entry['name']) is str and entry['name'] and
+                     type(entry['phases']) is list and entry['phases'] and set(entry['phases']) <= {'start', 'end'}, 'invalid import policy')
+            _unique(entry['phases'], 'duplicate import phase'); validate_record('reference', entry['reference'])
+        return (reference, policy)
+
+    def prepare_identity(self, job, attempt, source):
+        selected = self.policies[job['id']]
+        if selected is None: return
+        reference, policy = selected
+        validate_record('reference', reference)
+        witness = _read(source, 'source-witness')
+        runtime = {'schema': 'bac-hardware-identity-runtime-v1', 'spec': self.spec_ref, 'command': self.commands[job['id']],
+                   'trusted_grant': self.freeze['grant'], 'policy': reference, 'runner_identity': witness['process_identity'],
+                   'runner_source_start': source}
+        attempt.write(job['id'], 'runtime-context.json', runtime)
+        self.runtimes[job['id']] = file_reference(Path(policy['runtime_path']))
+
+    def process_context(self, job, record, role, envelope):
+        selected = self.policies[job['id']]
+        _require(selected is not None, 'process lacks root-sealed identity policy')
+        policy_ref, policy = selected
+        raw_ref = record['intra_op']['provenance']
+        _require(raw_ref == record['inter_op']['provenance'] == record['debug']['provenance'] and raw_ref in envelope['inventory'], 'process raw provenance missing')
+        _require(raw_ref['path'] == str(Path(job['output']) / f"process-{record['process_id']}-observation-{record['phase']}.json"), 'unexpected raw observation path')
+        raw = _read(raw_ref)
+        _closed(raw, 'context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at', 'bac-hardware-process-observation-v1')
+        for key in ('identity', 'phase', 'environment', 'at'):
+            _require(raw[key] == record[key], 'raw/process observation mismatch')
+        _require(type(raw['torch_loaded']) is bool and (raw['cuda_marker'] is None or type(raw['cuda_marker']) is bool) and
+                 type(raw['observation_limit']) is str and raw['observation_limit'], 'invalid raw observation facts')
+        context = raw['context']
+        _closed(context, 'spec command trusted_grant job_id role_id required_imports worker_roles environment_delta parent_start replacement_start lifecycle worker_identity policy runtime',
+                'bac-hardware-identity-context-v1')
+        _require(context['spec'] == self.spec_ref and context['command'] == self.commands[job['id']] and context['trusted_grant'] == self.freeze['grant'] and
+                 context['job_id'] == job['id'] and context['role_id'] == role['id'], 'runtime context binding mismatch')
+        _require(context['policy'] == [policy_ref] and context['runtime'] == [self.runtimes[job['id']]], 'missing delegated runtime authority')
+        for reference in context['policy'] + context['runtime']: validate_record('reference', reference)
+        for key in ('required_imports', 'worker_roles', 'environment_delta'):
+            _require(context[key] == policy[key], 'derived context changed static policy')
+        for key in ('parent_start', 'replacement_start', 'lifecycle'):
+            _require(type(context[key]) is list and len(context[key]) <= 1, 'invalid lifecycle cardinality')
+        worker = context['worker_identity']
+        _require(raw['worker_identity'] == worker, 'raw/context worker identity mismatch')
+        if role['role'] == 'controller':
+            _require(role['id'] == policy['role_id'] and worker is None and not any(context[k] for k in ('parent_start', 'replacement_start', 'lifecycle')), 'controller context changed')
+        elif role['role'] == 'worker':
+            _require(worker is not None and role['id'] in policy['worker_roles'] and len(context['parent_start']) == len(context['lifecycle']) == 1, 'worker lineage missing')
+            _require(worker['workercount'] == job['xdist_workers'], 'worker count mismatch')
+            parent = _read(context['parent_start'][0], 'process')
+            _require(parent['phase'] == 'start' and parent['role'] == 'controller' and parent['identity'] == self.processes[job['id']] and
+                     record['identity']['ppid'] == parent['identity']['pid'] and parent['spec'] == self.spec_ref, 'worker/controller ancestry mismatch')
+            configure = self.lifecycle(context['lifecycle'][0])
+            _require(configure['phase'] == 'configure' and configure['controller_start'] == context['parent_start'][0] and configure['role_id'] == role['id'] and
+                     configure['worker_identity'] == worker and configure['predecessor_start'] == context['replacement_start'] and configure['process_start'] == [] and
+                     configure['error'] == '' and parent['at'] <= configure['at'] <= record['at'], 'worker configure binding mismatch')
+            if context['replacement_start']:
+                _require(len(configure['prior_lifecycle']) == 1, 'replacement missing down lifecycle')
+                down = self.lifecycle(configure['prior_lifecycle'][0])
+                _require(down['phase'] == 'down' and down['error'] and down['process_start'] == context['replacement_start'] and
+                         down['controller_start'] == context['parent_start'][0] and down['role_id'] == role['id'] and down['at'] <= configure['at'], 'replacement predecessor mismatch')
+                predecessor = _read(context['replacement_start'][0], 'process')
+                _require(predecessor['phase'] == 'start' and predecessor['role_id'] == role['id'] and predecessor['identity'] != record['identity'] and
+                         predecessor['spec'] == self.spec_ref, 'replacement process mismatch')
+            else:
+                _require(configure['prior_lifecycle'] == [], 'initial worker has replacement history')
+        else:
+            raise ValueError('child identity requires separately accepted owner context integration')
+        _require(record['environment'] == _environment_expected(job['environment'], policy['environment_delta'], worker), 'actual environment differs from delegated policy')
+        for entry in policy['required_imports']:
+            if record['phase'] in entry['phases']:
+                _require({'name': entry['name'], 'reference': entry['reference']} in record['imports'], 'required process import missing')
+        work = role['observer'] == 'work' or role['torch_policy'] == 'work'
+        if not raw['torch_loaded']:
+            _require(record['torch_observation'] == 'not-loaded' and record['cuda_observation'] == 'uninitialized' and raw['cuda_marker'] is None,
+                     'absent Torch observation mismatch')
+            _require(record['phase'] == 'start' or not work, 'work END lacks mandatory runtime observations')
+            _require(all(record[key]['state'] == 'unavailable' for key in ('intra_op', 'inter_op', 'debug')), 'absent Torch fabricated runtime facts')
+        elif work:
+            _require(record['torch_observation'] == 'work' and all(record[key]['state'] == 'measured' for key in ('intra_op', 'inter_op', 'debug')), 'work runtime observations missing')
+        else:
+            _require(record['torch_observation'] == 'loaded-without-calls' and type(raw['cuda_marker']) is bool and
+                     all(record[key]['state'] == 'unavailable' for key in ('intra_op', 'inter_op', 'debug')), 'observer runtime calls/facts forbidden')
+        if raw['torch_loaded']:
+            _require(type(raw['cuda_marker']) is bool and record['cuda_observation'] ==
+                     ('initialized' if raw['cuda_marker'] else 'uninitialized'), 'CUDA marker/observation mismatch')
+        if role['cuda_policy'] == 'no-initialize': _require(record['cuda_observation'] == 'uninitialized', 'uninitialized role initialized CUDA')
+
+    @staticmethod
+    def lifecycle(reference):
+        value = _read(reference)
+        _closed(value, 'phase controller_start worker_identity role_id predecessor_start process_start error at prior_lifecycle', 'bac-hardware-worker-lifecycle-v1')
+        _require(value['phase'] in ('configure', 'down') and type(value['error']) is str, 'invalid lifecycle event')
+        for key in ('predecessor_start', 'process_start', 'prior_lifecycle'):
+            _require(type(value[key]) is list and len(value[key]) <= 1, 'invalid lifecycle references')
+            for ref in value[key]: validate_record('reference', ref)
+        validate_record('reference', value['controller_start'])
+        return value
+
+    def evidence(self, job):
+        path = Path(job['output']) / 'completion.json'
+        value = _read(file_reference(path), 'job-evidence')
+        _require(file_reference(Path(job['output']) / 'command.json') == self.commands[job['id']], 'recorded launch command was changed')
+        _require(value['attempt_id'] == self.spec['attempt_id'] and value['job_id'] == job['id'] and
+                 value['spec'] == self.spec_ref and value['command'] == file_reference(Path(job['output']) / 'command.json'),
+                 'completion command/spec/job binding mismatch')
+        _require(set(value['collected_ids']) == set(job['required_collected_ids']), 'required collection differs')
+        _require({x['case_id'] for x in value['outcomes']} == set(job['required_collected_ids']), 'required outcomes missing')
+        _require(all(outcome[phase] == 'passed' for outcome in value['outcomes'] for phase in ('setup', 'call', 'teardown')), 'required phase did not pass')
+        roles = {role['id']: role for role in job['roles']}
+        observed = self.observations[job['id']]
+        groups = {}
+        for reference in value['process_records']:
+            _require(Path(reference['path']).is_relative_to(Path(job['output'])), 'process record outside job output')
+            record = _read(reference, 'process')
+            _require(observed['start'] <= record['at'] <= observed['end'] and
+                     observed['monotonic_start_ns'] <= record['monotonic_ns'] <= observed['monotonic_end_ns'],
+                     'process observation outside actual command lifetime')
+            _require(record['attempt_id'] == self.spec['attempt_id'] and record['job_id'] == job['id'] and record['spec'] == self.spec_ref,
+                     'process attempt/job/spec binding mismatch')
+            _require(record['role_id'] in roles, 'unadmitted process role')
+            role = roles[record['role_id']]
+            _require(record['role'] == role['role'], 'process role mismatch')
+            _require(record['identity']['host'] == self.allocation['host'] and record['identity']['boot_id'] == self.allocation['boot_id'], 'process host mismatch')
+            _require(record['interpreter'] == self.environment['interpreter'] and record['devices'] == job['devices'], 'process interpreter/device mismatch')
+            self.process_context(job, record, role, value)
+            if role['role'] == 'controller':
+                _require(record['identity'] == self.processes[job['id']] and record['argv'] == job['argv'] and record['cwd'] == job['cwd'], 'actual controller identity/command mismatch')
+            if role['role'] != 'fork-guard':
+                for key in ('intra_op', 'inter_op', 'debug'):
+                    if record[key]['state'] == 'measured':
+                        _require(type(record[key]['value']) is type(role[key]) and record[key]['value'] == role[key], 'process thread/debug mismatch')
+            witness = _read(record['source_witness'], 'source-witness')
+            _require(observed['start'] <= witness['at'] <= observed['end'], 'source witness outside command lifetime')
+            _require(witness['candidate'] == self.spec['candidate'] and witness['source_freeze'] == self.spec['source_freeze'] and
+                     witness['process_identity'] == record['identity'] and witness['head'] == self.candidate['head'] and
+                     witness['tree'] == self.candidate['tree'], 'process source witness mismatch')
+            _require(sorted(witness['inventory'], key=lambda v: v['path']) == sorted(self.inputs, key=lambda v: v['path']), 'process source inventory mismatch')
+            group = groups.setdefault(record['process_id'], {})
+            _require(record['phase'] not in group, 'duplicate process phase')
+            group[record['phase']] = record
+        counts = {key: 0 for key in roles}
+        identities = []
+        for phases in groups.values():
+            _require(set(phases) == {'start', 'end'}, 'missing process start/end')
+            start, end = phases['start'], phases['end']
+            _require(start['identity'] == end['identity'] and start['role_id'] == end['role_id'], 'process phase identity mismatch')
+            _require(end['monotonic_ns'] >= start['monotonic_ns'] and end['at'] >= start['at'] and
+                     end['elapsed_ns']['value'] == end['monotonic_ns'] - start['monotonic_ns'], 'process elapsed mismatch')
+            counts[start['role_id']] += 1
+            identities.append(start['identity'])
+        _unique(identities, 'duplicate process identity')
+        for role_id, count in counts.items():
+            role = roles[role_id]
+            _require(role['count'] <= count <= role['count'] + role['replacement_limit'], 'process role cardinality mismatch')
+        actual_obligations = set()
+        expected = {o['id']: o for o in job['obligations']}
+        for reference in value['obligation_records']:
+            _require(Path(reference['path']).is_relative_to(Path(job['output'])), 'obligation record outside job')
+            record = _read(reference, 'obligation-evidence')
+            _require(record['attempt_id'] == self.spec['attempt_id'] and record['job_id'] == job['id'] and record['spec'] == self.spec_ref,
+                     'obligation attempt/job/spec mismatch')
+            _require(record['obligation_id'] in expected, 'unplanned obligation')
+            obligation = expected[record['obligation_id']]
+            for key, target in (('obligation_kind', 'kind'), ('contract', 'contract'), ('validator', 'validator'), ('evidence_class', 'evidence_class')):
+                _require(record[key] == obligation[target], 'obligation contract mismatch')
+            _require(record['case_id'] in obligation['required_cases'] and record['producer_process'] in value['process_records'], 'obligation producer/case mismatch')
+            actual_obligations.add((record['obligation_id'], record['case_id']))
+        _require(actual_obligations == {(o['id'], case) for o in job['obligations'] for case in o['required_cases']}, 'missing obligation evidence')
+        _require(value['source_witnesses'], 'missing emitted source witnesses')
+        for ref in value['source_witnesses']:
+            witness = _read(ref, 'source-witness')
+            _require(witness['candidate'] == self.spec['candidate'] and witness['source_freeze'] == self.spec['source_freeze'], 'source envelope binding mismatch')
+        return value
+
+    def result(self, job, observation, attempt):
+        fields = ('collected_ids', 'outcomes', 'process_records', 'obligation_records', 'source_witnesses')
+        evidence = {key: [] for key in fields}
+        code = observation['exit_code']
+        self.observations[job['id']] = observation
+        disposition = observation['disposition']
+        reason = observation['reason']
+        if code is not None:
+            try:
+                evidence = self.evidence(job)
+            except (ValueError, OSError, KeyError, TypeError) as exc:
+                reason += '; evidence incomplete: ' + str(exc)
+            else:
+                if code == 0 and disposition != 'interrupted':
+                    disposition, reason = 'successful', ''
+        value = {'schema': 'bac-hardware-v1', 'kind': 'job-result', 'attempt_id': self.spec['attempt_id'],
+                 'job_id': job['id'], 'spec': self.spec_ref, 'disposition': disposition, 'exit_code': code,
+                 'signal': observation['signal'], 'reason': reason, 'start': observation.get('start', _utc()),
+                 'end': _observed(observation.get('end')),
+                 'elapsed_ns': _observed(observation['monotonic_end_ns'] - observation['monotonic_start_ns']) if code is not None else _observed(),
+                 'command': file_reference(Path(job['output']) / 'command.json'),
+                 'log': file_reference(Path(job['output']) / 'stdout.log'),
+                 **{key: evidence[key] for key in fields}, 'inventory': _inventory(Path(job['output']))}
+        validate_record('job-result', value)
+        return value
+
+
+def run(spec_path: Path) -> int:
+    custody = Custody(spec_path)
+    s = custody.spec
+    leases = Leases(Path(s['lease_root']))
+    held = None
+    try:
+        custody.affinity(os.getpid())
+        held = leases.try_allocation(custody.allocation)
+        _require(held is not None, 'resource allocation/pool already occupied')
+        custody.allocation_lease = held
+        results = execute_jobs(s, custody=custody)
+        held.check()
+        return 0 if all(result['disposition'] == 'successful' for result in results) else 1
+    finally:
+        if held is not None: held.close()
+        leases.close()
+
+
+if __name__ == '__main__':
+    import sys
+    try:
+        raise SystemExit(run(Path(sys.argv[1])))
+    except (ValueError, OSError) as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(2)

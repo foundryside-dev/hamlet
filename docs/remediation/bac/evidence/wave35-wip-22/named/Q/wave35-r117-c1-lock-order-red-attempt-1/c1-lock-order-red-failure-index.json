@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+    where wait = <threading.Event at 0x7fdf99802710: set>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_runtime_contender_does_not_take_lock_before_domain",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

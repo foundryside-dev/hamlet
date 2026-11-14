@@ -1,0 +1,1163 @@
+.F...FFFFF................F..FFFFFFFFFFFFFFFFF                           [100%]
+=================================== FAILURES ===================================
+____________________ test_unknown_validator_never_satisfies ____________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4735400>
+
+    def test_unknown_validator_never_satisfies(evidence):
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:210: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+__________________ test_required_case_outcomes[setup-failed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815090>
+phase = 'setup', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815090>
+phase = 'setup', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:229: AssertionError
+__________________ test_required_case_outcomes[call-skipped] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc48151d0>
+phase = 'call', status = 'skipped'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc48151d0>
+phase = 'call', status = 'skipped'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:229: AssertionError
+__________________ test_required_case_outcomes[call-xfailed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815810>
+phase = 'call', status = 'xfailed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815810>
+phase = 'call', status = 'xfailed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:229: AssertionError
+__________________ test_required_case_outcomes[call-xpassed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815bd0>
+phase = 'call', status = 'xpassed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815bd0>
+phase = 'call', status = 'xpassed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:229: AssertionError
+_________________ test_required_case_outcomes[teardown-failed] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815d10>
+phase = 'teardown', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:230: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815d10>
+phase = 'teardown', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:229: AssertionError
+____________________________ test_immutable_receipt ____________________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815090>
+
+    def test_immutable_receipt(evidence):
+>       first = evidence.verify()
+                ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:283: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+___________ test_evidence_class_never_inferred_from_device_presence ____________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815810>
+
+    def test_evidence_class_never_inferred_from_device_presence(evidence):
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:303: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+________________ test_common_validators_recompute_actual_proof _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_validators_recompu0')
+
+    def test_common_validators_recompute_actual_proof(tmp_path):
+        evidence = Evidence(tmp_path, common=True)
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:310: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+_________ test_common_payload_cannot_omit_actual_observations[reports] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_payload_cannot_omi0')
+field = 'reports'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+        with pytest.raises(ValueError, match="common|payload"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:334: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_payload_cannot_omi0')
+field = 'reports'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'common|payload'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:333: AssertionError
+________ test_common_payload_cannot_omit_actual_observations[processes] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_payload_cannot_omi1')
+field = 'processes'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+        with pytest.raises(ValueError, match="common|payload"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:334: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_payload_cannot_omi1')
+field = 'processes'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'common|payload'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:333: AssertionError
+____ test_common_payload_cannot_omit_actual_observations[source_witnesses] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_payload_cannot_omi2')
+field = 'source_witnesses'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+        with pytest.raises(ValueError, match="common|payload"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:334: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_payload_cannot_omi2')
+field = 'source_witnesses'
+
+    @pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+    def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+        evidence = Evidence(tmp_path, common=True)
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload[field] = []
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'common|payload'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:333: AssertionError
+____________ test_common_validator_does_not_execute_referenced_code ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_validator_does_not0')
+
+    def test_common_validator_does_not_execute_referenced_code(tmp_path):
+        evidence = Evidence(tmp_path, common=True)
+        # Registry authority is not inferred from a payload filename or execution claim.
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload["execute"] = "raise RuntimeError('never execute evidence')"
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+        with pytest.raises(ValueError, match="common|payload"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:347: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_common_validator_does_not0')
+
+    def test_common_validator_does_not_execute_referenced_code(tmp_path):
+        evidence = Evidence(tmp_path, common=True)
+        # Registry authority is not inferred from a payload filename or execution claim.
+        item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+        payload = json.loads(Path(item["payload"]["path"]).read_text())
+        payload["execute"] = "raise RuntimeError('never execute evidence')"
+        item["payload"] = write(Path(item["payload"]["path"]), payload)
+        evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="common|payload"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'common|payload'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:346: AssertionError
+_________ test_parent_wait_cannot_be_rewritten_as_success[exit_code-7] _________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815bd0>
+field = 'exit_code', value = 7
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+        with pytest.raises(ValueError, match="wait|exit|terminal"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:356: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815bd0>
+field = 'exit_code', value = 7
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'wait|exit|terminal'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:355: AssertionError
+__________ test_parent_wait_cannot_be_rewritten_as_success[signal-9] ___________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815810>
+field = 'signal', value = 9
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+        with pytest.raises(ValueError, match="wait|exit|terminal"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:356: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815810>
+field = 'signal', value = 9
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'wait|exit|terminal'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:355: AssertionError
+_______ test_parent_wait_cannot_be_rewritten_as_success[identity-value2] _______
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815090>
+field = 'identity'
+value = {'boot_id': 'synthetic', 'host': 'synthetic', 'pid': 999, 'ppid': 100, ...}
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+        with pytest.raises(ValueError, match="wait|exit|terminal"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:356: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815090>
+field = 'identity'
+value = {'boot_id': 'synthetic', 'host': 'synthetic', 'pid': 999, 'ppid': 100, ...}
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'wait|exit|terminal'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:355: AssertionError
+____ test_parent_wait_cannot_be_rewritten_as_success[end_monotonic_ns-999] _____
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc48160d0>
+field = 'end_monotonic_ns', value = 999
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+        with pytest.raises(ValueError, match="wait|exit|terminal"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:356: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc48160d0>
+field = 'end_monotonic_ns', value = 999
+
+    @pytest.mark.parametrize("field,value", [("exit_code", 7), ("signal", 9), ("identity", dict(pid=999, ppid=100, start_identity="x", host="synthetic", boot_id="synthetic")), ("end_monotonic_ns", 999)])
+    def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+        evidence.wait[field] = value
+        write(evidence.output / "wait.json", evidence.wait)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="wait|exit|terminal"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'wait|exit|terminal'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:355: AssertionError
+______________ test_actual_collection_records_required[duplicate] ______________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4816210>
+mutation = 'duplicate'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+        with pytest.raises(ValueError, match="collection"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4816210>
+mutation = 'duplicate'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="collection"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'collection'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:367: AssertionError
+_______________ test_actual_collection_records_required[missing] _______________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815090>
+mutation = 'missing'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+        with pytest.raises(ValueError, match="collection"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815090>
+mutation = 'missing'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="collection"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'collection'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:367: AssertionError
+____________ test_actual_collection_records_required[wrong-process] ____________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815f90>
+mutation = 'wrong-process'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+        with pytest.raises(ValueError, match="collection"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:368: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815f90>
+mutation = 'wrong-process'
+
+    @pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+    def test_actual_collection_records_required(evidence, mutation):
+        collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+        if mutation == "duplicate": collection["ids"].append("test_inert")
+        if mutation == "missing": collection["ids"] = []
+        if mutation == "wrong-process": collection["process"] = evidence.processes[1]
+        write(Path(evidence.collection_ref["path"]), collection)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="collection"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'collection'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:367: AssertionError
+__________ test_terminal_classifications_preserved[completed-failed] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_terminal_classifications_0')
+terminal = 'completed-failed'
+
+    @pytest.mark.parametrize("terminal", ["completed-failed", "completed-unverified", "interrupted"])
+    def test_terminal_classifications_preserved(tmp_path, terminal):
+        evidence = Evidence(tmp_path, terminal=terminal)
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:374: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+________ test_terminal_classifications_preserved[completed-unverified] _________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_terminal_classifications_1')
+terminal = 'completed-unverified'
+
+    @pytest.mark.parametrize("terminal", ["completed-failed", "completed-unverified", "interrupted"])
+    def test_terminal_classifications_preserved(tmp_path, terminal):
+        evidence = Evidence(tmp_path, terminal=terminal)
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:374: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+_____________ test_terminal_classifications_preserved[interrupted] _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-122/test_terminal_classifications_2')
+terminal = 'interrupted'
+
+    @pytest.mark.parametrize("terminal", ["completed-failed", "completed-unverified", "interrupted"])
+    def test_terminal_classifications_preserved(tmp_path, terminal):
+        evidence = Evidence(tmp_path, terminal=terminal)
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:374: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+_________________ test_report_after_process_end_cannot_satisfy _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815810>
+
+    def test_report_after_process_end_cannot_satisfy(evidence):
+        report = json.loads(Path(evidence.reports[-1]["path"]).read_text())
+        report["at"] = T4
+        evidence.result["outcomes"][0]["evidence"][-1] = write(Path(evidence.reports[-1]["path"]), report)
+        evidence.seal()
+        with pytest.raises(ValueError, match="report"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:385: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:197: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:506: in verify
+    _inventory_exact(seal["inventory"], output.parent, {str(output.parent / "seal.json")})
+verify_bac_hardware_v1.py:395: in _inventory_exact
+    same_set(references, seen, "sealed file inventory")
+verify_bac_hardware_v1.py:68: in same_set
+    require({key(v) for v in first} == {key(v) for v in second}, label + ": set mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'sealed file inventory: set mismatch'
+
+    def require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: sealed file inventory: set mismatch
+
+verify_bac_hardware_v1.py:23: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7efdc4815810>
+
+    def test_report_after_process_end_cannot_satisfy(evidence):
+        report = json.loads(Path(evidence.reports[-1]["path"]).read_text())
+        report["at"] = T4
+        evidence.result["outcomes"][0]["evidence"][-1] = write(Path(evidence.reports[-1]["path"]), report)
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report'
+E        Input: 'sealed file inventory: set mismatch'
+
+test_verify_bac_hardware_v1.py:384: AssertionError
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_unknown_validator_never_satisfies
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[setup-failed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-skipped]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-xfailed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-xpassed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[teardown-failed]
+FAILED test_verify_bac_hardware_v1.py::test_immutable_receipt - ValueError: s...
+FAILED test_verify_bac_hardware_v1.py::test_evidence_class_never_inferred_from_device_presence
+FAILED test_verify_bac_hardware_v1.py::test_common_validators_recompute_actual_proof
+FAILED test_verify_bac_hardware_v1.py::test_common_payload_cannot_omit_actual_observations[reports]
+FAILED test_verify_bac_hardware_v1.py::test_common_payload_cannot_omit_actual_observations[processes]
+FAILED test_verify_bac_hardware_v1.py::test_common_payload_cannot_omit_actual_observations[source_witnesses]
+FAILED test_verify_bac_hardware_v1.py::test_common_validator_does_not_execute_referenced_code
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[exit_code-7]
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[signal-9]
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[identity-value2]
+FAILED test_verify_bac_hardware_v1.py::test_parent_wait_cannot_be_rewritten_as_success[end_monotonic_ns-999]
+FAILED test_verify_bac_hardware_v1.py::test_actual_collection_records_required[duplicate]
+FAILED test_verify_bac_hardware_v1.py::test_actual_collection_records_required[missing]
+FAILED test_verify_bac_hardware_v1.py::test_actual_collection_records_required[wrong-process]
+FAILED test_verify_bac_hardware_v1.py::test_terminal_classifications_preserved[completed-failed]
+FAILED test_verify_bac_hardware_v1.py::test_terminal_classifications_preserved[completed-unverified]
+FAILED test_verify_bac_hardware_v1.py::test_terminal_classifications_preserved[interrupted]
+FAILED test_verify_bac_hardware_v1.py::test_report_after_process_end_cannot_satisfy
+24 failed, 22 passed in 3.45s

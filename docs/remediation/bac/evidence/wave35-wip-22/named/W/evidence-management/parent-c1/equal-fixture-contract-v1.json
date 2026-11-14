@@ -1,0 +1,8 @@
+{
+  "source": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+  "sha256": "672a1441520b69cfda5045220a29d2abf891afa7fbad8d461c5e22c91adab893",
+  "definition_line": 38,
+  "scope": "Root source-only targeted helper contract; no new runtime proof or writer body read",
+  "contract": "equal(left,right) asserts internally and returns None: exact type; tensor dtype/shape/device/layout + torch.equal; numpy dtype + assert_array_equal; Mapping keys/OrderedDict order and recursive values/_metadata; list/tuple lengths + recursive elements; scalar equality. compiled fixture compiles configs/test/token_set_smoke primary L0_test use_cache=False.",
+  "use": "Reuse helper as assertion, do not assert its return value. Compare separately captured actual states, never same object as both expected and actual."
+}

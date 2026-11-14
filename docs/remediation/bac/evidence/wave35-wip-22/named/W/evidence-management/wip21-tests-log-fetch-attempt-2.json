@@ -1,0 +1,13 @@
+{
+  "start": "2026-11-14T07:50:50.511Z",
+  "end": "2026-11-14T07:50:54.608Z",
+  "response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "tool call error: tool call failed for `codex_apps/github.fetch_workflow_job_logs`\n\nCaused by:\n    Transport closed"
+      }
+    ],
+    "isError": true
+  }
+}

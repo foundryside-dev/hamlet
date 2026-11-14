@@ -1,0 +1,76 @@
+..................................................................FFF... [100%]
+=================================== FAILURES ===================================
+____________ test_review_completed_own_scratch_is_not_charged_again ____________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/fixtures/red-review-repair-v1/test_review_completed_own_scra0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f560e57b1c0>
+
+    def test_review_completed_own_scratch_is_not_charged_again(tmp_path, monkeypatch):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE); stub_source(monkeypatch, r, registry)
+        calls = []
+        def available(raw, scratch):
+            calls.append(len(calls) + 1)
+            return {'cpu_slots': 5, 'ram_bytes': 10000001, 'scratch_bytes': 10000000 if len(calls) >= 3 else 10000001, 'scratch_inodes': 1001}
+        monkeypatch.setattr(r, '_live_capacity', available)
+>       assert r.run(path) == 0
+               ^^^^^^^^^^^
+
+test_run_bac_hardware_v1.py:890: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+run_bac_hardware_v1.py:1147: in run
+    results = execute_jobs(s, custody=custody)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+run_bac_hardware_v1.py:431: in execute_jobs
+    custody.source(attempt)
+run_bac_hardware_v1.py:878: in source
+    _require(available[key] >= required, 'current capacity below sealed reservation: ' + key)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+reason = 'current capacity below sealed reservation: scratch_bytes'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: current capacity below sealed reservation: scratch_bytes
+
+run_bac_hardware_v1.py:31: ValueError
+________ test_review_raw_cuda_marker_cannot_be_relabelled_uninitialized ________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/fixtures/red-review-repair-v1/test_review_raw_cuda_marker_ca0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f560e302040>
+
+    def test_review_raw_cuda_marker_cannot_be_relabelled_uninitialized(tmp_path, monkeypatch):
+        code = SUCCESS_CODE.replace("'torch_loaded':False,'cuda_marker':None", "'torch_loaded':True,'cuda_marker':True")
+        code = code.replace("torch_observation='not-loaded'", "torch_observation='loaded-without-calls'")
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, code); stub_source(monkeypatch, r, registry)
+>       assert r.run(path) != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = <function run at 0x7f560dcb3ec0>(PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/fixtures/red-review-repair-v1/test_review_raw_cuda_marker_ca0/metadata/spec.json'))
+E        +    where <function run at 0x7f560dcb3ec0> = <module 'p2_runner' from '/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py'>.run
+
+test_run_bac_hardware_v1.py:898: AssertionError
+______ test_remaining_resource_demand_protects_active_growth_and_reserves ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/fixtures/red-review-repair-v1/test_remaining_resource_demand0')
+
+    def test_remaining_resource_demand_protects_active_growth_and_reserves(tmp_path):
+        r = implementation()
+        jobs = [job(tmp_path, name, cpu=2) for name in ('a', 'b', 'c')]
+        for value in jobs: value['budget'].update(ram_bytes=100, scratch_bytes=10, scratch_inodes=5)
+        overhead = {'cpu_slots': 1, 'ram_bytes': 10, 'scratch_bytes': 5, 'scratch_inodes': 2}
+        reserve = {'cpu_slots': 1, 'ram_bytes': 5, 'scratch_bytes': 3, 'scratch_inodes': 1}
+        ram = {'_runner': 4, 'a': 60}
+        storage = {'_overhead': {'scratch_bytes': 2, 'scratch_inodes': 1},
+                   'a': {'scratch_bytes': 6, 'scratch_inodes': 2},
+                   'b': {'scratch_bytes': 0, 'scratch_inodes': 0}, 'c': {'scratch_bytes': 0, 'scratch_inodes': 0}}
+>       active = r._remaining_resources(jobs, ['b', 'c'], ['a'], 2, overhead, reserve, ram, storage)
+                 ^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'p2_runner' has no attribute '_remaining_resources'
+
+test_run_bac_hardware_v1.py:913: AttributeError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_review_completed_own_scratch_is_not_charged_again
+FAILED test_run_bac_hardware_v1.py::test_review_raw_cuda_marker_cannot_be_relabelled_uninitialized
+FAILED test_run_bac_hardware_v1.py::test_remaining_resource_demand_protects_active_growth_and_reserves
+3 failed, 69 passed in 11.15s

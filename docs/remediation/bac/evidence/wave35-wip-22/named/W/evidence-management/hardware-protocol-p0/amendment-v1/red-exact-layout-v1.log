@@ -1,0 +1,77 @@
+........................................................................ [ 54%]
+.......................................................FFFF              [100%]
+=================================== FAILURES ===================================
+____________ test_exact_job_id_destination_layout[output-wrong-id] _____________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+field = 'output', suffix = 'wrong-id'
+
+    @pytest.mark.parametrize("field,suffix", [("output", "wrong-id"), ("output", "nested/job"),
+                                              ("scratch", "wrong-id"), ("scratch", "nested/job")])
+    def test_exact_job_id_destination_layout(protocol, records, field, suffix):
+        for kind in ("spec", "admission-request"):
+            value = copy.deepcopy(records[kind])
+            value["jobs"][0][field] = value[field + "_root"] + "/attempt/" + suffix
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:610: Failed
+___________ test_exact_job_id_destination_layout[output-nested/job] ____________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+field = 'output', suffix = 'nested/job'
+
+    @pytest.mark.parametrize("field,suffix", [("output", "wrong-id"), ("output", "nested/job"),
+                                              ("scratch", "wrong-id"), ("scratch", "nested/job")])
+    def test_exact_job_id_destination_layout(protocol, records, field, suffix):
+        for kind in ("spec", "admission-request"):
+            value = copy.deepcopy(records[kind])
+            value["jobs"][0][field] = value[field + "_root"] + "/attempt/" + suffix
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:610: Failed
+____________ test_exact_job_id_destination_layout[scratch-wrong-id] ____________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+field = 'scratch', suffix = 'wrong-id'
+
+    @pytest.mark.parametrize("field,suffix", [("output", "wrong-id"), ("output", "nested/job"),
+                                              ("scratch", "wrong-id"), ("scratch", "nested/job")])
+    def test_exact_job_id_destination_layout(protocol, records, field, suffix):
+        for kind in ("spec", "admission-request"):
+            value = copy.deepcopy(records[kind])
+            value["jobs"][0][field] = value[field + "_root"] + "/attempt/" + suffix
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:610: Failed
+___________ test_exact_job_id_destination_layout[scratch-nested/job] ___________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+field = 'scratch', suffix = 'nested/job'
+
+    @pytest.mark.parametrize("field,suffix", [("output", "wrong-id"), ("output", "nested/job"),
+                                              ("scratch", "wrong-id"), ("scratch", "nested/job")])
+    def test_exact_job_id_destination_layout(protocol, records, field, suffix):
+        for kind in ("spec", "admission-request"):
+            value = copy.deepcopy(records[kind])
+            value["jobs"][0][field] = value[field + "_root"] + "/attempt/" + suffix
+>           with pytest.raises(ValueError):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:610: Failed
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_job_id_destination_layout[output-wrong-id]
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_job_id_destination_layout[output-nested/job]
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_job_id_destination_layout[scratch-wrong-id]
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_job_id_destination_layout[scratch-nested/job]
+4 failed, 127 passed in 1.77s

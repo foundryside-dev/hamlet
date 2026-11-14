@@ -1,0 +1,808 @@
+"""Read-only BAC hardware admission. No application or historical tool imports.
+
+Synthetic observations exercise arithmetic only; actual qualification requires a
+root-authorized source freeze and a separate observed discovery process. Neither
+reference hashes nor admission establish actual test execution or CUDA behavior.
+"""
+import csv
+from contextlib import contextmanager
+import fcntl
+import hashlib
+import json
+import shutil
+import stat
+import datetime
+import importlib
+import importlib.util
+import io
+import subprocess
+import uuid
+from importlib import metadata
+import platform
+import socket
+import sys
+import math
+import os
+from pathlib import Path
+import re
+
+import bac_hardware_protocol_v1 as protocol
+
+PROTOCOL_SHA256 = "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+DISCOVERY_FIELDS = {
+    "schema", "profile", "identity", "at", "argv", "interpreter", "cwd", "inherited_visibility", "effective_visibility", "tmpdir",
+    "cgroup_root", "cgroup_leaf", "ancestry_complete", "cgroups", "affinity", "meminfo", "scratch_free_bytes", "scratch_free_inodes",
+    "cpu_topology", "numa_topology", "gpu_topology", "competing_workloads", "torch_build", "cuda_runtime", "driver", "devices",
+    "probe_errors", "commands", "python_version", "dependencies", "torch_origin",
+}
+DEVICE_FIELDS = {"logical_index", "gpu_uuid", "mig_uuid", "physical_parent_uuid", "model", "vram_bytes", "isolation"}
+
+
+def require(condition, reason):
+    if not condition:
+        raise ValueError(reason)
+
+
+def canonical(value):
+    require(type(value) is str and value.startswith("/") and "\x00" not in value and "\\" not in value, "absolute path required")
+    require(value == "/" or all(p not in ("", ".", "..") for p in value[1:].split("/")), "noncanonical path")
+    return Path(value)
+
+
+def text_list(value):
+    return type(value) is list and all(type(v) is str and v.strip() and "\x00" not in v for v in value)
+
+
+def validate_discovery(obs):
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+    require(obs["schema"] == "bac-hardware-discovery-v1" and obs["profile"] in ("cpu", "cuda"), "discovery version/profile")
+    protocol.validate_record("identity", obs["identity"])
+    require(type(obs["at"]) is str and re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z", obs["at"]), "discovery timestamp")
+    datetime.datetime.strptime(obs["at"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    for key in ("interpreter", "cwd", "tmpdir", "cgroup_root", "cgroup_leaf"):
+        canonical(obs[key])
+    require(type(obs["ancestry_complete"]) is bool, "discovery ancestry flag")
+    require(text_list(obs["argv"]) and obs["argv"], "discovery argv")
+    for key in ("meminfo", "cpu_topology", "numa_topology", "gpu_topology", "torch_build", "cuda_runtime", "driver", "inherited_visibility"):
+        require(obs[key] is None or type(obs[key]) is str and "\x00" not in obs[key], "discovery text fact: " + key)
+    require(type(obs["effective_visibility"]) is str, "discovery visibility")
+    for key in ("scratch_free_bytes", "scratch_free_inodes"):
+        require(obs[key] is None or type(obs[key]) is int and obs[key] >= 0, "discovery unsigned fact: " + key)
+    affinity = obs["affinity"]
+    require(affinity is None or type(affinity) is list and affinity and all(type(v) is int and v >= 0 for v in affinity)
+            and len(set(affinity)) == len(affinity), "discovery affinity")
+    require(obs["competing_workloads"] is None or text_list(obs["competing_workloads"]), "discovery competing workloads")
+    require(text_list(obs["probe_errors"]), "discovery probe errors")
+    require(type(obs["cgroups"]) is list and obs["cgroups"], "discovery cgroups required")
+    for group in obs["cgroups"]:
+        require(type(group) is dict and set(group) == {"path", "cpu_max", "cpuset", "memory_max", "memory_current"}, "cgroup fields")
+        canonical(group["path"])
+        require(all(group[k] is None or type(group[k]) is str for k in ("cpu_max", "cpuset", "memory_max", "memory_current")), "cgroup facts")
+    require(type(obs["devices"]) is list, "discovery devices")
+    for device in obs["devices"]:
+        require(type(device) is dict and set(device) == DEVICE_FIELDS, "discovery device fields")
+        for key in ("logical_index", "vram_bytes"):
+            require(type(device[key]) is int and device[key] >= (1 if key == "vram_bytes" else 0), "device numeric fact")
+        for key in ("gpu_uuid", "physical_parent_uuid", "model", "isolation"):
+            require(type(device[key]) is str and device[key].strip(), "device identity fact")
+        require(device["mig_uuid"] is None or type(device["mig_uuid"]) is str and device["mig_uuid"], "MIG identity fact")
+    if obs["torch_origin"] is not None:
+        protocol.validate_record("reference", obs["torch_origin"])
+    require(type(obs["python_version"]) is str and obs["python_version"], "discovery Python version")
+    require(type(obs["dependencies"]) is list, "discovery dependencies")
+    for dependency in obs["dependencies"]:
+        protocol.validate_record("dependency", dependency)
+    require(type(obs["commands"]) is list, "discovery command inventory")
+    for command in obs["commands"]:
+        require(type(command) is dict and set(command) == {"argv", "executable", "identity", "start", "end", "exit_code", "stdout", "stderr", "errors"}, "discovery command fields")
+        require(text_list(command["argv"]) and command["argv"] and type(command["exit_code"]) is int
+                and type(command["stdout"]) is str and type(command["stderr"]) is str and text_list(command["errors"]), "discovery command types")
+        protocol.validate_record("reference", command["executable"])
+        if command["identity"] is not None:
+            protocol.validate_record("identity", command["identity"])
+        require(command["argv"][0] == command["executable"]["path"] and command["end"] >= command["start"], "command binding/time")
+
+
+def cpuset(raw):
+    require(type(raw) is str and raw.strip(), "cpuset unavailable")
+    values = set()
+    for part in raw.strip().split(","):
+        require(re.fullmatch(r"\d+(?:-\d+)?", part) is not None, "invalid cpuset")
+        endpoints = [int(x) for x in part.split("-")]
+        low, high = endpoints[0], endpoints[-1]
+        require(0 <= low <= high <= 1048575, "invalid cpuset range")
+        current = set(range(low, high + 1))
+        require(not current & values, "duplicate cpuset")
+        values |= current
+    return values
+
+
+def assess_resources(request, obs, provenance):
+    """Derive P0 admission fields from closed observations; never certify origin."""
+    validate_discovery(obs)
+    protocol.validate_record("reference", provenance)
+    reasons = list(obs["probe_errors"])
+    if reasons:
+        reasons.insert(0, "required discovery probe failed")
+
+    def fact(value, reason="", state="unavailable"):
+        return {"state": "measured" if value is not None else state, "value": value,
+                "reason": "" if value is not None else reason, "provenance": provenance}
+
+    def numeric(raw, label):
+        require(type(raw) is str and re.fullmatch(r"\d+", raw.strip()), label + " unavailable or malformed")
+        return int(raw.strip())
+
+    def observed(key):
+        value = obs[key]
+        if value is None:
+            reasons.append(key + " unavailable")
+        return fact(value, key + " unavailable")
+
+    require(obs["profile"] == request["profile"], "discovery profile mismatch")
+    fields = {key: observed(key) for key in ("affinity", "scratch_free_bytes", "scratch_free_inodes", "competing_workloads")}
+    fields.update({key: fact(obs[key], key + " not observed", "unsupported")
+                   for key in ("cpu_topology", "numa_topology", "gpu_topology")})
+    fields.update(tmpdir=obs["tmpdir"], requested_visibility=request["requested_visibility"],
+                  effective_visibility=obs["effective_visibility"], devices=[], cgroups=[])
+    root, leaf = Path(obs["cgroup_root"]), Path(obs["cgroup_leaf"])
+    if not leaf.is_relative_to(root) or not obs["ancestry_complete"]:
+        reasons.append("cgroup ancestry is hidden or unsupported")
+    expected = []
+    if leaf.is_relative_to(root):
+        current = leaf
+        while True:
+            expected.append(str(current))
+            if current == root:
+                break
+            current = current.parent
+        expected.reverse()
+    if [g["path"] for g in obs["cgroups"]] != expected:
+        reasons.append("cgroup ancestry incomplete or duplicate")
+    cpus = set(obs["affinity"] or [])
+    quotas, memory_limits, headrooms, currents = [], [], [], []
+    cpu_known, memory_known = obs["affinity"] is not None, True
+    for group in obs["cgroups"]:
+        converted = {"path": group["path"]}
+        try:
+            require(type(group["cpu_max"]) is str, "cpu controller unavailable")
+            parts = group["cpu_max"].split()
+            require(len(parts) == 2, "cpu quota/period malformed")
+            period = numeric(parts[1], "cpu period")
+            require(period > 0, "cpu period must be positive")
+            converted["cpu_period_us"] = fact(period)
+            if parts[0] == "max":
+                converted["cpu_quota_us"] = fact(None, "cpu.max is max", "unlimited")
+            else:
+                quota = numeric(parts[0], "cpu quota")
+                require(quota > 0, "cpu quota must be positive")
+                quotas.append(quota / period)
+                converted["cpu_quota_us"] = fact(quota)
+        except (ValueError, OverflowError) as exc:
+            cpu_known = False
+            reasons.append(str(exc))
+            converted.update(cpu_quota_us=fact(None, str(exc)), cpu_period_us=fact(None, str(exc)))
+        try:
+            subset = cpuset(group["cpuset"])
+            cpus &= subset
+            converted["cpuset"] = fact(sorted(subset))
+        except ValueError as exc:
+            cpu_known = False
+            reasons.append(str(exc))
+            converted["cpuset"] = fact(None, str(exc))
+        try:
+            current_memory = numeric(group["memory_current"], "memory current")
+            currents.append(current_memory)
+            if group["memory_max"] == "max":
+                converted["memory_limit_bytes"] = fact(None, "memory.max is max", "unlimited")
+            else:
+                limit = numeric(group["memory_max"], "memory limit")
+                memory_limits.append(limit)
+                headrooms.append(max(0, limit - current_memory))
+                converted["memory_limit_bytes"] = fact(limit)
+        except ValueError as exc:
+            memory_known = False
+            reasons.append(str(exc))
+            converted["memory_limit_bytes"] = fact(None, str(exc))
+        fields["cgroups"].append(converted)
+    capacity = min([len(cpus), *quotas]) if cpu_known else None
+    fields["effective_cpu_capacity"] = fact(capacity, "cpu/affinity/cpuset facts insufficient")
+    host_total = host_available = None
+    try:
+        require(type(obs["meminfo"]) is str, "MemTotal/MemAvailable unavailable")
+        memory = {}
+        for line in obs["meminfo"].splitlines():
+            match = re.fullmatch(r"(MemTotal|MemAvailable):\s*(\d+) kB", line)
+            if match:
+                require(match[1] not in memory, "duplicate memory observation")
+                memory[match[1]] = int(match[2]) * 1024
+        require(set(memory) == {"MemTotal", "MemAvailable"}, "MemTotal/MemAvailable unavailable")
+        host_total, host_available = memory["MemTotal"], memory["MemAvailable"]
+        require(0 < host_total and host_available <= host_total, "host memory observation inconsistent")
+    except ValueError as exc:
+        memory_known = False
+        reasons.append(str(exc))
+    limited = min([host_total, *memory_limits]) if host_total is not None and memory_known else None
+    fields.update(host_ram_bytes=fact(host_total, "MemTotal unavailable"), limited_ram_bytes=fact(limited, "memory facts insufficient"),
+                  ram_current_bytes=fact(currents[-1] if memory_known and currents else None, "memory current unavailable"))
+    available = {"cpu_slots": math.floor(capacity) if capacity is not None else 0,
+                 "ram_bytes": min([host_available, *headrooms]) if memory_known and host_available is not None else 0,
+                 "scratch_bytes": obs["scratch_free_bytes"] or 0, "scratch_inodes": obs["scratch_free_inodes"] or 0}
+    budget = {key: max(0, value - request["reserve"][key]) for key, value in available.items()}
+    for key, minimum in request["minimum"].items():
+        count = len(request["jobs"]) if key in ("scratch_bytes", "scratch_inodes") else request["requested_job_concurrency"]
+        required = sum(sorted((job["budget"][key] for job in request["jobs"]), reverse=True)[:count])
+        if budget[key] < max(minimum, required):
+            reasons.append(key + " insufficient after reserve and concurrent job reservations")
+    for job in request["jobs"]:
+        if job["budget"]["cpu_slots"] < sum((r["count"] + r["replacement_limit"]) * r["peak_cpu_slots"] for r in job["roles"]):
+            reasons.append("job CPU reservation misses concurrent roles/replacement overlap")
+    if request["profile"] == "cpu":
+        if obs["effective_visibility"] != "" or obs["devices"]:
+            reasons.append("CPU discovery must hide CUDA")
+        fields["effective_visibility"] = ""
+    else:
+        if not obs["cuda_runtime"] or not obs["torch_build"] or "cpu" in obs["torch_build"].lower():
+            reasons.append("CUDA-capable Torch build/runtime unavailable")
+        if not obs["driver"]:
+            reasons.append("CUDA driver unavailable")
+        if obs["inherited_visibility"] is not None and obs["inherited_visibility"] != request["requested_visibility"]:
+            reasons.append("inherited CUDA visibility differs; expansion/remapping is not authorized")
+        if obs["effective_visibility"] != request["requested_visibility"]:
+            reasons.append("effective CUDA visibility differs from request")
+        if obs["competing_workloads"]:
+            reasons.append("competing GPU workloads preclude physical-exclusive admission")
+        devices = obs["devices"]
+        if not devices:
+            reasons.append("CUDA device mapping unavailable")
+        if len({d["gpu_uuid"] for d in devices}) != len(devices):
+            reasons.append("duplicate GPU UUID")
+        if [d["logical_index"] for d in devices] != list(range(len(devices))):
+            reasons.append("logical device mapping is not contiguous")
+        for device in devices:
+            if device["gpu_uuid"] not in request["authorized_devices"]:
+                reasons.append("GPU UUID is outside authorized allocation")
+            if device["mig_uuid"] is not None or device["gpu_uuid"].startswith("MIG-"):
+                reasons.append("MIG mapping unsupported; physical parent isolation unproved")
+            if device["physical_parent_uuid"] != device["gpu_uuid"] or device["isolation"] != "physical-exclusive":
+                reasons.append("physical parent mapping unsupported")
+        for job in request["jobs"]:
+            if job["profile"] == "cuda":
+                raw_devices = [{k: v for k, v in d.items() if k != "mapping_provenance"} for d in job["devices"]]
+                if raw_devices != devices or job["environment"].get("CUDA_VISIBLE_DEVICES") != obs["effective_visibility"]:
+                    reasons.append("job device allocation/visibility differs from measured mapping")
+        # Invalid raw mappings remain in discovery; refused P0 records contain no
+        # invalid device objects that could accidentally look usable downstream.
+        if not reasons:
+            fields["devices"] = [dict(d, mapping_provenance=provenance) for d in devices]
+    fields.update(reasons=list(dict.fromkeys(reasons)), admitted_budget=budget)
+    return fields
+
+
+def cgroup_paths(mountinfo, membership):
+    """Only an unambiguous full cgroup-v2 mount is supported; never guess v1."""
+    mounts = []
+    for line in mountinfo.splitlines():
+        sides = line.split(" - ")
+        require(len(sides) == 2, "malformed mountinfo")
+        before, after = sides[0].split(), sides[1].split()
+        require(len(before) >= 6 and len(after) >= 3, "malformed mountinfo fields")
+        if after[0] == "cgroup2":
+            require(before[3] == "/", "cgroup ancestry hidden by mount root")
+            mounts.append(canonical(before[4]))
+    require(len(mounts) == 1, "unambiguous cgroup-v2 controller mount required")
+    entries = membership.splitlines()
+    require(len(entries) == 1 and entries[0].startswith("0::"), "unsupported or ambiguous cgroup membership")
+    member = canonical(entries[0][3:])
+    return mounts[0], mounts[0] / member.relative_to("/")
+
+
+def utc():
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+def read_kernel(path):
+    return Path(path).read_text()
+
+
+def kernel_pids():
+    return sorted(int(p.name) for p in Path("/proc").iterdir() if p.name.isdigit())
+
+
+def process_identity(pid):
+    raw = read_kernel(f"/proc/{pid}/stat")
+    fields = raw.rsplit(")", 1)[1].split()
+    return {"pid": pid, "ppid": int(fields[1]), "start_identity": fields[19],
+            "host": socket.gethostname(), "boot_id": read_kernel("/proc/sys/kernel/random/boot_id").strip()}
+
+
+def dependency_observations(environment):
+    observed = []
+    for dependency in environment["dependencies"]:
+        if dependency["name"] == "nvidia-smi":
+            continue  # Version and executable observed by the pinned driver query.
+        dist = metadata.distribution(dependency["name"])
+        suffix = "torch/__init__.py" if dependency["name"] == "torch" else ".dist-info/METADATA"
+        matches = [p for p in dist.files or [] if str(p).endswith(suffix)]
+        require(len(matches) == 1, "dependency distribution origin is ambiguous")
+        origin = Path(dist.locate_file(matches[0])).resolve(strict=True)
+        observed.append({"name": dependency["name"], "version": dist.version, "reference": protocol.file_reference(origin)})
+    return observed
+
+
+def collect_discovery(request, environment, inherited_visibility):
+    """Called only inside the admitted separate discovery process; reads facts."""
+    errors = []
+
+    def observe(call, reason):
+        try:
+            return call()
+        except (OSError, ValueError, KeyError, IndexError) as exc:
+            errors.append(reason + ": " + str(exc))
+            return None
+
+    obs = {"schema": "bac-hardware-discovery-v1", "profile": request["profile"], "at": utc(),
+           "identity": process_identity(os.getpid()), "argv": [str(Path(sys.executable).resolve()), *sys.argv],
+           "interpreter": str(Path(sys.executable).resolve()), "cwd": str(Path.cwd()),
+           "inherited_visibility": inherited_visibility, "effective_visibility": os.environ.get("CUDA_VISIBLE_DEVICES", ""),
+           "tmpdir": str(Path(os.environ["TMPDIR"]).resolve(strict=True)),
+           "cgroup_root": "/sys/fs/cgroup", "cgroup_leaf": "/sys/fs/cgroup", "ancestry_complete": False,
+           "cgroups": [], "affinity": observe(lambda: sorted(os.sched_getaffinity(0)), "affinity"),
+           "meminfo": observe(lambda: read_kernel("/proc/meminfo"), "memory"),
+           "cpu_topology": observe(lambda: read_kernel("/proc/cpuinfo"), "CPU topology"),
+           "numa_topology": None, "gpu_topology": None, "torch_origin": None, "torch_build": None, "cuda_runtime": None, "driver": None,
+           "devices": [], "probe_errors": errors, "commands": [], "python_version": platform.python_version(),
+           "dependencies": observe(lambda: dependency_observations(environment), "dependency origin/version") or []}
+    require(obs["tmpdir"] == request["scratch_root"], "discovery TMPDIR differs from authorized scratch root")
+    try:
+        obs["numa_topology"] = read_kernel("/sys/devices/system/node/online")
+    except OSError:
+        pass  # Optional topology remains explicitly unsupported.
+    try:
+        root, leaf = cgroup_paths(read_kernel("/proc/self/mountinfo"), read_kernel("/proc/self/cgroup"))
+        require(os.readlink("/proc/self/ns/cgroup") == os.readlink("/proc/1/ns/cgroup"), "cgroup namespace hides ancestors")
+        require(leaf != root, "host cgroup ancestry cannot be established from namespace root membership")
+        obs.update(cgroup_root=str(root), cgroup_leaf=str(leaf), ancestry_complete=True)
+        paths = [leaf]
+        while paths[-1] != root:
+            paths.append(paths[-1].parent)
+        for path in reversed(paths):
+            group = {"path": str(path)}
+            for key, name in [("cpu_max", "cpu.max"), ("cpuset", "cpuset.cpus.effective"),
+                              ("memory_max", "memory.max"), ("memory_current", "memory.current")]:
+                group[key] = observe(lambda path=path, name=name: read_kernel(path / name).strip(), "cgroup " + key)
+            obs["cgroups"].append(group)
+    except (OSError, ValueError) as exc:
+        errors.append("cgroup ancestry: " + str(exc))
+    if not obs["cgroups"]:
+        obs["cgroups"] = [{"path": obs["cgroup_root"], "cpu_max": None, "cpuset": None, "memory_max": None, "memory_current": None}]
+    usage = observe(lambda: os.statvfs(obs["tmpdir"]), "scratch filesystem")
+    obs["scratch_free_bytes"] = usage.f_bavail * usage.f_frsize if usage is not None else None
+    obs["scratch_free_inodes"] = usage.f_favail if usage is not None else None
+    def workloads():
+        found = []
+        for pid in kernel_pids():
+            if pid != os.getpid():
+                try:
+                    found.append(read_kernel(f"/proc/{pid}/stat").strip())
+                except FileNotFoundError:
+                    continue  # Process departed; no fabricated workload observation.
+        return found
+    obs["competing_workloads"] = observe(workloads, "competing workloads")
+    if request["profile"] == "cuda":
+        observe(lambda: collect_gpu(obs, environment), "CUDA discovery")
+    return obs
+
+
+def run_query(executable, tail, commands):
+    protocol.validate_record("reference", executable)
+    argv, started, errors = [executable["path"], *tail], utc(), []
+    child = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             text=True, env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"})
+    identity = None
+    try:
+        identity = process_identity(child.pid)
+        require(identity["pid"] == child.pid and identity["ppid"] == os.getpid(), "driver child identity mismatch")
+        require(os.readlink(f"/proc/{child.pid}/exe") == executable["path"], "driver actual executable mismatch")
+    except (OSError, ValueError, IndexError) as exc:
+        errors.append("driver child identity unavailable: " + str(exc))
+    try:
+        stdout, stderr = child.communicate(timeout=30)
+    except subprocess.TimeoutExpired:
+        child.kill()
+        stdout, stderr = child.communicate(timeout=30)
+        errors.append("driver query exceeded fixed 30 second limit")
+    commands.append({"argv": argv, "executable": executable, "identity": identity, "start": started, "end": utc(),
+                     "exit_code": child.returncode, "stdout": stdout, "stderr": stderr, "errors": errors})
+    protocol.validate_record("reference", executable)
+    require(child.returncode == 0 and not errors, "driver query failed: " + "; ".join(errors))
+    return stdout
+
+
+def load_torch(reference):
+    protocol.validate_record("reference", reference)
+    spec = importlib.util.find_spec("torch")
+    require(spec is not None and spec.origin is not None and protocol.file_reference(Path(spec.origin).resolve()) == reference,
+            "Torch import origin differs from pinned dependency")
+    torch = importlib.import_module("torch")
+    require(protocol.file_reference(Path(torch.__file__).resolve()) == reference, "loaded Torch origin differs")
+    return torch
+
+
+def collect_gpu(obs, environment):
+    dependencies = {d["name"]: d for d in environment["dependencies"]}
+    require(len(dependencies) == len(environment["dependencies"]) and {"torch", "nvidia-smi"} <= dependencies.keys(),
+            "CUDA requires exact pinned Torch and driver executable dependencies")
+    executable = dependencies["nvidia-smi"]["reference"]
+    query = lambda args: run_query(executable, args, obs["commands"])
+    version = query(["--version"])
+    match = re.search(r"^NVIDIA-SMI version\s*:\s*(\S+)\s*$", version, re.MULTILINE)
+    require(match is not None and match[1] == dependencies["nvidia-smi"]["version"], "driver executable version mismatch")
+    obs["dependencies"].append({"name": "nvidia-smi", "version": match[1], "reference": executable})
+    raw = query(["--query-gpu=index,uuid,name,memory.total,driver_version,mig.mode.current", "--format=csv,noheader,nounits"])
+    inventory, indices, drivers = {}, set(), set()
+    for row in csv.reader(io.StringIO(raw), strict=True):
+        row = [v.strip() for v in row]
+        require(len(row) == 6, "driver GPU query columns")
+        index, gpu, model, memory, driver, mig = row
+        require(index.isdecimal() and int(index) not in indices and gpu.startswith("GPU-") and gpu not in inventory, "duplicate/unknown driver GPU identity")
+        require(model and memory.isdecimal() and int(memory) > 0 and driver, "driver GPU model/memory/version unavailable")
+        require(mig in ("Disabled", "[N/A]", "N/A"), "MIG enabled or mapping unsupported")
+        indices.add(int(index)); drivers.add(driver)
+        inventory[gpu] = {"model": model, "vram_bytes": int(memory) * 1024**2}
+    require(inventory and len(drivers) == 1, "driver inventory/version missing or ambiguous")
+    obs["driver"] = next(iter(drivers))
+    workload = query(["--query-compute-apps=gpu_uuid,pid,process_name", "--format=csv,noheader,nounits"])
+    workloads = []
+    for row in csv.reader(io.StringIO(workload), strict=True):
+        row = [v.strip() for v in row]
+        require(len(row) == 3 and row[0] in inventory and row[1].isdecimal() and int(row[1]) > 0 and row[2], "GPU competing workload unproved")
+        workloads.append(",".join(row))
+    obs["competing_workloads"] = workloads
+    try:
+        obs["gpu_topology"] = query(["topo", "-m"])
+    except ValueError:
+        obs["gpu_topology"] = None  # Optional, with exact failed command retained.
+    torch_ref = dependencies["torch"]["reference"]
+    torch = load_torch(torch_ref)
+    require(protocol.file_reference(Path(torch.__file__).resolve()) == torch_ref, "Torch actual origin mismatch")
+    obs.update(torch_origin=torch_ref, torch_build=str(torch.__version__), cuda_runtime=torch.version.cuda)
+    require(obs["cuda_runtime"] and torch.cuda.is_available(), "CPU-only Torch or CUDA runtime unavailable")
+    visible = obs["effective_visibility"].split(",")
+    require(visible and len(set(visible)) == len(visible) and (all(v.isdecimal() for v in visible) or all(v.startswith("GPU-") for v in visible)),
+            "unsupported or mixed CUDA visibility")
+    count = torch.cuda.device_count()
+    require(type(count) is int and count == len(visible) and count > 0, "CUDA visibility/cardinality mismatch")
+    devices = []
+    for index in range(count):
+        props = torch.cuda.get_device_properties(index)
+        gpu = props.uuid
+        if type(gpu) is bytes and len(gpu) == 16:
+            gpu = "GPU-" + str(uuid.UUID(bytes=gpu))
+        require(type(gpu) is str and gpu in inventory and gpu not in {d["gpu_uuid"] for d in devices}, "unknown/duplicate Torch GPU UUID")
+        require(props.name == inventory[gpu]["model"] and type(props.total_memory) is int
+                and 0 < props.total_memory <= inventory[gpu]["vram_bytes"], "Torch/driver model or VRAM mismatch")
+        if visible[0].startswith("GPU-"):
+            require(gpu == visible[index], "full UUID visibility order mismatch")
+        devices.append({"logical_index": index, "gpu_uuid": gpu, "mig_uuid": None, "physical_parent_uuid": gpu,
+                        "model": props.name, "vram_bytes": props.total_memory, "isolation": "physical-exclusive"})
+    obs["devices"] = devices
+    selected = {d["physical_parent_uuid"] for d in devices}
+    obs["competing_workloads"] = [line for line in workloads if line.split(",", 1)[0] in selected]
+
+
+def parse_json(raw):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            require(key not in result, "duplicate JSON field")
+            result[key] = value
+        return result
+    return json.loads(raw, object_pairs_hook=pairs, parse_constant=lambda value: require(False, "nonfinite JSON"))
+
+
+def load_reference(reference):
+    protocol.validate_record("reference", reference)
+    raw = Path(reference["path"]).read_bytes()
+    require(len(raw) == reference["bytes"] and hashlib.sha256(raw).hexdigest() == reference["sha256"], "referenced payload changed")
+    protocol.validate_record("reference", reference)
+    return parse_json(raw)
+
+
+def closed(value, schema, fields):
+    require(type(value) is dict and set(value) == {"schema", *fields} and value["schema"] == schema, "private exact schema: " + schema)
+
+
+def active(value, at):
+    for key in ("start", "end"):
+        if value[key] is not None:
+            require(type(value[key]) is str and re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z", value[key]), "grant UTC required")
+            datetime.datetime.strptime(value[key], "%Y-%m-%dT%H:%M:%S.%fZ")
+    require(value["start"] is not None and value["start"] <= at and (value["end"] is None or at <= value["end"]), "grant interval is not active")
+    require(type(value["authority"]) is str and value["authority"].strip(), "root authority declaration missing")
+
+
+def unique(values, label):
+    require(type(values) is list and len(values) == len({json.dumps(x, sort_keys=True) for x in values}), "duplicate " + label)
+
+
+def input_references(candidate):
+    refs = [entry["reference"] for category in ("source", "tests", "configs", "scripts", "ratchet", "artifacts") for entry in candidate["inventory"][category]]
+    require(len({r["path"] for r in refs}) == len(refs), "duplicate candidate input across categories")
+    return refs
+
+
+def validate_authority(candidate, request):
+    freeze = load_reference(request["source_freeze"]); protocol.validate_record("source-freeze", freeze)
+    require(candidate["source_freeze"] == request["source_freeze"] and candidate["authorized_root"] == request["authorized_root"] == freeze["authorized_root"], "source freeze/root binding")
+    require(freeze["start"] <= utc() and (freeze["end"]["state"] == "unavailable" or utc() <= freeze["end"]["value"]), "source freeze is not active")
+    grant = load_reference(freeze["grant"])
+    closed(grant, "bac-hardware-source-grant-v1", ("authorized_root", "head", "tree", "import_roots", "inputs", "start", "end", "no_writer_barrier", "includes_untracked", "authority", "allocation_grant", "cpu_reservation_evidence"))
+    active(grant, utc())
+    require(grant["no_writer_barrier"] is True and grant["includes_untracked"] is True and grant["start"] <= freeze["start"], "root no-writer source barrier missing")
+    for key in ("authorized_root", "head", "tree", "import_roots"):
+        require(grant[key] == candidate[key], "root grant candidate " + key + " mismatch")
+    refs = input_references(candidate)
+    require(grant["inputs"] == refs, "root grant exact source inventory mismatch")
+    accepted = grant["cpu_reservation_evidence"]; unique(accepted, "accepted CPU bounds")
+    used = []
+    for job in request["jobs"]:
+        require(job["interpreter"] == request["interpreter"]["path"], "job interpreter differs from authorized interpreter")
+        for role in job["roles"]:
+            ref = role["cpu_reservation_evidence"]
+            require(ref in accepted, "CPU bound not explicitly accepted by root grant")
+            bound = load_reference(ref)
+            keys = ("basis", "role_id", "role", "observer", "intra_op", "inter_op", "debug", "torch_policy", "cuda_policy", "peak_cpu_slots", "argv", "environment", "required_cases", "head", "tree", "inputs", "justification", "authority", "bound_statement")
+            closed(bound, "bac-hardware-cpu-bound-v1", keys)
+            require(bound["basis"] == role["cpu_reservation_basis"] and bound["role_id"] == role["id"], "CPU bound role/basis mismatch")
+            for key in ("role", "observer", "intra_op", "inter_op", "debug", "torch_policy", "cuda_policy", "peak_cpu_slots"):
+                require(type(bound[key]) is type(role[key]) and bound[key] == role[key], "CPU bound role/config mismatch")
+            for key, expected in (("argv", job["argv"]), ("environment", job["environment"]), ("required_cases", job["required_collected_ids"]), ("head", candidate["head"]), ("tree", candidate["tree"]), ("inputs", refs)):
+                require(bound[key] == expected, "CPU bound workload/source mismatch: " + key)
+            require(type(bound["justification"]) is list and bound["justification"] and all(type(bound[k]) is str and bound[k].strip() for k in ("authority", "bound_statement")), "CPU upper-bound justification missing")
+            for proof in bound["justification"]: protocol.validate_record("reference", proof)
+            if ref not in used: used.append(ref)
+    require({json.dumps(r, sort_keys=True) for r in used} == {json.dumps(r, sort_keys=True) for r in accepted}, "unused/unbound CPU reservation evidence")
+    allocation = load_reference(grant["allocation_grant"])
+    closed(allocation, "bac-hardware-resource-allocation-v1", ("allocation_id", "pool_id", "host", "boot_id", "lease_root", "capacity", "overhead", "partition_basis", "partition_evidence", "authorized_cpu_ids", "authorized_devices", "start", "end", "authority", "no_writer_barrier"))
+    active(allocation, utc())
+    for key in ("capacity", "overhead"): protocol.validate_record("budget", allocation[key])
+    require(allocation["no_writer_barrier"] is True and allocation["lease_root"] == request["lease_root"], "allocation namespace custody mismatch")
+    for key in ("allocation_id", "pool_id", "host", "boot_id"):
+        require(type(allocation[key]) is str and allocation[key].strip(), "allocation identity missing")
+    cpus = allocation["authorized_cpu_ids"]; unique(cpus, "allocation CPU IDs")
+    require(cpus and all(type(cpu) is int and cpu >= 0 for cpu in cpus), "allocation CPU set required")
+    unique(allocation["authorized_devices"], "allocation devices")
+    require(text_list(allocation["authorized_devices"]) and set(request["authorized_devices"]) <= set(allocation["authorized_devices"]), "device authorization exceeds allocation")
+    basis, partitions = allocation["partition_basis"], allocation["partition_evidence"]
+    require(basis in ("exclusive-pool", "root-proven-disjoint") and type(partitions) is list and len(partitions) == (basis == "root-proven-disjoint"), "partition evidence cardinality")
+    if partitions:
+        part = load_reference(partitions[0])
+        closed(part, "bac-hardware-capacity-partition-v1", ("pool_id", "host", "boot_id", "lease_root", "pool_capacity", "allocations", "start", "end", "authority"))
+        active(part, utc()); protocol.validate_record("budget", part["pool_capacity"])
+        require(all(part[k] == allocation[k] for k in ("pool_id", "host", "boot_id", "lease_root")), "partition pool/host/namespace mismatch")
+        require(type(part["allocations"]) is list and part["allocations"], "empty partition")
+        seen_ids, seen_cpus, seen_gpus, matching = set(), set(), set(), []
+        total = {k: 0 for k in allocation["capacity"]}
+        for row in part["allocations"]:
+            require(type(row) is dict and set(row) == {"allocation_id", "capacity", "authorized_cpu_ids", "authorized_devices"}, "partition row fields")
+            protocol.validate_record("budget", row["capacity"])
+            unique(row["authorized_cpu_ids"], "partition CPU IDs"); unique(row["authorized_devices"], "partition devices")
+            require(type(row["allocation_id"]) is str and row["allocation_id"] and row["allocation_id"] not in seen_ids and row["authorized_cpu_ids"]
+                    and all(type(c) is int and c >= 0 for c in row["authorized_cpu_ids"]) and text_list(row["authorized_devices"]), "partition row identity")
+            require(not seen_cpus.intersection(row["authorized_cpu_ids"]) and not seen_gpus.intersection(row["authorized_devices"]), "partition allocations overlap")
+            seen_ids.add(row["allocation_id"]); seen_cpus.update(row["authorized_cpu_ids"]); seen_gpus.update(row["authorized_devices"])
+            for key in total: total[key] += row["capacity"][key]
+            if row["allocation_id"] == allocation["allocation_id"]: matching.append(row)
+        require(all(total[k] <= part["pool_capacity"][k] for k in total), "partition exceeds pool capacity")
+        require(len(matching) == 1 and all(matching[0][k] == allocation[k] for k in matching[0]), "partition current allocation mismatch")
+    return freeze, grant, allocation
+
+
+def open_directory(path):
+    canonical(str(path)); descriptor = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for component in Path(path).parts[1:]:
+            child = os.open(component, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=descriptor)
+            os.close(descriptor); descriptor = child
+        return descriptor
+    except OSError as exc:
+        os.close(descriptor); raise ValueError("unsafe directory: " + str(path)) from exc
+
+
+def same_directory(path, descriptor):
+    check = open_directory(path)
+    try:
+        a, b = os.fstat(descriptor), os.fstat(check)
+        require((a.st_dev, a.st_ino) == (b.st_dev, b.st_ino), "directory namespace replaced")
+    finally: os.close(check)
+
+
+@contextmanager
+def leases(request, allocation):
+    descriptor, held = open_directory(request["lease_root"]), []
+    keys = [("pool:" + allocation["pool_id"], fcntl.LOCK_EX if allocation["partition_basis"] == "exclusive-pool" else fcntl.LOCK_SH),
+            ("allocation:" + allocation["pool_id"] + ":" + allocation["allocation_id"], fcntl.LOCK_EX), ("host-timing", fcntl.LOCK_SH)]
+    parents = {d["physical_parent_uuid"] for job in request["jobs"] for d in job["devices"]}
+    keys += [("device:" + parent, fcntl.LOCK_EX) for parent in sorted(parents)]
+    try:
+        for key, mode in keys:
+            name = hashlib.sha256(key.encode()).hexdigest() + ".lock"
+            fd = os.open(name, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600, dir_fd=descriptor); held.append(fd)
+            require(stat.S_ISREG(os.fstat(fd).st_mode), "lease must be regular file")
+            fcntl.flock(fd, mode | fcntl.LOCK_NB)
+            a, b = os.fstat(fd), os.stat(name, dir_fd=descriptor, follow_symlinks=False)
+            require((a.st_dev, a.st_ino) == (b.st_dev, b.st_ino), "lease inode replaced")
+            same_directory(request["lease_root"], descriptor)
+        yield
+        same_directory(request["lease_root"], descriptor)
+    except OSError as exc:
+        raise ValueError("resource lease unavailable: " + str(exc)) from exc
+    finally:
+        for fd in reversed(held): os.close(fd)
+        os.close(descriptor)
+
+
+def git_read(root, args):
+    executable = Path(shutil.which("git") or "/missing/git").resolve()
+    pinned = protocol.file_reference(executable)
+    argv = [str(executable), "--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "core.pager=cat", "-C", root, *args]
+    result = subprocess.run(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=30,
+                            env={"PATH": "/usr/bin:/bin", "LC_ALL": "C", "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": "/dev/null"})
+    require(protocol.file_reference(executable) == pinned, "Git executable changed")
+    require(result.returncode == 0, "read-only Git observation failed: " + result.stderr)
+    return result.stdout
+
+
+def source_sample(candidate, freeze):
+    lock = Path(freeze["index_lock"]); parent = open_directory(lock.parent)
+    try: descriptor = os.open(lock.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+    finally: os.close(parent)
+    try:
+        require(stat.S_ISREG(os.fstat(descriptor).st_mode), "existing index lock must be regular")
+        fcntl.flock(descriptor, fcntl.LOCK_SH | fcntl.LOCK_NB)
+        require(git_read(candidate["authorized_root"], ["rev-parse", "HEAD"]).strip() == candidate["head"], "HEAD differs from candidate")
+        git_read(candidate["authorized_root"], ["diff-index", "--cached", "--quiet", candidate["tree"], "--"])
+        registry = git_read(candidate["authorized_root"], ["worktree", "list", "--porcelain"])
+        protocol.validate_record("reference", candidate["registry"])
+        require(registry.encode() == Path(candidate["registry"]["path"]).read_bytes(), "registry differs from candidate")
+        paths = [line[9:] for line in registry.splitlines() if line.startswith("worktree ")]
+        require(paths and len(set(paths)) == len(paths), "registry worktree paths missing/duplicate")
+        availability = []
+        for raw in paths:
+            path = canonical(raw)
+            require('"' not in raw and "\t" not in raw, "unsupported porcelain path representation")
+            availability.append({"path": str(path), "directory_exists": path.is_dir()})
+        expected = load_reference(candidate["availability"])
+        closed(expected, "bac-hardware-availability-v1", ("worktrees",))
+        require(expected["worktrees"] == availability and all(type(r) is dict and set(r) == {"path", "directory_exists"}
+                and type(r["directory_exists"]) is bool for r in expected["worktrees"]), "availability observation mismatch")
+        for root in candidate["import_roots"]:
+            fd = open_directory(root); os.close(fd)
+        refs = input_references(candidate)
+        for ref in refs: protocol.validate_record("reference", ref)
+        return {"at": utc(), "head": candidate["head"], "tree": candidate["tree"], "inventory": refs, "registry": registry, "availability": availability}
+    finally: os.close(descriptor)
+
+
+def launch_discovery(request_path, request, environment):
+    inherited = os.environ.get("CUDA_VISIBLE_DEVICES")
+    bootstrap = "import sys;sys.path.insert(0," + repr(str(Path(__file__).parent)) + ");from capture_bac_hardware_v1 import discovery_main;discovery_main()"
+    argv = [request["interpreter"]["path"], "-I", "-B", "-c", bootstrap, str(request_path), json.dumps(inherited)]
+    env = dict(environment["environment"], CUDA_VISIBLE_DEVICES=request["requested_visibility"], TMPDIR=request["scratch_root"])
+    started, errors, identity, child = utc(), [], None, None
+    try:
+        child = subprocess.Popen(argv, cwd=request["authorized_root"], env=env, stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        identity = process_identity(child.pid)
+        stdout, stderr = child.communicate(timeout=120)
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        errors.append("discovery execution: " + str(exc))
+        if child is not None:
+            child.kill(); stdout, stderr = child.communicate(timeout=30)
+        else: stdout, stderr = "", ""
+    ended = utc()
+    command = {"argv": argv, "cwd": request["authorized_root"], "environment": env, "start": started, "end": ended,
+               "identity": identity, "exit_code": child.returncode if child is not None else None, "stdout": stdout, "stderr": stderr, "errors": errors}
+    obs = None
+    try:
+        require(child is not None and child.returncode == 0 and identity is not None, "discovery did not complete with an observed child")
+        obs = parse_json(stdout); validate_discovery(obs)
+        parent = process_identity(os.getpid())
+        require(obs["identity"] == identity and identity["pid"] == child.pid and identity["ppid"] == os.getpid()
+                and all(identity[k] == parent[k] for k in ("host", "boot_id")), "discovery actual process identity mismatch")
+        require(obs["argv"] == argv and obs["interpreter"] == request["interpreter"]["path"] and obs["cwd"] == request["authorized_root"], "discovery actual execution context mismatch")
+        require(started <= obs["at"] <= ended and obs["profile"] == request["profile"] and obs["tmpdir"] == request["scratch_root"]
+                and obs["inherited_visibility"] == inherited and obs["effective_visibility"] == request["requested_visibility"], "discovery time/profile/environment mismatch")
+    except (ValueError, TypeError, KeyError, OSError) as exc:
+        errors.append(str(exc))
+    return obs, command
+
+
+def discovery_main():
+    request = load_reference(protocol.file_reference(Path(sys.argv[1])))
+    protocol.validate_record("admission-request", request)
+    environment = load_reference(request["dependencies"]); protocol.validate_record("environment", environment)
+    observation = collect_discovery(request, environment, parse_json(sys.argv[2]))
+    observation["argv"] = read_kernel("/proc/self/cmdline").rstrip("\x00").split("\x00")
+    print(json.dumps(observation, sort_keys=True))
+
+
+def capture(candidate: Path, admission_request: Path, destination: Path) -> dict:
+    """Exclusively retain admission; only exact admitted observations emit a spec."""
+    candidate_ref, request_ref = protocol.file_reference(candidate), protocol.file_reference(admission_request)
+    source, request = load_reference(candidate_ref), load_reference(request_ref)
+    protocol.validate_record("candidate", source); protocol.validate_record("admission-request", request)
+    pins = {entry["name"]: entry["reference"] for entry in request["tools"]}
+    require(pins["protocol"] == protocol.file_reference(Path(protocol.__file__)) and pins["protocol"]["sha256"] == PROTOCOL_SHA256, "protocol exact frozen pin mismatch")
+    require(pins["capture"] == protocol.file_reference(Path(__file__)), "capture exact tool pin mismatch")
+    environment = load_reference(request["dependencies"]); protocol.validate_record("environment", environment)
+    require(environment["interpreter"] == request["interpreter"], "environment interpreter binding mismatch")
+    freeze, grant, allocation = validate_authority(source, request)
+    roots = [canonical(request[k]) for k in ("authorized_root", "scratch_root", "output_root", "lease_root")] + [canonical(str(destination))]
+    require(all(not a.is_relative_to(b) and not b.is_relative_to(a) for i, a in enumerate(roots) for b in roots[i+1:]), "source/output/scratch/lease/capture paths overlap")
+    for root in roots[:-1]:
+        fd = open_directory(root); os.close(fd)
+    parent = open_directory(destination.parent)
+    try:
+        try: os.mkdir(destination.name, mode=0o700, dir_fd=parent)
+        except OSError as exc: raise ValueError("capture destination must be new and exclusive") from exc
+        descriptor = os.open(destination.name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+    finally: os.close(parent)
+    def write(name, value):
+        same_directory(destination, descriptor)
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=descriptor)
+        with os.fdopen(fd, "w") as stream:
+            json.dump(value, stream, sort_keys=True, indent=2); stream.write("\n"); stream.flush(); os.fsync(stream.fileno())
+        same_directory(destination, descriptor)
+        return protocol.file_reference(destination / name)
+    result = {"schema": "bac-hardware-capture-result-v1", "disposition": "refused", "reasons": [], "admission": None, "spec": None}
+    try:
+        write("start.json", {"at": utc(), "candidate": candidate_ref, "request": request_ref, "tools": request["tools"], "dependencies": request["dependencies"]})
+        require(len({os.stat(path).st_dev for path in (destination, roots[1], roots[2])}) == 1, "output/capture/scratch capacity pools differ")
+        require(set(os.sched_getaffinity(0)) == set(allocation["authorized_cpu_ids"]), "capture actual affinity differs from allocation")
+        with leases(request, allocation):
+            write("source-before.json", source_sample(source, freeze))
+            obs, command = launch_discovery(admission_request, request, environment)
+            command_ref = write("discovery-command.json", command)
+            require(not command.get("errors"), "discovery binding refused: " + "; ".join(command["errors"]))
+            raw_ref = write("discovery.json", obs)
+            fields = assess_resources(request, obs, raw_ref)
+            reasons = fields["reasons"]
+            if obs["python_version"] != environment["python_version"] or sorted(obs["dependencies"], key=lambda d: d["name"]) != sorted(environment["dependencies"], key=lambda d: d["name"]):
+                reasons.append("actual dependency version/origin inventory differs")
+            if set(obs["affinity"] or []) != set(allocation["authorized_cpu_ids"]) or any(obs["identity"][k] != allocation[k] for k in ("host", "boot_id")):
+                reasons.append("discovery host/boot/affinity allocation mismatch")
+            if request["profile"] == "cuda":
+                for key in ("torch_build", "cuda_runtime", "driver"):
+                    if environment[key]["state"] != "measured" or environment[key]["value"] != obs[key]: reasons.append("actual CUDA environment mismatch: " + key)
+            for key in fields["admitted_budget"]:
+                old = fields["admitted_budget"][key]
+                fields["admitted_budget"][key] = max(0, min(old + request["reserve"][key], allocation["capacity"][key]) - request["reserve"][key] - allocation["overhead"][key])
+                count = len(request["jobs"]) if key.startswith("scratch_") else request["requested_job_concurrency"]
+                total = sum(sorted((j["budget"][key] for j in request["jobs"]), reverse=True)[:count])
+                if fields["admitted_budget"][key] < max(request["minimum"][key], total): reasons.append("allocation/overhead insufficient: " + key)
+            validate_authority(source, request)
+            write("source-after.json", source_sample(source, freeze))
+            protocol.validate_record("reference", candidate_ref); protocol.validate_record("reference", request_ref)
+            protocol.validate_record("admission-request", request)
+            admission = {"schema": protocol.SCHEMA, "kind": "admission", "request": request_ref, "discovery_process": command_ref, "at": utc(),
+                         "profile": request["profile"], "disposition": "refused" if reasons else "admitted", **fields,
+                         "environment": request["dependencies"], "probe_errors": obs["probe_errors"], "minimum": request["minimum"], "reserve": request["reserve"]}
+            protocol.validate_record("admission", admission)
+            result["admission"] = write("admission.json", admission); result["reasons"] = reasons
+            if not reasons:
+                jobs = parse_json(json.dumps(request["jobs"]))
+                for job in jobs:
+                    if job["profile"] == "cuda": job["devices"] = fields["devices"]
+                spec = {"schema": protocol.SCHEMA, "kind": "spec", "attempt_id": request["attempt_id"], "candidate": candidate_ref,
+                        "tools": request["tools"], "dependencies": request["dependencies"], "admission": result["admission"],
+                        **{k: request[k] for k in ("profile", "authorized_root", "output_root", "scratch_root", "lease_root", "source_freeze")},
+                        "job_concurrency": request["requested_job_concurrency"], "budget": fields["admitted_budget"], "jobs": jobs}
+                protocol.validate_spec(spec); result["spec"] = write("spec.json", spec); result["disposition"] = "admitted"
+    except (ValueError, OSError, TypeError, KeyError) as exc:
+        result["reasons"] = [str(exc)]
+    finally:
+        try: write("result.json", result)
+        finally: os.close(descriptor)
+    return result

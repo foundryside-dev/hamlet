@@ -1,0 +1,63 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_______________ test_retained_scratch_does_not_get_charged_twice _______________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/probe-fixtures-v2/test_retained_scratch_does_not0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f90c1610fc0>
+
+    def test_retained_scratch_does_not_get_charged_twice(tmp_path, monkeypatch):
+        r = fixtures.implementation()
+        path, spec, registry = fixtures.sealed_fixture(tmp_path, fixtures.SUCCESS_CODE)
+        fixtures.stub_source(monkeypatch, r, registry)
+        initial = {'cpu_slots': 5, 'ram_bytes': 10000001, 'scratch_bytes': 10000001, 'scratch_inodes': 1001}
+        calls = []
+        def capacity(raw, scratch):
+            calls.append(len(calls))
+            # Final witness: a job consumed one byte of its admitted two-byte scratch
+            # reservation. Retained use is within budget, and is no external drift.
+            return {**initial, 'scratch_bytes': initial['scratch_bytes'] - (1 if len(calls) >= 3 else 0)}
+        monkeypatch.setattr(r, '_live_capacity', capacity)
+>       assert r.run(path) == 0
+               ^^^^^^^^^^^
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/test_independent_p2.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+run_bac_hardware_v1.py:1147: in run
+    results = execute_jobs(s, custody=custody)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+run_bac_hardware_v1.py:431: in execute_jobs
+    custody.source(attempt)
+run_bac_hardware_v1.py:878: in source
+    _require(available[key] >= required, 'current capacity below sealed reservation: ' + key)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+reason = 'current capacity below sealed reservation: scratch_bytes'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: current capacity below sealed reservation: scratch_bytes
+
+run_bac_hardware_v1.py:31: ValueError
+_____ test_initialized_raw_cuda_marker_cannot_claim_uninitialized_success ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/probe-fixtures-v2/test_initialized_raw_cuda_mark0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f90c15862c0>
+
+    def test_initialized_raw_cuda_marker_cannot_claim_uninitialized_success(tmp_path, monkeypatch):
+        r = fixtures.implementation()
+        code = fixtures.SUCCESS_CODE.replace("'torch_loaded':False,'cuda_marker':None", "'torch_loaded':True,'cuda_marker':True").replace("torch_observation='not-loaded'", "torch_observation='loaded-without-calls'")
+        path, spec, registry = fixtures.sealed_fixture(tmp_path, code)
+        fixtures.stub_source(monkeypatch, r, registry)
+        status = r.run(path)
+        result = json.loads((Path(spec['jobs'][0]['output']) / 'result.json').read_text())
+>       assert status != 0 and result['disposition'] == 'completed-unverified', result
+E       AssertionError: {'attempt_id': 'attempt', 'collected_ids': ['synthetic::case'], 'command': {'bytes': 5704, 'path': '/workspace/hamlet/...json', 'sha256': 'a231607c6437a06d64777004ba06c75f269951a58d88171c872c1dee3e1d257a'}, 'disposition': 'successful', ...}
+E       assert (0 != 0)
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/test_independent_p2.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/test_independent_p2.py::test_retained_scratch_does_not_get_charged_twice
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/test_independent_p2.py::test_initialized_raw_cuda_marker_cannot_claim_uninitialized_success
+2 failed in 0.74s

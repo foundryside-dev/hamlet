@@ -1,0 +1,161 @@
+{
+  "schema": "bac-root-c1-red-checkpoint-v1",
+  "at": "2026-11-14T07:03:06.757821+00:00",
+  "candidate": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r117-candidate.json",
+    "bytes": 206841,
+    "sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499"
+  },
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+  "checks": [
+    {
+      "name": "c1-collection",
+      "disposition": "COLLECTION PASS",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-collection-attempt-1-spec.json",
+        "bytes": 645,
+        "sha256": "0054120f7cf5a0876b428f4374bc775f968f574df0e4c234ba90db94fcb7ee5d"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-collection-attempt-1/c1-collection/identity-controller.json",
+          "bytes": 246,
+          "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-collection-attempt-1/c1-collection-custody.json",
+          "bytes": 644,
+          "sha256": "19d83aab7ff51b6b4db6c6e1656de600e59f2a04299d5f37192359c4862a3956"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-collection-attempt-1/c1-collection-result.json",
+          "bytes": 887,
+          "sha256": "108da4a65ddb65544a93323b8a3e86e1cf0de33fa89b79827ef8e67209556a2e"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-collection-attempt-1/c1-collection.log",
+          "bytes": 3116,
+          "sha256": "72499f140550b41ffa2050a2aa7d47ecf1908cffad7ca25ed3a058a873bbacac"
+        }
+      ]
+    },
+    {
+      "name": "c1-fixture-control",
+      "disposition": "1 PASS; HEALTHY FIXTURE",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-fixture-control-attempt-1-spec.json",
+        "bytes": 683,
+        "sha256": "38b8efaff97f40e061b9b77a27e961aa3960633cc4a3647574a6147faa8bc87a"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control/identity-controller.json",
+          "bytes": 246,
+          "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control-custody.json",
+          "bytes": 649,
+          "sha256": "a596a87b7aba75516a3fbe98e9dbd909862faa53041486c46e8bf6c837688dc2"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control-result.json",
+          "bytes": 934,
+          "sha256": "d2f3d04be515166b20a93e12a809a19e6e7f2bca1073690fbcaadae615a54ae1"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control.log",
+          "bytes": 578,
+          "sha256": "73de5ba989d4e1db22044fa1a2e7ff29b55ef5e1137539b0c62a02ff07030831"
+        }
+      ]
+    },
+    {
+      "name": "c1-lock-order-red",
+      "disposition": "1 EXPECTED CAUSAL FAIL; NOT ACCEPTANCE",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-lock-order-red-attempt-1-spec.json",
+        "bytes": 684,
+        "sha256": "e8c7407df9c70a3acb4e7f368463952bc046e65c3d1a988bb8d05de6d1582c30"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red/failure-controller-c201d6650c6cd002.json",
+          "bytes": 2278,
+          "sha256": "cc8d0f2f683eb7a458aa23f550a4217a4bd8efa5a951aac0c9ab643f57c71dc1"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red/identity-controller.json",
+          "bytes": 246,
+          "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-failure-index.json",
+          "bytes": 684,
+          "sha256": "2737e953a44008006d004e7726cf7d1c1c41e39a0496b80455fe24b129f1de03"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-negative-custody.json",
+          "bytes": 958,
+          "sha256": "8641057eca31ea2c73089fe36750096bd3bc84e923d7b2c12fcd93aaa68bbf3d"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-result.json",
+          "bytes": 934,
+          "sha256": "6473c988395ee78781f11670b2d980df7e1a4317c6326e13857eba3a012c6443"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red.log",
+          "bytes": 2889,
+          "sha256": "94f4169cef6768c74fd63d695bd270a168070f83e50f197efa84e507dffb3838"
+        }
+      ]
+    }
+  ],
+  "source_snapshots": [
+    {
+      "source": {
+        "path": "/workspace/hamlet/src/townlet/config/exploration_policy.py",
+        "bytes": 63027,
+        "sha256": "fbda6a2178e794747ef1e9b7771d450463051aeba53a598dd40fc334c2754e67"
+      },
+      "snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r117-executed-source/exploration_policy.py.txt",
+        "bytes": 63027,
+        "sha256": "fbda6a2178e794747ef1e9b7771d450463051aeba53a598dd40fc334c2754e67"
+      }
+    },
+    {
+      "source": {
+        "path": "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py",
+        "bytes": 67181,
+        "sha256": "3b9b5476530317fc48991ba096545e3e2bad3593deb92d9caeb3a3bbab6e1027"
+      },
+      "snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r117-executed-source/scoped_curiosity.py.txt",
+        "bytes": 67181,
+        "sha256": "3b9b5476530317fc48991ba096545e3e2bad3593deb92d9caeb3a3bbab6e1027"
+      }
+    },
+    {
+      "source": {
+        "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+        "bytes": 10590,
+        "sha256": "4a7fe3512c23c963b5ec2bc6e3f89ad5790fb2d2b8c0ed7496a9f4a8f957e208"
+      },
+      "snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r117-executed-source/test_runtime_bank_parent_custody.py.txt",
+        "bytes": 10590,
+        "sha256": "4a7fe3512c23c963b5ec2bc6e3f89ad5790fb2d2b8c0ed7496a9f4a8f957e208"
+      }
+    }
+  ],
+  "source_guards": 820,
+  "configs": 573,
+  "artifacts": 13,
+  "status": "HEALTHY FIXTURE ESTABLISHED; LOCK-ORDER DEFECT REPRODUCED AT INTENDED ASSERTION",
+  "scope": "C1 test-only RED candidate. Collection no acceptance count; one healthy fixture case; one causal failure. No C1 implementation or hardware qualification. Capture attempt1 stale published-doc projection failure preserved and repaired before candidate.",
+  "authorization": "Release R117 source freeze; sole C1 writer may implement approved contract and complete causal tests. Root seals fresh candidate before further APP execution.",
+  "remaining": "All nine C1 groups, fixed-source independent review, owner suites/static checks and later complete parent/programme obligations."
+}

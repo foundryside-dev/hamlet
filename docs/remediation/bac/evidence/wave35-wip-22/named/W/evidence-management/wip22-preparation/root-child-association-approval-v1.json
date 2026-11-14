@@ -1,0 +1,38 @@
+{
+  "at": "2026-11-14T08:29:22.214634+00:00",
+  "status": "ROOT APPROVED ACTUAL SOURCE/ATTEMPT ASSOCIATIONS",
+  "associations": [
+    {
+      "root": "W",
+      "path": "evidence-management/wip22-preparation/packet-v3/c1-poison-body-distinct-child-association-proposal-v1.json",
+      "bytes": 6758,
+      "sha256": "20d83cd7cec1763a6d49d316a567e72f6840a4492bea4fdfaf10b91d07d35d89"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip22-preparation/packet-v3/c1-poison-body-same-child-association-proposal-v1.json",
+      "bytes": 6669,
+      "sha256": "12cfa1723e81b7f059eeec0536d93eec343c7f364076623049e913371e82556c"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip22-preparation/packet-v3/c1-poison-child-false-parent-true-child-association-proposal-v1.json",
+      "bytes": 7183,
+      "sha256": "46a0cacb488a5afada4d67fdb15034785f6a7066db1379429208e49a6f518789"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip22-preparation/packet-v3/c1-poison-child-true-parent-false-child-association-proposal-v1.json",
+      "bytes": 6988,
+      "sha256": "62dfa56f6dbf061522f62d119da4f535858d936d2d69ffb9eb4abfec7a467b91"
+    },
+    {
+      "root": "W",
+      "path": "evidence-management/wip22-preparation/packet-v3/c1-poison-install-completion-child-association-proposal-v1.json",
+      "bytes": 6883,
+      "sha256": "c464e91be52fe3bd6533bbd3c338ad13b49f5dc0dfbcbc45867e38acaa495cb9"
+    }
+  ],
+  "checks": "Five distinct actual childPIDs; measuredPPID/launcher/startticks, exactorigargv/node/role/spec/output/result/source/profile and1PASS0skip reviewed. Originalexpected_tree explicitlybinds candidate; derivedattemptIDs validatedfromexclusivespec/output. Originalwitnesses unchanged.",
+  "limitations": "Derived association adds no historical observations. Specworkers2 is schedulingcapacity; onejob/no-xdist/actualoneidentity establisheseachfreshprocess. CPU-onlyC1scope; no strictcore/CUDA claim."
+}

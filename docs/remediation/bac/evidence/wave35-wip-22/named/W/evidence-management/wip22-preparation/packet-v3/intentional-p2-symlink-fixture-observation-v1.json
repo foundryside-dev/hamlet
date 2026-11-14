@@ -1,0 +1,19 @@
+{
+  "declared_by": {
+    "bytes": 742750,
+    "path": "evidence-management/hardware-runner-p2/independent-review-v2/artifact-inventory.json",
+    "root": "W",
+    "sha256": "3de07ad8cde5278c2d93c8087035aedcdccb5e51cbb1eaad9177c34f30edf853"
+  },
+  "direct_target": {
+    "bytes": 16384,
+    "path": "evidence-management/hardware-runner-p2/independent-review-v2/existing-fixtures/test_owned_resource_credit_obs0/outside",
+    "root": "W",
+    "sha256": "1885544e7019cdabc4c83c4a9960058d2484257601fb3a58ce4638ecdb424e06"
+  },
+  "expected_sha256": "1885544e7019cdabc4c83c4a9960058d2484257601fb3a58ce4638ecdb424e06",
+  "link_text": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/existing-fixtures/test_owned_resource_credit_obs0/outside",
+  "original_symlink": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/existing-fixtures/test_owned_resource_credit_obs0/scratch/attempt/owned/symlink",
+  "scope": "Preserve symlink semantics as metadata and exact direct target bytes; no symlink materialization.",
+  "status": "OBSERVED INTENTIONAL REFUSAL FIXTURE; SYMLINK NOT SELECTED"
+}

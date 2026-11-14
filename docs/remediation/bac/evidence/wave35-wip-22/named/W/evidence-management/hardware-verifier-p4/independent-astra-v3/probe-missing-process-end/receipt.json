@@ -1,0 +1,137 @@
+{
+  "at": "2026-11-14T08:04:58.842733Z",
+  "attempt_id": "attempt",
+  "custody": "unsatisfied",
+  "hardware": "unrun",
+  "inventory": [
+    {
+      "bytes": 8324,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/capture/spec.json",
+      "sha256": "15dca2fb5736127f263409dbce66483aefe074c4c8d5e9253579d41097e5a0ae"
+    },
+    {
+      "bytes": 8332,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/out/attempt/job/result.json",
+      "sha256": "6017c93ffea4bdae7103981c7b0112b5f60f9f11482fb0df5ec9f5132fe03a67"
+    },
+    {
+      "bytes": 1577,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/out/attempt/job/command.json",
+      "sha256": "ba8c7ebc6414a353eead5243cbd5c2a63c45faeab6e388b7bb9740aa7525bb09"
+    },
+    {
+      "bytes": 1040,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/out/attempt/start.json",
+      "sha256": "071d2f5135aa3fbe5df437c53984505375e6ca78501e4f88b950374e53f372b5"
+    },
+    {
+      "bytes": 7583,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/out/attempt/seal.json",
+      "sha256": "acea080abcaa27b7fcdde9dd28a461e97ad73c6d50a54186490b7ea5dcd4e663"
+    },
+    {
+      "bytes": 679,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/capture/result.json",
+      "sha256": "07a1801f64723ad4ea8ee8a24e898e0e4a93830ce49a19adb9fde6d9f57bf4d9"
+    },
+    {
+      "bytes": 651,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/receipt.json.components/classification.json",
+      "sha256": "b6c30b953e1c61cfb9414668850667caaa88e261c84ae915d90282f022b34513"
+    }
+  ],
+  "job_id": "job",
+  "kind": "receipt",
+  "obligations": [
+    {
+      "contract": {
+        "bytes": 1274,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/process-custody-contract.json",
+        "sha256": "d2b14fa21a9604bd598ec849b5234c44435f0c2328ef9600cc32c91ef16a5af1"
+      },
+      "disposition": "unsatisfied",
+      "evidence": [
+        {
+          "bytes": 1669,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/process-custody-evidence.json",
+          "sha256": "be569f4f2dd093d111fb72d2fdc0a51e274b5ec71e755fe72640a505107eac65"
+        }
+      ],
+      "id": "process-custody",
+      "reason": "required accepted case validator is unimplemented or lacks evidence",
+      "validator": {
+        "bytes": 59234,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+      },
+      "validator_receipt": []
+    },
+    {
+      "contract": {
+        "bytes": 1272,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/source-freeze-contract.json",
+        "sha256": "b0783f21f2ea793a6d5f39a824c5541e311e9aa510caffb3f77b243fd3fbaeff"
+      },
+      "disposition": "unsatisfied",
+      "evidence": [
+        {
+          "bytes": 1661,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/source-freeze-evidence.json",
+          "sha256": "04256748e3c6c99fd54bc0c878b54006d562479248b8fa1f257a8427765df304"
+        }
+      ],
+      "id": "source-freeze",
+      "reason": "required accepted case validator is unimplemented or lacks evidence",
+      "validator": {
+        "bytes": 59234,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+      },
+      "validator_receipt": []
+    },
+    {
+      "contract": {
+        "bytes": 1273,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/required-cases-contract.json",
+        "sha256": "c95d02e73dd315bbb8974a05e0cfa28765ba6c3560378312ed43d581fe23f24e"
+      },
+      "disposition": "unsatisfied",
+      "evidence": [
+        {
+          "bytes": 1665,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/required-cases-evidence.json",
+          "sha256": "1e838e17124f780bb74918fe260f4442f7ecef844e5162d03e01e9ceb9866ee9"
+        }
+      ],
+      "id": "required-cases",
+      "reason": "required accepted case validator is unimplemented or lacks evidence",
+      "validator": {
+        "bytes": 59234,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+      },
+      "validator_receipt": []
+    }
+  ],
+  "reasons": [
+    "missing process start/end",
+    "common or required case obligations incomplete"
+  ],
+  "result": {
+    "bytes": 8332,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/out/attempt/job/result.json",
+    "sha256": "6017c93ffea4bdae7103981c7b0112b5f60f9f11482fb0df5ec9f5132fe03a67"
+  },
+  "schema": "bac-hardware-v1",
+  "spec": {
+    "bytes": 8324,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/probe-missing-process-end/capture/spec.json",
+    "sha256": "15dca2fb5736127f263409dbce66483aefe074c4c8d5e9253579d41097e5a0ae"
+  },
+  "test_outcome": "completed-unverified",
+  "verifier": {
+    "bytes": 59234,
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+  }
+}

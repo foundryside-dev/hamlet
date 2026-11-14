@@ -1,0 +1,220 @@
+{
+  "at": "2026-11-14T08:07:25.606041+00:00",
+  "manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r121-candidate.json",
+    "bytes": 207570,
+    "sha256": "9fe86fd0968fd5059590e3ef88ed4069575e3232f1677e2cf1e3810e11dc1305"
+  },
+  "candidate_tree": "b429489ce4f6226b03e8f1a4971bd49861f9f2d5",
+  "status": "R121 EXECUTION CLOSED; C1 COMPONENT BEHAVIOR VERIFIED, FULL ACCEPTANCE BLOCKED",
+  "snapshots": [
+    {
+      "source": "src/townlet/config/exploration_policy.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r121-executed-source/exploration_policy.py.txt",
+      "bytes": 63680,
+      "sha256": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9"
+    },
+    {
+      "source": "src/townlet/exploration/scoped_curiosity.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r121-executed-source/scoped_curiosity.py.txt",
+      "bytes": 68489,
+      "sha256": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4"
+    },
+    {
+      "source": "src/townlet/exploration/parent_custody.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r121-executed-source/parent_custody.py.txt",
+      "bytes": 7985,
+      "sha256": "5b592ac955d8e45b3369d4dac3a1bc2996093dfaa8427d732183d321aada801a"
+    },
+    {
+      "source": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r121-executed-source/test_runtime_bank_parent_custody.py.txt",
+      "bytes": 37523,
+      "sha256": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc"
+    }
+  ],
+  "checks": [
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-independent-expiration-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-independent-expiration-attempt-1/c1-independent-expiration-result.json",
+          "bytes": 980,
+          "sha256": "9bdf54474d9802b495e078eb624f642f94ee4c82524b6185eb45ecc8258ddc63"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-independent-expiration-attempt-1/c1-independent-expiration-custody.json",
+          "bytes": 656,
+          "sha256": "75727b0e2c803b383264e88b2d35a6b75dd5e0cf78ffd491429e3fb4357a75e4"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-owners-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-owners-attempt-1/c1-owners-result.json",
+          "bytes": 1518,
+          "sha256": "d9ae361a6fea8a7329a9fd14ddfcd0b726b63ad4989d7cf38eefc3c2181ce9f3"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-owners-attempt-1/c1-owners-negative-custody.json",
+          "bytes": 965,
+          "sha256": "8cfb916742b1defc1660df4d2e156ab0062cd2909080a17e141c8bd58aed38e7"
+        }
+      ],
+      "status": "COMPLETED FAILED"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-body-distinct-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+          "bytes": 948,
+          "sha256": "5b8c858cbe735341ad704ae7f60c17dc4e175c7bbb781d8b03b834c058ad4e1c"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json",
+          "bytes": 654,
+          "sha256": "fe9ad10ce789afb692a243bfdce11da54691c76933ad0449fe516f576b62dacd"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-body-same-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+          "bytes": 933,
+          "sha256": "9f918b97aeee4dee5fdb0808bc2ee2ce223bb2f296df482b7bf516834551d73e"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+          "bytes": 651,
+          "sha256": "0fa1bec7fb64813d8710f9a11b5370ef51a05e35c6d3c56e3ae9a41847599f7e"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-false-parent-true-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+          "bytes": 977,
+          "sha256": "a686e49aaeb0a612fdf4ee761dd49ff10caf6eff960a7c41b76d40977dae080e"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json",
+          "bytes": 665,
+          "sha256": "2f5fe3ac1e535f58ac0c2f87a67e03ca5edeb1068fa1b9ddecbfd769910795b4"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-true-parent-false-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+          "bytes": 979,
+          "sha256": "40837272ece482946b958bdb39c0269e012e6d7ee25459c0706fb4da1e6b270b"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json",
+          "bytes": 664,
+          "sha256": "7b0179f265755e0f5ee3661aa13723e76376df7b44843e94acf443fa36b05678"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-install-completion-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+          "bytes": 972,
+          "sha256": "3a960d1eb9bd9549aa6abda9b68cfd56ea0f221712dc02231c0b8ef4675a3329"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json",
+          "bytes": 659,
+          "sha256": "ca30d5c5bb60de86542af59184ce2a4702ffd19ce3fedad41498f01abf346234"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-preflight-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-preflight-attempt-1/c1-collection-result.json",
+          "bytes": 1249,
+          "sha256": "d7ba73293491b0f7e362cf0bfc1d96f22599eff5ac28fb8bc82060e344ee699b"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-preflight-attempt-1/c1-repaired-result.json",
+          "bytes": 1272,
+          "sha256": "325e5f2bed18e22a2b9a78fd4fb036f77c4c0a9964a14936b1d37d81f6a0b98c"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-preflight-attempt-1/c1-collection-custody.json",
+          "bytes": 644,
+          "sha256": "e0a4d4fe8bfdfa5f0da9b02f7c8a2a0c6a117e78405133b191cc50d094f2f392"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-preflight-attempt-1/c1-repaired-custody.json",
+          "bytes": 642,
+          "sha256": "28fd1bcc9579a72051cc386ae45943a2ae96b3488693a86f5a793e2c891ba9aa"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/RUNTIME SCOPES DISTINCT"
+    }
+  ],
+  "accounting": "481ordinary+owner selected:266PASS215FAIL; C1ordinary62 included and noC1failure, plus5separatepoisonPASS0skip=>67C1 cases. Independentexpiry2PASS separate; causal4 overlap. Collection486 notruntime.",
+  "static": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r121-static-attempt-1/summary.json",
+    "bytes": 7411,
+    "sha256": "036c6a87ff10a80216e753a1e92c7cbadcbe6b115f7f9e9c8e4e7762e72b51c0"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/implementation-r121-review-v1.md",
+    "bytes": 13525,
+    "sha256": "98ead82e9d849cd4bf43446ba82e68e69b21e95fb23c03c5f3d1e93a5dc2a308"
+  },
+  "required_reconciliation": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/R121-OWNER-RECONCILIATION-v1.md",
+    "bytes": 19551,
+    "sha256": "91bda13dd0760a64c13322c4f3f5a5fdb47edd3baf3523f7e4463988b597284e"
+  },
+  "static_next": "Remove newlyintroduced equivalent ternary causing no-default601>600; neverraiseceiling. Mypy15oracle/POP errorsstillrequired.",
+  "unrun": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-collection-spec.json",
+      "reason": "Capture emits unrelated T21 specs; notselected forC1; unrun."
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-owned-spec.json",
+      "reason": "Capture emits unrelated T21 specs; notselected forC1; unrun."
+    }
+  ],
+  "remaining": "Full C1acceptanceitem8blockedbyownerfixtures and actual POPstep/restore lineage; missingcleanupreason separate. No broadrepeat untilcausalprerequisitesfixed. Allrequired notoptional."
+}

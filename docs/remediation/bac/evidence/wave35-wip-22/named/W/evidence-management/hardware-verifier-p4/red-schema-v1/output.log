@@ -1,0 +1,17 @@
+...................................................................F.... [ 98%]
+.                                                                        [100%]
+=================================== FAILURES ===================================
+_____________ test_common_witness_schema_is_parsed_not_just_hashed _____________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/red-schema-v1/fixtures/test_common_witness_schema_is_0')
+
+    def test_common_witness_schema_is_parsed_not_just_hashed(tmp_path):
+        evidence = Evidence(tmp_path, common=True, bad_schema=True)
+>       with pytest.raises(ValueError, match="witness schema"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_verify_bac_hardware_v1.py:542: Failed
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_common_witness_schema_is_parsed_not_just_hashed
+1 failed, 72 passed in 6.55s

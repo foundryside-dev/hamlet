@@ -1,0 +1,20 @@
+.......................................F                                 [100%]
+=================================== FAILURES ===================================
+_____ test_admission_limits_reserve_each_role_peak_including_replacements ______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-40/test_admission_limits_reserve_2')
+
+    def test_admission_limits_reserve_each_role_peak_including_replacements(tmp_path):
+        req = request()
+        req["jobs"][0]["roles"][0].update(peak_cpu_slots=2, replacement_limit=1)
+        req["jobs"][0]["budget"]["cpu_slots"] = 2
+        result = assess(tmp_path, req=req)
+>       assert "replacement" in " ".join(result["reasons"])
+E       AssertionError: assert 'replacement' in ''
+E        +  where '' = <built-in method join of str object at 0xa51ad8>([])
+E        +    where <built-in method join of str object at 0xa51ad8> = ' '.join
+
+test_capture_bac_hardware_v1.py:203: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_reserve_each_role_peak_including_replacements
+1 failed, 39 passed in 0.58s

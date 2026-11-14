@@ -1,0 +1,31 @@
+{
+  "environment": {
+    "PATH": "/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "BAC_P3_ENV_PROBE": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/xdist-discovery-v2",
+    "LC_ALL": "C",
+    "PYTEST_VERSION": "8.4.2"
+  },
+  "workerinput": {},
+  "pid": 185600,
+  "ppid": 185599,
+  "argv": [
+    "/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest/__main__.py",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "xdist.plugin",
+    "-p",
+    "test_bac_hardware_identity_v1",
+    "-n",
+    "2",
+    "--dist",
+    "each",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_xdist_environment_probe"
+  ]
+}

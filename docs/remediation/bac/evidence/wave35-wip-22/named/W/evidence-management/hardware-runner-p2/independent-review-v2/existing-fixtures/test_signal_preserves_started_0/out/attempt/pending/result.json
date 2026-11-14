@@ -1,0 +1,8 @@
+{
+  "disposition": "unrun",
+  "exit_code": null,
+  "job_id": "pending",
+  "process_records": [],
+  "reason": "runner interrupted",
+  "signal": 0
+}

@@ -1,0 +1,21 @@
+{
+  "role": "child_true_parent_false",
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-child-true-parent-false-attempt-1-spec.json",
+  "spec_sha256": "c99d0ddc0a496ed1e52edfcbbe9ceca0c8da4e72ab2172eae955bb7c9b711a12",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-child-true-parent-false-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T08:10:01.622727+00:00",
+  "environment_delta": {
+    "BAC_PARENT_C1_POISON_CASE": "child_true_parent_false"
+  },
+  "orchestrator_pid": 197792,
+  "script_sha256": "535c44f5701de108da810aa5aa177fe3cbebe2d91701774c49b8777b6c407b05",
+  "launcher_pid": 198159,
+  "launcher_start_ticks": 12311196,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T08:10:08.867016+00:00"
+}

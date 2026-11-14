@@ -1,0 +1,26 @@
+........................................................................ [ 56%]
+......................................................F                  [100%]
+=================================== FAILURES ===================================
+__________________ test_existing_symlink_destinations_refuse ___________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-50/test_existing_symlink_destinat0')
+
+    def test_existing_symlink_destinations_refuse(protocol, records, tmp_path):
+        output = tmp_path / "output"
+        output.mkdir()
+        scratch = tmp_path / "scratch"
+        scratch.mkdir()
+        (scratch / "attempt").symlink_to(output, target_is_directory=True)
+        value = records["spec"]
+        value.update(output_root=str(output), scratch_root=str(scratch))
+        value["jobs"][0].update(output=str(output / "attempt" / "job"), scratch=str(scratch / "attempt" / "job"))
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:600: Failed
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_existing_symlink_destinations_refuse
+1 failed, 126 passed in 1.78s

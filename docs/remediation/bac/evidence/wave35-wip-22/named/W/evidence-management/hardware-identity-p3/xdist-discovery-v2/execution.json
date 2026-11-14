@@ -1,0 +1,34 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "xdist.plugin",
+    "-p",
+    "test_bac_hardware_identity_v1",
+    "-n",
+    "2",
+    "--dist",
+    "each",
+    "-q",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_xdist_environment_probe"
+  ],
+  "pid": 185600,
+  "start": "2026-11-14T06:50:24.287432+00:00",
+  "end": "2026-11-14T06:50:25.558950+00:00",
+  "exit_code": 0,
+  "test_sha256": "ce341ad2297027fb296a38fb257d867b205cf1ab1c6e31d2e9a5e3d3c3bd2907",
+  "environment": {
+    "PATH": "/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/opt/codex/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/agent/.local/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "BAC_P3_ENV_PROBE": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/xdist-discovery-v2",
+    "LC_ALL": "C"
+  }
+}

@@ -1,0 +1,30 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> test_verify_bac_hardware_v1.py:3:1
+   |
+ 1 |   """Independent inert evidence fixtures; never import APP, Torch or runner fixtures."""
+ 2 |
+ 3 | / import copy
+ 4 | | import importlib
+ 5 | | import importlib.util
+ 6 | | import json
+ 7 | | from pathlib import Path
+ 8 | |
+ 9 | | import bac_hardware_protocol_v1 as p
+10 | | import pytest
+   | |_____________^
+11 |
+12 |   T0 = "2026-11-14T00:00:00.000000Z"
+   |
+help: Organize imports
+   |
+8  |
+   - import bac_hardware_protocol_v1 as p
+9  | import pytest
+10 |
+11 + import bac_hardware_protocol_v1 as p
+12 +
+13 | T0 = "2026-11-14T00:00:00.000000Z"
+   |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

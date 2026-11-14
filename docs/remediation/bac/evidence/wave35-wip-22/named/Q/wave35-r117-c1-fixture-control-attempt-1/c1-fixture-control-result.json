@@ -1,0 +1,25 @@
+{
+  "name": "c1-fixture-control",
+  "exit_code": 0,
+  "seconds": 7.933337346010376,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_fixture_standalone_initial_restore[shared-none]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control.log",
+  "sha256": "73de5ba989d4e1db22044fa1a2e7ff29b55ef5e1137539b0c62a02ff07030831",
+  "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

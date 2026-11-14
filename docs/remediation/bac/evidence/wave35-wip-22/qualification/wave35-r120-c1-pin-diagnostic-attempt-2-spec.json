@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r120-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-2",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "c1-pin-diagnostic",
+      "args": [
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/diagnostics/test_owner_pin_referrers.py::test_owner_pin_referrers",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

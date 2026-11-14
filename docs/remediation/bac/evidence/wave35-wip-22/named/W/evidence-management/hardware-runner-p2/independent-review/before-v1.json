@@ -1,0 +1,24 @@
+{
+  "utc": "2026-11-14T07:18:34.817251+00:00",
+  "pid": 189544,
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/run_bac_hardware_v1.py.frozen-v1.txt",
+      "sha256": "c0ec80b6b632618e1c1b9cb373efcb61e3b3ccb9d3677be7a1129cf58ab60a5a",
+      "bytes": 75334
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/test_run_bac_hardware_v1.py.frozen-v1.txt",
+      "sha256": "398dee45706bd1e85b3b15d8908103f484ccaceb637bbe6c7508bd87ece6b397",
+      "bytes": 55611
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review/bac_hardware_protocol_v1.py.frozen-v1.txt",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    }
+  ]
+}

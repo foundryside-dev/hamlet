@@ -1,0 +1,20 @@
+........................................................F....            [100%]
+=================================== FAILURES ===================================
+__________ test_cuda_profile_common_custody_never_implies_device_work __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-129/test_cuda_profile_common_custo0')
+
+    def test_cuda_profile_common_custody_never_implies_device_work(tmp_path):
+        evidence = Evidence(tmp_path, common=True, cuda=True)
+        receipt = evidence.verify()
+        assert receipt["custody"] == "satisfied"
+>       assert receipt["hardware"] == "unrun"
+E       AssertionError: assert 'unsatisfied' == 'unrun'
+E         
+E         - unrun
+E         + unsatisfied
+
+test_verify_bac_hardware_v1.py:481: AssertionError
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_cuda_profile_common_custody_never_implies_device_work
+1 failed, 60 passed in 2.82s

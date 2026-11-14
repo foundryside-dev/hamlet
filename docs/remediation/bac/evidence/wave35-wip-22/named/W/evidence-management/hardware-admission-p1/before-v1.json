@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-14T05:52:56.645449+00:00",
+  "packet": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "present": true,
+      "bytes": 6277,
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "present": true,
+      "bytes": 31365,
+      "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7",
+      "lines": 467
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "present": false,
+      "bytes": null,
+      "sha256": null,
+      "lines": null
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "present": false,
+      "bytes": null,
+      "sha256": null,
+      "lines": null
+    }
+  ],
+  "cap_files": 4,
+  "cap_lines": 2800,
+  "scope": "P1 synthetic only; no APP import or runtime or real hardware; root coordinates independent review"
+}

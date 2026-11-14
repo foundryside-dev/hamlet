@@ -1,0 +1,227 @@
+{
+  "schema": "bac-root-tool-adoption-v1",
+  "at": "2026-11-14T07:04:51.533009+00:00",
+  "packet": "hardware-admission-P1",
+  "status": "ADOPTED FOR SYNTHETIC TOOL INTEGRATION; ACTUAL HARDWARE UNRUN",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/freeze-v2.json",
+    "bytes": 5059,
+    "sha256": "d8b4a363cc8f7d585e1d8fade9226a454ce54672995e08fc8dbb4bee30b30342"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P1-INDEPENDENT-REVIEW-v1.md",
+    "bytes": 9637,
+    "sha256": "06bd2fb33aaed49259707b32dc8f930aff975e98f37316396513a5dc9b272c26"
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+    "bytes": 5867,
+    "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+  },
+  "independent_checks": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/author-suite-v2.json",
+      "bytes": 2283,
+      "sha256": "e002018a4da19b3cbb83a3c064987b82fb9ed9229fe2fb31b62c178773fa4ad5"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/author-suite-v2.log",
+      "bytes": 179,
+      "sha256": "49b8999441b3a2b2a2d968272a2416d82da62b8f0f984bfc834ea68561f2ee96"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-green-v1.json",
+      "bytes": 2359,
+      "sha256": "c127a4905d4e96ffec5197139adc9ca6d39d24dc0ed28d152a6f0aa43863a810"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-green-v1.log",
+      "bytes": 98,
+      "sha256": "9f5fca75b3047a6b50338570acc3b84d6f91fc01f7616bf565c9c7f9222d4381"
+    }
+  ],
+  "verified_reference_occurrences": 14,
+  "verified_references": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/freeze-v1.json",
+      "bytes": 4618,
+      "sha256": "d2e0a9b6897560e561a2fcc8178ae66275a4379214578d66684695152a75d0bf"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "bytes": 6277,
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 59888,
+      "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 49564,
+      "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+      "bytes": 4220,
+      "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/freeze-v4.json",
+      "bytes": 3836,
+      "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+      "bytes": 5867,
+      "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1.json",
+      "bytes": 2504,
+      "sha256": "569b9aa820264daf88f85047f3b4b31e455a90c93a5a2adfc67d2ab88efc44f8"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1.log",
+      "bytes": 14278,
+      "sha256": "3a9cf4a14f11a01855643b2410528533b43433cb89d37617a9ededf3f742f830"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1.json",
+      "bytes": 2678,
+      "sha256": "328c72393b613aa6b947b775e434f922b5683046c97b6522f7320619d7dd5f92"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1.log",
+      "bytes": 179,
+      "sha256": "d1245cc37b98a1ac91142448d1296e73c681457a3b448763c01f5e16773aab3f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1-source/capture_bac_hardware_v1.py.txt",
+      "bytes": 59888,
+      "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1-source/test_capture_bac_hardware_v1.py.txt",
+      "bytes": 49564,
+      "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b"
+    }
+  ],
+  "attempt_snapshot_bindings": [
+    {
+      "attempt": "author-suite-v2",
+      "source_observed": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+        "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a",
+        "bytes": 59888
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/author-suite-v2-source/capture_bac_hardware_v1.py.txt",
+        "bytes": 59888,
+        "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a"
+      }
+    },
+    {
+      "attempt": "author-suite-v2",
+      "source_observed": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+        "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b",
+        "bytes": 49564
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/author-suite-v2-source/test_capture_bac_hardware_v1.py.txt",
+        "bytes": 49564,
+        "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b"
+      }
+    },
+    {
+      "attempt": "author-suite-v2",
+      "source_observed": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+        "bytes": 34237
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/author-suite-v2-source/bac_hardware_protocol_v1.py.txt",
+        "bytes": 34237,
+        "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+      }
+    },
+    {
+      "attempt": "author-suite-v2",
+      "source_observed": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py",
+        "sha256": "527b41f49e971e944ab8ea3c6d84b601d24da0305820851c395b208c819d3a2b",
+        "bytes": 3697
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/author-suite-v2-source/test_p1_independent.py.txt",
+        "bytes": 3697,
+        "sha256": "527b41f49e971e944ab8ea3c6d84b601d24da0305820851c395b208c819d3a2b"
+      }
+    },
+    {
+      "attempt": "independent-green-v1",
+      "source_observed": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+        "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a",
+        "bytes": 59888
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-green-v1-source/capture_bac_hardware_v1.py.txt",
+        "bytes": 59888,
+        "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a"
+      }
+    },
+    {
+      "attempt": "independent-green-v1",
+      "source_observed": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+        "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b",
+        "bytes": 49564
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-green-v1-source/test_capture_bac_hardware_v1.py.txt",
+        "bytes": 49564,
+        "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b"
+      }
+    },
+    {
+      "attempt": "independent-green-v1",
+      "source_observed": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+        "bytes": 34237
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-green-v1-source/bac_hardware_protocol_v1.py.txt",
+        "bytes": 34237,
+        "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+      }
+    },
+    {
+      "attempt": "independent-green-v1",
+      "source_observed": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py",
+        "sha256": "0c4771d75130d959a032b5873ac222d7cfb76963e3ecfb34beecc8a436724cf1",
+        "bytes": 3845
+      },
+      "retained_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-green-v1-source/test_p1_independent.py.txt",
+        "bytes": 3845,
+        "sha256": "0c4771d75130d959a032b5873ac222d7cfb76963e3ecfb34beecc8a436724cf1"
+      }
+    }
+  ],
+  "author_result": "99 synthetic PASS",
+  "independent_result": "same author99 rerun PASS; independent5 PASS separately. Earlier RED/prerequisite/fixture failures retained; no aggregate runtime claim",
+  "required_consumer_semantics": "P2 requires closed admitted terminal result.json with empty reasons and exact spec/admission refs. Partial provisional spec cannot authorize launch. Capture-only inherited lease FD observations checked; job environment unchanged.",
+  "boundary": "Out-of-band root authority and no-writer source/namespace custody required. Bounded owned-process-group cleanup; no guaranteed supervision of deliberately escaped or FD-closing descendants or uncatchable death. Actual CPU/server/CUDA/APP qualification UNRUN.",
+  "history": "All executed source versions preserved; some early unexecuted intermediate author test drafts not separately snapshotted. Root stale-live-probe check failure retained/resolved through exact attempt snapshots. No acceptance waiver."
+}

@@ -1,0 +1,25 @@
+..........................................................F............. [ 93%]
+.....                                                                    [100%]
+=================================== FAILURES ===================================
+________ test_read_only_capture_emits_bound_spec_and_exclusive_refusal _________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-capture-v1-fixtures/test_read_only_capture_emits_b0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4a49c6d6d0>
+
+    def test_read_only_capture_emits_bound_spec_and_exclusive_refusal(tmp_path, monkeypatch):
+        tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+        candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+        stub_capture_observations(monkeypatch, tool, req, env, registry)
+        before = {row["path"]: protocol.file_reference(Path(row["path"])) for rows in source["inventory"].values() for row in rows}
+        destination = tmp_path / "capture"
+        result = tool.capture(candidate, request_path, destination)
+>       assert result["disposition"] == "admitted" and result["reasons"] == []
+E       AssertionError: assert ('refused' == 'admitted'
+E         
+E         - admitted
+E         + refused)
+
+test_capture_bac_hardware_v1.py:445: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_emits_bound_spec_and_exclusive_refusal
+1 failed, 76 passed in 0.81s

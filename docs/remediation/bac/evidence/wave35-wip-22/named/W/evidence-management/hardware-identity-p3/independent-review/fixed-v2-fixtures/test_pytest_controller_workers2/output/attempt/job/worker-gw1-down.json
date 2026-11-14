@@ -1,0 +1,64 @@
+{
+  "at": "2026-11-14T07:16:16.179640Z",
+  "controller_start": {
+    "bytes": 9335,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers2/output/attempt/job/process-p-56d4b9e238b368f3a7c4b54543e2753666d88ef031b9b999532322e0823830e9-start.json",
+    "sha256": "dd2bdc68e5cc20d690809e012e0a32068adc16727b72d4486f52d073a21d5773"
+  },
+  "error": "",
+  "phase": "down",
+  "predecessor_start": [
+    {
+      "bytes": 8912,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers2/output/attempt/job/process-p-1634b23b9a67c944edad92d72d1fade14531877d05cefc607034ed1831abe0b5-start.json",
+      "sha256": "42f6756ae3e56d8df7b9bcce9a4878c7928085d645289d57938099e0832ad29b"
+    }
+  ],
+  "prior_lifecycle": [
+    {
+      "bytes": 2499,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers2/output/attempt/job/worker-gw1-configure.json",
+      "sha256": "0daac7616c71f0489f5182bfd49b212f64c9fa41c81f501bcf7a617b98e94c48"
+    }
+  ],
+  "process_start": [
+    {
+      "bytes": 9092,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers2/output/attempt/job/process-p-68779ee4cdf4f3f836abd3a5dbd7ac59a813447c8f17dafe9893b82caa27be98-start.json",
+      "sha256": "a636ee22091ddc735b4f70940398820dfdff5180a81f360bbcd4d009b4e3aa8b"
+    }
+  ],
+  "role_id": "workers",
+  "schema": "bac-hardware-worker-lifecycle-v1",
+  "worker_identity": {
+    "mainargv": [
+      "/workspace/hamlet/.venv/lib/python3.13/site-packages/pytest/__main__.py",
+      "-c",
+      "/dev/null",
+      "--rootdir",
+      "/workspace/bac-review-2026-11-01/qualification",
+      "--noconftest",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "xdist.plugin",
+      "-p",
+      "test_bac_hardware_identity_v1",
+      "-p",
+      "bac_hardware_identity_v1",
+      "--bac-identity-policy",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers2/policy.json",
+      "--bac-identity-policy-sha256",
+      "c11acef91064154c8e785c77218b3f7e12b7be566c2fde7e7e99cb60cb9f8494",
+      "-q",
+      "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py::test_inert_replacement",
+      "-n",
+      "1",
+      "--max-worker-restart",
+      "1"
+    ],
+    "testrunuid": "0fd4f957246a482aa72871b3983359cc",
+    "workercount": 1,
+    "workerid": "gw1"
+  }
+}

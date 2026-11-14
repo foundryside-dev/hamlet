@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-14T07:16:15.354016Z",
+  "case_id": "test_bac_hardware_identity_v1.py::test_inert_replacement[1]",
+  "longrepr": "",
+  "outcome": "passed",
+  "phase": "setup",
+  "process": {
+    "bytes": 8912,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers2/output/attempt/job/process-p-1634b23b9a67c944edad92d72d1fade14531877d05cefc607034ed1831abe0b5-start.json",
+    "sha256": "42f6756ae3e56d8df7b9bcce9a4878c7928085d645289d57938099e0832ad29b"
+  },
+  "schema": "bac-hardware-pytest-report-v1"
+}

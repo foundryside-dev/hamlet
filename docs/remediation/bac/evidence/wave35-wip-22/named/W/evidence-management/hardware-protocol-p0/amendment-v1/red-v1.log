@@ -1,0 +1,326 @@
+.F.................................................................F.... [ 59%]
+.......F.....F..............F.....FF..........FFFF                       [100%]
+=================================== FAILURES ===================================
+________________ test_closed_schema_complete_synthetic_records _________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_closed_schema_complete_synthetic_records(protocol, records):
+        for kind, value in records.items():
+>           protocol.validate_record(kind, value)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:461: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+_____________ test_fork_guard_role_no_torch_and_strict_obligation ______________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_fork_guard_role_no_torch_and_strict_obligation(protocol, records):
+        role = dict(records["role"], role="fork-guard", observer="guard-only", torch_policy="forbidden", cuda_policy="forbidden")
+>       protocol.validate_record("role", role)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:204: in _check
+    _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'role: exact fields required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: role: exact fields required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+__________ test_child_role_requires_owned_contract_and_strict_threads __________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_child_role_requires_owned_contract_and_strict_threads(protocol, records):
+        job = records["job"]
+        child = dict(records["role"], id="child", role="spawn-child")
+        job["roles"].append(child)
+        with pytest.raises(ValueError):
+            protocol.validate_record("job", job)
+        child_contract = dict(records["obligation"], id="child-contract", kind="strict-child-core", evidence_class="cpu-standin")
+        job["obligations"].append(child_contract)
+>       protocol.validate_record("job", job)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:333: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:204: in _check
+    _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'job: exact fields required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: job: exact fields required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+________________ test_cuda_job_keeps_explicit_mapped_allocation ________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_cuda_job_keeps_explicit_mapped_allocation(protocol, records):
+        job = records["job"]
+        job["profile"] = "cuda"
+        job["environment"]["CUDA_VISIBLE_DEVICES"] = "GPU-synthetic"
+        job["seed"]["cuda"] = [11]
+        job["devices"] = [{"logical_index": 0, "gpu_uuid": "GPU-synthetic", "mig_uuid": None,
+                           "physical_parent_uuid": "GPU-synthetic", "model": "inert", "vram_bytes": 1024,
+                           "isolation": "physical-exclusive", "mapping_provenance": records["reference"]}]
+        job["obligations"].append(dict(records["obligation"], id="real-cuda", kind="cuda-nondefault-rng",
+                                       evidence_class="real-cuda", minimum_devices=1))
+>       protocol.validate_record("job", job)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:383: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:204: in _check
+    _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'job: exact fields required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: job: exact fields required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+_____________ test_timeout_and_grace_are_required_without_defaults _____________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_timeout_and_grace_are_required_without_defaults(protocol, records):
+        for field in ("timeout_seconds", "termination_grace_seconds"):
+            value = copy.deepcopy(records["job"])
+            value.pop(field)
+            with pytest.raises(ValueError):
+                protocol.validate_record("job", value)
+        records["job"].update(timeout_seconds=0.01, termination_grace_seconds=0)
+>       protocol.validate_record("job", records["job"])
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:444: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:204: in _check
+    _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'job: exact fields required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: job: exact fields required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+____________ test_replacement_and_peak_reservations_are_multiplied _____________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 4, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_replacement_and_peak_reservations_are_multiplied(protocol, records):
+        job = records["job"]
+        job["roles"][0].update(peak_cpu_slots=2, replacement_limit=1)
+        with pytest.raises(ValueError):
+            protocol.validate_record("job", job)
+        job["budget"]["cpu_slots"] = 4
+>       protocol.validate_record("job", job)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:461: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:204: in _check
+    _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'job: exact fields required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: job: exact fields required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+_________________ test_interop_setting_is_not_peak_cpu_demand __________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 1, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_interop_setting_is_not_peak_cpu_demand(protocol, records):
+        records["job"]["budget"]["cpu_slots"] = 1
+>       protocol.validate_record("job", records["job"])
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:466: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:204: in _check
+    _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'job: exact fields required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: job: exact fields required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+_______________ test_serial_cpu_ram_and_retained_scratch_budgets _______________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_serial_cpu_ram_and_retained_scratch_budgets(protocol, records):
+        value = two_jobs(records)
+>       protocol.validate_spec(value)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:467: in validate_spec
+    validate_record("spec", spec)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:204: in _check
+    _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'spec: exact fields required'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: spec: exact fields required
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+_____________ test_job_evidence_is_nonterminal_and_can_be_partial ______________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_job_evidence_is_nonterminal_and_can_be_partial(protocol, records):
+        evidence = records["job-evidence"]
+        evidence.update(collected_ids=[], outcomes=[], process_records=[], obligation_records=[], source_witnesses=[])
+>       protocol.validate_record("job-evidence", evidence)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:528: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:461: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+____ test_completed_unverified_preserves_real_zero_exit_with_missing_proof _____
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_completed_unverified_preserves_real_zero_exit_with_missing_proof(protocol, records):
+        value = records["job-result"]
+        value.update(disposition="completed-unverified", reason="normal completion but missing completion.json",
+                     outcomes=[], process_records=[], obligation_records=[], source_witnesses=[])
+>       protocol.validate_record("job-result", value)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:542: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:462: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:234: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:206: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:210: in _check
+    _require(any(type(value) is type(option) and value == option for option in rule[1:]), f"{location}: invalid enum")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'job-result.disposition: invalid enum'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: job-result.disposition: invalid enum
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:140: ValueError
+_____________________ test_terminal_disposition_precedence _____________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_terminal_disposition_precedence(protocol, records):
+        value = records["job-result"]
+        value.update(disposition="completed-failed", exit_code=1, reason="exit failure and missing proof", outcomes=[])
+        protocol.validate_record("job-result", value)
+        value["exit_code"] = 0
+        with pytest.raises(ValueError):
+            protocol.validate_record("job-result", value)
+        value.update(exit_code=-15, signal=15)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:564: Failed
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_complete_synthetic_records
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_fork_guard_role_no_torch_and_strict_obligation
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_child_role_requires_owned_contract_and_strict_threads
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_cuda_job_keeps_explicit_mapped_allocation
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_timeout_and_grace_are_required_without_defaults
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_replacement_and_peak_reservations_are_multiplied
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_interop_setting_is_not_peak_cpu_demand
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_serial_cpu_ram_and_retained_scratch_budgets
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_job_evidence_is_nonterminal_and_can_be_partial
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_completed_unverified_preserves_real_zero_exit_with_missing_proof
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_terminal_disposition_precedence
+11 failed, 111 passed in 1.79s

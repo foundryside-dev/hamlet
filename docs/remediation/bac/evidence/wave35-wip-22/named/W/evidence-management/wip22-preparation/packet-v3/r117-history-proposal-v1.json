@@ -1,0 +1,652 @@
+{
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 206841,
+            "path": "wave35/r117-candidate.json",
+            "root": "W",
+            "sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499"
+          },
+          "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection/identity-controller.json",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32",
+              "type": "file"
+            },
+            {
+              "bytes": 644,
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection-custody.json",
+              "sha256": "19d83aab7ff51b6b4db6c6e1656de600e59f2a04299d5f37192359c4862a3956",
+              "type": "file"
+            },
+            {
+              "bytes": 887,
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection-result.json",
+              "sha256": "108da4a65ddb65544a93323b8a3e86e1cf0de33fa89b79827ef8e67209556a2e",
+              "type": "file"
+            },
+            {
+              "bytes": 3116,
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection.log",
+              "sha256": "72499f140550b41ffa2050a2aa7d47ecf1908cffad7ca25ed3a058a873bbacac",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.110413948001224,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 3892,
+              "path": "wave35/r117-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "971c4b533f98185f090625b5af523317a6e8efa31bd0bd97fbc78c0c00ac53fc"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "3d1ac1428990c22ad64311e46a88728dd03a562f"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r117-c1-collection-attempt-1--c1-collection",
+          "log_paths": [
+            {
+              "bytes": 3116,
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection.log",
+              "root": "Q",
+              "sha256": "72499f140550b41ffa2050a2aa7d47ecf1908cffad7ca25ed3a058a873bbacac"
+            }
+          ],
+          "path": "wave35-r117-c1-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-collection-attempt-1/c1-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 887,
+            "path": "wave35-r117-c1-collection-attempt-1/c1-collection-result.json",
+            "root": "Q",
+            "sha256": "108da4a65ddb65544a93323b8a3e86e1cf0de33fa89b79827ef8e67209556a2e"
+          },
+          "record_id": "c1-collection",
+          "result": {
+            "bytes": 887,
+            "path": "wave35-r117-c1-collection-attempt-1/c1-collection-result.json",
+            "root": "Q",
+            "sha256": "108da4a65ddb65544a93323b8a3e86e1cf0de33fa89b79827ef8e67209556a2e"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 644,
+            "path": "wave35-r117-c1-collection-attempt-1/c1-collection-custody.json",
+            "root": "Q",
+            "sha256": "19d83aab7ff51b6b4db6c6e1656de600e59f2a04299d5f37192359c4862a3956"
+          }
+        }
+      ],
+      "check": "wave35-r117-c1-collection--c1-collection",
+      "check_kind": "collection",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r117-c1-collection-attempt-1--c1-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 206841,
+            "path": "wave35/r117-candidate.json",
+            "root": "W",
+            "sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499"
+          },
+          "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_fixture_standalone_initial_restore[shared-none]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control/identity-controller.json",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32",
+              "type": "file"
+            },
+            {
+              "bytes": 649,
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control-custody.json",
+              "sha256": "a596a87b7aba75516a3fbe98e9dbd909862faa53041486c46e8bf6c837688dc2",
+              "type": "file"
+            },
+            {
+              "bytes": 934,
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control-result.json",
+              "sha256": "d2f3d04be515166b20a93e12a809a19e6e7f2bca1073690fbcaadae615a54ae1",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control.log",
+              "sha256": "73de5ba989d4e1db22044fa1a2e7ff29b55ef5e1137539b0c62a02ff07030831",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.933337346010376,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 3892,
+              "path": "wave35/r117-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "971c4b533f98185f090625b5af523317a6e8efa31bd0bd97fbc78c0c00ac53fc"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "3d1ac1428990c22ad64311e46a88728dd03a562f"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r117-c1-fixture-control-attempt-1--c1-fixture-control",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control.log",
+              "root": "Q",
+              "sha256": "73de5ba989d4e1db22044fa1a2e7ff29b55ef5e1137539b0c62a02ff07030831"
+            }
+          ],
+          "path": "wave35-r117-c1-fixture-control-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 934,
+            "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control-result.json",
+            "root": "Q",
+            "sha256": "d2f3d04be515166b20a93e12a809a19e6e7f2bca1073690fbcaadae615a54ae1"
+          },
+          "record_id": "c1-fixture-control",
+          "result": {
+            "bytes": 934,
+            "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control-result.json",
+            "root": "Q",
+            "sha256": "d2f3d04be515166b20a93e12a809a19e6e7f2bca1073690fbcaadae615a54ae1"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 649,
+            "path": "wave35-r117-c1-fixture-control-attempt-1/c1-fixture-control-custody.json",
+            "root": "Q",
+            "sha256": "a596a87b7aba75516a3fbe98e9dbd909862faa53041486c46e8bf6c837688dc2"
+          }
+        }
+      ],
+      "check": "wave35-r117-c1-fixture-control--c1-fixture-control",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r117-c1-fixture-control-attempt-1--c1-fixture-control"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 206841,
+            "path": "wave35/r117-candidate.json",
+            "root": "W",
+            "sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499"
+          },
+          "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_runtime_contender_does_not_take_lock_before_domain",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 1,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red",
+              "type": "directory"
+            },
+            {
+              "bytes": 2278,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red/failure-controller-c201d6650c6cd002.json",
+              "sha256": "cc8d0f2f683eb7a458aa23f550a4217a4bd8efa5a951aac0c9ab643f57c71dc1",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red/identity-controller.json",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32",
+              "type": "file"
+            },
+            {
+              "bytes": 684,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-failure-index.json",
+              "sha256": "2737e953a44008006d004e7726cf7d1c1c41e39a0496b80455fe24b129f1de03",
+              "type": "file"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-negative-custody.json",
+              "sha256": "8641057eca31ea2c73089fe36750096bd3bc84e923d7b2c12fcd93aaa68bbf3d",
+              "type": "file"
+            },
+            {
+              "bytes": 934,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-result.json",
+              "sha256": "6473c988395ee78781f11670b2d980df7e1a4317c6326e13857eba3a012c6443",
+              "type": "file"
+            },
+            {
+              "bytes": 2889,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red.log",
+              "sha256": "94f4169cef6768c74fd63d695bd270a168070f83e50f197efa84e507dffb3838",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.393981468005222,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 3892,
+              "path": "wave35/r117-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "971c4b533f98185f090625b5af523317a6e8efa31bd0bd97fbc78c0c00ac53fc"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "3d1ac1428990c22ad64311e46a88728dd03a562f"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r117-c1-lock-order-red-attempt-1--c1-lock-order-red",
+          "log_paths": [
+            {
+              "bytes": 2889,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red.log",
+              "root": "Q",
+              "sha256": "94f4169cef6768c74fd63d695bd270a168070f83e50f197efa84e507dffb3838"
+            }
+          ],
+          "path": "wave35-r117-c1-lock-order-red-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c9d80fe590c7de367562a8a70dbd2c9f8df31d791cf02a3be1e3aace27908a32"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 934,
+            "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-result.json",
+            "root": "Q",
+            "sha256": "6473c988395ee78781f11670b2d980df7e1a4317c6326e13857eba3a012c6443"
+          },
+          "record_id": "c1-lock-order-red",
+          "result": {
+            "bytes": 934,
+            "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-result.json",
+            "root": "Q",
+            "sha256": "6473c988395ee78781f11670b2d980df7e1a4317c6326e13857eba3a012c6443"
+          },
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 958,
+            "path": "wave35-r117-c1-lock-order-red-attempt-1/c1-lock-order-red-negative-custody.json",
+            "root": "Q",
+            "sha256": "8641057eca31ea2c73089fe36750096bd3bc84e923d7b2c12fcd93aaa68bbf3d"
+          }
+        }
+      ],
+      "check": "wave35-r117-c1-lock-order-red--c1-lock-order-red",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r117-c1-lock-order-red-attempt-1--c1-lock-order-red"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 206841,
+            "path": "wave35/r117-candidate.json",
+            "root": "W",
+            "sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499"
+          },
+          "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+          "command": null,
+          "counts": null,
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r117-collection-spec.json",
+              "sha256": "932d1f295aa4acc48297492a37fbc4aafd8212ae0f89a984e4c1bf7346aeb3d5",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 3892,
+              "path": "wave35/r117-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "971c4b533f98185f090625b5af523317a6e8efa31bd0bd97fbc78c0c00ac53fc"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "3d1ac1428990c22ad64311e46a88728dd03a562f"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r117-collection-spec.json--unrun",
+          "path": "wave35-r117-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 capture template; no execution. Actual C1 named attempts are separately indexed."
+        }
+      ],
+      "check": "wave35-r117-collection-spec.json--unrun",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r117-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 206841,
+            "path": "wave35/r117-candidate.json",
+            "root": "W",
+            "sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499"
+          },
+          "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+          "command": null,
+          "counts": null,
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r117-owned-spec.json",
+              "sha256": "6c2cf5c9f2a9ecd1b6151e1d44e16ed789a530f15fa033d69e08143ece03ab2b",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 3892,
+              "path": "wave35/r117-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "971c4b533f98185f090625b5af523317a6e8efa31bd0bd97fbc78c0c00ac53fc"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "3d1ac1428990c22ad64311e46a88728dd03a562f"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r117-owned-spec.json--unrun",
+          "path": "wave35-r117-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 capture template; no execution. Actual C1 named attempts are separately indexed."
+        }
+      ],
+      "check": "wave35-r117-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r117-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_manifest": {
+    "bytes": 206841,
+    "path": "wave35/r117-candidate.json",
+    "root": "W",
+    "sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499"
+  },
+  "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "3d1ac1428990c22ad64311e46a88728dd03a562f"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r117-c1-collection-attempt-1",
+      "round": 117,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r117-c1-collection-attempt-1-spec.json",
+      "round": 117,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r117-c1-fixture-control-attempt-1",
+      "round": 117,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r117-c1-fixture-control-attempt-1-spec.json",
+      "round": 117,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r117-c1-lock-order-red-attempt-1",
+      "round": 117,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r117-c1-lock-order-red-attempt-1-spec.json",
+      "round": 117,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r117-collection-spec.json",
+      "round": 117,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r117-owned-spec.json",
+      "round": 117,
+      "status": "UNRUN"
+    }
+  ],
+  "round": 117,
+  "schema": "bac-wip22-round-history-proposal-v1",
+  "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+  "status": "DRAFT FINITE HISTORY; ROOT RECONCILIATION REQUIRED"
+}

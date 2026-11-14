@@ -1,0 +1,249 @@
+"""Causal producer custody controls; parent/ENV/runner qualification is separate."""
+
+from __future__ import annotations
+
+from contextlib import contextmanager
+from copy import copy, deepcopy
+from threading import Event, Thread
+from typing import Any
+
+import pytest
+import torch
+
+from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import (
+    IDS,
+    compiled,
+    equal,
+    make_parent,
+    observe_runtime,
+)
+from townlet.exploration.rng_custody import process_rng_domain
+
+
+class Controller:
+    """A genuinely registered component controller, not POP role authority."""
+
+    def __init__(self) -> None:
+        self.participant = process_rng_domain().register(owner=self, cuda_devices=(), entrypoints=frozenset({"component"}))
+
+    def invocation(self) -> Any:
+        return process_rng_domain().device_invocation(
+            participant=self.participant, operation_kind="component", lineage=None, cuda_devices=()
+        )
+
+
+@contextmanager
+def bound(owner: Any, controller: Controller) -> Any:
+    with owner.retain_parent_custody() as scope:
+        invocation = controller.invocation()
+        with invocation as operation:
+            with scope.bind_operation(operation=operation):
+                yield scope
+        assert invocation.completion_failed() is False
+
+
+def restore_initial(runtime: Any, state: Any) -> None:
+    prepared = runtime.prepare_restore(
+        state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+    )
+    runtime.install_restore(prepared=prepared)
+
+
+@pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+def test_fixture_standalone_initial_restore(compiled: Any, family: str, scope: str) -> None:
+    """Positive fixture control: retained-custody changes must preserve ordinary restore."""
+    rig = make_parent(compiled, family, scope)
+    state = rig.runtime.checkpoint_state()
+    restore_initial(rig.runtime, state)
+    equal(rig.runtime.checkpoint_state(), state)
+    rig.enter()
+    assert rig.runtime.begin_episode(accepted=rig.record.accepted) is not None
+    assert rig.bank.begin_episode(accepted=rig.record.accepted) is not None
+
+
+@pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+def test_bound_component_reward_service_retry(compiled: Any, monkeypatch: Any, family: str, scope: str) -> None:
+    """Missing explicit BANK lineage prevents genuine reward/service under the controller."""
+    rig = make_parent(compiled, family, scope)
+    rig.enter()
+    controller = Controller()
+    observed = observe_runtime(monkeypatch, rig)
+    candidate = rig.candidate()
+    prepared = rig.population.prepare_vector_step(**candidate)
+    with bound(rig.runtime, controller):
+        rig.env.step(candidate["actions"], vector_step=prepared)
+        kwargs, reward = observed["reward"][-1]
+        service = {key: kwargs[key] for key in ("context", "stamp", "accepted")}
+        first = rig.runtime.admit_and_service(**service)
+        again = rig.runtime.admit_and_service(**service)
+        assert first == again
+        assert bool(reward.eligible.all())
+        assert torch.isfinite(reward.raw).all()
+        assert torch.equal(rig.runtime.epsilon_tensor(batch_size=len(IDS), device="cpu"), torch.full((len(IDS),), rig.runtime.epsilon))
+        assert rig.runtime.begin_episode(accepted=rig.record.accepted) is not None
+    assert not rig.runtime._operation_active
+    assert not rig.bank._entered
+
+
+def test_direct_bank_controller_and_unrelated_runtime_refusal(compiled: Any) -> None:
+    """A BANK controller binds only its BANK; unrelated runtime cannot adopt ambient lineage."""
+    rig = make_parent(compiled)
+    rig.enter()
+    controller = Controller()
+    with bound(rig.bank, controller):
+        assert rig.bank.begin_episode(accepted=rig.record.accepted) is not None
+        assert rig.bank.snapshot_world(world_id=IDS[0])
+        with pytest.raises(RuntimeError):
+            rig.runtime.epsilon_tensor(batch_size=1, device="cpu")
+    assert rig.runtime.epsilon_tensor(batch_size=1, device="cpu").shape == (1,)
+
+
+def test_retained_scope_requires_binding_and_expires(compiled: Any) -> None:
+    """Idle retention cannot confer draw authority and an exited scope cannot be reused."""
+    rig = make_parent(compiled)
+    controller = Controller()
+    with rig.runtime.retain_parent_custody() as scope:
+        with pytest.raises(RuntimeError):
+            rig.runtime.epsilon_tensor(batch_size=1, device="cpu")
+        with pytest.raises((TypeError, RuntimeError)):
+            copy(scope)
+        with pytest.raises((TypeError, RuntimeError)):
+            deepcopy(scope)
+        with pytest.raises(RuntimeError):
+            with rig.runtime.retain_parent_custody():
+                pytest.fail("nested custody entered")
+        with pytest.raises(RuntimeError):
+            with rig.bank.retain_parent_custody():
+                pytest.fail("runtime delegated BANK custody was borrowed")
+        with pytest.raises((TypeError, RuntimeError)):
+            with scope.bind_operation(operation=object()):
+                pytest.fail("forged lineage entered")
+    with controller.invocation() as operation:
+        with pytest.raises(RuntimeError):
+            with scope.bind_operation(operation=operation):
+                pytest.fail("expired custody entered")
+
+
+def test_scope_wrong_thread_refuses_without_waiting(compiled: Any) -> None:
+    """A stolen handle must refuse immediately even while its issuer holds domain custody."""
+    rig = make_parent(compiled)
+    controller = Controller()
+    errors: list[BaseException] = []
+    finished = Event()
+    with rig.runtime.retain_parent_custody() as scope:
+        with controller.invocation() as operation:
+            def misuse() -> None:
+                try:
+                    with scope.bind_operation(operation=operation):
+                        pass
+                except BaseException as error:
+                    errors.append(error)
+                finally:
+                    finished.set()
+
+            thread = Thread(target=misuse, daemon=True)
+            thread.start()
+            assert finished.wait(2), "wrong-thread handle waited on retained domain"
+    thread.join(2)
+    assert len(errors) == 1 and isinstance(errors[0], RuntimeError)
+
+
+def test_runtime_contender_does_not_take_lock_before_domain(compiled: Any, monkeypatch: Any) -> None:
+    """The old runtime-before-domain order enters the observed lock while domain is held."""
+    rig = make_parent(compiled)
+    actual = rig.runtime._lock
+    lock_attempted, started, finished = Event(), Event(), Event()
+    errors: list[BaseException] = []
+
+    class ObservedLock:
+        def __enter__(self) -> Any:
+            lock_attempted.set()
+            return actual.__enter__()
+
+        def __exit__(self, *args: Any) -> Any:
+            return actual.__exit__(*args)
+
+    monkeypatch.setattr(rig.runtime, "_lock", ObservedLock())
+
+    def contender() -> None:
+        started.set()
+        try:
+            rig.runtime.epsilon_tensor(batch_size=1, device="cpu")
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            finished.set()
+
+    with process_rng_domain().admission(lineage=None):
+        thread = Thread(target=contender, daemon=True)
+        thread.start()
+        assert started.wait(2)
+        assert not lock_attempted.wait(0.2), "contender acquired runtime side before domain admission"
+        assert not finished.is_set()
+    thread.join(2)
+    assert finished.is_set() and not errors
+
+
+@pytest.mark.parametrize("owner_name", ["runtime", "bank"])
+def test_contender_waits_until_parent_consumer_and_scope_exit(compiled: Any, owner_name: str) -> None:
+    """Child return and parent completion alone must not release retained exclusion."""
+    rig = make_parent(compiled)
+    controller = Controller()
+    started, finished = Event(), Event()
+    errors: list[BaseException] = []
+
+    def contender() -> None:
+        started.set()
+        try:
+            getattr(rig, owner_name).checkpoint_state()
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            finished.set()
+
+    with rig.runtime.retain_parent_custody() as scope:
+        invocation = controller.invocation()
+        with invocation as operation:
+            with scope.bind_operation(operation=operation):
+                rig.runtime.checkpoint_state()
+            thread = Thread(target=contender, daemon=True)
+            thread.start()
+            assert started.wait(2)
+            assert not finished.wait(0.1), "child return released custody"
+        assert invocation.completion_failed() is False
+        assert not finished.wait(0.1), "parent completion released custody before consumer decision"
+    thread.join(2)
+    assert finished.is_set() and not errors
+
+
+def test_restore_after_retention_does_not_resurrect_scope(compiled: Any) -> None:
+    """Publishing a prepared BANK dictionary must not restore expired delegated authority."""
+    rig = make_parent(compiled)
+    controller = Controller()
+    with bound(rig.runtime, controller):
+        state = rig.runtime.checkpoint_state()
+    restore_initial(rig.runtime, state)
+    assert rig.bank.checkpoint_state()
+    with bound(rig.runtime, controller):
+        assert rig.runtime.checkpoint_state()
+
+
+@pytest.mark.parametrize("method", ["prepare_restore", "prepare_private_initialization", "install_restore"])
+def test_bound_cohort_entry_refuses_before_callbacks(compiled: Any, monkeypatch: Any, method: str) -> None:
+    """Bound cohort routes must refuse before parsing, reporting or cadence callbacks."""
+    rig = make_parent(compiled)
+    controller = Controller()
+    callbacks: list[str] = []
+    monkeypatch.setattr(rig.runtime, "_report", lambda *a, **k: callbacks.append("report"))
+    monkeypatch.setattr(rig.runtime, "_validate_parent_cadence", lambda **k: callbacks.append("cadence"))
+    kwargs = {
+        "prepare_restore": dict(state=None, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None),
+        "prepare_private_initialization": dict(state=None, initialization="fresh_private", parent_restore=None, validate_parent_restore=None),
+        "install_restore": dict(prepared=None),
+    }
+    with bound(rig.runtime, controller):
+        with pytest.raises(RuntimeError):
+            getattr(rig.runtime, method)(**kwargs[method])
+        assert callbacks == []

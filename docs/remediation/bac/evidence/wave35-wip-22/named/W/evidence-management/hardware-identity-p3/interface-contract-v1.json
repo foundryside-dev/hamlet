@@ -1,0 +1,75 @@
+{
+  "schema": "bac-hardware-identity-interface-v1",
+  "status": "FROZEN AUTHOR PACKET; independent review pending",
+  "public_api": "record_process(context: dict, phase: str) -> P0 reference",
+  "authority_contract": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-v3.md",
+    "bytes": 5150,
+    "sha256": "1eb2d8b5e2e11621ce59aef78a7c982d2cafe4ab81117004897a6ed5a9447faf"
+  },
+  "observation_contract": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-proposal-v2.md",
+    "bytes": 7777,
+    "sha256": "0c640ebd57ffc2475e15dc1754837bdd88250d9576c4a171697f637ffd8a84c6"
+  },
+  "phase_matrix": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/observation-matrix-v1.md",
+    "bytes": 1552,
+    "sha256": "6af9c6a3fef54b7faca5e4a97f2b536025d224cd8c43ac1281eea2bd50177bb1"
+  },
+  "protocol_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+    "bytes": 4220,
+    "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+  },
+  "protocol_interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+    "bytes": 13184,
+    "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+  },
+  "output_schemas": [
+    "process",
+    "source-witness",
+    "job-evidence"
+  ],
+  "private_schemas": [
+    "bac-hardware-process-observation-v1",
+    "bac-hardware-worker-lifecycle-v1",
+    "bac-hardware-pytest-report-v1",
+    "bac-hardware-pytest-collection-v1"
+  ],
+  "collection_schema": {
+    "schema": "bac-hardware-pytest-collection-v1",
+    "process": "P0 process-start reference",
+    "ids": "unique exact actual pytest node IDs"
+  },
+  "receipt_boundary": "No qualification receipt; P4/P5 independently consume observations and owned obligations",
+  "root_environment_authority": "All actual env keys equal sealed launch plus exact declared common additions and worker additions bound to real workerinput/lifecycle",
+  "source_order_gap": "P3 exact flattened input list order; owner reconciliation pending",
+  "body_inventory": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+      "bytes": 2917,
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "lines": 60
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "lines": 520
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "bytes": 34941,
+      "sha256": "a47a69c1e6639dae842d76e4b8f87b8ef21ec99cf07e926cda595a01a2f9c048",
+      "lines": 610
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "bytes": 29497,
+      "sha256": "3ab11afad87ea26fb68f64aa01c2b520f135dcd8b3708e4444a4686ed4ac1af4",
+      "lines": 521
+    }
+  ]
+}

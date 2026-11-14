@@ -1,0 +1,51 @@
+.....................................FF..F.                              [100%]
+=================================== FAILURES ===================================
+__________ test_candidate_file_outside_authorized_import_root_refused __________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-96/test_candidate_file_outside_au0/source/pkg/inert-module.txt'), 'blo...date_file_outside_au0/freeze.json', 'sha256': '3c26081374e8c7c4733c462ba8313352718bb435d4411e8e8fd50681f0c84c0e'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcbde278830>
+
+    def test_candidate_file_outside_authorized_import_root_refused(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        outside=_read(capsule['spec']['candidate'])['inventory']['configs'][0]['reference']
+        capsule['context']['required_imports'][0]['reference']=outside
+        sys.modules['inert_module'].__file__=outside['path']
+>       with pytest.raises(ValueError,match='import root'):api.record_process(capsule['context'],'start')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:487: Failed
+______________ test_unrequested_loaded_source_import_is_recorded _______________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-96/test_unrequested_loaded_source0/source/pkg/inert-module.txt'), 'blo...uested_loaded_source0/freeze.json', 'sha256': 'd19f08b2af3327abcedd7b6df22b3ec5d3309f1789ed90e8c34267e27383e0ce'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcbde3ea4a0>
+
+    def test_unrequested_loaded_source_import_is_recorded(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        module=types.ModuleType('extra_inert');module.__file__=str(capsule['blob'])
+        monkeypatch.setitem(sys.modules,'extra_inert',module)
+        record=_read(api.record_process(capsule['context'],'start'))
+>       assert {'name':'extra_inert','reference':capsule['blobref']} in record['imports']
+E       AssertionError: assert {'name': 'extra_inert', 'reference': {'bytes': 19, 'path': '/tmp/pytest-of-agent/pytest-96/test_unrequested_loaded_source0/source/pkg/inert-module.txt', 'sha256': '68dbe2e07dc5305478dcf486a2597403d9a3f4fae0f35459655f69fedee57b99'}} in [{'name': 'inert_module', 'reference': {'bytes': 19, 'path': '/tmp/pytest-of-agent/pytest-96/test_unrequested_loaded_source0/source/pkg/inert-module.txt', 'sha256': '68dbe2e07dc5305478dcf486a2597403d9a3f4fae0f35459655f69fedee57b99'}}]
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:495: AssertionError
+____________ test_root_grant_semantics_not_just_reference[update2] _____________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-96/test_root_grant_semantics_not_2/source/pkg/inert-module.txt'), 'blo...grant_semantics_not_2/freeze.json', 'sha256': '64d9cf4ff8f622a6dd6df78ba6a5db24be0c3aede3ccab43acd277a0fcd6efde'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcbde38ce50>
+update = {'start': '0'}
+
+    @pytest.mark.parametrize('update',[{'no_writer_barrier':False},{'end':'2026-01-02T00:00:00.000000Z'},
+                                       {'start':'0'},{'includes_untracked':False}])
+    def test_root_grant_semantics_not_just_reference(capsule,monkeypatch,update):
+        api=_prepare(capsule,monkeypatch);_replace_grant(capsule,update)
+>       with pytest.raises(ValueError):api.record_process(capsule['context'],'start')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:513: Failed
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_candidate_file_outside_authorized_import_root_refused
+FAILED test_bac_hardware_identity_v1.py::test_unrequested_loaded_source_import_is_recorded
+FAILED test_bac_hardware_identity_v1.py::test_root_grant_semantics_not_just_reference[update2]
+3 failed, 40 passed, 3 deselected in 9.15s

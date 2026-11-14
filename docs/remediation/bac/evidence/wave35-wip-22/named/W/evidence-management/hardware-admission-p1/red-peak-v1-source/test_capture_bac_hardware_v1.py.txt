@@ -1,0 +1,203 @@
+"""Synthetic-only P1 qualification: inert files and stub commands, never CUDA.
+
+These tests prove refusal/arithmetic/custody behavior. They do not qualify an
+actual CPU host, GPU, application, driver, root grant, or discovery observation.
+"""
+import copy
+import importlib
+import json
+from pathlib import Path
+import sys
+
+import pytest
+
+import bac_hardware_protocol_v1 as protocol
+
+
+def module():
+    # A missing implementation is a behavioral RED, not a collection error.
+    try:
+        return importlib.import_module("capture_bac_hardware_v1")
+    except ModuleNotFoundError:
+        pytest.fail("P1 admission implementation is missing")
+
+
+def reference(path, content):
+    path.write_text(content)
+    return protocol.file_reference(path)
+
+
+def request():
+    return {"profile": "cpu", "requested_visibility": "", "authorized_devices": [],
+            "requested_job_concurrency": 1,
+            "minimum": {"cpu_slots": 1, "ram_bytes": 200, "scratch_bytes": 100, "scratch_inodes": 1},
+            "reserve": {"cpu_slots": 0, "ram_bytes": 100, "scratch_bytes": 50, "scratch_inodes": 2},
+            "jobs": [{"budget": {"cpu_slots": 1, "ram_bytes": 200, "scratch_bytes": 100, "scratch_inodes": 1},
+                      "roles": [{"count": 1, "replacement_limit": 0, "peak_cpu_slots": 1}], "profile": "cpu", "devices": [],
+                      "environment": {"CUDA_VISIBLE_DEVICES": ""}}]}
+
+
+def observation():
+    return {"schema": "bac-hardware-discovery-v1", "profile": "cpu",
+            "identity": {"pid": 4321, "ppid": 1234, "start_identity": "55", "host": "synthetic", "boot_id": "inert-boot"},
+            "at": "2026-11-14T00:00:00.000000Z", "argv": ["/inert/python", "--discover"],
+            "interpreter": "/inert/python", "cwd": "/inert", "inherited_visibility": None,
+            "effective_visibility": "", "tmpdir": "/inert/scratch", "cgroup_root": "/inert/cgroup",
+            "cgroup_leaf": "/inert/cgroup/parent/leaf", "ancestry_complete": True,
+            "cgroups": [
+                {"path": "/inert/cgroup", "cpu_max": "max 100000", "cpuset": "0-7", "memory_max": "max", "memory_current": "900"},
+                {"path": "/inert/cgroup/parent", "cpu_max": "350000 100000", "cpuset": "0-5", "memory_max": "2000", "memory_current": "1300"},
+                {"path": "/inert/cgroup/parent/leaf", "cpu_max": "max 100000", "cpuset": "0-4", "memory_max": "1000", "memory_current": "200"}],
+            "affinity": [0, 1, 2, 3], "meminfo": "MemTotal: 4 kB\nMemAvailable: 2 kB\n",
+            "scratch_free_bytes": 1000, "scratch_free_inodes": 20,
+            "cpu_topology": "synthetic", "numa_topology": "synthetic", "gpu_topology": None,
+            "competing_workloads": [], "torch_build": None, "cuda_runtime": None, "driver": None,
+            "devices": [], "probe_errors": [], "commands": []}
+
+
+def assess(tmp_path, obs=None, req=None):
+    obs = observation() if obs is None else obs
+    ref = reference(tmp_path / "discovery.json", json.dumps(obs))
+    return module().assess_resources(request() if req is None else req, obs, ref)
+
+
+def test_admission_limits_nested_fraction_and_memory_headroom(tmp_path):
+    result = assess(tmp_path)
+    assert result["reasons"] == []
+    assert result["effective_cpu_capacity"]["value"] == 3.5
+    assert result["limited_ram_bytes"]["value"] == 1000
+    assert result["ram_current_bytes"]["value"] == 200
+    assert result["admitted_budget"] == {"cpu_slots": 3, "ram_bytes": 600, "scratch_bytes": 950, "scratch_inodes": 18}
+    assert result["cgroups"][0]["cpu_quota_us"]["state"] == "unlimited"
+    assert result["cgroups"][0]["memory_limit_bytes"]["state"] == "unlimited"
+
+
+@pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+    obs = observation()
+    if change == "affinity":
+        obs["affinity"] = [1]
+    elif change == "cpuset":
+        obs["cgroups"][1]["cpuset"] = "1-2"
+    elif change == "quota":
+        obs["cgroups"][0]["cpu_max"] = "50000 100000"
+    else:
+        for group in obs["cgroups"]:
+            group["cpu_max"] = "max 100000"
+    result = assess(tmp_path, obs)
+    assert result["effective_cpu_capacity"]["value"] == want
+    assert bool(result["reasons"]) == (want < 1)
+
+
+@pytest.mark.parametrize("change,reason", [
+    ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+    ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+    ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+    ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+    ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+])
+def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+    obs = observation()
+    if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+    if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+    if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+    if change == "hidden_ancestor": obs["ancestry_complete"] = False
+    if change == "missing_ancestor": obs["cgroups"].pop(1)
+    if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+    if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+    if change == "low_scratch": obs["scratch_free_bytes"] = 120
+    if change == "low_inodes": obs["scratch_free_inodes"] = 2
+    if change == "unknown_workload": obs["competing_workloads"] = None
+    if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+    if change == "unknown_affinity": obs["affinity"] = None
+    if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+    result = assess(tmp_path, obs)
+    assert result["reasons"]
+    assert reason.lower() in " ".join(result["reasons"]).lower()
+
+
+def test_admission_limits_concurrency_and_replacement_reservations(tmp_path):
+    req = request()
+    req["jobs"] *= 2
+    req["requested_job_concurrency"] = 2
+    req["jobs"][0]["budget"]["cpu_slots"] = 2
+    result = assess(tmp_path, req=req)
+    assert "cpu_slots" in " ".join(result["reasons"])
+    req = request()
+    req["jobs"][0]["roles"][0]["replacement_limit"] = 2
+    result = assess(tmp_path, req=req)
+    assert "replacement" in " ".join(result["reasons"])
+
+
+def cuda_pair():
+    req, obs = request(), observation()
+    req.update(profile="cuda", requested_visibility="1,0", authorized_devices=["GPU-b", "GPU-a"])
+    obs.update(profile="cuda", inherited_visibility="1,0", effective_visibility="1,0",
+               torch_build="2.9+cu128", cuda_runtime="12.8", driver="580.1", gpu_topology="synthetic")
+    obs["devices"] = [{"logical_index": i, "gpu_uuid": uuid, "mig_uuid": None,
+                       "physical_parent_uuid": uuid, "model": "simulated", "vram_bytes": 1000,
+                       "isolation": "physical-exclusive"} for i, uuid in enumerate(["GPU-b", "GPU-a"])]
+    req["jobs"][0].update(profile="cuda", devices=copy.deepcopy(obs["devices"]), environment={"CUDA_VISIBLE_DEVICES": "1,0"})
+    return req, obs
+
+
+def test_profile_mapping_preserves_remapped_visibility_and_cpu_policy(tmp_path):
+    req, obs = cuda_pair()
+    result = assess(tmp_path, obs, req)
+    assert result["reasons"] == []
+    assert result["effective_visibility"] == "1,0"
+    assert [d["gpu_uuid"] for d in result["devices"]] == ["GPU-b", "GPU-a"]
+    assert result["devices"][0]["mapping_provenance"]["path"] == str(tmp_path / "discovery.json")
+    result = assess(tmp_path, observation())
+    assert result["devices"] == [] and result["effective_visibility"] == ""
+
+
+@pytest.mark.parametrize("change,reason", [
+    ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+    ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+    ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+    ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+])
+def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+    req, obs = cuda_pair()
+    if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+    if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+    if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+    if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+    if change == "inherited": obs["inherited_visibility"] = "0"
+    if change == "effective": obs["effective_visibility"] = "0,1"
+    if change == "driver": obs["driver"] = None
+    if change == "runtime": obs["cuda_runtime"] = None
+    if change == "logical": obs["devices"][0]["logical_index"] = 5
+    if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+    if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+    if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+    result = assess(tmp_path, obs, req)
+    assert reason.lower() in " ".join(result["reasons"]).lower()
+
+
+@pytest.mark.parametrize("field,value", [("scratch_free_bytes", True), ("scratch_free_inodes", -1),
+                                         ("affinity", [0, 0]), ("affinity", [False]), ("unknown", "field")])
+def test_discovery_closed_payload_rejects_wrong_types(tmp_path, field, value):
+    obs = observation()
+    obs[field] = value
+    with pytest.raises(ValueError): assess(tmp_path, obs)
+
+
+@pytest.mark.parametrize("key", ["scratch_bytes", "scratch_inodes"])
+def test_admission_limits_reserve_retained_scratch_for_all_jobs(tmp_path, key):
+    req = request()
+    req["jobs"] = [copy.deepcopy(req["jobs"][0]) for _ in range(2)]
+    req["requested_job_concurrency"] = 1
+    for job in req["jobs"]:
+        job["budget"][key] = 600 if key == "scratch_bytes" else 10
+    result = assess(tmp_path, req=req)
+    assert key in " ".join(result["reasons"])
+
+
+def test_admission_limits_reserve_each_role_peak_including_replacements(tmp_path):
+    req = request()
+    req["jobs"][0]["roles"][0].update(peak_cpu_slots=2, replacement_limit=1)
+    req["jobs"][0]["budget"]["cpu_slots"] = 2
+    result = assess(tmp_path, req=req)
+    assert "replacement" in " ".join(result["reasons"])

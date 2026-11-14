@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-q"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "start": "2026-11-14T05:55:53.269020+00:00",
+  "end": "2026-11-14T05:55:53.503444+00:00",
+  "exit_code": 4,
+  "log_sha256": "3ec468e557902251a6f904f04aa98b09dc6e10a8f4efa6413ddaaf2c21f9a269"
+}

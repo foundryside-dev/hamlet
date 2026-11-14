@@ -1,0 +1,32 @@
+{
+  "schema": "bac-root-implementation-grant-v1",
+  "at": "2026-11-14T06:52:49.167609+00:00",
+  "owner": "/root",
+  "writer": "/root/bac_parent_c1_implementation",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "status": "DESIGN ADOPTED; SOLE APP-C1 WRITER AUTHORIZED",
+  "contracts": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-INTEGRATION-PROPOSAL-V2.md",
+      "sha256": "45801f6d05a751b4fa7458278f2c781290c094eafa267a65479efb34d9c427c6",
+      "bytes": 33413
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-C1-CONTRACT-INDEPENDENT-REVIEW-v1.md",
+      "sha256": "a8cb7f8d403740f1b938f31734cdf54698779b75911eca4ca95c497290fe760e",
+      "bytes": 12398
+    }
+  ],
+  "files": {
+    "src/townlet/config/exploration_policy.py": 1600,
+    "src/townlet/exploration/scoped_curiosity.py": 1750,
+    "src/townlet/exploration/parent_custody.py": 300,
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": 900
+  },
+  "total_projected_lines": 4550,
+  "body_limit": 4,
+  "scope": "All nine reviewed acceptance groups; genuine runtime/BANK retained custody, explicit lineage binding, delegated forwarding authority, own completion consumer and monotonic lifetime. Later parent/ENV/cohort/recurrent/runner obligations retained.",
+  "execution": "Writer first authors focused causal tests and supplies collection/fixture/child execution proposal. Root seals RED source and authorizes actual APP runs before production changes; no existing old manifest replay. Root owns candidate/index and final qualification. Author syntax-only compilation allowed; no implicit full suite.",
+  "preservation": "Before every mutation of executed bytes, retain exact inert source snapshot with hashes. Preserve every failed/unrun attempt. No source execution copy, branch, worktree, git init, Git write, install, server action, compatibility fallback or capability removal.",
+  "parallelism": "P1/P2/P3 tool-only work may continue; no other APP writer. Resource measurements precede actual APP runs."
+}

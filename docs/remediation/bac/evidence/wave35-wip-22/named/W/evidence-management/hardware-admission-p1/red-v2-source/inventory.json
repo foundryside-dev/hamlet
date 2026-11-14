@@ -1,0 +1,8 @@
+[
+  {
+    "original": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+    "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-v2-source/test_capture_bac_hardware_v1.py.txt",
+    "bytes": 9531,
+    "sha256": "192daf09584a27c0c2cf7d47b91f6cbf53f649d030ed213c218a11edb5f03a0e"
+  }
+]

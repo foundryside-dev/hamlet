@@ -1,0 +1,192 @@
+{
+  "at": "2026-11-14T08:04:51.301363Z",
+  "attempt_id": "attempt",
+  "custody": "unsatisfied",
+  "hardware": "unrun",
+  "inventory": [
+    {
+      "bytes": 9427,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/capture/spec.json",
+      "sha256": "9a3cf788949d2c1c6b7213a34b7742fd189aa8ec5c7df9051be055191d0a7c1e"
+    },
+    {
+      "bytes": 9510,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/out/attempt/job/result.json",
+      "sha256": "20719b7a0d226f2440dcbb6d847bc1154e2580962c9149764761d3ca3177771d"
+    },
+    {
+      "bytes": 1682,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/out/attempt/job/command.json",
+      "sha256": "f5ee17796300ff0d442280175528c1256ea657cf405ebfa8da14b7a8e8002bf2"
+    },
+    {
+      "bytes": 1103,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/out/attempt/start.json",
+      "sha256": "cae1f356bedb258a3bc315179d58f3674cde834b954e301bb4818e679db0bd4e"
+    },
+    {
+      "bytes": 8108,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/out/attempt/seal.json",
+      "sha256": "c58bcf79fb8c00a46d53325ae9e187f5171d251ccb739d24b6ac99bd2614c5c7"
+    },
+    {
+      "bytes": 721,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/capture/result.json",
+      "sha256": "49b258da5c83ffbbe96ff25e401cffba630a31d446861ae21fa1ceb5232466be"
+    },
+    {
+      "bytes": 1780,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/receipt.json.components/classification.json",
+      "sha256": "5f25a6bfbc69a0757494352a3d1cc43b360c04878977637b214d6abc00e7c784"
+    },
+    {
+      "bytes": 3116,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/receipt.json.components/process-custody.json",
+      "sha256": "1b6018c5df6b964bcfdc7e67d08bab237a070ea0075369eda1099429d4207ee6"
+    },
+    {
+      "bytes": 3108,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/receipt.json.components/source-freeze.json",
+      "sha256": "6ff9b8e01896e5e9d59d3f87fff67692e38f2d43ba7214ba35cd028d298c1400"
+    },
+    {
+      "bytes": 3112,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/receipt.json.components/required-cases.json",
+      "sha256": "9fe711a8f53f3e8e7c00f9fe63e6141d1b1492c395a2e9ef6a61dcc9a0616cd4"
+    }
+  ],
+  "job_id": "job",
+  "kind": "receipt",
+  "obligations": [
+    {
+      "contract": {
+        "bytes": 1316,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/process-custody-contract.json",
+        "sha256": "ca285b3852849031281ccc517bc2e0c28c411f62ecebb694282ff0cd6b1e210f"
+      },
+      "disposition": "satisfied",
+      "evidence": [
+        {
+          "bytes": 1753,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/process-custody-evidence.json",
+          "sha256": "774503a98236e17137fb744c825f52179f35cc20c28d7db73a18cf180eab5175"
+        }
+      ],
+      "id": "process-custody",
+      "reason": "",
+      "validator": {
+        "bytes": 59234,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+      },
+      "validator_receipt": [
+        {
+          "bytes": 3116,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/receipt.json.components/process-custody.json",
+          "sha256": "1b6018c5df6b964bcfdc7e67d08bab237a070ea0075369eda1099429d4207ee6"
+        }
+      ]
+    },
+    {
+      "contract": {
+        "bytes": 1314,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/source-freeze-contract.json",
+        "sha256": "6f6ed8348b3c50145e34c5df9501f3593d0ce27cfbcb96c80fd0381afdd2326d"
+      },
+      "disposition": "satisfied",
+      "evidence": [
+        {
+          "bytes": 1745,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/source-freeze-evidence.json",
+          "sha256": "f0cdde704050326d0e5766d0f9565414336446f1f0dd3a612e543eba9a023d5c"
+        }
+      ],
+      "id": "source-freeze",
+      "reason": "",
+      "validator": {
+        "bytes": 59234,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+      },
+      "validator_receipt": [
+        {
+          "bytes": 3108,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/receipt.json.components/source-freeze.json",
+          "sha256": "6ff9b8e01896e5e9d59d3f87fff67692e38f2d43ba7214ba35cd028d298c1400"
+        }
+      ]
+    },
+    {
+      "contract": {
+        "bytes": 1315,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/required-cases-contract.json",
+        "sha256": "e8a03394eef9544ade2cda7ad3ccac468dc03a72b2deabfd56bbd77f15aac45c"
+      },
+      "disposition": "satisfied",
+      "evidence": [
+        {
+          "bytes": 1749,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/required-cases-evidence.json",
+          "sha256": "913db9fb5affe050d1a37b43fa2c4578de9512687faf819f165bfea8a2eba195"
+        }
+      ],
+      "id": "required-cases",
+      "reason": "",
+      "validator": {
+        "bytes": 59234,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+      },
+      "validator_receipt": [
+        {
+          "bytes": 3112,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/receipt.json.components/required-cases.json",
+          "sha256": "9fe711a8f53f3e8e7c00f9fe63e6141d1b1492c395a2e9ef6a61dcc9a0616cd4"
+        }
+      ]
+    },
+    {
+      "contract": {
+        "bytes": 1311,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/phase-pair-contract.json",
+        "sha256": "2891106ec499e4ad3eb88b2057b993f3119ceafa19c09ebedab4b996ef591dc4"
+      },
+      "disposition": "unsatisfied",
+      "evidence": [
+        {
+          "bytes": 2361,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/phase-pair-evidence.json",
+          "sha256": "6a648cb47bd5171d3f49a1392717b7b29389339408580bfe75bd81af9eac1147"
+        }
+      ],
+      "id": "phase-pair",
+      "reason": "required accepted case validator is unimplemented or lacks evidence",
+      "validator": {
+        "bytes": 59234,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+      },
+      "validator_receipt": []
+    }
+  ],
+  "reasons": [
+    "aggregate obligation gate incomplete; common source/process custody independently satisfied"
+  ],
+  "result": {
+    "bytes": 9510,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/out/attempt/job/result.json",
+    "sha256": "20719b7a0d226f2440dcbb6d847bc1154e2580962c9149764761d3ca3177771d"
+  },
+  "schema": "bac-hardware-v1",
+  "spec": {
+    "bytes": 9427,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be3/capture/spec.json",
+    "sha256": "9a3cf788949d2c1c6b7213a34b7742fd189aa8ec5c7df9051be055191d0a7c1e"
+  },
+  "test_outcome": "successful",
+  "verifier": {
+    "bytes": 59234,
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "sha256": "e72330bcffc2942a2d908a22b5e3471e702d744f54282314c6bccc4afc2c9d81"
+  }
+}

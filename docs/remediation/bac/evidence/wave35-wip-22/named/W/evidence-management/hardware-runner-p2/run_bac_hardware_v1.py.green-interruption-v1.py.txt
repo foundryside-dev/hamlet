@@ -1,0 +1,357 @@
+"""Finite P2 scheduler mechanics. Frozen P0 transport integration is gated.
+
+No application, Torch, CUDA, historical tool or plugin imports. The low-level
+mechanics return observations, never hardware/custody qualification. run() will
+remain fail closed until root adopts the finite transport amendment.
+"""
+from contextlib import AbstractContextManager
+import fcntl
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import signal
+import stat
+import subprocess
+import threading
+import time
+
+from bac_hardware_protocol_v1 import file_reference, validate_spec
+
+
+RESOURCE_KEYS = ('cpu_slots', 'ram_bytes', 'scratch_bytes', 'scratch_inodes')
+
+
+def _require(condition, reason):
+    if not condition:
+        raise ValueError(reason)
+
+
+def _directory(path):
+    """Walk the live namespace through no-follow directory descriptors."""
+    raw = str(path)
+    _require(raw.startswith('/') and all(p not in ('', '.', '..') for p in raw[1:].split('/')), 'unsafe directory path')
+    current = os.open('/', os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        for name in raw[1:].split('/'):
+            child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=current)
+            os.close(current)
+            current = child
+        return current
+    except BaseException:
+        os.close(current)
+        raise
+
+
+def _same_directory(path, fd):
+    live = _directory(path)
+    try:
+        old, new = os.fstat(fd), os.fstat(live)
+        _require((old.st_dev, old.st_ino) == (new.st_dev, new.st_ino), 'directory namespace replaced')
+    finally:
+        os.close(live)
+
+
+def _create_below(base, fd, relative):
+    """Exclusively create every component; siblings may share owned ancestors."""
+    _same_directory(base, fd)
+    current = os.dup(fd)
+    try:
+        for name in relative.parts:
+            _require(name not in ('', '.', '..'), 'unsafe relative directory')
+            os.mkdir(name, mode=0o700, dir_fd=current)
+            child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=current)
+            os.close(current)
+            current = child
+        return current
+    except BaseException:
+        os.close(current)
+        raise
+
+
+class Attempt:
+    """Own exclusively-created attempt roots and direct job directories.
+
+    Failed reservation is deliberately retained. No cleanup deletes evidence.
+    """
+    def __init__(self, spec):
+        self.fds = {}
+        self.paths = {}
+        self.logs = {}
+        self.closed = False
+        try:
+            attempt_id = spec['attempt_id']
+            _require(type(attempt_id) is str and attempt_id not in ('', '.', '..') and '/' not in attempt_id, 'unsafe attempt ID')
+            planned = []
+            for kind, root_key, job_key in (('output', 'output_root', 'output'), ('scratch', 'scratch_root', 'scratch')):
+                base = Path(spec[root_key])
+                attempt_path = base / attempt_id
+                for job in spec['jobs']:
+                    path = Path(job[job_key])
+                    _require(path.parent == attempt_path, 'job directory must be a direct child of its attempt')
+                    _require(path.name not in ('', '.', '..'), 'unsafe job directory')
+                    planned.append(path)
+                root_fd = _directory(base)
+                try:
+                    fd = _create_below(base, root_fd, Path(attempt_id))
+                finally:
+                    os.close(root_fd)
+                self.fds[kind] = fd
+                self.paths[kind] = attempt_path
+            _require(len(set(planned)) == len(planned), 'overlapping job destinations')
+            for job in spec['jobs']:
+                for kind in ('output', 'scratch'):
+                    path = Path(job[kind])
+                    key = (kind, job['id'])
+                    self.fds[key] = _create_below(self.paths[kind], self.fds[kind], Path(path.name))
+                    self.paths[key] = path
+                self.logs[job['id']] = self.open_file(job['id'], 'stdout.log')
+        except BaseException:
+            self.close()
+            raise
+
+    def check(self):
+        for key, fd in self.fds.items():
+            _same_directory(self.paths[key], fd)
+
+    def open_file(self, job_id, name):
+        _require('/' not in name and name not in ('', '.', '..'), 'unsafe evidence name')
+        self.check()
+        return os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600,
+                       dir_fd=self.fds[('output', job_id)])
+
+    def write(self, job_id, name, value):
+        fd = self.open_file(job_id, name)
+        with os.fdopen(fd, 'w') as output:
+            json.dump(value, output, sort_keys=True, indent=2, allow_nan=False)
+            output.write('\n')
+            output.flush()
+            os.fsync(output.fileno())
+
+    def close(self):
+        if not self.closed:
+            for fd in list(self.logs.values()) + list(self.fds.values()):
+                os.close(fd)
+            self.closed = True
+
+
+class HeldLeases(AbstractContextManager):
+    def __init__(self, descriptors):
+        self.descriptors = descriptors
+
+    def close(self):
+        for descriptor in reversed(self.descriptors):
+            os.close(descriptor)
+        self.descriptors.clear()
+
+    def __exit__(self, *args):
+        self.close()
+
+
+class Leases:
+    """Cooperating physical-parent/RNG/host timing leases in one owned namespace.
+
+    The root authority must supply one shared namespace for the entire host and
+    prohibit its mutation while admitted work is active. This is coordination,
+    not isolation from noncooperating external GPU workloads.
+    """
+    def __init__(self, root):
+        self.root = Path(root)
+        self.fd = _directory(self.root)
+
+    def try_acquire(self, job):
+        _same_directory(self.root, self.fd)
+        names = {'device:' + d['physical_parent_uuid'] for d in job['devices']}
+        names.update('domain:' + value for value in job['serialization_domains'])
+        host_mode = fcntl.LOCK_EX if job['timing'] == 'exclusive-host' else fcntl.LOCK_SH
+        keys = [('host-timing', host_mode)] + [(key, fcntl.LOCK_EX) for key in sorted(names)]
+        descriptors = []
+        try:
+            for key, mode in keys:
+                name = hashlib.sha256(key.encode()).hexdigest() + '.lock'
+                fd = os.open(name, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600, dir_fd=self.fd)
+                descriptors.append(fd)
+                _require(stat.S_ISREG(os.fstat(fd).st_mode), 'lease must be a regular file')
+                try:
+                    fcntl.flock(fd, mode | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    for item in reversed(descriptors): os.close(item)
+                    return None
+                live = os.stat(name, dir_fd=self.fd, follow_symlinks=False)
+                opened = os.fstat(fd)
+                _require((live.st_dev, live.st_ino) == (opened.st_dev, opened.st_ino), 'lease replaced during acquisition')
+            _same_directory(self.root, self.fd)
+            return HeldLeases(descriptors)
+        except BaseException:
+            for item in reversed(descriptors): os.close(item)
+            raise
+
+    def close(self):
+        os.close(self.fd)
+
+
+def check_resources(spec):
+    """Check static reservations; active CPU/RAM sums are enforced by scheduling."""
+    for key in RESOURCE_KEYS:
+        _require(type(spec['budget'][key]) is int and spec['budget'][key] >= 0, 'invalid admitted budget')
+    _require(type(spec['job_concurrency']) is int and spec['job_concurrency'] > 0, 'invalid job concurrency')
+    _require(len({j['id'] for j in spec['jobs']}) == len(spec['jobs']), 'duplicate job ID')
+    for job in spec['jobs']:
+        for key in RESOURCE_KEYS:
+            value = job['budget'][key]
+            _require(type(value) is int and 0 <= value <= spec['budget'][key], 'job exceeds admitted ' + key)
+        required = sum(role['count'] + role['replacement_limit'] for role in job['roles'])
+        _require(job['budget']['cpu_slots'] >= required > 0, 'CPU reservation omits controller/worker/child/replacement overlap')
+        for key in ('timeout_seconds', 'termination_grace_seconds'):
+            value = job[key]
+            _require(type(value) in (int, float) and math.isfinite(value) and value >= 0, 'invalid ' + key)
+        _require(job['timeout_seconds'] > 0, 'timeout must be positive')
+        _require(job['argv'][0] == job['interpreter'], 'interpreter mismatch')
+        for key in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS'):
+            _require(job['environment'].get(key) == '1', 'one-thread environment required')
+    # Scratch survives completed jobs, so it cannot be released for the next job.
+    for key in ('scratch_bytes', 'scratch_inodes'):
+        _require(sum(job['budget'][key] for job in spec['jobs']) <= spec['budget'][key], 'persistent ' + key + ' reservation exceeds admission')
+
+
+def _utc():
+    import datetime
+    return datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+def _terminate(process, grace):
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    deadline = time.monotonic() + grace
+    while time.monotonic() < deadline:
+        try:
+            os.killpg(process.pid, 0)
+        except ProcessLookupError:
+            break
+        time.sleep(min(.01, max(0, deadline - time.monotonic())))
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    return process.wait()
+
+
+def execute_jobs(spec, cancel_event=None):
+    """Run admitted mechanics, returning actual observations for transport sealing.
+
+    This entry point does not authenticate admission and is not a qualification
+    entry point. Only run() may eventually integrate the root-approved transport.
+    """
+    check_resources(spec)
+    stop = cancel_event if cancel_event is not None else threading.Event()
+    attempt = Attempt(spec)
+    leases = Leases(Path(spec['lease_root']))
+    previous_handlers = {}
+    if threading.current_thread() is threading.main_thread():
+        for signum in (signal.SIGINT, signal.SIGTERM):
+            previous_handlers[signum] = signal.getsignal(signum)
+            signal.signal(signum, lambda received, frame: stop.set())
+    pending = list(spec['jobs'])
+    active = []
+    results = []
+    waiting_since = time.monotonic()
+    try:
+        while pending or active:
+            now = time.monotonic()
+            for state in list(active):
+                job, process = state['job'], state['process']
+                code = process.poll()
+                reason = ''
+                if code is None and (stop.is_set() or now - state['started'] >= job['timeout_seconds']):
+                    reason = 'runner interruption' if stop.is_set() else 'job timeout'
+                    code = _terminate(process, job['termination_grace_seconds'])
+                if code is None:
+                    continue
+                if code < 0 and not reason:
+                    reason = 'command terminated by signal'
+                # A completed leader does not mean its descendants released the
+                # device. Reap the group before releasing any resource leases.
+                _terminate(process, job['termination_grace_seconds'])
+                end_ns = time.monotonic_ns()
+                # Never turn a real zero command exit into invented process evidence.
+                disposition = 'interrupted' if reason else ('completed-failed' if code else 'completed-unverified')
+                result = {'job_id': job['id'], 'exit_code': code, 'signal': -code if code < 0 else 0,
+                          'disposition': disposition, 'reason': reason or ('command failed' if code else 'completion transport not integrated'),
+                          'start': state['at'], 'end': _utc(), 'monotonic_start_ns': state['start_ns'],
+                          'monotonic_end_ns': end_ns, 'process_records': [],
+                          'command': file_reference(Path(job['output']) / 'command.json'),
+                          'log': file_reference(Path(job['output']) / 'stdout.log')}
+                attempt.write(job['id'], 'result.json', result)
+                results.append(result)
+                state['held'].close()
+                active.remove(state)
+            for job in list(pending):
+                if stop.is_set() or now - waiting_since >= job['timeout_seconds']:
+                    result = {'job_id': job['id'], 'exit_code': None, 'signal': 0,
+                              'disposition': 'unrun', 'reason': 'runner interrupted' if stop.is_set() else 'lease/admission wait timeout',
+                              'process_records': []}
+                    attempt.write(job['id'], 'result.json', result)
+                    results.append(result)
+                    pending.remove(job)
+                    continue
+                if len(active) >= spec['job_concurrency']:
+                    continue
+                if any(sum(state['job']['budget'][key] for state in active) + job['budget'][key] > spec['budget'][key]
+                       for key in ('cpu_slots', 'ram_bytes')):
+                    continue
+                held = leases.try_acquire(job)
+                if held is None:
+                    continue
+                try:
+                    attempt.check()
+                    command = {key: job[key] for key in ('argv', 'environment', 'cwd', 'seed')}
+                    command['at'] = _utc()
+                    attempt.write(job['id'], 'command.json', command)
+                    start_ns = time.monotonic_ns()
+                    process = subprocess.Popen(job['argv'], cwd=job['cwd'], env=job['environment'],
+                                               stdin=subprocess.DEVNULL, stdout=attempt.logs[job['id']],
+                                               stderr=subprocess.STDOUT, start_new_session=True, close_fds=True)
+                    active.append({'job': job, 'process': process, 'held': held, 'start_ns': start_ns,
+                                   'started': time.monotonic(), 'at': command['at']})
+                    pending.remove(job)
+                except OSError as exc:
+                    result = {'job_id': job['id'], 'exit_code': None, 'signal': 0,
+                              'disposition': 'refused', 'reason': 'launch refused: ' + str(exc),
+                              'process_records': []}
+                    attempt.write(job['id'], 'result.json', result)
+                    results.append(result)
+                    pending.remove(job)
+                    held.close()
+                except BaseException:
+                    held.close()
+                    raise
+            if pending or active:
+                time.sleep(.01)
+        return results
+    finally:
+        for state in active:
+            _terminate(state['process'], state['job']['termination_grace_seconds'])
+            state['held'].close()
+        leases.close()
+        attempt.close()
+        for signum, handler in previous_handlers.items():
+            signal.signal(signum, handler)
+
+
+def run(spec_path: Path) -> int:
+    """Fail closed: the frozen P0 transport lacks required runner fields."""
+    value = json.loads(spec_path.read_text())
+    validate_spec(value)
+    raise ValueError('P2 transport amendment and admission/grant integration are not adopted')
+
+
+if __name__ == '__main__':
+    import sys
+    try:
+        raise SystemExit(run(Path(sys.argv[1])))
+    except (ValueError, OSError) as exc:
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(2)

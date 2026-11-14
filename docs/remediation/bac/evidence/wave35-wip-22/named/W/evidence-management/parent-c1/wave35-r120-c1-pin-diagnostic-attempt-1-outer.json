@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T07:48:55.091779+00:00",
+  "parent_pid": 194081,
+  "seal": {
+    "at": "2026-11-14T07:48:55.090890+00:00",
+    "probe": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/diagnostics/test_owner_pin_referrers.py",
+    "probe_sha256": "f22f5acc01e8554b529a7946b139dc9e77b0a17796b007e3c7e1345bc22d6119",
+    "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r120-candidate.json",
+    "manifest_sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+    "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-1-spec.json",
+    "spec_sha256": "5e82c4d4c5c3daac80a1f59247bcf9f444dbffadd51a734c6a5b3f5a6e6e6231",
+    "scope": "Diagnostic only; immutable R120 APP plus independently sealed auxiliary. Not acceptance or added R120 manifest entry."
+  },
+  "pid": 194082,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T07:49:06.375401+00:00",
+  "probe_after_sha256": "f22f5acc01e8554b529a7946b139dc9e77b0a17796b007e3c7e1345bc22d6119"
+}

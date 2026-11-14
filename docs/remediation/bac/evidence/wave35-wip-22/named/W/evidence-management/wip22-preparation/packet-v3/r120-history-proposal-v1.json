@@ -1,0 +1,2114 @@
+{
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 644,
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection-custody.json",
+              "sha256": "ea3cf01245bf57dedfe516f9825b10175fd846cdb20d6f0449cb7513cf394860",
+              "type": "file"
+            },
+            {
+              "bytes": 887,
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection-result.json",
+              "sha256": "94a3ac8fd5199b90866363194e198924e36594b1100d2de5c60e3b2e85173f8f",
+              "type": "file"
+            },
+            {
+              "bytes": 6246,
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection.log",
+              "sha256": "be1f781a45a33d438de675faab0a0ed7bd6ee57244576699adc4e98cbc68f125",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.285780631995294,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-collection-attempt-1--c1-collection",
+          "log_paths": [
+            {
+              "bytes": 6246,
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection.log",
+              "root": "Q",
+              "sha256": "be1f781a45a33d438de675faab0a0ed7bd6ee57244576699adc4e98cbc68f125"
+            }
+          ],
+          "path": "wave35-r120-c1-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-collection-attempt-1/c1-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 887,
+            "path": "wave35-r120-c1-collection-attempt-1/c1-collection-result.json",
+            "root": "Q",
+            "sha256": "94a3ac8fd5199b90866363194e198924e36594b1100d2de5c60e3b2e85173f8f"
+          },
+          "record_id": "c1-collection",
+          "result": {
+            "bytes": 887,
+            "path": "wave35-r120-c1-collection-attempt-1/c1-collection-result.json",
+            "root": "Q",
+            "sha256": "94a3ac8fd5199b90866363194e198924e36594b1100d2de5c60e3b2e85173f8f"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 644,
+            "path": "wave35-r120-c1-collection-attempt-1/c1-collection-custody.json",
+            "root": "Q",
+            "sha256": "ea3cf01245bf57dedfe516f9825b10175fd846cdb20d6f0449cb7513cf394860"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-collection--c1-collection",
+      "check_kind": "collection",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-collection-attempt-1--c1-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 2,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 656,
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration-custody.json",
+              "sha256": "ddaeb6b08b276077245087ee969b4a913d9863428864d4acbaa5194bcc3316d7",
+              "type": "file"
+            },
+            {
+              "bytes": 980,
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration-result.json",
+              "sha256": "2efa0f6fb8229af5d63eba76883d480d58a3f938d1d6deaf4325775904312003",
+              "type": "file"
+            },
+            {
+              "bytes": 720,
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration.log",
+              "sha256": "da1336054ec3f7098bf723c0a826f8bfee85a5a90e39816f9928c79cf77235e2",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.567078673993819,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-independent-expiration-attempt-1--c1-independent-expiration",
+          "log_paths": [
+            {
+              "bytes": 720,
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration.log",
+              "root": "Q",
+              "sha256": "da1336054ec3f7098bf723c0a826f8bfee85a5a90e39816f9928c79cf77235e2"
+            }
+          ],
+          "path": "wave35-r120-c1-independent-expiration-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 980,
+            "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration-result.json",
+            "root": "Q",
+            "sha256": "2efa0f6fb8229af5d63eba76883d480d58a3f938d1d6deaf4325775904312003"
+          },
+          "record_id": "c1-independent-expiration",
+          "result": {
+            "bytes": 980,
+            "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration-result.json",
+            "root": "Q",
+            "sha256": "2efa0f6fb8229af5d63eba76883d480d58a3f938d1d6deaf4325775904312003"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 656,
+            "path": "wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration-custody.json",
+            "root": "Q",
+            "sha256": "ddaeb6b08b276077245087ee969b4a913d9863428864d4acbaa5194bcc3316d7"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-independent-expiration--c1-independent-expiration",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-independent-expiration-attempt-1--c1-independent-expiration"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 2,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal",
+            "-k",
+            "not test_body_and_completion_failure_identity and not test_child_false_outer_true_preserves_bank_health and not test_child_true_outer_false_retains_bank_uncertainty and not test_install_completion_failure_cannot_restore_healthy_latch",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r120-c1-ordinary-attempt-1"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 4,
+            "passed": 58,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary",
+              "type": "directory"
+            },
+            {
+              "bytes": 2973,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-controller-681da5eabacb1e8c.json",
+              "sha256": "a807c69fdbbe4e6d5e3fb013a674cf4d4871c00d022ee23f09d38025c6d7bc41",
+              "type": "file"
+            },
+            {
+              "bytes": 1488,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-controller-6cd40ee3c873e1e6.json",
+              "sha256": "ac3a88df8c31f0eb3bf897b7b4c3e8911c4443e9713d4c013d1a2e179eba1ab6",
+              "type": "file"
+            },
+            {
+              "bytes": 1654,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-controller-c17dacdaf016c353.json",
+              "sha256": "8dcc769f9267c8a359606e5a51fb4abc44142d5790490858109524b8b501cc0a",
+              "type": "file"
+            },
+            {
+              "bytes": 3509,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-controller-c2b79ed4d93f1a79.json",
+              "sha256": "bd7f2ec7c6e7b2e0c52945d633d9902c92a18ffd008932576f26ee0e1241200a",
+              "type": "file"
+            },
+            {
+              "bytes": 2966,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-gw0-681da5eabacb1e8c.json",
+              "sha256": "ed3fd0493091dba1fc81850cb611b8f29d315adcad94808595bc1a6485e0c993",
+              "type": "file"
+            },
+            {
+              "bytes": 1481,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-gw0-6cd40ee3c873e1e6.json",
+              "sha256": "d18d894902124e0f5e487e7d05c83f56980554371fe659b4b553ee5c7632c1eb",
+              "type": "file"
+            },
+            {
+              "bytes": 3502,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-gw0-c2b79ed4d93f1a79.json",
+              "sha256": "0dd9494411525e7ee5df303240582613afc3f9ed5e57116b8bd3ed95075aa100",
+              "type": "file"
+            },
+            {
+              "bytes": 1647,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/failure-gw1-c17dacdaf016c353.json",
+              "sha256": "6d6e91a900cc7a12cd731b1f929e5befe2d03b2b01f369c07e5cc9cc5f661966",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/identity-gw0.json",
+              "sha256": "b7ec38c64ca8954d6f89700460964192048534eb374d63eb578b138eb5583eaa",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/identity-gw1.json",
+              "sha256": "8f3e1f56da29d70b3ffbd65de98e667f91d6abe890e3f7c952fa6addc48bff34",
+              "type": "file"
+            },
+            {
+              "bytes": 1607,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary-failure-index.json",
+              "sha256": "589be90c72f4739d77fba1d3ef2d9e3214f5d757e38137f311d2a8f74e91675d",
+              "type": "file"
+            },
+            {
+              "bytes": 960,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary-negative-custody.json",
+              "sha256": "fd9b81541d63ac591db46db9b2110e122442a04a6d793ec424002805da117d2a",
+              "type": "file"
+            },
+            {
+              "bytes": 1268,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary-result.json",
+              "sha256": "0ad79603b5f045db8894ba1f41c40afa221beba9d3ed5d7c882afa20c16333f7",
+              "type": "file"
+            },
+            {
+              "bytes": 10136,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary.log",
+              "sha256": "870ba1d9c06ba1a6aac35311a5c4dc25b914804b4d975308b45c5b89a0c103b1",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 30.263306403998286,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-ordinary-attempt-1--c1-ordinary",
+          "log_paths": [
+            {
+              "bytes": 10136,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary.log",
+              "root": "Q",
+              "sha256": "870ba1d9c06ba1a6aac35311a5c4dc25b914804b4d975308b45c5b89a0c103b1"
+            }
+          ],
+          "path": "wave35-r120-c1-ordinary-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "b7ec38c64ca8954d6f89700460964192048534eb374d63eb578b138eb5583eaa"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "8f3e1f56da29d70b3ffbd65de98e667f91d6abe890e3f7c952fa6addc48bff34"
+            }
+          ],
+          "process_topology": "xdist",
+          "record": {
+            "bytes": 1268,
+            "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary-result.json",
+            "root": "Q",
+            "sha256": "0ad79603b5f045db8894ba1f41c40afa221beba9d3ed5d7c882afa20c16333f7"
+          },
+          "record_id": "c1-ordinary",
+          "result": {
+            "bytes": 1268,
+            "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary-result.json",
+            "root": "Q",
+            "sha256": "0ad79603b5f045db8894ba1f41c40afa221beba9d3ed5d7c882afa20c16333f7"
+          },
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 960,
+            "path": "wave35-r120-c1-ordinary-attempt-1/c1-ordinary-negative-custody.json",
+            "root": "Q",
+            "sha256": "fd9b81541d63ac591db46db9b2110e122442a04a6d793ec424002805da117d2a"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-ordinary--c1-ordinary",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r120-c1-ordinary-attempt-1--c1-ordinary"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/diagnostics/test_owner_pin_referrers.py::test_owner_pin_referrers",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic",
+              "type": "directory"
+            },
+            {
+              "bytes": 1867,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic/c1-owner-pin-diagnostic.json",
+              "sha256": "a4a6fc7d06b6d8708450df337017301b97d5c79ceb39efe173afb3e09d8a66dc",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 648,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic-custody.json",
+              "sha256": "bd0e4a0d3ff289d50f01874237db2d5fcaa0e8cdddefbdde20ae827c429d1574",
+              "type": "file"
+            },
+            {
+              "bytes": 973,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic-result.json",
+              "sha256": "ced10a8295d79ef484935b623e87831d5deb49b39dd056977492978ff195bf31",
+              "type": "file"
+            },
+            {
+              "bytes": 630,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic.log",
+              "sha256": "9f27bd7e2184e9ddfef14a3ca6ccaaf27eb9948e443fd5425ee704d8881e64aa",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 10.82736020599259,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-pin-diagnostic-attempt-1--c1-pin-diagnostic",
+          "log_paths": [
+            {
+              "bytes": 630,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic.log",
+              "root": "Q",
+              "sha256": "9f27bd7e2184e9ddfef14a3ca6ccaaf27eb9948e443fd5425ee704d8881e64aa"
+            }
+          ],
+          "path": "wave35-r120-c1-pin-diagnostic-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 973,
+            "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic-result.json",
+            "root": "Q",
+            "sha256": "ced10a8295d79ef484935b623e87831d5deb49b39dd056977492978ff195bf31"
+          },
+          "record_id": "c1-pin-diagnostic",
+          "result": {
+            "bytes": 973,
+            "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic-result.json",
+            "root": "Q",
+            "sha256": "ced10a8295d79ef484935b623e87831d5deb49b39dd056977492978ff195bf31"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 648,
+            "path": "wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic-custody.json",
+            "root": "Q",
+            "sha256": "bd0e4a0d3ff289d50f01874237db2d5fcaa0e8cdddefbdde20ae827c429d1574"
+          }
+        },
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/diagnostics/test_owner_pin_referrers.py::test_owner_pin_referrers",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic",
+              "type": "directory"
+            },
+            {
+              "bytes": 2591,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic/c1-owner-pin-diagnostic.json",
+              "sha256": "56e10e98da5620a42a3aa5e799988367b29c2d7f1cc15ff2a8125cbbce98dc61",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 649,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic-custody.json",
+              "sha256": "a9e9bd4da522cc435bed444350727678b3632c484686e9239bbfd76e29bc3803",
+              "type": "file"
+            },
+            {
+              "bytes": 974,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic-result.json",
+              "sha256": "ea407b12170514ce63097c59ff15444ecb66d59a67217b76e606a6f3dd413c04",
+              "type": "file"
+            },
+            {
+              "bytes": 630,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic.log",
+              "sha256": "8d9e9ea2415cacb22e8ca3c923cba0914bd673c2441e860e947a048fe34ac42b",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 10.019388398999581,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-pin-diagnostic-attempt-2--c1-pin-diagnostic",
+          "log_paths": [
+            {
+              "bytes": 630,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic.log",
+              "root": "Q",
+              "sha256": "8d9e9ea2415cacb22e8ca3c923cba0914bd673c2441e860e947a048fe34ac42b"
+            }
+          ],
+          "path": "wave35-r120-c1-pin-diagnostic-attempt-2",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 974,
+            "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic-result.json",
+            "root": "Q",
+            "sha256": "ea407b12170514ce63097c59ff15444ecb66d59a67217b76e606a6f3dd413c04"
+          },
+          "record_id": "c1-pin-diagnostic",
+          "result": {
+            "bytes": 974,
+            "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic-result.json",
+            "root": "Q",
+            "sha256": "ea407b12170514ce63097c59ff15444ecb66d59a67217b76e606a6f3dd413c04"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 649,
+            "path": "wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic-custody.json",
+            "root": "Q",
+            "sha256": "a9e9bd4da522cc435bed444350727678b3632c484686e9239bbfd76e29bc3803"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-pin-diagnostic--c1-pin-diagnostic",
+      "check_kind": "diagnostic",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-pin-diagnostic-attempt-2--c1-pin-diagnostic"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[distinct]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 2431,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/parent-c1-body_distinct.json",
+              "sha256": "a93967d02d714b45f389c5aab607238932417c696c1ffd4f625d10678b1876ff",
+              "type": "file"
+            },
+            {
+              "bytes": 654,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json",
+              "sha256": "a4056441ccab4a78e5ad97b3f7438d3519f26958a0fb0361e6e968da76ed4faa",
+              "type": "file"
+            },
+            {
+              "bytes": 948,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+              "sha256": "8607a42666ca96ea4a0ba2c0d0081eda91e72a2eef6af5561a0df3b23a13e9a2",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct.log",
+              "sha256": "f987e7773ba07db355322f22701891c31fbbda21f46a984902d126b7ac6c71b5",
+              "type": "file"
+            },
+            {
+              "bytes": 1329,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/root-poison-witness-verification.json",
+              "sha256": "d06093bca958b5fba2dae0e30f043a6690234e722d8f447bae7dc7602183d4d1",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/root-postflight.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 654,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/root-postflight.stdout",
+              "sha256": "a4056441ccab4a78e5ad97b3f7438d3519f26958a0fb0361e6e968da76ed4faa",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 8.301722578005865,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct.log",
+              "root": "Q",
+              "sha256": "f987e7773ba07db355322f22701891c31fbbda21f46a984902d126b7ac6c71b5"
+            }
+          ],
+          "path": "wave35-r120-c1-poison-body-distinct-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 948,
+            "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+            "root": "Q",
+            "sha256": "8607a42666ca96ea4a0ba2c0d0081eda91e72a2eef6af5561a0df3b23a13e9a2"
+          },
+          "record_id": "c1-poison-body-distinct",
+          "result": {
+            "bytes": 948,
+            "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+            "root": "Q",
+            "sha256": "8607a42666ca96ea4a0ba2c0d0081eda91e72a2eef6af5561a0df3b23a13e9a2"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 654,
+            "path": "wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json",
+            "root": "Q",
+            "sha256": "a4056441ccab4a78e5ad97b3f7438d3519f26958a0fb0361e6e968da76ed4faa"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-poison-body-distinct--c1-poison-body-distinct",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-poison-body-distinct-attempt-1--c1-poison-body-distinct"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[same]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 2414,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same/parent-c1-body_same.json",
+              "sha256": "d549cd175a6a5e960e4a50952899235c8e229cf6d60e0658991bb2ef541e8998",
+              "type": "file"
+            },
+            {
+              "bytes": 648,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+              "sha256": "4c6a6b14aaaeb0aac05a1f3b58eebafe5065139aee1a88e959eb56fe75905e56",
+              "type": "file"
+            },
+            {
+              "bytes": 930,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+              "sha256": "85a55461f1166f76f4a90bc647300dc055e32ee44029bf64e30af45d5130c252",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same.log",
+              "sha256": "887fc20b79a98690d925e1c1e1a8e1c0e4f1df0d8a32b85c342d78fd2c875ca7",
+              "type": "file"
+            },
+            {
+              "bytes": 1301,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/root-poison-witness-verification.json",
+              "sha256": "350b9aacd681645aa6ce552c35c944c026fc7601f538437f60c11be98d6a3255",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/root-postflight.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 648,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/root-postflight.stdout",
+              "sha256": "4c6a6b14aaaeb0aac05a1f3b58eebafe5065139aee1a88e959eb56fe75905e56",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 8.7846692190069,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-poison-body-same-attempt-1--c1-poison-body-same",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same.log",
+              "root": "Q",
+              "sha256": "887fc20b79a98690d925e1c1e1a8e1c0e4f1df0d8a32b85c342d78fd2c875ca7"
+            }
+          ],
+          "path": "wave35-r120-c1-poison-body-same-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 930,
+            "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+            "root": "Q",
+            "sha256": "85a55461f1166f76f4a90bc647300dc055e32ee44029bf64e30af45d5130c252"
+          },
+          "record_id": "c1-poison-body-same",
+          "result": {
+            "bytes": 930,
+            "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+            "root": "Q",
+            "sha256": "85a55461f1166f76f4a90bc647300dc055e32ee44029bf64e30af45d5130c252"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 648,
+            "path": "wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+            "root": "Q",
+            "sha256": "4c6a6b14aaaeb0aac05a1f3b58eebafe5065139aee1a88e959eb56fe75905e56"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-poison-body-same--c1-poison-body-same",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-poison-body-same-attempt-1--c1-poison-body-same"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_child_false_outer_true_preserves_bank_health",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 2526,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/parent-c1-child_false_parent_true.json",
+              "sha256": "044c0865defb61cada5a644cc1915aa6a3c77cbd958136009f29047fb29a46f0",
+              "type": "file"
+            },
+            {
+              "bytes": 665,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json",
+              "sha256": "1272ae16b892d7c950dbecc0fc22b602b4cc303deb210b864af93f97ebd1c4ab",
+              "type": "file"
+            },
+            {
+              "bytes": 977,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+              "sha256": "46e7cf587d7b021098be2350f0f69f324400afbbf494eae1953b7e12d3d03256",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true.log",
+              "sha256": "464973581d460b87ee1280245b720394db684d79a9df40107dce4b0796ead046",
+              "type": "file"
+            },
+            {
+              "bytes": 1399,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/root-poison-witness-verification.json",
+              "sha256": "4370d66fabde007071877d02c528f366f9d03ac0987d134b7573d51e38f181fb",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/root-postflight.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 665,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/root-postflight.stdout",
+              "sha256": "1272ae16b892d7c950dbecc0fc22b602b4cc303deb210b864af93f97ebd1c4ab",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.9801103139907354,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true.log",
+              "root": "Q",
+              "sha256": "464973581d460b87ee1280245b720394db684d79a9df40107dce4b0796ead046"
+            }
+          ],
+          "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 977,
+            "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+            "root": "Q",
+            "sha256": "46e7cf587d7b021098be2350f0f69f324400afbbf494eae1953b7e12d3d03256"
+          },
+          "record_id": "c1-poison-child-false-parent-true",
+          "result": {
+            "bytes": 977,
+            "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+            "root": "Q",
+            "sha256": "46e7cf587d7b021098be2350f0f69f324400afbbf494eae1953b7e12d3d03256"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 665,
+            "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json",
+            "root": "Q",
+            "sha256": "1272ae16b892d7c950dbecc0fc22b602b4cc303deb210b864af93f97ebd1c4ab"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-poison-child-false-parent-true--c1-poison-child-false-parent-true",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-poison-child-false-parent-true-attempt-1--c1-poison-child-false-parent-true"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_child_true_outer_false_retains_bank_uncertainty",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 2460,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/parent-c1-child_true_parent_false.json",
+              "sha256": "a20ed3a5dd46f4edebefaf6ed33b74b5c3fc27053919a7ee54e963288ac60688",
+              "type": "file"
+            },
+            {
+              "bytes": 664,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json",
+              "sha256": "542917c06e177b30e8683589aed80169c0b6fc098db37ca7f9fca36169949c73",
+              "type": "file"
+            },
+            {
+              "bytes": 979,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+              "sha256": "4f5b6c8e651c1a3920773a721eabe129be2ae9a35b9d3ce3d9d63dd1d87a3e4e",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false.log",
+              "sha256": "64b067a664e3251bf8aeff8a8d9943af072fe45fa7ddf8010dc2e77115c14225",
+              "type": "file"
+            },
+            {
+              "bytes": 1399,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/root-poison-witness-verification.json",
+              "sha256": "9370395c22ab6f01be5fbb2708c6a51db0b32a71ce5a72d6f68355b84aa44fb5",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/root-postflight.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 664,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/root-postflight.stdout",
+              "sha256": "542917c06e177b30e8683589aed80169c0b6fc098db37ca7f9fca36169949c73",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.786448792990996,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false.log",
+              "root": "Q",
+              "sha256": "64b067a664e3251bf8aeff8a8d9943af072fe45fa7ddf8010dc2e77115c14225"
+            }
+          ],
+          "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 979,
+            "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+            "root": "Q",
+            "sha256": "4f5b6c8e651c1a3920773a721eabe129be2ae9a35b9d3ce3d9d63dd1d87a3e4e"
+          },
+          "record_id": "c1-poison-child-true-parent-false",
+          "result": {
+            "bytes": 979,
+            "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+            "root": "Q",
+            "sha256": "4f5b6c8e651c1a3920773a721eabe129be2ae9a35b9d3ce3d9d63dd1d87a3e4e"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 664,
+            "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json",
+            "root": "Q",
+            "sha256": "542917c06e177b30e8683589aed80169c0b6fc098db37ca7f9fca36169949c73"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-poison-child-true-parent-false--c1-poison-child-true-parent-false",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-poison-child-true-parent-false-attempt-1--c1-poison-child-true-parent-false"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_install_completion_failure_cannot_restore_healthy_latch",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 2462,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion/parent-c1-install_completion.json",
+              "sha256": "f66c4e4ac4624b49e0dde67d8f4c44bcbc2b244b11f49c8abaa894bce404cbcf",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json",
+              "sha256": "d247b3813bffbcf170e0179e775fcbd8651e1d100e565aff53abd869326aa37c",
+              "type": "file"
+            },
+            {
+              "bytes": 972,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+              "sha256": "ac654942d4d620f44e343e899c7475182d2fde1fec333342fc2eac7d8ad1423b",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion.log",
+              "sha256": "251c48303fc8a6fa694d26eefc71997ca09790408a3ea975519d1bd9afda5a17",
+              "type": "file"
+            },
+            {
+              "bytes": 1364,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/root-poison-witness-verification.json",
+              "sha256": "9088fd6ff7b18b87644b12cf365527f5bcc3cc8e1c527ce604aaaac8d91f91c4",
+              "type": "file"
+            },
+            {
+              "bytes": 0,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/root-postflight.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/root-postflight.stdout",
+              "sha256": "d247b3813bffbcf170e0179e775fcbd8651e1d100e565aff53abd869326aa37c",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 6.432864037997206,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-poison-install-completion-attempt-1--c1-poison-install-completion",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion.log",
+              "root": "Q",
+              "sha256": "251c48303fc8a6fa694d26eefc71997ca09790408a3ea975519d1bd9afda5a17"
+            }
+          ],
+          "path": "wave35-r120-c1-poison-install-completion-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 972,
+            "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+            "root": "Q",
+            "sha256": "ac654942d4d620f44e343e899c7475182d2fde1fec333342fc2eac7d8ad1423b"
+          },
+          "record_id": "c1-poison-install-completion",
+          "result": {
+            "bytes": 972,
+            "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+            "root": "Q",
+            "sha256": "ac654942d4d620f44e343e899c7475182d2fde1fec333342fc2eac7d8ad1423b"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 659,
+            "path": "wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json",
+            "root": "Q",
+            "sha256": "d247b3813bffbcf170e0179e775fcbd8651e1d100e565aff53abd869326aa37c"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-poison-install-completion--c1-poison-install-completion",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-poison-install-completion-attempt-1--c1-poison-install-completion"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "actual_worker_count": 0,
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_fixture_standalone_initial_restore[shared-none]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_runtime_contender_does_not_take_lock_before_domain",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_install_has_no_postpublication_invalidation",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[runtime]",
+            "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[bank]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 5,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls/identity-controller.json",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770",
+              "type": "file"
+            },
+            {
+              "bytes": 651,
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls-custody.json",
+              "sha256": "08dcbcbc52597ed43bdb6d665230bf23bbbb5fe43de094059fbeaff799b3e085",
+              "type": "file"
+            },
+            {
+              "bytes": 1476,
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls-result.json",
+              "sha256": "ba6dd39e48a0af75d7df89c5e577b3cc198d3d594e285ca0f353e5364e286367",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls.log",
+              "sha256": "5dd72bdab27734a08127caf50758dd622e4d3b91eab6420c70162d61dea82d75",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 9.387132577001466,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-c1-repaired-controls-attempt-1--c1-repaired-controls",
+          "log_paths": [
+            {
+              "bytes": 659,
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls.log",
+              "root": "Q",
+              "sha256": "5dd72bdab27734a08127caf50758dd622e4d3b91eab6420c70162d61dea82d75"
+            }
+          ],
+          "path": "wave35-r120-c1-repaired-controls-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c60bd7b0b51bd686df6ea43c1fa96d2b53229a2623acb92ba3ad09a416243770"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1476,
+            "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls-result.json",
+            "root": "Q",
+            "sha256": "ba6dd39e48a0af75d7df89c5e577b3cc198d3d594e285ca0f353e5364e286367"
+          },
+          "record_id": "c1-repaired-controls",
+          "result": {
+            "bytes": 1476,
+            "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls-result.json",
+            "root": "Q",
+            "sha256": "ba6dd39e48a0af75d7df89c5e577b3cc198d3d594e285ca0f353e5364e286367"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 651,
+            "path": "wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls-custody.json",
+            "root": "Q",
+            "sha256": "08dcbcbc52597ed43bdb6d665230bf23bbbb5fe43de094059fbeaff799b3e085"
+          }
+        }
+      ],
+      "check": "wave35-r120-c1-repaired-controls--c1-repaired-controls",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r120-c1-repaired-controls-attempt-1--c1-repaired-controls"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": null,
+          "counts": null,
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r120-collection-spec.json",
+              "sha256": "c5077f5745c708b6f3e397028b72347d46b8667e21929e097cffb0d2e8e233c2",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-collection-spec.json--unrun",
+          "path": "wave35-r120-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 capture template; no execution. Actual C1 named attempts are separately indexed."
+        }
+      ],
+      "check": "wave35-r120-collection-spec.json--unrun",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r120-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original per-job absolute UTC not emitted; remains null.",
+          "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+          "candidate_manifest": {
+            "bytes": 207570,
+            "path": "wave35/r120-candidate.json",
+            "root": "W",
+            "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+          },
+          "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+          "command": null,
+          "counts": null,
+          "custody_unavailable_reason": "Existing CPU runner did not emit original absolute UTC; no filesystem-time inference. Import/debug evidence requires root custody reconciliation.",
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r120-owned-spec.json",
+              "sha256": "c247d0b06f99750e8a1247976dca4ce825c427f9cef54e9ffc9a4558a48a894c",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "source": {
+              "bytes": 4480,
+              "path": "wave35/r120-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "a35f3145b824a46e1e8da4be01fae493c8ba8e13cfa469649f3ed003a453b21e"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+            "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU fixture preflight; CUDA unqualified"
+          },
+          "id": "wave35-r120-owned-spec.json--unrun",
+          "path": "wave35-r120-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Automatic unrelated T21 capture template; no execution. Actual C1 named attempts are separately indexed."
+        }
+      ],
+      "check": "wave35-r120-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "proposed_qualifying": false,
+      "qualification_scope": "Bounded C1 CPU only; proposed terminal custody subject to root reconciliation; no full C1/BAC acceptance.",
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r120-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_manifest": {
+    "bytes": 207570,
+    "path": "wave35/r120-candidate.json",
+    "root": "W",
+    "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+  },
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "e88d5f7ebb3946ed3606c6e6b0055514b0b36609",
+    "tests": "8d4b526c1d204adbd9ef28afa8425c83b29feb48"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-collection-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-collection-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-independent-expiration-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-independent-expiration-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-ordinary-attempt-1",
+      "round": 120,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-ordinary-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-pin-diagnostic-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-pin-diagnostic-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-pin-diagnostic-attempt-2",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-pin-diagnostic-attempt-2-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-poison-body-distinct-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-poison-body-distinct-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-poison-body-same-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-poison-body-same-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-poison-child-false-parent-true-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-poison-child-true-parent-false-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-poison-install-completion-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-poison-install-completion-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-c1-repaired-controls-attempt-1",
+      "round": 120,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r120-c1-repaired-controls-attempt-1-spec.json",
+      "round": 120,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-collection-spec.json",
+      "round": 120,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r120-owned-spec.json",
+      "round": 120,
+      "status": "UNRUN"
+    }
+  ],
+  "round": 120,
+  "schema": "bac-wip22-round-history-proposal-v1",
+  "scope": "Retains all actual failed/intermediate/unrun interval artifacts; not full qualification.",
+  "status": "DRAFT FINITE HISTORY; ROOT RECONCILIATION REQUIRED"
+}

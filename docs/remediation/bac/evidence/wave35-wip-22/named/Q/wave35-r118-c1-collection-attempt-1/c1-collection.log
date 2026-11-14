@@ -1,0 +1,80 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 64 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_runtime_bank_parent_custody.py>
+            <Function test_fixture_standalone_initial_restore[shared-none]>
+            <Function test_fixture_standalone_initial_restore[shared-count_based]>
+            <Function test_fixture_standalone_initial_restore[shared-rnd]>
+            <Function test_fixture_standalone_initial_restore[shared-adaptive_rnd]>
+            <Function test_fixture_standalone_initial_restore[shared-icm]>
+            <Function test_fixture_standalone_initial_restore[per_world-none]>
+            <Function test_fixture_standalone_initial_restore[per_world-count_based]>
+            <Function test_fixture_standalone_initial_restore[per_world-rnd]>
+            <Function test_fixture_standalone_initial_restore[per_world-adaptive_rnd]>
+            <Function test_fixture_standalone_initial_restore[per_world-icm]>
+            <Function test_bound_component_reward_service_retry[all-shared-none]>
+            <Function test_bound_component_reward_service_retry[all-shared-count_based]>
+            <Function test_bound_component_reward_service_retry[all-shared-rnd]>
+            <Function test_bound_component_reward_service_retry[all-shared-adaptive_rnd]>
+            <Function test_bound_component_reward_service_retry[all-shared-icm]>
+            <Function test_bound_component_reward_service_retry[all-per_world-none]>
+            <Function test_bound_component_reward_service_retry[all-per_world-count_based]>
+            <Function test_bound_component_reward_service_retry[all-per_world-rnd]>
+            <Function test_bound_component_reward_service_retry[all-per_world-adaptive_rnd]>
+            <Function test_bound_component_reward_service_retry[all-per_world-icm]>
+            <Function test_bound_component_reward_service_retry[one-shared-none]>
+            <Function test_bound_component_reward_service_retry[one-shared-count_based]>
+            <Function test_bound_component_reward_service_retry[one-shared-rnd]>
+            <Function test_bound_component_reward_service_retry[one-shared-adaptive_rnd]>
+            <Function test_bound_component_reward_service_retry[one-shared-icm]>
+            <Function test_bound_component_reward_service_retry[one-per_world-none]>
+            <Function test_bound_component_reward_service_retry[one-per_world-count_based]>
+            <Function test_bound_component_reward_service_retry[one-per_world-rnd]>
+            <Function test_bound_component_reward_service_retry[one-per_world-adaptive_rnd]>
+            <Function test_bound_component_reward_service_retry[one-per_world-icm]>
+            <Function test_direct_bank_controller_and_unrelated_runtime_refusal>
+            <Function test_retained_scope_requires_binding_and_expires>
+            <Function test_scope_wrong_thread_refuses_without_waiting>
+            <Function test_runtime_contender_does_not_take_lock_before_domain>
+            <Function test_contender_waits_until_parent_consumer_and_scope_exit[runtime]>
+            <Function test_contender_waits_until_parent_consumer_and_scope_exit[bank]>
+            <Function test_restore_after_retention_does_not_resurrect_scope>
+            <Function test_bound_cohort_entry_refuses_before_callbacks[runtime-prepare_restore]>
+            <Function test_bound_cohort_entry_refuses_before_callbacks[runtime-prepare_private_initialization]>
+            <Function test_bound_cohort_entry_refuses_before_callbacks[runtime-install_restore]>
+            <Function test_bound_cohort_entry_refuses_before_callbacks[bank-prepare_restore]>
+            <Function test_bound_cohort_entry_refuses_before_callbacks[bank-prepare_private_initialization]>
+            <Function test_bound_cohort_entry_refuses_before_callbacks[bank-install_restore]>
+            <Function test_real_commit_callbacks_cannot_borrow_bank_authority[False]>
+            <Function test_real_commit_callbacks_cannot_borrow_bank_authority[True]>
+            <Function test_standalone_cadence_and_idle_cohort_gap_keep_public_guard>
+            <Function test_forwarding_permit_is_single_use_and_cleared[wrong_method]>
+            <Function test_forwarding_permit_is_single_use_and_cleared[twice]>
+            <Function test_forwarding_permit_is_single_use_and_cleared[admission_failure]>
+            <Function test_standalone_private_initialization_after_retention[none]>
+            <Function test_standalone_private_initialization_after_retention[count_based]>
+            <Function test_standalone_private_initialization_after_retention[rnd]>
+            <Function test_standalone_private_initialization_after_retention[adaptive_rnd]>
+            <Function test_standalone_private_initialization_after_retention[icm]>
+            <Function test_scope_forgery_expired_lineage_and_pid_refuse>
+            <Function test_scope_releases_owner_pin>
+            <Function test_partial_retention_failure_releases_domain_and_runtime>
+            <Function test_empty_cpu_and_refusals_never_touch_cuda>
+            <Function test_body_error_clean_completion_preserves_identity>
+            <Function test_body_and_completion_failure_identity[same]>
+            <Function test_body_and_completion_failure_identity[distinct]>
+            <Function test_child_true_outer_false_retains_bank_uncertainty>
+            <Function test_child_false_outer_true_preserves_bank_health>
+            <Function test_install_completion_failure_cannot_restore_healthy_latch>
+
+========================= 64 tests collected in 0.18s ==========================

@@ -1,0 +1,53 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py F [100%]
+
+=================================== FAILURES ===================================
+_______________ test_install_has_no_postpublication_invalidation _______________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f28a6d53360>
+
+    def test_install_has_no_postpublication_invalidation(compiled: Any, monkeypatch: Any) -> None:
+        """BANK installation must be followed only by preallocated runtime assignments."""
+        rig = make_parent(compiled)
+        state = rig.runtime.checkpoint_state()
+        prepared = rig.runtime.prepare_restore(
+            state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+        )
+        calls: list[bool] = []
+    
+        def forbidden_invalidation() -> None:
+            calls.append(True)
+            raise RuntimeError("postpublication runtime invalidation")
+    
+        with monkeypatch.context() as patch:
+            patch.setattr(rig.runtime, "_invalidate", forbidden_invalidation)
+>           rig.runtime.install_restore(prepared=prepared)
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:583: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1284: in install_restore
+    self._bank_call("install_restore", prepared=publication.bank_handle)
+src/townlet/config/exploration_policy.py:877: in _bank_call
+    self._invalidate()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def forbidden_invalidation() -> None:
+        calls.append(True)
+>       raise RuntimeError("postpublication runtime invalidation")
+E       RuntimeError: postpublication runtime invalidation
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:579: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_install_has_no_postpublication_invalidation
+============================== 1 failed in 4.85s ===============================

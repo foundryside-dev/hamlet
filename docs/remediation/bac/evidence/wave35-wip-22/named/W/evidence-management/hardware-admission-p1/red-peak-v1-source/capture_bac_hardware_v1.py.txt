@@ -1,0 +1,253 @@
+"""Read-only BAC hardware admission. No application or historical tool imports.
+
+Synthetic observations exercise arithmetic only; actual qualification requires a
+root-authorized source freeze and a separate observed discovery process. Neither
+reference hashes nor admission establish actual test execution or CUDA behavior.
+"""
+import datetime
+import math
+import os
+from pathlib import Path
+import re
+
+import bac_hardware_protocol_v1 as protocol
+
+PROTOCOL_SHA256 = "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+DISCOVERY_FIELDS = {
+    "schema", "profile", "identity", "at", "argv", "interpreter", "cwd", "inherited_visibility", "effective_visibility", "tmpdir",
+    "cgroup_root", "cgroup_leaf", "ancestry_complete", "cgroups", "affinity", "meminfo", "scratch_free_bytes", "scratch_free_inodes",
+    "cpu_topology", "numa_topology", "gpu_topology", "competing_workloads", "torch_build", "cuda_runtime", "driver", "devices",
+    "probe_errors", "commands",
+}
+DEVICE_FIELDS = {"logical_index", "gpu_uuid", "mig_uuid", "physical_parent_uuid", "model", "vram_bytes", "isolation"}
+
+
+def require(condition, reason):
+    if not condition:
+        raise ValueError(reason)
+
+
+def canonical(value):
+    require(type(value) is str and value.startswith("/") and "\x00" not in value and "\\" not in value, "absolute path required")
+    require(value == "/" or all(p not in ("", ".", "..") for p in value[1:].split("/")), "noncanonical path")
+    return Path(value)
+
+
+def text_list(value):
+    return type(value) is list and all(type(v) is str and v.strip() and "\x00" not in v for v in value)
+
+
+def validate_discovery(obs):
+    require(type(obs) is dict and set(obs) == DISCOVERY_FIELDS, "discovery exact fields required")
+    require(obs["schema"] == "bac-hardware-discovery-v1" and obs["profile"] in ("cpu", "cuda"), "discovery version/profile")
+    protocol.validate_record("identity", obs["identity"])
+    require(type(obs["at"]) is str and re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{6}Z", obs["at"]), "discovery timestamp")
+    datetime.datetime.strptime(obs["at"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    for key in ("interpreter", "cwd", "tmpdir", "cgroup_root", "cgroup_leaf"):
+        canonical(obs[key])
+    require(type(obs["ancestry_complete"]) is bool, "discovery ancestry flag")
+    require(text_list(obs["argv"]) and obs["argv"], "discovery argv")
+    for key in ("meminfo", "cpu_topology", "numa_topology", "gpu_topology", "torch_build", "cuda_runtime", "driver", "inherited_visibility"):
+        require(obs[key] is None or type(obs[key]) is str and "\x00" not in obs[key], "discovery text fact: " + key)
+    require(type(obs["effective_visibility"]) is str, "discovery visibility")
+    for key in ("scratch_free_bytes", "scratch_free_inodes"):
+        require(obs[key] is None or type(obs[key]) is int and obs[key] >= 0, "discovery unsigned fact: " + key)
+    affinity = obs["affinity"]
+    require(affinity is None or type(affinity) is list and affinity and all(type(v) is int and v >= 0 for v in affinity)
+            and len(set(affinity)) == len(affinity), "discovery affinity")
+    require(obs["competing_workloads"] is None or text_list(obs["competing_workloads"]), "discovery competing workloads")
+    require(text_list(obs["probe_errors"]), "discovery probe errors")
+    require(type(obs["cgroups"]) is list and obs["cgroups"], "discovery cgroups required")
+    for group in obs["cgroups"]:
+        require(type(group) is dict and set(group) == {"path", "cpu_max", "cpuset", "memory_max", "memory_current"}, "cgroup fields")
+        canonical(group["path"])
+        require(all(group[k] is None or type(group[k]) is str for k in ("cpu_max", "cpuset", "memory_max", "memory_current")), "cgroup facts")
+    require(type(obs["devices"]) is list, "discovery devices")
+    for device in obs["devices"]:
+        require(type(device) is dict and set(device) == DEVICE_FIELDS, "discovery device fields")
+        for key in ("logical_index", "vram_bytes"):
+            require(type(device[key]) is int and device[key] >= (1 if key == "vram_bytes" else 0), "device numeric fact")
+        for key in ("gpu_uuid", "physical_parent_uuid", "model", "isolation"):
+            require(type(device[key]) is str and device[key].strip(), "device identity fact")
+        require(device["mig_uuid"] is None or type(device["mig_uuid"]) is str and device["mig_uuid"], "MIG identity fact")
+    require(type(obs["commands"]) is list, "discovery command inventory")
+    for command in obs["commands"]:
+        require(type(command) is dict and set(command) == {"argv", "exit_code", "stdout", "stderr"}, "discovery command fields")
+        require(text_list(command["argv"]) and command["argv"] and type(command["exit_code"]) is int
+                and type(command["stdout"]) is str and type(command["stderr"]) is str, "discovery command types")
+
+
+def cpuset(raw):
+    require(type(raw) is str and raw.strip(), "cpuset unavailable")
+    values = set()
+    for part in raw.strip().split(","):
+        require(re.fullmatch(r"\d+(?:-\d+)?", part) is not None, "invalid cpuset")
+        endpoints = [int(x) for x in part.split("-")]
+        low, high = endpoints[0], endpoints[-1]
+        require(0 <= low <= high <= 1048575, "invalid cpuset range")
+        current = set(range(low, high + 1))
+        require(not current & values, "duplicate cpuset")
+        values |= current
+    return values
+
+
+def assess_resources(request, obs, provenance):
+    """Derive P0 admission fields from closed observations; never certify origin."""
+    validate_discovery(obs)
+    protocol.validate_record("reference", provenance)
+    reasons = list(obs["probe_errors"])
+    if reasons:
+        reasons.insert(0, "required discovery probe failed")
+
+    def fact(value, reason="", state="unavailable"):
+        return {"state": "measured" if value is not None else state, "value": value,
+                "reason": "" if value is not None else reason, "provenance": provenance}
+
+    def numeric(raw, label):
+        require(type(raw) is str and re.fullmatch(r"\d+", raw.strip()), label + " unavailable or malformed")
+        return int(raw.strip())
+
+    def observed(key):
+        value = obs[key]
+        if value is None:
+            reasons.append(key + " unavailable")
+        return fact(value, key + " unavailable")
+
+    require(obs["profile"] == request["profile"], "discovery profile mismatch")
+    fields = {key: observed(key) for key in ("affinity", "scratch_free_bytes", "scratch_free_inodes", "competing_workloads")}
+    fields.update({key: fact(obs[key], key + " not observed", "unsupported")
+                   for key in ("cpu_topology", "numa_topology", "gpu_topology")})
+    fields.update(tmpdir=obs["tmpdir"], requested_visibility=request["requested_visibility"],
+                  effective_visibility=obs["effective_visibility"], devices=[], cgroups=[])
+    root, leaf = Path(obs["cgroup_root"]), Path(obs["cgroup_leaf"])
+    if not leaf.is_relative_to(root) or not obs["ancestry_complete"]:
+        reasons.append("cgroup ancestry is hidden or unsupported")
+    expected = []
+    if leaf.is_relative_to(root):
+        current = leaf
+        while True:
+            expected.append(str(current))
+            if current == root:
+                break
+            current = current.parent
+        expected.reverse()
+    if [g["path"] for g in obs["cgroups"]] != expected:
+        reasons.append("cgroup ancestry incomplete or duplicate")
+    cpus = set(obs["affinity"] or [])
+    quotas, memory_limits, headrooms, currents = [], [], [], []
+    cpu_known, memory_known = obs["affinity"] is not None, True
+    for group in obs["cgroups"]:
+        converted = {"path": group["path"]}
+        try:
+            require(type(group["cpu_max"]) is str, "cpu controller unavailable")
+            parts = group["cpu_max"].split()
+            require(len(parts) == 2, "cpu quota/period malformed")
+            period = numeric(parts[1], "cpu period")
+            require(period > 0, "cpu period must be positive")
+            converted["cpu_period_us"] = fact(period)
+            if parts[0] == "max":
+                converted["cpu_quota_us"] = fact(None, "cpu.max is max", "unlimited")
+            else:
+                quota = numeric(parts[0], "cpu quota")
+                require(quota > 0, "cpu quota must be positive")
+                quotas.append(quota / period)
+                converted["cpu_quota_us"] = fact(quota)
+        except (ValueError, OverflowError) as exc:
+            cpu_known = False
+            reasons.append(str(exc))
+            converted.update(cpu_quota_us=fact(None, str(exc)), cpu_period_us=fact(None, str(exc)))
+        try:
+            subset = cpuset(group["cpuset"])
+            cpus &= subset
+            converted["cpuset"] = fact(sorted(subset))
+        except ValueError as exc:
+            cpu_known = False
+            reasons.append(str(exc))
+            converted["cpuset"] = fact(None, str(exc))
+        try:
+            current_memory = numeric(group["memory_current"], "memory current")
+            currents.append(current_memory)
+            if group["memory_max"] == "max":
+                converted["memory_limit_bytes"] = fact(None, "memory.max is max", "unlimited")
+            else:
+                limit = numeric(group["memory_max"], "memory limit")
+                memory_limits.append(limit)
+                headrooms.append(max(0, limit - current_memory))
+                converted["memory_limit_bytes"] = fact(limit)
+        except ValueError as exc:
+            memory_known = False
+            reasons.append(str(exc))
+            converted["memory_limit_bytes"] = fact(None, str(exc))
+        fields["cgroups"].append(converted)
+    capacity = min([len(cpus), *quotas]) if cpu_known else None
+    fields["effective_cpu_capacity"] = fact(capacity, "cpu/affinity/cpuset facts insufficient")
+    host_total = host_available = None
+    try:
+        require(type(obs["meminfo"]) is str, "MemTotal/MemAvailable unavailable")
+        memory = {}
+        for line in obs["meminfo"].splitlines():
+            match = re.fullmatch(r"(MemTotal|MemAvailable):\s*(\d+) kB", line)
+            if match:
+                require(match[1] not in memory, "duplicate memory observation")
+                memory[match[1]] = int(match[2]) * 1024
+        require(set(memory) == {"MemTotal", "MemAvailable"}, "MemTotal/MemAvailable unavailable")
+        host_total, host_available = memory["MemTotal"], memory["MemAvailable"]
+        require(0 < host_total and host_available <= host_total, "host memory observation inconsistent")
+    except ValueError as exc:
+        memory_known = False
+        reasons.append(str(exc))
+    limited = min([host_total, *memory_limits]) if host_total is not None and memory_known else None
+    fields.update(host_ram_bytes=fact(host_total, "MemTotal unavailable"), limited_ram_bytes=fact(limited, "memory facts insufficient"),
+                  ram_current_bytes=fact(currents[-1] if memory_known and currents else None, "memory current unavailable"))
+    available = {"cpu_slots": math.floor(capacity) if capacity is not None else 0,
+                 "ram_bytes": min([host_available, *headrooms]) if memory_known and host_available is not None else 0,
+                 "scratch_bytes": obs["scratch_free_bytes"] or 0, "scratch_inodes": obs["scratch_free_inodes"] or 0}
+    budget = {key: max(0, value - request["reserve"][key]) for key, value in available.items()}
+    for key, minimum in request["minimum"].items():
+        count = len(request["jobs"]) if key in ("scratch_bytes", "scratch_inodes") else request["requested_job_concurrency"]
+        required = sum(sorted((job["budget"][key] for job in request["jobs"]), reverse=True)[:count])
+        if budget[key] < max(minimum, required):
+            reasons.append(key + " insufficient after reserve and concurrent job reservations")
+    for job in request["jobs"]:
+        if job["budget"]["cpu_slots"] < sum(r["count"] + r["replacement_limit"] for r in job["roles"]):
+            reasons.append("job CPU reservation misses concurrent roles/replacement overlap")
+    if request["profile"] == "cpu":
+        if obs["effective_visibility"] != "" or obs["devices"]:
+            reasons.append("CPU discovery must hide CUDA")
+        fields["effective_visibility"] = ""
+    else:
+        if not obs["cuda_runtime"] or not obs["torch_build"] or "cpu" in obs["torch_build"].lower():
+            reasons.append("CUDA-capable Torch build/runtime unavailable")
+        if not obs["driver"]:
+            reasons.append("CUDA driver unavailable")
+        if obs["inherited_visibility"] is not None and obs["inherited_visibility"] != request["requested_visibility"]:
+            reasons.append("inherited CUDA visibility differs; expansion/remapping is not authorized")
+        if obs["effective_visibility"] != request["requested_visibility"]:
+            reasons.append("effective CUDA visibility differs from request")
+        if obs["competing_workloads"]:
+            reasons.append("competing GPU workloads preclude physical-exclusive admission")
+        devices = obs["devices"]
+        if not devices:
+            reasons.append("CUDA device mapping unavailable")
+        if len({d["gpu_uuid"] for d in devices}) != len(devices):
+            reasons.append("duplicate GPU UUID")
+        if [d["logical_index"] for d in devices] != list(range(len(devices))):
+            reasons.append("logical device mapping is not contiguous")
+        for device in devices:
+            if device["gpu_uuid"] not in request["authorized_devices"]:
+                reasons.append("GPU UUID is outside authorized allocation")
+            if device["mig_uuid"] is not None or device["gpu_uuid"].startswith("MIG-"):
+                reasons.append("MIG mapping unsupported; physical parent isolation unproved")
+            if device["physical_parent_uuid"] != device["gpu_uuid"] or device["isolation"] != "physical-exclusive":
+                reasons.append("physical parent mapping unsupported")
+        for job in request["jobs"]:
+            if job["profile"] == "cuda":
+                raw_devices = [{k: v for k, v in d.items() if k != "mapping_provenance"} for d in job["devices"]]
+                if raw_devices != devices or job["environment"].get("CUDA_VISIBLE_DEVICES") != obs["effective_visibility"]:
+                    reasons.append("job device allocation/visibility differs from measured mapping")
+        # Invalid raw mappings remain in discovery; refused P0 records contain no
+        # invalid device objects that could accidentally look usable downstream.
+        if not reasons:
+            fields["devices"] = [dict(d, mapping_provenance=provenance) for d in devices]
+    fields.update(reasons=list(dict.fromkeys(reasons)), admitted_budget=budget)
+    return fields

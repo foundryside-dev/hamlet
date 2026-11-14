@@ -1,0 +1,83 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+____________ test_wrong_allocation_identity_refuses_preflight[host] ____________
+
+field = 'host'
+
+    @pytest.mark.parametrize('field', ['host', 'boot_id'])
+    def test_wrong_allocation_identity_refuses_preflight(field):
+        obs, req = fixtures.observation(), fixtures.request()
+        allocation = dict(host=obs['identity']['host'], boot_id=obs['identity']['boot_id'],
+            authorized_cpu_ids=[0, 1, 2, 3],
+            capacity=dict(cpu_slots=4, ram_bytes=1000, scratch_bytes=1000, scratch_inodes=20),
+            overhead=dict(cpu_slots=1, ram_bytes=100, scratch_bytes=100, scratch_inodes=1))
+        allocation[field] = 'wrong-allocation-identity'
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py:18: Failed
+__________ test_wrong_allocation_identity_refuses_preflight[boot_id] ___________
+
+field = 'boot_id'
+
+    @pytest.mark.parametrize('field', ['host', 'boot_id'])
+    def test_wrong_allocation_identity_refuses_preflight(field):
+        obs, req = fixtures.observation(), fixtures.request()
+        allocation = dict(host=obs['identity']['host'], boot_id=obs['identity']['boot_id'],
+            authorized_cpu_ids=[0, 1, 2, 3],
+            capacity=dict(cpu_slots=4, ram_bytes=1000, scratch_bytes=1000, scratch_inodes=20),
+            overhead=dict(cpu_slots=1, ram_bytes=100, scratch_bytes=100, scratch_inodes=1))
+        allocation[field] = 'wrong-allocation-identity'
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py:18: Failed
+___________ test_persistent_pool_lock_replacement_refuses_at_release ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-65/test_persistent_pool_lock_repl0')
+
+    def test_persistent_pool_lock_replacement_refuses_at_release(tmp_path):
+        root = tmp_path / 'leases'; root.mkdir()
+        req = dict(lease_root=str(root), jobs=[])
+        allocation = dict(pool_id='pool', allocation_id='one', partition_basis='exclusive-pool')
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py:26: Failed
+____ test_capture_refuses_persistent_pool_lock_replacement_after_discovery _____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-65/test_capture_refuses_persisten0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f56cc45e190>
+
+    def test_capture_refuses_persistent_pool_lock_replacement_after_discovery(tmp_path, monkeypatch):
+        candidate, request_path, source, req, env, registry = fixtures.capture_fixture(tmp_path)
+        fixtures.stub_capture_observations(monkeypatch, tool, req, env, registry)
+        original = tool.launch_discovery
+        def replace_after_discovery(*args):
+            result = original(*args)
+            import json
+            allocation = json.loads((tmp_path / 'allocation.json').read_text())
+            path = Path(req['lease_root']) / (hashlib.sha256(('pool:' + allocation['pool_id']).encode()).hexdigest() + '.lock')
+            replacement = path.parent / 'replacement'; replacement.write_text('inert replacement')
+            os.replace(replacement, path)
+            return result
+        monkeypatch.setattr(tool, 'launch_discovery', replace_after_discovery)
+        destination = tmp_path / 'capture'
+        result = tool.capture(candidate, request_path, destination)
+>       assert result['disposition'] == 'refused', result
+E       AssertionError: {'admission': {'bytes': 9809, 'path': '/tmp/pytest-of-agent/pytest-65/test_capture_refuses_persisten0/capture/admissio...d33cbce4577373b1f8520b951'}, 'disposition': 'admitted', 'reasons': [], 'schema': 'bac-hardware-capture-result-v1', ...}
+E       assert 'admitted' == 'refused'
+E         
+E         - refused
+E         + admitted
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py:48: AssertionError
+=========================== short test summary info ============================
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py::test_wrong_allocation_identity_refuses_preflight[host]
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py::test_wrong_allocation_identity_refuses_preflight[boot_id]
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py::test_persistent_pool_lock_replacement_refuses_at_release
+FAILED ../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py::test_capture_refuses_persistent_pool_lock_replacement_after_discovery
+4 failed in 0.22s

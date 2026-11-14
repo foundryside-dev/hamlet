@@ -1,0 +1,31 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_tree": "62e1025e2d457eea50337f4f0889420831689a2d",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+    where is_set = <threading.Event at 0x7fd5ec4128b0: set>.is_set",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[runtime]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where is_set = <threading.Event at 0x7fd5ec3a2030: set>.is_set",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[bank]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "base_commit": "050a1a70e979aa03724219b81e848093820f044f",
+  "final_source_commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+  "final_source_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+  "tested_candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+  "commits": [
+    {
+      "task": "T08a",
+      "commit": "2dd65867232a63cfb21403983de85bae130058ab",
+      "paths": [
+        "src/townlet/exploration/action_selection.py",
+        "tests/test_townlet/regressions/bac/test_action_probabilities.py",
+        "tests/test_townlet/unit/exploration/test_epsilon_greedy_selection.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T09",
+      "commit": "ac078cb95981534ea686807dee8c6b478b6ccc74",
+      "paths": [
+        "src/townlet/environment/vectorized_env.py",
+        "tests/test_townlet/regressions/bac/test_successor_producer.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T09a",
+      "commit": "5d507e4bdfd7efc4739004dcf4c691480f7180c0",
+      "paths": [
+        "src/townlet/environment/action_executor.py",
+        "tests/test_townlet/regressions/bac/test_inactive_action_execution.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T18",
+      "commit": "424e57015bac9448dc0fa5780269c649a6cac22f",
+      "paths": [
+        "src/townlet/exploration/rnd.py",
+        "src/townlet/population/vectorized.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    },
+    {
+      "task": "T18a",
+      "commit": "ac8f0f9c3c38cd77f533accc5c9259fe4abfc252",
+      "paths": [
+        "src/townlet/config/exploration_policy.py",
+        "tests/test_townlet/regressions/bac/test_exploration_policy.py"
+      ],
+      "intermediate_full_qualification": "Only finalsumtree is full-qualified; individual prefix heads not separately full-qualified"
+    }
+  ],
+  "full_result": {
+    "name": "full-tests",
+    "exit_code": 0,
+    "seconds": 1090.2500422000885,
+    "log": "/workspace/bac-review-2026-11-01/qualification/wave02-full-tests.log",
+    "sha256": "9cbd71a68215bcd3232250e8a5d4cd006e20d94c6e0b5bfb90f86b9b8cb15ef6",
+    "candidate_tree": "3d1d21cff5abdf60b630f97da0cdb09bf8ccd036",
+    "base_commit": "050a1a70e979aa03724219b81e848093820f044f",
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests",
+      "-q",
+      "--maxfail=1",
+      "--no-cov",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "bac_source_identity",
+      "-n",
+      "4",
+      "--dist",
+      "worksteal",
+      "--basetemp=/tmp/bac-full-wave02-3d1d21cff5"
+    ]
+  },
+  "status": "All five packages released after reviewed/gated exact sum-tree equality; wholeBAC/final acceptance remains owed"
+}

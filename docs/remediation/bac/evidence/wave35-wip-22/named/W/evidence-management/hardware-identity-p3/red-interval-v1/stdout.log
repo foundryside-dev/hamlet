@@ -1,0 +1,20 @@
+...........................................F                             [100%]
+=================================== FAILURES ===================================
+________________ test_grant_must_cover_last_source_observation _________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-103/test_grant_must_cover_last_sou0/source/pkg/inert-module.txt'), 'bl..._must_cover_last_sou0/freeze.json', 'sha256': '1ed3e231a84a1f6555abc91014bd6df9abae39ad1319ba1b8af25456de043787'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f5950917b60>
+
+    def test_grant_must_cover_last_source_observation(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        _replace_grant(capsule,{'end':'2026-11-14T12:00:01.000000Z'})
+        stamps=iter(['2026-11-14T12:00:00.000000Z','2026-11-14T12:00:02.000000Z'])
+        monkeypatch.setattr(api,'_utc',lambda:next(stamps))
+>       with pytest.raises(ValueError,match='interval'):api.record_process(capsule['context'],'start')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:521: Failed
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_grant_must_cover_last_source_observation
+1 failed, 43 passed, 3 deselected in 7.61s

@@ -1,0 +1,143 @@
+--- tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py	2026-11-14 07:27:49.239181+00:00
++++ tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py	2026-11-14 07:28:41.681864+00:00
+@@ -52,13 +52,11 @@
+                 yield scope
+         assert invocation.completion_failed() is False
+ 
+ 
+ def restore_initial(runtime: Any, state: Any) -> None:
+-    prepared = runtime.prepare_restore(
+-        state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+-    )
++    prepared = runtime.prepare_restore(state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+     runtime.install_restore(prepared=prepared)
+ 
+ 
+ @pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+ @pytest.mark.parametrize("scope", ["shared", "per_world"])
+@@ -97,12 +95,19 @@
+         assert torch.isfinite(reward.raw).all()
+         epsilon = rig.runtime.epsilon_tensor(batch_size=len(IDS), device="cpu")
+         assert torch.equal(epsilon, torch.full((len(IDS),), rig.runtime.epsilon))
+         active = candidate["active_on_entry"]
+         state = BatchedAgentState(
+-            observations[active], handoff.context.actions[active], rewards[active], dones[active], epsilon[active],
+-            reward.raw[active], info["step_counts"][active], observations.device, info,
++            observations[active],
++            handoff.context.actions[active],
++            rewards[active],
++            dones[active],
++            epsilon[active],
++            reward.raw[active],
++            info["step_counts"][active],
++            observations.device,
++            info,
+         )
+         masks = info["successor_action_masks"][active]
+         actions = rig.runtime.select_actions(torch.zeros(masks.shape), state, masks)
+         assert actions.shape == (int(active.sum()),) and masks.gather(1, actions[:, None]).all()
+         if scope == "per_world" and participation == "one":
+@@ -166,10 +171,11 @@
+     controller = Controller()
+     errors: list[BaseException] = []
+     finished = Event()
+     with rig.runtime.retain_parent_custody() as scope:
+         with controller.invocation() as operation:
++
+             def misuse() -> None:
+                 try:
+                     with scope.bind_operation(operation=operation):
+                         pass
+                 except BaseException as error:
+@@ -567,13 +573,11 @@
+ 
+ def test_install_has_no_postpublication_invalidation(compiled: Any, monkeypatch: Any) -> None:
+     """BANK installation must be followed only by preallocated runtime assignments."""
+     rig = make_parent(compiled)
+     state = rig.runtime.checkpoint_state()
+-    prepared = rig.runtime.prepare_restore(
+-        state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+-    )
++    prepared = rig.runtime.prepare_restore(state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+     calls: list[bool] = []
+ 
+     def forbidden_invalidation() -> None:
+         calls.append(True)
+         raise RuntimeError("postpublication runtime invalidation")
+@@ -651,30 +655,46 @@
+ def poison_witness(request: Any, role: str, trace: CompletionTrace, parent: bool | None, same_error: bool, latch: bool) -> None:
+     """Actual child facts only; the root launcher independently verifies ancestry."""
+     manifest = Path(os.environ["BAC_QUAL_MANIFEST"])
+     paths = [Path(__file__).resolve(), manifest.resolve()]
+     modules = (
+-        "townlet.config.exploration_policy", "townlet.exploration.scoped_curiosity",
+-        "townlet.exploration.parent_custody", "townlet.exploration.rng_custody",
++        "townlet.config.exploration_policy",
++        "townlet.exploration.scoped_curiosity",
++        "townlet.exploration.parent_custody",
++        "townlet.exploration.rng_custody",
+     )
+     paths.extend(Path(sys.modules[name].__file__).resolve() for name in modules)
+     stat = Path("/proc/self/stat").read_text()
+     record = dict(
+-        schema="bac-parent-c1-poison-self-v1", role=role, node=request.node.nodeid,
+-        pid=os.getpid(), ppid=os.getppid(), start_ticks=int(stat[stat.rfind(")") + 2:].split()[19]),
+-        orig_argv=sys.orig_argv, cmdline=Path("/proc/self/cmdline").read_bytes().decode().split("\0")[:-1],
+-        manifest=str(manifest.resolve()), source_root=os.environ["BAC_QUAL_ROOT"],
+-        expected_commit=os.environ["BAC_QUAL_SHA"], expected_tree=os.environ["BAC_QUAL_TREE"],
++        schema="bac-parent-c1-poison-self-v1",
++        role=role,
++        node=request.node.nodeid,
++        pid=os.getpid(),
++        ppid=os.getppid(),
++        start_ticks=int(stat[stat.rfind(")") + 2 :].split()[19]),
++        orig_argv=sys.orig_argv,
++        cmdline=Path("/proc/self/cmdline").read_bytes().decode().split("\0")[:-1],
++        manifest=str(manifest.resolve()),
++        source_root=os.environ["BAC_QUAL_ROOT"],
++        expected_commit=os.environ["BAC_QUAL_SHA"],
++        expected_tree=os.environ["BAC_QUAL_TREE"],
+         runtime_profile=dict(
+-            executable=sys.executable, torch_origin=str(Path(torch.__file__).resolve()), torch_version=str(torch.__version__),
+-            intra_op=torch.get_num_threads(), inter_op=torch.get_num_interop_threads(), anomaly_enabled=torch.is_anomaly_enabled(),
++            executable=sys.executable,
++            torch_origin=str(Path(torch.__file__).resolve()),
++            torch_version=str(torch.__version__),
++            intra_op=torch.get_num_threads(),
++            inter_op=torch.get_num_interop_threads(),
++            anomaly_enabled=torch.is_anomaly_enabled(),
+         ),
+         sha256={str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths},
+         facts=dict(
+             bank_completion_failed=[handle.completion_failed() for handle in trace.bank_handles],
+-            parent_completion_failed=parent, same_error_identity=same_error, completion_uncertain=latch,
+-            completion_events=trace.events, assertions_reached=True,
++            parent_completion_failed=parent,
++            same_error_identity=same_error,
++            completion_uncertain=latch,
++            completion_events=trace.events,
++            assertions_reached=True,
+         ),
+     )
+     destination = Path(os.environ["BAC_QUAL_OUTPUT"]) / ("parent-c1-" + role + ".json")
+     with destination.open("x") as stream:
+         json.dump(record, stream, sort_keys=True)
+@@ -790,13 +810,11 @@
+ def test_install_completion_failure_cannot_restore_healthy_latch(compiled: Any, monkeypatch: Any, request: Any) -> None:
+     """Dictionary publication must retain the current invocation and monotonic outcome latch."""
+     poison_case("install_completion")
+     rig = make_parent(compiled)
+     state = rig.runtime.checkpoint_state()
+-    prepared = rig.runtime.prepare_restore(
+-        state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None
+-    )
++    prepared = rig.runtime.prepare_restore(state=state, mode="initial", accepted=None, parent_restore=None, validate_parent_restore=None)
+     error = RuntimeError("install completion")
+     trace = CompletionTrace(rig, monkeypatch, "bank", error)
+     with pytest.raises(RuntimeError) as raised:
+         rig.runtime.install_restore(prepared=prepared)
+     assert raised.value is error
+would reformat tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py
+
+Oh no! 💥 💔 💥
+1 file would be reformatted.

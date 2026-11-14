@@ -1,0 +1,11 @@
+{
+  "ids": [
+    "test_bac_hardware_identity_v1.py::test_inert_job"
+  ],
+  "process": {
+    "bytes": 8912,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/fixed-v2-fixtures/test_pytest_controller_workers1/output/attempt/job/process-p-9484615fcfe30e88cbffef9a4963da4767ade1939065a6494eec47766c25a671-start.json",
+    "sha256": "66efc8caf3ce4edc5e9454b5adc15b4b29052a2ef3d11453304201328fa7e072"
+  },
+  "schema": "bac-hardware-pytest-collection-v1"
+}

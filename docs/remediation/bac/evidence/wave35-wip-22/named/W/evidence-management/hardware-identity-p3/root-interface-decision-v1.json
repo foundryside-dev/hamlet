@@ -1,0 +1,14 @@
+{
+  "schema": "bac-root-private-interface-decision-v1",
+  "at": "2026-11-14T07:06:17.916979+00:00",
+  "owner": "/root",
+  "status": "APPROVED FOR P2/P3/P4 IMPLEMENTATION; NOT TOOL QUALIFICATION",
+  "contract": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-v3.md",
+    "bytes": 5150,
+    "sha256": "1eb2d8b5e2e11621ce59aef78a7c982d2cafe4ab81117004897a6ed5a9447faf"
+  },
+  "basis": "Root authorized exact-spec P2 run delegates exclusive pre-spawn descriptor under no-writer custody; fixed-point digest cycle removed. Known static paths/policy precede final argv/grants/spec; runtime descriptor binds actual spec/command/grant/runner/source. Actual child parent identity and exact refs required. This is delegated file/process authority, not hash-authenticated authorship.",
+  "worker_policy": "Full actual environment checked against launch plus explicit measured framework additions and bound worker lifecycle. Replacement derives from actual failed-down predecessor identity under finite role limits. No fabricated prior/future refs or silently unsupported replacements.",
+  "remaining": "Fresh independent reviews of implementation and toolchain end-to-end synthetic verification, then actual server/CPU/CUDA evidence. Root source freeze and exact candidate still mandatory."
+}

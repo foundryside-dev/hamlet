@@ -1,0 +1,60 @@
+............................................F.F.F                        [100%]
+=================================== FAILURES ===================================
+________________ test_resealed_future_process_times_cannot_pass ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-68/test_resealed_future_process_t0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3f5cb39940>
+
+    def test_resealed_future_process_times_cannot_pass(tmp_path, monkeypatch):
+        suffix = """
+    updated=[]
+    for name in ('process-start.json','process-end.json'):
+        v=json.loads((out/name).read_text());v['at']='2099-01-01T00:00:00.000000Z';v['monotonic_ns']+=10**18
+        updated.append(put(name,v))
+    v=json.loads((out/'completion.json').read_text());v['process_records']=updated
+    for index,item in enumerate(v['obligation_records']):
+        o=json.loads(Path(item['path']).read_text());o['producer_process']=updated[0];v['obligation_records'][index]=put(Path(item['path']).name,o)
+    v['inventory']=[fact,*sources,*updated,*v['obligation_records']];put('completion.json',v)
+    """
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+>       assert r.run(path) != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = <function run at 0x7f3f5c49cf40>(PosixPath('/tmp/pytest-of-agent/pytest-68/test_resealed_future_process_t0/metadata/spec.json'))
+E        +    where <function run at 0x7f3f5c49cf40> = <module 'p2_runner' from '/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py'>.run
+
+test_run_bac_hardware_v1.py:684: AssertionError
+_________________ test_held_lock_path_replacement_is_detected __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-68/test_held_lock_path_replacemen0')
+
+    def test_held_lock_path_replacement_is_detected(tmp_path):
+        r = implementation(); root = tmp_path / 'leases'; root.mkdir()
+        manager = r.Leases(root)
+        held = manager.try_allocation({'pool_id': 'pool', 'allocation_id': 'allocation', 'partition_basis': 'exclusive-pool'})
+        import hashlib
+        lock = root / (hashlib.sha256(b'allocation:pool:allocation').hexdigest() + '.lock')
+        lock.rename(lock.with_suffix('.retained'))
+        lock.touch()
+        try:
+>           with pytest.raises(ValueError, match='lease'): held.check()
+                                                           ^^^^^^^^^^
+E           AttributeError: 'HeldLeases' object has no attribute 'check'
+
+test_run_bac_hardware_v1.py:712: AttributeError
+__________ test_allocation_must_reserve_the_orchestration_controller ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-68/test_allocation_must_reserve_t0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3f5c4d1160>
+
+    def test_allocation_must_reserve_the_orchestration_controller(tmp_path, monkeypatch):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, overhead_cpu=0); stub_source(monkeypatch, r, registry)
+>       with pytest.raises(ValueError, match='overhead'): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:750: Failed
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_resealed_future_process_times_cannot_pass
+FAILED test_run_bac_hardware_v1.py::test_held_lock_path_replacement_is_detected
+FAILED test_run_bac_hardware_v1.py::test_allocation_must_reserve_the_orchestration_controller
+3 failed, 46 passed in 7.26s

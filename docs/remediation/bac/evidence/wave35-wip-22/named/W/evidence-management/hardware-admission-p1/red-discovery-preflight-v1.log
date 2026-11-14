@@ -1,0 +1,95 @@
+........................................................................ [ 84%]
+.....FFFFFF..                                                            [100%]
+=================================== FAILURES ===================================
+______ test_discovery_preflight_bounds_expensive_probe_before_cuda[none] _______
+
+change = 'none'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:566: AssertionError
+_______ test_discovery_preflight_bounds_expensive_probe_before_cuda[cpu] _______
+
+change = 'cpu'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:566: AssertionError
+_______ test_discovery_preflight_bounds_expensive_probe_before_cuda[ram] _______
+
+change = 'ram'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:566: AssertionError
+_____ test_discovery_preflight_bounds_expensive_probe_before_cuda[scratch] _____
+
+change = 'scratch'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:566: AssertionError
+____ test_discovery_preflight_bounds_expensive_probe_before_cuda[affinity] _____
+
+change = 'affinity'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:566: AssertionError
+_____ test_discovery_preflight_bounds_expensive_probe_before_cuda[missing] _____
+
+change = 'missing'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+>       tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery resource preflight missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'discovery_preflight', None)
+
+test_capture_bac_hardware_v1.py:566: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[none]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[cpu]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[ram]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[scratch]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[affinity]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[missing]
+6 failed, 79 passed in 0.93s

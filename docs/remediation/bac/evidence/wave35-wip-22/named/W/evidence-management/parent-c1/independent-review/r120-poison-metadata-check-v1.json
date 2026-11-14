@@ -1,0 +1,188 @@
+{
+  "scope": "Independent metadata/source-semantic check only; CPU C1 poison roles, not full C1 approval",
+  "status": "PASS",
+  "source_bodies_added": 0,
+  "roles": [
+    {
+      "role": "body_same",
+      "pid": 193223,
+      "launcher_pid": 193172,
+      "start_ticks": 12165139,
+      "facts": {
+        "assertions_reached": true,
+        "bank_completion_failed": [
+          true
+        ],
+        "completion_events": [
+          [
+            "bank",
+            []
+          ]
+        ],
+        "completion_uncertain": true,
+        "parent_completion_failed": null,
+        "same_error_identity": true
+      },
+      "artifacts": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1-spec.json": "4a26d5e368781ae510ca6ef6c9ef27d7031997b2f34603952ca8c079a097e2ba",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/wave35-r120-c1-poison-body-same-attempt-1-outer.json": "8f478d214bf89f566962c24350de3d8fc14a37e899e5ebcdc34c691442b9415a",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1/root-poison-witness-verification.json": "350b9aacd681645aa6ce552c35c944c026fc7601f538437f60c11be98d6a3255",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same/parent-c1-body_same.json": "d549cd175a6a5e960e4a50952899235c8e229cf6d60e0658991bb2ef541e8998",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json": "85a55461f1166f76f4a90bc647300dc055e32ee44029bf64e30af45d5130c252",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json": "4c6a6b14aaaeb0aac05a1f3b58eebafe5065139aee1a88e959eb56fe75905e56",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same.log": "887fc20b79a98690d925e1c1e1a8e1c0e4f1df0d8a32b85c342d78fd2c875ca7"
+      }
+    },
+    {
+      "role": "body_distinct",
+      "pid": 193200,
+      "launcher_pid": 193173,
+      "start_ticks": 12165133,
+      "facts": {
+        "assertions_reached": true,
+        "bank_completion_failed": [
+          true
+        ],
+        "completion_events": [
+          [
+            "bank",
+            []
+          ]
+        ],
+        "completion_uncertain": true,
+        "parent_completion_failed": null,
+        "same_error_identity": false
+      },
+      "artifacts": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1-spec.json": "ffd3972620da6e9f186f59246c047d02d1baf538cd2b32df78456c9e56164dc6",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/wave35-r120-c1-poison-body-distinct-attempt-1-outer.json": "9a52ed162620feeb30a6e2577a1baef93cdbc532c5024ae038d85cfc6b6825f1",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1/root-poison-witness-verification.json": "d06093bca958b5fba2dae0e30f043a6690234e722d8f447bae7dc7602183d4d1",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct/parent-c1-body_distinct.json": "a93967d02d714b45f389c5aab607238932417c696c1ffd4f625d10678b1876ff",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json": "8607a42666ca96ea4a0ba2c0d0081eda91e72a2eef6af5561a0df3b23a13e9a2",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json": "a4056441ccab4a78e5ad97b3f7438d3519f26958a0fb0361e6e968da76ed4faa",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct.log": "f987e7773ba07db355322f22701891c31fbbda21f46a984902d126b7ac6c71b5"
+      }
+    },
+    {
+      "role": "child_false_parent_true",
+      "pid": 193320,
+      "launcher_pid": 193295,
+      "start_ticks": 12165988,
+      "facts": {
+        "assertions_reached": true,
+        "bank_completion_failed": [
+          false,
+          false,
+          false
+        ],
+        "completion_events": [
+          [
+            "bank",
+            []
+          ],
+          [
+            "native",
+            []
+          ],
+          [
+            "native",
+            []
+          ],
+          [
+            "bank",
+            []
+          ],
+          [
+            "bank",
+            []
+          ],
+          [
+            "parent",
+            []
+          ]
+        ],
+        "completion_uncertain": false,
+        "parent_completion_failed": true,
+        "same_error_identity": true
+      },
+      "artifacts": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1-spec.json": "f55356303b454b3a4eafb8851a8eb5f9d423445a4148f4a8c0782f43cee7a596",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/wave35-r120-c1-poison-child-false-parent-true-attempt-1-outer.json": "4e9f5af1c79586278c29d65f645ef05e15afa50f99691302e1f73dbc8720c4b1",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1/root-poison-witness-verification.json": "4370d66fabde007071877d02c528f366f9d03ac0987d134b7573d51e38f181fb",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true/parent-c1-child_false_parent_true.json": "044c0865defb61cada5a644cc1915aa6a3c77cbd958136009f29047fb29a46f0",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json": "46e7cf587d7b021098be2350f0f69f324400afbbf494eae1953b7e12d3d03256",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json": "1272ae16b892d7c950dbecc0fc22b602b4cc303deb210b864af93f97ebd1c4ab",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true.log": "464973581d460b87ee1280245b720394db684d79a9df40107dce4b0796ead046"
+      }
+    },
+    {
+      "role": "child_true_parent_false",
+      "pid": 193374,
+      "launcher_pid": 193344,
+      "start_ticks": 12166042,
+      "facts": {
+        "assertions_reached": true,
+        "bank_completion_failed": [
+          true
+        ],
+        "completion_events": [
+          [
+            "bank",
+            []
+          ],
+          [
+            "parent",
+            []
+          ]
+        ],
+        "completion_uncertain": true,
+        "parent_completion_failed": false,
+        "same_error_identity": true
+      },
+      "artifacts": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1-spec.json": "6e781f667636b99ac300bfe9dee31d85f36e9142c0528d7f422d6a8183c4a78c",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/wave35-r120-c1-poison-child-true-parent-false-attempt-1-outer.json": "a9769a2aa5cf4b1f93d1446ed4f6e4883ad8989d9b58db1bf103e2481151273a",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1/root-poison-witness-verification.json": "9370395c22ab6f01be5fbb2708c6a51db0b32a71ce5a72d6f68355b84aa44fb5",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false/parent-c1-child_true_parent_false.json": "a20ed3a5dd46f4edebefaf6ed33b74b5c3fc27053919a7ee54e963288ac60688",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json": "4f5b6c8e651c1a3920773a721eabe129be2ae9a35b9d3ce3d9d63dd1d87a3e4e",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json": "542917c06e177b30e8683589aed80169c0b6fc098db37ca7f9fca36169949c73",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false.log": "64b067a664e3251bf8aeff8a8d9943af072fe45fa7ddf8010dc2e77115c14225"
+      }
+    },
+    {
+      "role": "install_completion",
+      "pid": 193484,
+      "launcher_pid": 193459,
+      "start_ticks": 12166812,
+      "facts": {
+        "assertions_reached": true,
+        "bank_completion_failed": [
+          true
+        ],
+        "completion_events": [
+          [
+            "bank",
+            []
+          ]
+        ],
+        "completion_uncertain": true,
+        "parent_completion_failed": null,
+        "same_error_identity": true
+      },
+      "artifacts": {
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1-spec.json": "80982dbec63d4cad4236475fd1788755db350684300f2a8d16dfb3c05af771a1",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/wave35-r120-c1-poison-install-completion-attempt-1-outer.json": "de8c28f3e1911f2ffac1ac75e3f80ecfc934c7f0254306e0d502b0430cb69ca1",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1/root-poison-witness-verification.json": "9088fd6ff7b18b87644b12cf365527f5bcc3cc8e1c527ce604aaaac8d91f91c4",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion/parent-c1-install_completion.json": "f66c4e4ac4624b49e0dde67d8f4c44bcbc2b244b11f49c8abaa894bce404cbcf",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json": "ac654942d4d620f44e343e899c7475182d2fde1fec333342fc2eac7d8ad1423b",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json": "d247b3813bffbcf170e0179e775fcbd8651e1d100e565aff53abd869326aa37c",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion.log": "251c48303fc8a6fa694d26eefc71997ca09790408a3ea975519d1bd9afda5a17"
+      }
+    }
+  ],
+  "limits": [
+    "No new execution of poison roles by reviewer",
+    "Ancestry checked against recorded actual root-launcher and child facts, not a fabricated expected PPID",
+    "Ordinary matrix still58PASS4FAIL; owner-lifetime diagnosis and fresh corrected candidate remain owed"
+  ]
+}

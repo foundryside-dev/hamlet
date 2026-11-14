@@ -1,0 +1,57 @@
+{
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "at": "2026-11-14T07:46:06.375603Z",
+  "attempt_id": "attempt",
+  "command": {
+    "bytes": 5713,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/independent-fixtures/test_marker_matrix_False_True_0/output/attempt/a/command.json",
+    "sha256": "3b7cd34d26ef1ab5ba6f0f4e415ca390019709f068b7cd0e5fde483e7412d62a"
+  },
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 193720,
+    "ppid": 193583,
+    "start_identity": "12167671"
+  },
+  "inherited_leases": [
+    {
+      "device": 27,
+      "fd": 11,
+      "inode": 1238030,
+      "lock_name": "64ea8e2c1e1cd6f9156394e865b0b3e2f0d40d79dd131a624d363f451033a12c.lock"
+    },
+    {
+      "device": 27,
+      "fd": 13,
+      "inode": 1238031,
+      "lock_name": "6103cc2012d66b262f52bd14553d54c66a2fc7bdd31eb9942744d032bf069d91.lock"
+    },
+    {
+      "device": 27,
+      "fd": 20,
+      "inode": 1238032,
+      "lock_name": "3afab3f84605bc63c5994b83bcda01436ea2b2e0d8b9b21c1cf78df3b49dc184.lock"
+    },
+    {
+      "device": 27,
+      "fd": 22,
+      "inode": 1238033,
+      "lock_name": "3aecd4c6b4882ff6025c87c17e9533cdfefe7a50a3e1dcd6ee1fa2bb2c2739df.lock"
+    }
+  ],
+  "job_id": "a",
+  "monotonic_ns": 121676716084330,
+  "schema": "bac-hardware-runner-launch-v1",
+  "spec": {
+    "bytes": 12955,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/independent-fixtures/test_marker_matrix_False_True_0/metadata/spec.json",
+    "sha256": "ac7ead8d3b05d1772bf6ecc4af388d965a260ab4f04382b6b12b14acd797ab83"
+  }
+}

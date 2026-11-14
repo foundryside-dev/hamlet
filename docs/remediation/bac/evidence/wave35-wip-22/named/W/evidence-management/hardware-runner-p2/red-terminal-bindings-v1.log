@@ -1,0 +1,36 @@
+.....................................FF                                  [100%]
+=================================== FAILURES ===================================
+_____________ test_same_command_rewritten_and_resealed_cannot_pass _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-58/test_same_command_rewritten_an0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ffbc87b8ad0>
+
+    def test_same_command_rewritten_and_resealed_cannot_pass(tmp_path, monkeypatch):
+        suffix = """
+    v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)
+    v=json.loads((out/'completion.json').read_text());v['command']=ref(out/'command.json');put('completion.json',v)
+    """
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+>       assert r.run(path) != 0
+E       AssertionError: assert 0 != 0
+E        +  where 0 = <function run at 0x7ffbc83a04a0>(PosixPath('/tmp/pytest-of-agent/pytest-58/test_same_command_rewritten_an0/metadata/spec.json'))
+E        +    where <function run at 0x7ffbc83a04a0> = <module 'p2_runner' from '/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py'>.run
+
+test_run_bac_hardware_v1.py:579: AssertionError
+______________ test_live_capacity_drop_refuses_before_job_launch _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-58/test_live_capacity_drop_refuse0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ffbc84bf7e0>
+
+    def test_live_capacity_drop_refuses_before_job_launch(tmp_path, monkeypatch):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+        monkeypatch.setattr(r, '_live_capacity', lambda raw, scratch: {key: 0 for key in s['budget']}, raising=False)
+>       with pytest.raises(ValueError): r.run(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_run_bac_hardware_v1.py:587: Failed
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_same_command_rewritten_and_resealed_cannot_pass
+FAILED test_run_bac_hardware_v1.py::test_live_capacity_drop_refuses_before_job_launch
+2 failed, 37 passed in 6.33s

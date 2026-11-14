@@ -1,0 +1,64 @@
+"""Inert P3 qualification; no application, Torch, CUDA or server imports."""
+import json
+import os
+from pathlib import Path
+import sys
+
+import pytest
+
+
+def test_xdist_environment_probe(request):
+    """Discovery only: persist actual framework environment for root contract."""
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if not destination:
+        pytest.skip('explicit inert environment discovery only')
+    worker = getattr(request.config, 'workerinput', {})
+    output = Path(destination) / (worker.get('workerid', 'controller') + '.json')
+    with output.open('x') as stream:
+        json.dump({'environment': dict(os.environ), 'workerinput': worker,
+                   'pid': os.getpid(), 'ppid': os.getppid(), 'argv': sys.argv}, stream, indent=2)
+
+
+def _probe_hook(config, phase):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if destination:
+        worker = getattr(config, 'workerinput', {})
+        with (Path(destination) / (worker.get('workerid', 'controller') + '-' + phase + '.json')).open('x') as stream:
+            json.dump({'environment': dict(os.environ), 'workerinput': worker,
+                       'pid': os.getpid(), 'ppid': os.getppid(), 'argv': sys.argv}, stream, indent=2)
+
+
+def pytest_configure(config):
+    _probe_hook(config, 'configure')
+
+
+def pytest_sessionfinish(session, exitstatus):
+    _probe_hook(session.config, 'finish')
+
+
+def pytest_configure_node(node):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if destination:
+        with (Path(destination) / ('node-' + node.gateway.id + '-configure.json')).open('x') as stream:
+            json.dump({'workerinput': node.workerinput, 'gateway': node.gateway.id}, stream, indent=2)
+
+
+def pytest_testnodedown(node, error):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if destination:
+        with (Path(destination) / ('node-' + node.gateway.id + '-down.json')).open('x') as stream:
+            json.dump({'workerinput': node.workerinput, 'gateway': node.gateway.id,
+                       'error': str(error), 'workeroutput': getattr(node, 'workeroutput', None)}, stream, indent=2)
+
+
+@pytest.mark.parametrize('part', [1, 2])
+def test_xdist_replacement_probe(part):
+    destination = os.environ.get('BAC_P3_ENV_PROBE')
+    if not destination:
+        pytest.skip('explicit inert replacement discovery only')
+    try:
+        fd = os.open(str(Path(destination) / 'crash-once'), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        return
+    os.close(fd)
+    os._exit(17)

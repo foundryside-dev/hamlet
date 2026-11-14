@@ -1,0 +1,18 @@
+--- src/townlet/exploration/parent_custody.py	2026-11-14 07:27:48.095229+00:00
++++ src/townlet/exploration/parent_custody.py	2026-11-14 07:28:41.078921+00:00
+@@ -43,10 +43,11 @@
+     def __deepcopy__(self, memo: Any) -> Any:
+         raise TypeError("custody cannot be copied")
+ 
+     def __reduce__(self) -> Any:
+         raise TypeError("custody cannot be serialized")
++
+ 
+ class BankParentCustody(_Custody):
+     __slots__ = ()
+ 
+     @contextmanager
+would reformat src/townlet/exploration/parent_custody.py
+
+Oh no! 💥 💔 💥
+1 file would be reformatted.

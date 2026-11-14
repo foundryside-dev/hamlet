@@ -1,0 +1,1196 @@
+"""Independent inert evidence fixtures; never import APP, Torch or runner fixtures."""
+
+import copy
+import importlib
+import importlib.util
+import json
+from pathlib import Path
+
+import pytest
+
+import bac_hardware_protocol_v1 as p
+
+T0 = "2026-11-14T00:00:00.000000Z"
+T1 = "2026-11-14T00:00:01.000000Z"
+T2 = "2026-11-14T00:00:02.000000Z"
+T3 = "2026-11-14T00:00:03.000000Z"
+T4 = "2026-11-14T00:00:04.000000Z"
+
+
+def verifier():
+    assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+    return importlib.import_module("verify_bac_hardware_v1")
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, sort_keys=True) + "\n")
+    return p.file_reference(path)
+
+
+def obs(value):
+    return {"state": "measured", "value": value, "reason": ""}
+
+
+def absent():
+    return {"state": "unavailable", "value": None, "reason": "not observed"}
+
+
+def record(kind, **fields):
+    return {"schema": p.SCHEMA, "kind": kind, **fields}
+
+
+class Evidence:
+    """Hand-authored protocol fixture: fake PIDs/data are synthetic, never actual work."""
+
+    def __init__(
+        self,
+        root,
+        common=False,
+        terminal=None,
+        workers=0,
+        cuda=False,
+        extra_kind=None,
+        replacement=False,
+        reuse_pid=False,
+        bad_schema=False,
+    ):
+        self.root = root
+        self.src = root / "src"
+        self.src.mkdir()
+        self.output = root / "out" / "attempt" / "job"
+        self.output.mkdir(parents=True)
+        self.capture = root / "capture"
+        self.capture.mkdir()
+        self.inputs = []
+        inventory = {}
+        for category in ("source", "tests", "configs", "scripts", "ratchet", "artifacts"):
+            path = self.src / category
+            path.write_text("inert " + category)
+            ref = p.file_reference(path)
+            self.inputs.append(ref)
+            inventory[category] = [{"path": str(path), "reference": ref}]
+        self.inert = self.inputs[0]
+        self.interpreter = self.inert
+        self.environment = {"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "CUDA_VISIBLE_DEVICES": ""}
+        self.profile = "cuda" if cuda else "cpu"
+        if cuda:
+            self.environment["CUDA_VISIBLE_DEVICES"] = "GPU-inert"
+        self.devices = (
+            [
+                {
+                    "logical_index": 0,
+                    "gpu_uuid": "GPU-inert",
+                    "mig_uuid": None,
+                    "physical_parent_uuid": "GPU-inert",
+                    "model": "inert-metadata-only",
+                    "vram_bytes": 100,
+                    "isolation": "physical-exclusive",
+                    "mapping_provenance": self.inert,
+                }
+            ]
+            if cuda
+            else []
+        )
+        self.budget = {"cpu_slots": 1, "ram_bytes": 10, "scratch_bytes": 10, "scratch_inodes": 10}
+        self.roles = [
+            {
+                "id": "controller",
+                "role": "controller",
+                "count": 1,
+                "replacement_limit": 0,
+                "observer": "uninitialized",
+                "intra_op": 1,
+                "inter_op": 1,
+                "debug": False,
+                "torch_policy": "observe-loaded",
+                "cuda_policy": "no-initialize",
+                "peak_cpu_slots": 1,
+                "cpu_reservation_basis": "accepted-case-contract",
+                "cpu_reservation_evidence": self.inert,
+            }
+        ]
+        if workers:
+            worker_role = copy.deepcopy(self.roles[0])
+            worker_role.update(id="workers", role="worker", count=workers, replacement_limit=1 if replacement else 0)
+            self.roles.append(worker_role)
+            self.budget["cpu_slots"] += workers + int(replacement)
+        self.spec_path = self.capture / "spec.json"
+        self.policy_path = root / "policy.json"
+        self.policy = {
+            "schema": "bac-hardware-identity-policy-v1",
+            "spec_path": str(self.spec_path),
+            "command_path": str(self.output / "command.json"),
+            "runtime_path": str(self.output / "runtime-context.json"),
+            "job_id": "job",
+            "role_id": "controller",
+            "required_imports": [],
+            "worker_roles": ["workers"] * workers,
+            "environment_delta": {"common": {}, "worker": {}},
+        }
+        self.policy_ref = write(self.policy_path, self.policy)
+        self.argv = [
+            self.interpreter["path"],
+            "-m",
+            "pytest",
+            "--bac-identity-policy",
+            str(self.policy_path),
+            "--bac-identity-policy-sha256",
+            self.policy_ref["sha256"],
+        ]
+        self.grant = write(
+            root / "grant.json",
+            {
+                "schema": "bac-hardware-source-grant-v1",
+                "authorized_root": str(self.src),
+                "head": "a" * 40,
+                "tree": "b" * 40,
+                "import_roots": [str(self.src / "imports")],
+                "inputs": self.inputs,
+                "start": T0,
+                "end": None,
+                "no_writer_barrier": True,
+                "includes_untracked": True,
+                "authority": "synthetic root fixture",
+                "allocation_grant": self.inert,
+                "cpu_reservation_evidence": [self.inert],
+            },
+        )
+        self.freeze = write(
+            root / "freeze.json",
+            record(
+                "source-freeze",
+                authorized_root=str(self.src),
+                grant=self.grant,
+                start=T0,
+                end=absent(),
+                no_writer_barrier=True,
+                includes_untracked=True,
+                index_lock=str(self.src / "index.lock"),
+                retention="synthetic custody",
+            ),
+        )
+        self.candidate = write(
+            root / "candidate.json",
+            record(
+                "candidate",
+                head="a" * 40,
+                tree="b" * 40,
+                authorized_root=str(self.src),
+                import_roots=[str(self.src / "imports")],
+                inventory=inventory,
+                registry=self.inert,
+                availability=self.inert,
+                source_freeze=self.freeze,
+            ),
+        )
+        self.dependencies = write(
+            root / "environment.json",
+            record(
+                "environment",
+                interpreter=self.interpreter,
+                python_version="synthetic",
+                dependencies=[{"name": "inert", "version": "1", "reference": self.inert}],
+                environment=self.environment,
+                platform="synthetic",
+                **{k: self.fact("synthetic") for k in ("torch_build", "cuda_runtime", "driver")}
+            ),
+        )
+        module = importlib.util.find_spec("verify_bac_hardware_v1")
+        self.tools = [
+            {
+                "name": name,
+                "reference": (
+                    p.file_reference(Path(p.__file__))
+                    if name == "protocol"
+                    else (
+                        p.file_reference(Path(module.origin))
+                        if name == "verifier" and module
+                        else p.file_reference(Path(__file__).with_name("capture_bac_hardware_v1.py")) if name == "capture" else self.inert
+                    )
+                ),
+            }
+            for name in p.TOOLS
+        ]
+        self.obligations = []
+        self.validator = p.file_reference(Path(module.origin)) if common else self.inert
+        self.witness_schema = write(
+            root / "witness-schema.json", {"schema": "unknown" if bad_schema else "bac-hardware-common-observation-v1"}
+        )
+        for kind in ("process-custody", "source-freeze", "required-cases", *([extra_kind] if extra_kind else [])):
+            evidence_class = "real-cuda" if kind.startswith("cuda-") else "cpu"
+            minimum_devices = 1 if evidence_class == "real-cuda" else 0
+            contract = write(
+                root / (kind + "-contract.json"),
+                record(
+                    "case-contract",
+                    obligation_kind=kind,
+                    required_cases=["test_inert"],
+                    witness_schema=self.witness_schema,
+                    validator=self.validator,
+                    roles=self.roles,
+                    evidence_class=evidence_class,
+                    minimum_devices=minimum_devices,
+                ),
+            )
+            self.obligations.append(
+                {
+                    "id": kind,
+                    "kind": kind,
+                    "required_cases": ["test_inert"],
+                    "contract": contract,
+                    "validator": self.validator,
+                    "evidence_class": evidence_class,
+                    "minimum_devices": minimum_devices,
+                }
+            )
+        prerequisites = []
+        if common:
+            prerequisites = [
+                write(
+                    root / "validator-inventory.json",
+                    {
+                        "schema": "bac-hardware-validator-inventory-v1",
+                        "authority": "synthetic exact-spec authorization",
+                        "validators": [
+                            {
+                                "id": "p4-common-v1",
+                                "kinds": ["process-custody", "source-freeze", "required-cases"],
+                                "validator": self.validator,
+                                "dependencies": [p.file_reference(Path(p.__file__))],
+                                "contracts": [o["contract"] for o in self.obligations],
+                                "witness_schemas": [self.witness_schema],
+                                "evidence_classes": ["cpu", "cpu-standin"],
+                            }
+                        ],
+                    },
+                )
+            ]
+        self.job = {
+            "id": "job",
+            "profile": self.profile,
+            "argv": self.argv,
+            "interpreter": self.interpreter["path"],
+            "cwd": str(self.src),
+            "environment": self.environment,
+            "seed": {"policy": "explicit", "python": 1, "numpy": 2, "torch": 3, "cuda": []},
+            "required_collected_ids": ["test_inert"],
+            "xdist_workers": workers,
+            "roles": self.roles,
+            "budget": self.budget,
+            "devices": self.devices,
+            "serialization_domains": ["rng"],
+            "timeout_seconds": 10,
+            "termination_grace_seconds": 1,
+            "timing": "ordinary",
+            "timing_contract": [],
+            "prerequisites": prerequisites,
+            "obligations": self.obligations,
+            "output": str(self.output),
+            "scratch": str(root / "scratch" / "attempt" / "job"),
+        }
+        self.request = write(
+            root / "request.json",
+            record(
+                "admission-request",
+                authorized_root=str(self.src),
+                interpreter=self.interpreter,
+                scratch_root=str(root / "scratch"),
+                output_root=str(root / "out"),
+                attempt_id="attempt",
+                lease_root=str(root / "leases"),
+                profile=self.profile,
+                requested_job_concurrency=1,
+                minimum=self.budget,
+                reserve={k: 0 for k in self.budget},
+                authorized_devices=["GPU-inert"] if cuda else [],
+                requested_visibility=self.environment["CUDA_VISIBLE_DEVICES"],
+                jobs=[self.job],
+                source_freeze=self.freeze,
+                tools=self.tools,
+                dependencies=self.dependencies,
+            ),
+        )
+        self.admission = write(
+            self.capture / "admission.json",
+            record(
+                "admission",
+                request=self.request,
+                discovery_process=self.inert,
+                at=T0,
+                profile=self.profile,
+                disposition="admitted",
+                reasons=[],
+                cgroups=[
+                    {
+                        "path": "/cgroup",
+                        "cpu_quota_us": self.fact(100),
+                        "cpu_period_us": self.fact(100),
+                        "memory_limit_bytes": self.fact(100),
+                        "cpuset": self.fact([0]),
+                    }
+                ],
+                affinity=self.fact([0]),
+                effective_cpu_capacity=self.fact(1),
+                host_ram_bytes=self.fact(100),
+                limited_ram_bytes=self.fact(100),
+                ram_current_bytes=self.fact(0),
+                scratch_free_bytes=self.fact(100),
+                scratch_free_inodes=self.fact(100),
+                tmpdir=str(root / "scratch"),
+                cpu_topology=self.fact("inert"),
+                numa_topology=self.fact("inert"),
+                gpu_topology=self.fact("none"),
+                environment=self.dependencies,
+                requested_visibility=self.environment["CUDA_VISIBLE_DEVICES"],
+                effective_visibility=self.environment["CUDA_VISIBLE_DEVICES"],
+                devices=self.devices,
+                competing_workloads=self.fact([]),
+                probe_errors=[],
+                minimum=self.budget,
+                reserve={k: 0 for k in self.budget},
+                admitted_budget=self.budget,
+            ),
+        )
+        self.spec = record(
+            "spec",
+            attempt_id="attempt",
+            candidate=self.candidate,
+            tools=self.tools,
+            dependencies=self.dependencies,
+            admission=self.admission,
+            profile=self.profile,
+            authorized_root=str(self.src),
+            output_root=str(root / "out"),
+            scratch_root=str(root / "scratch"),
+            lease_root=str(root / "leases"),
+            job_concurrency=1,
+            budget=self.budget,
+            jobs=[self.job],
+            source_freeze=self.freeze,
+        )
+        self.spec_ref = write(self.spec_path, self.spec)
+        write(
+            self.capture / "result.json",
+            {
+                "schema": "bac-hardware-capture-result-v1",
+                "disposition": "admitted",
+                "reasons": [],
+                "admission": self.admission,
+                "spec": self.spec_ref,
+            },
+        )
+        self.command = record(
+            "command",
+            attempt_id="attempt",
+            job_id="job",
+            spec=self.spec_ref,
+            argv=self.argv,
+            cwd=str(self.src),
+            environment=self.environment,
+            seed=self.job["seed"],
+            runner=self.tools[2]["reference"],
+            at=T1,
+        )
+        self.command_ref = write(self.output / "command.json", self.command)
+        self.runner_identity = {"pid": 100, "ppid": 90, "start_identity": "1000", "host": "synthetic", "boot_id": "synthetic"}
+        self.identity = {"pid": 101, "ppid": 100, "start_identity": "1010", "host": "synthetic", "boot_id": "synthetic"}
+        self.runner_start = self.source("runner-start.json", self.runner_identity, T1)
+        self.runner_end = self.source("runner-end.json", self.runner_identity, T4)
+        self.start_ref = write(
+            self.output.parent / "start.json",
+            record(
+                "attempt-start",
+                attempt_id="attempt",
+                spec=self.spec_ref,
+                at=T1,
+                source_witness=self.runner_start,
+                source_freeze=self.freeze,
+                retention="synthetic",
+            ),
+        )
+        if terminal in ("refused", "unrun"):
+            self.log = self.output / "stdout.log"
+            self.log.write_text("synthetic no-execution diagnostic")
+            self.result = record(
+                "job-result",
+                attempt_id="attempt",
+                job_id="job",
+                spec=self.spec_ref,
+                disposition=terminal,
+                exit_code=None,
+                signal=0,
+                reason="not launched",
+                start=T1,
+                end=absent(),
+                elapsed_ns=absent(),
+                command=self.command_ref,
+                log=p.file_reference(self.log),
+                collected_ids=[],
+                outcomes=[],
+                process_records=[],
+                obligation_records=[],
+                source_witnesses=[self.runner_start],
+                inventory=[],
+            )
+            self.seal()
+            return
+        self.runtime = {
+            "schema": "bac-hardware-identity-runtime-v1",
+            "spec": self.spec_ref,
+            "command": self.command_ref,
+            "trusted_grant": self.grant,
+            "policy": self.policy_ref,
+            "runner_identity": self.runner_identity,
+            "runner_source_start": self.runner_start,
+        }
+        self.runtime_ref = write(self.output / "runtime-context.json", self.runtime)
+        self.context = {
+            "schema": "bac-hardware-identity-context-v1",
+            "spec": self.spec_ref,
+            "command": self.command_ref,
+            "trusted_grant": self.grant,
+            "job_id": "job",
+            "role_id": "controller",
+            "required_imports": [],
+            "worker_roles": ["workers"] * workers,
+            "environment_delta": {"common": {}, "worker": {}},
+            "parent_start": [],
+            "replacement_start": [],
+            "lifecycle": [],
+            "worker_identity": None,
+            "policy": [self.policy_ref],
+            "runtime": [self.runtime_ref],
+        }
+        self.launch = {
+            "schema": "bac-hardware-runner-launch-v1",
+            "attempt_id": "attempt",
+            "job_id": "job",
+            "spec": self.spec_ref,
+            "command": self.command_ref,
+            "identity": self.identity,
+            "affinity": [0],
+            "at": T1,
+            "monotonic_ns": 100,
+            "inherited_leases": [{"fd": 10, "lock_name": "a" * 64 + ".lock", "device": 1, "inode": 1}],
+        }
+        self.launch_ref = write(self.output / "launch.json", self.launch)
+        self.wait = {
+            "schema": "bac-hardware-runner-wait-v1",
+            "attempt_id": "attempt",
+            "job_id": "job",
+            "spec": self.spec_ref,
+            "command": self.command_ref,
+            "launch": self.launch_ref,
+            "identity": self.identity,
+            "exit_code": 0,
+            "signal": 0,
+            "interruption_reason": "",
+            "start": T1,
+            "end": T4,
+            "start_monotonic_ns": 100,
+            "end_monotonic_ns": 400,
+        }
+        self.wait_ref = write(self.output / "wait.json", self.wait)
+        self.processes = [self.process("start", T2, 200), self.process("end", T3, 300)]
+        self.worker_starts = []
+        previous_down = None
+        previous_start = None
+        for index in range(workers + int(replacement)):
+            replacing = replacement and index == workers
+            worker_identity = {
+                "workerid": "gw" + str(index),
+                "workercount": workers,
+                "testrunuid": "1" * 32,
+                "mainargv": ["pytest", "inert"],
+            }
+            configure = write(
+                self.output / ("worker-" + str(index) + "-configure.json"),
+                {
+                    "schema": "bac-hardware-worker-lifecycle-v1",
+                    "phase": "configure",
+                    "controller_start": self.processes[0],
+                    "worker_identity": worker_identity,
+                    "role_id": "workers",
+                    "predecessor_start": [previous_start] if replacing else [],
+                    "process_start": [],
+                    "error": "",
+                    "at": "2026-11-14T00:00:02.400000Z" if replacing else T2,
+                    "prior_lifecycle": [previous_down] if replacing else [],
+                },
+            )
+            context = dict(
+                self.context,
+                role_id="workers",
+                parent_start=[self.processes[0]],
+                replacement_start=[previous_start] if replacing else [],
+                lifecycle=[configure],
+                worker_identity=worker_identity,
+            )
+            worker_env = dict(
+                self.environment,
+                PYTEST_XDIST_WORKER=worker_identity["workerid"],
+                PYTEST_XDIST_WORKER_COUNT=str(workers),
+                PYTEST_XDIST_TESTRUNUID="1" * 32,
+            )
+            ident = {
+                "pid": 200 if reuse_pid else 200 + index,
+                "ppid": 101,
+                "start_identity": str(2000 + index),
+                "host": "synthetic",
+                "boot_id": "synthetic",
+            }
+            start_at = "2026-11-14T00:00:02.500000Z" if replacing else T2
+            end_at = "2026-11-14T00:00:02.200000Z" if replacement and not replacing else T3
+            start_worker = self.process(
+                "start",
+                start_at,
+                220 + 100 * index,
+                process_id="w" + str(index),
+                context=context,
+                actual_identity=ident,
+                environment=worker_env,
+            )
+            end_worker = self.process(
+                "end",
+                end_at,
+                320 + 100 * index,
+                process_id="w" + str(index),
+                context=context,
+                actual_identity=ident,
+                environment=worker_env,
+            )
+            self.processes.extend([start_worker, end_worker])
+            self.worker_starts.append(start_worker)
+            previous_down = write(
+                self.output / ("worker-" + str(index) + "-down.json"),
+                {
+                    "schema": "bac-hardware-worker-lifecycle-v1",
+                    "phase": "down",
+                    "controller_start": self.processes[0],
+                    "worker_identity": worker_identity,
+                    "role_id": "workers",
+                    "predecessor_start": [previous_start] if replacing else [],
+                    "process_start": [start_worker],
+                    "error": "synthetic gateway failure" if replacement and not replacing else "",
+                    "at": end_at,
+                    "prior_lifecycle": [configure],
+                },
+            )
+            previous_start = start_worker
+        report_process = self.worker_starts[-1] if workers else self.processes[0]
+        self.reports = [
+            write(
+                self.output / (phase + "-report.json"),
+                {
+                    "schema": "bac-hardware-pytest-report-v1",
+                    "process": report_process,
+                    "case_id": "test_inert",
+                    "phase": phase,
+                    "outcome": "passed",
+                    "longrepr": "",
+                    "at": T3,
+                },
+            )
+            for phase in ("setup", "call", "teardown")
+        ]
+        self.collection_ref = write(
+            self.output / "collection.json",
+            {"schema": "bac-hardware-pytest-collection-v1", "process": report_process, "ids": ["test_inert"]},
+        )
+        for index, worker_start in enumerate(self.worker_starts[:-1], 1):
+            write(
+                self.output / ("collection-" + str(index) + ".json"),
+                {"schema": "bac-hardware-pytest-collection-v1", "process": worker_start, "ids": ["test_inert"]},
+            )
+        self.outcomes = [{"case_id": "test_inert", "setup": "passed", "call": "passed", "teardown": "passed", "evidence": self.reports}]
+        self.log = self.output / "stdout.log"
+        self.log.write_text("synthetic report log; not interpreted as pytest outcomes\n")
+        self.obligation_refs = []
+        self.result = record(
+            "job-result",
+            attempt_id="attempt",
+            job_id="job",
+            spec=self.spec_ref,
+            disposition="completed-unverified",
+            exit_code=0,
+            signal=0,
+            reason="no accepted validator",
+            start=T1,
+            end=obs(T4),
+            elapsed_ns=obs(300),
+            command=self.command_ref,
+            log=p.file_reference(self.log),
+            collected_ids=["test_inert"],
+            outcomes=self.outcomes,
+            process_records=self.processes,
+            obligation_records=[],
+            source_witnesses=[self.runner_start, self.runner_end],
+            inventory=[],
+        )
+        if common:
+            for obligation in self.obligations:
+                payload = write(
+                    root / (obligation["id"] + "-payload.json"),
+                    {
+                        "schema": "bac-hardware-common-observation-v1",
+                        "kind": obligation["kind"],
+                        "case_id": "test_inert",
+                        "reports": self.reports,
+                        "processes": self.processes,
+                        "source_witnesses": self.result["source_witnesses"],
+                    },
+                )
+                self.obligation_refs.append(
+                    write(
+                        root / (obligation["id"] + "-evidence.json"),
+                        record(
+                            "obligation-evidence",
+                            attempt_id="attempt",
+                            job_id="job",
+                            spec=self.spec_ref,
+                            obligation_id=obligation["id"],
+                            obligation_kind=obligation["kind"],
+                            contract=obligation["contract"],
+                            validator=self.validator,
+                            case_id="test_inert",
+                            evidence_class=obligation["evidence_class"],
+                            payload=payload,
+                            producer_process=report_process,
+                            related_attempts=[self.runner_start, self.runner_end] if obligation["kind"] == "phase-pair" else [],
+                        ),
+                    )
+                )
+            self.result["obligation_records"] = self.obligation_refs
+            self.result["disposition"] = "successful"
+            self.result["reason"] = ""
+        if terminal:
+            self.result["disposition"] = terminal
+            self.result["reason"] = "observed terminal fixture"
+            if terminal == "completed-failed":
+                self.wait["exit_code"] = self.result["exit_code"] = 1
+            if terminal == "interrupted":
+                self.wait["exit_code"] = self.result["exit_code"] = -15
+                self.wait["signal"] = self.result["signal"] = 15
+                self.wait["interruption_reason"] = "timeout"
+            self.wait_ref = write(self.output / "wait.json", self.wait)
+        self.seal()
+
+    def fact(self, value):
+        return {"state": "measured", "value": value, "reason": "", "provenance": self.inert}
+
+    def source(self, name, identity, at):
+        return write(
+            self.output.parent / name,
+            record(
+                "source-witness",
+                candidate=self.candidate,
+                source_freeze=self.freeze,
+                head="a" * 40,
+                tree="b" * 40,
+                inventory=self.inputs,
+                at=at,
+                process_identity=identity,
+            ),
+        )
+
+    def process(self, phase, at, mono, process_id="c", context=None, actual_identity=None, environment=None):
+        context = self.context if context is None else context
+        actual_identity = self.identity if actual_identity is None else actual_identity
+        environment = self.environment if environment is None else environment
+        is_worker = context["role_id"] == "workers"
+        raw = write(
+            self.output / ("process-" + process_id + "-observation-" + phase + ".json"),
+            {
+                "schema": "bac-hardware-process-observation-v1",
+                "context": context,
+                "identity": actual_identity,
+                "phase": phase,
+                "environment": environment,
+                "worker_identity": context["worker_identity"],
+                "torch_loaded": False,
+                "cuda_marker": None,
+                "observation_limit": "synthetic only",
+                "at": at,
+            },
+        )
+        return write(
+            self.output / ("process-" + process_id + "-" + phase + ".json"),
+            record(
+                "process",
+                attempt_id="attempt",
+                job_id="job",
+                spec=self.spec_ref,
+                process_id=process_id,
+                role_id=context["role_id"],
+                role="worker" if is_worker else "controller",
+                phase=phase,
+                identity=actual_identity,
+                parent_identity=[self.identity] if is_worker else [],
+                replacement_of=(
+                    [json.loads(Path(context["replacement_start"][0]["path"]).read_text())["identity"]]
+                    if context["replacement_start"]
+                    else []
+                ),
+                interpreter=self.interpreter,
+                argv=[self.interpreter["path"], "-c", "inert"] if is_worker else self.argv,
+                cwd=str(self.src),
+                imports=[],
+                source_witness=self.source("source-" + process_id + "-" + phase + ".json", actual_identity, at),
+                environment=environment,
+                devices=self.devices,
+                **{k: dict(**absent(), provenance=raw) for k in ("intra_op", "inter_op", "debug")},
+                torch_observation="not-loaded",
+                cuda_observation="uninitialized",
+                at=at,
+                monotonic_ns=mono,
+                elapsed_ns=absent() if phase == "start" else obs(100)
+            ),
+        )
+
+    def seal(self):
+        files = [x for x in self.output.iterdir() if x.is_file() and x.name not in ("result.json", "completion.json")]
+        completion = record(
+            "job-evidence",
+            **{
+                k: self.result[k]
+                for k in (
+                    "attempt_id",
+                    "job_id",
+                    "spec",
+                    "command",
+                    "collected_ids",
+                    "outcomes",
+                    "process_records",
+                    "obligation_records",
+                    "source_witnesses",
+                )
+            },
+            inventory=[p.file_reference(x) for x in sorted(files)]
+        )
+        write(self.output / "completion.json", completion)
+        self.result["inventory"] = [p.file_reference(x) for x in sorted(self.output.iterdir()) if x.is_file() and x.name != "result.json"]
+        self.result_ref = write(self.output / "result.json", self.result)
+        refs = [p.file_reference(x) for x in sorted(self.output.parent.rglob("*")) if x.is_file() and x.name != "seal.json"]
+        write(
+            self.output.parent / "seal.json",
+            record(
+                "attempt-seal",
+                attempt_id="attempt",
+                spec=self.spec_ref,
+                start=self.start_ref,
+                disposition=self.result["disposition"],
+                job_results=[self.result_ref],
+                inventory=[*refs, p.file_reference(self.capture / "result.json")],
+                at=T4,
+                source_freeze=self.freeze,
+            ),
+        )
+
+    def verify(self, name="receipt.json"):
+        return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+
+
+@pytest.fixture
+def evidence(tmp_path):
+    return Evidence(tmp_path)
+
+
+def test_required_capability_exists():
+    assert callable(verifier().verify)
+
+
+def test_unknown_validator_never_satisfies(evidence):
+    receipt = evidence.verify()
+    assert receipt["custody"] == "unsatisfied"
+    assert all(o["disposition"] != "satisfied" for o in receipt["obligations"])
+    assert receipt["hardware"] == "unrun"
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [("argv", ["/wrong"]), ("seed", {"policy": "explicit", "python": 99, "numpy": 2, "torch": 3, "cuda": []}), ("environment", {})],
+)
+def test_exact_bindings(evidence, field, value):
+    evidence.command[field] = value
+    evidence.result["command"] = write(evidence.output / "command.json", evidence.command)
+    evidence.seal()
+    with pytest.raises(ValueError):
+        evidence.verify()
+
+
+@pytest.mark.parametrize(
+    "phase,status", [("setup", "failed"), ("call", "skipped"), ("call", "xfailed"), ("call", "xpassed"), ("teardown", "failed")]
+)
+def test_required_case_outcomes(evidence, phase, status):
+    evidence.result["outcomes"][0][phase] = status
+    evidence.seal()
+    with pytest.raises(ValueError, match="report|outcome"):
+        evidence.verify()
+
+
+@pytest.mark.parametrize("mutation", ["missing", "duplicate", "extra", "collection-only"])
+def test_required_collection_set(evidence, mutation):
+    if mutation == "missing":
+        evidence.result["collected_ids"] = []
+        evidence.result["outcomes"] = []
+    elif mutation == "duplicate":
+        evidence.result["collected_ids"].append("test_inert")
+    elif mutation == "extra":
+        evidence.result["collected_ids"].append("test_extra")
+    else:
+        evidence.result["outcomes"] = []
+    evidence.seal()
+    receipt = None
+    try:
+        receipt = evidence.verify()
+    except ValueError:
+        pass
+    assert receipt is None or receipt["test_outcome"] == "completed-unverified"
+    assert receipt is None or receipt["custody"] == "unsatisfied"
+
+
+@pytest.mark.parametrize(
+    "mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"]
+)
+def test_process_lifecycle_mutations(evidence, mutation):
+    end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+    if mutation == "missing-end":
+        evidence.result["process_records"] = evidence.processes[:1]
+    else:
+        if mutation == "wrong-pid":
+            end["identity"]["pid"] += 1
+        if mutation == "wrong-start":
+            end["identity"]["start_identity"] = "reused"
+        if mutation == "wrong-parent":
+            end["identity"]["ppid"] = 999
+        if mutation == "wrong-env":
+            end["environment"] = {**end["environment"], "UNSEALED": "1"}
+        if mutation == "unexpected-import":
+            end["imports"] = [{"name": "foreign", "reference": evidence.policy_ref}]
+        if mutation == "false-work":
+            end["torch_observation"] = "work"
+        evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+    evidence.seal()
+    if mutation == "missing-end":
+        receipt = evidence.verify()
+        assert receipt["test_outcome"] == "completed-unverified"
+        assert receipt["custody"] == "unsatisfied"
+    else:
+        with pytest.raises(ValueError):
+            evidence.verify()
+
+
+@pytest.mark.parametrize("mutation", ["missing-terminal", "refused-terminal", "partial-spec", "log-tamper", "missing-seal"])
+def test_admission_and_seal_required(evidence, mutation):
+    if mutation == "missing-terminal":
+        (evidence.capture / "result.json").rename(evidence.capture / "retained-terminal.json")
+    if mutation == "refused-terminal":
+        write(
+            evidence.capture / "result.json",
+            {
+                "schema": "bac-hardware-capture-result-v1",
+                "disposition": "refused",
+                "reasons": ["late failure"],
+                "admission": evidence.admission,
+                "spec": None,
+            },
+        )
+    if mutation == "partial-spec":
+        write(
+            evidence.capture / "result.json",
+            {
+                "schema": "bac-hardware-capture-result-v1",
+                "disposition": "admitted",
+                "reasons": [],
+                "admission": evidence.admission,
+                "spec": evidence.inert,
+            },
+        )
+    if mutation == "log-tamper":
+        evidence.log.write_text("999 passed forged log")
+    if mutation == "missing-seal":
+        (evidence.output.parent / "seal.json").rename(evidence.output.parent / "retained-seal.json")
+    with pytest.raises(ValueError):
+        evidence.verify()
+
+
+def test_immutable_receipt(evidence):
+    first = evidence.verify()
+    path = evidence.root / "receipt.json"
+    before = path.read_bytes()
+    with pytest.raises((ValueError, FileExistsError)):
+        evidence.verify()
+    assert path.read_bytes() == before
+    assert evidence.verify("receipt-2.json")["test_outcome"] == first["test_outcome"]
+
+
+def test_unsafe_receipt_path(evidence):
+    alias = evidence.root / "alias"
+    alias.symlink_to(evidence.capture, target_is_directory=True)
+    with pytest.raises(ValueError):
+        verifier().verify(str(evidence.spec_path), "job", str(alias / "receipt.json"))
+
+
+def test_duplicate_json_rejected(evidence):
+    evidence.spec_path.write_text('{"schema":"bac-hardware-v1","schema":"forged"}')
+    with pytest.raises(ValueError):
+        evidence.verify()
+
+
+def test_evidence_class_never_inferred_from_device_presence(evidence):
+    receipt = evidence.verify()
+    assert receipt["hardware"] != "satisfied"
+    assert not any(o["validator_receipt"] for o in receipt["obligations"])
+
+
+def test_common_validators_recompute_actual_proof(tmp_path):
+    evidence = Evidence(tmp_path, common=True)
+    receipt = evidence.verify()
+    assert receipt["custody"] == "satisfied"
+    assert receipt["test_outcome"] == "successful"
+    assert receipt["hardware"] == "unrun"
+    for obligation in receipt["obligations"]:
+        assert obligation["disposition"] == "satisfied"
+        assert len(obligation["validator_receipt"]) == 1
+        observed = json.loads(Path(obligation["validator_receipt"][0]["path"]).read_text())
+        assert observed["validator_id"] == "p4-common-v1"
+        assert observed["validation_process"]["pid"] > 0
+        assert observed["end"] >= observed["start"]
+        assert observed["payloads"]
+
+
+@pytest.mark.parametrize("field", ["reports", "processes", "source_witnesses"])
+def test_common_payload_cannot_omit_actual_observations(tmp_path, field):
+    evidence = Evidence(tmp_path, common=True)
+    item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+    payload = json.loads(Path(item["payload"]["path"]).read_text())
+    payload[field] = []
+    item["payload"] = write(Path(item["payload"]["path"]), payload)
+    evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+    evidence.seal()
+    with pytest.raises(ValueError, match="common|payload"):
+        evidence.verify()
+
+
+def test_common_validator_does_not_execute_referenced_code(tmp_path):
+    evidence = Evidence(tmp_path, common=True)
+    # Registry authority is not inferred from a payload filename or execution claim.
+    item = json.loads(Path(evidence.obligation_refs[0]["path"]).read_text())
+    payload = json.loads(Path(item["payload"]["path"]).read_text())
+    payload["execute"] = "raise RuntimeError('never execute evidence')"
+    item["payload"] = write(Path(item["payload"]["path"]), payload)
+    evidence.result["obligation_records"][0] = write(Path(evidence.obligation_refs[0]["path"]), item)
+    evidence.seal()
+    with pytest.raises(ValueError, match="common|payload"):
+        evidence.verify()
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("exit_code", 7),
+        ("signal", 9),
+        ("identity", {"pid": 999, "ppid": 100, "start_identity": "x", "host": "synthetic", "boot_id": "synthetic"}),
+        ("end_monotonic_ns", 999),
+    ],
+)
+def test_parent_wait_cannot_be_rewritten_as_success(evidence, field, value):
+    evidence.wait[field] = value
+    write(evidence.output / "wait.json", evidence.wait)
+    evidence.seal()
+    with pytest.raises(ValueError, match="wait|exit|terminal"):
+        evidence.verify()
+
+
+@pytest.mark.parametrize("mutation", ["duplicate", "missing", "wrong-process"])
+def test_actual_collection_records_required(evidence, mutation):
+    collection = json.loads(Path(evidence.collection_ref["path"]).read_text())
+    if mutation == "duplicate":
+        collection["ids"].append("test_inert")
+    if mutation == "missing":
+        collection["ids"] = []
+    if mutation == "wrong-process":
+        collection["process"] = evidence.processes[1]
+    write(Path(evidence.collection_ref["path"]), collection)
+    evidence.seal()
+    with pytest.raises(ValueError, match="collection"):
+        evidence.verify()
+
+
+@pytest.mark.parametrize("terminal", ["completed-failed", "completed-unverified", "interrupted"])
+def test_terminal_classifications_preserved(tmp_path, terminal):
+    evidence = Evidence(tmp_path, terminal=terminal)
+    receipt = evidence.verify()
+    assert receipt["test_outcome"] == terminal
+    assert receipt["custody"] == "unsatisfied"
+
+
+def test_report_after_process_end_cannot_satisfy(evidence):
+    report = json.loads(Path(evidence.reports[-1]["path"]).read_text())
+    report["at"] = T4
+    evidence.result["outcomes"][0]["evidence"][-1] = write(Path(evidence.reports[-1]["path"]), report)
+    evidence.seal()
+    with pytest.raises(ValueError, match="report"):
+        evidence.verify()
+
+
+def test_two_worker_custody_is_independently_verified(tmp_path):
+    evidence = Evidence(tmp_path, common=True, workers=2)
+    receipt = evidence.verify()
+    assert receipt["custody"] == "satisfied"
+
+
+@pytest.mark.parametrize(
+    "mutation", ["missing-down", "wrong-down-role", "wrong-worker-count", "wrong-down-controller", "unlinked-configure"]
+)
+def test_worker_lifecycle_mutations(tmp_path, mutation):
+    evidence = Evidence(tmp_path, common=True, workers=1)
+    path = evidence.output / "worker-0-down.json"
+    value = json.loads(path.read_text())
+    if mutation == "missing-down":
+        value["schema"] = "not-a-lifecycle"
+    if mutation == "wrong-down-role":
+        value["role_id"] = "controller"
+    if mutation == "wrong-worker-count":
+        value["worker_identity"]["workercount"] = 7
+    if mutation == "wrong-down-controller":
+        value["controller_start"] = evidence.worker_starts[0]
+    if mutation == "unlinked-configure":
+        value["prior_lifecycle"] = []
+    write(path, value)
+    evidence.seal()
+    with pytest.raises(ValueError, match="lifecycle|worker"):
+        evidence.verify()
+
+
+@pytest.mark.parametrize("terminal", ["refused", "unrun"])
+def test_never_run_remains_distinct_and_has_no_finish(tmp_path, terminal):
+    evidence = Evidence(tmp_path, terminal=terminal)
+    receipt = evidence.verify()
+    assert receipt["test_outcome"] == terminal
+    assert receipt["custody"] == "unsatisfied"
+    assert any("unavailable" in reason for reason in receipt["reasons"])
+
+
+def test_interrupted_missing_end_retains_terminal_unqualified(tmp_path):
+    evidence = Evidence(tmp_path, terminal="interrupted")
+    evidence.result["process_records"] = evidence.processes[:1]
+    evidence.seal()
+    receipt = evidence.verify()
+    assert receipt["test_outcome"] == "interrupted"
+    assert receipt["custody"] == "unsatisfied"
+    assert all(o["disposition"] != "satisfied" for o in receipt["obligations"])
+    assert any("missing process" in r for r in receipt["reasons"])
+
+
+def test_success_cannot_ignore_uninventoried_extra_outcome_report(evidence):
+    write(
+        evidence.output / "extra-report.json",
+        {
+            "schema": "bac-hardware-pytest-report-v1",
+            "process": evidence.processes[0],
+            "case_id": "hidden_failure",
+            "phase": "call",
+            "outcome": "failed",
+            "longrepr": "retained failure",
+            "at": T3,
+        },
+    )
+    evidence.seal()
+    with pytest.raises(ValueError, match="report"):
+        evidence.verify()
+
+
+def test_cuda_profile_common_custody_never_implies_device_work(tmp_path):
+    evidence = Evidence(tmp_path, common=True, cuda=True)
+    receipt = evidence.verify()
+    assert receipt["custody"] == "satisfied"
+    assert receipt["hardware"] == "unrun"
+
+
+@pytest.mark.parametrize("kind", ["cuda-fresh-initialization", "strict-child-core", "fork-three-trials", "phase-pair"])
+def test_owner_semantics_cannot_be_satisfied_by_common_validator(tmp_path, kind):
+    evidence = Evidence(tmp_path, common=True, cuda=kind.startswith("cuda-"), extra_kind=kind)
+    receipt = evidence.verify()
+    assert receipt["custody"] == "unsatisfied"
+    row = next(o for o in receipt["obligations"] if o["id"] == kind)
+    assert row["disposition"] != "satisfied"
+    assert not row["validator_receipt"]
+    classification = next(
+        json.loads(Path(r["path"]).read_text()) for r in receipt["inventory"] if r["path"].endswith("classification.json")
+    )
+    assert classification["common_custody"] == "satisfied"
+    assert classification["overall"] == "incomplete"
+    assert receipt["hardware"] != "satisfied"
+
+
+def test_replacement_has_distinct_admitted_lifecycle(tmp_path):
+    evidence = Evidence(tmp_path, common=True, workers=1, replacement=True)
+    assert evidence.verify()["custody"] == "satisfied"
+
+
+def test_pid_reuse_accepted_only_with_distinct_nonoverlapping_identity(tmp_path):
+    evidence = Evidence(tmp_path, common=True, workers=1, replacement=True, reuse_pid=True)
+    assert evidence.verify()["custody"] == "satisfied"
+
+
+@pytest.mark.parametrize("mutation", ["missing-error", "wrong-predecessor", "wrong-prior-configure"])
+def test_replacement_chain_mutations(tmp_path, mutation):
+    evidence = Evidence(tmp_path, common=True, workers=1, replacement=True)
+    path = evidence.output / "worker-0-down.json"
+    value = json.loads(path.read_text())
+    if mutation == "missing-error":
+        value["error"] = ""
+    if mutation == "wrong-predecessor":
+        value["process_start"] = [evidence.processes[0]]
+    if mutation == "wrong-prior-configure":
+        value["prior_lifecycle"] = [evidence.processes[0]]
+    # Stale downstream references must fail before any claimed replacement pass.
+    write(path, value)
+    evidence.seal()
+    with pytest.raises(ValueError):
+        evidence.verify()
+
+
+def test_seal_terminal_cannot_hide_failed_job(tmp_path):
+    evidence = Evidence(tmp_path, terminal="completed-failed")
+    path = evidence.output.parent / "seal.json"
+    seal = json.loads(path.read_text())
+    seal["disposition"] = "successful"
+    write(path, seal)
+    with pytest.raises(ValueError, match="seal.*disposition"):
+        evidence.verify()
+
+
+def test_common_witness_schema_is_parsed_not_just_hashed(tmp_path):
+    evidence = Evidence(tmp_path, common=True, bad_schema=True)
+    with pytest.raises(ValueError, match="witness schema"):
+        evidence.verify()
+
+
+@pytest.mark.parametrize("status", ["skipped", "xfailed", "xpassed", "failed"])
+def test_coherent_nonpassing_phase_never_satisfies_required_case(evidence, status):
+    report = json.loads(Path(evidence.reports[1]["path"]).read_text())
+    report["outcome"] = status
+    evidence.result["outcomes"][0]["call"] = status
+    evidence.result["outcomes"][0]["evidence"][1] = write(Path(evidence.reports[1]["path"]), report)
+    evidence.seal()
+    receipt = evidence.verify()
+    assert receipt["test_outcome"] == "completed-unverified"
+    assert receipt["custody"] == "unsatisfied"
+    assert any("not all passed" in r for r in receipt["reasons"])
+
+
+def test_receipt_race_has_one_exclusive_winner(evidence):
+    from concurrent.futures import ThreadPoolExecutor
+
+    def attempt():
+        try:
+            evidence.verify()
+            return "written"
+        except (ValueError, FileExistsError):
+            return "refused"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(lambda _: attempt(), range(2))) == ["refused", "written"]

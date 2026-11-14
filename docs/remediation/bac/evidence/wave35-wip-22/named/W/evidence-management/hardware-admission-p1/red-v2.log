@@ -1,0 +1,2532 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                    [100%]
+=================================== FAILURES ===================================
+__________ test_admission_limits_nested_fraction_and_memory_headroom ___________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_nested_f0')
+
+    def test_admission_limits_nested_fraction_and_memory_headroom(tmp_path):
+>       result = assess(tmp_path)
+                 ^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+______ test_admission_limits_bounded_by_all_cpu_observations[affinity-1] _______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_bounded_0')
+change = 'affinity', want = 1
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_______ test_admission_limits_bounded_by_all_cpu_observations[cpuset-2] ________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_bounded_1')
+change = 'cpuset', want = 2
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_______ test_admission_limits_bounded_by_all_cpu_observations[quota-0.5] _______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_bounded_2')
+change = 'quota', want = 0.5
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+______ test_admission_limits_bounded_by_all_cpu_observations[unlimited-4] ______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_bounded_3')
+change = 'unlimited', want = 4
+
+    @pytest.mark.parametrize("change,want", [("affinity", 1), ("cpuset", 2), ("quota", 0.5), ("unlimited", 4)])
+    def test_admission_limits_bounded_by_all_cpu_observations(tmp_path, change, want):
+        obs = observation()
+        if change == "affinity":
+            obs["affinity"] = [1]
+        elif change == "cpuset":
+            obs["cgroups"][1]["cpuset"] = "1-2"
+        elif change == "quota":
+            obs["cgroups"][0]["cpu_max"] = "50000 100000"
+        else:
+            for group in obs["cgroups"]:
+                group["cpu_max"] = "max 100000"
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+__ test_admission_limits_refuse_insufficient_required_facts[missing_cpu-cpu] ___
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i0')
+change = 'missing_cpu', reason = 'cpu'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[missing_memory-memory] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i1')
+change = 'missing_memory', reason = 'memory'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[missing_cpuset-cpuset] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i2')
+change = 'missing_cpuset', reason = 'cpuset'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[hidden_ancestor-ancestry] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i3')
+change = 'hidden_ancestor', reason = 'ancestry'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[missing_ancestor-ancestry] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i4')
+change = 'missing_ancestor', reason = 'ancestry'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[zero_period-period] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i5')
+change = 'zero_period', reason = 'period'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[low_ram-ram_bytes] __
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i6')
+change = 'low_ram', reason = 'ram_bytes'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[low_scratch-scratch_bytes] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i7')
+change = 'low_scratch', reason = 'scratch_bytes'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[low_inodes-scratch_inodes] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i8')
+change = 'low_inodes', reason = 'scratch_inodes'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[unknown_workload-competing] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i9')
+change = 'unknown_workload', reason = 'competing'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[unknown_memavailable-MemAvailable] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i10')
+change = 'unknown_memavailable', reason = 'MemAvailable'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[unknown_affinity-affinity] _
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i11')
+change = 'unknown_affinity', reason = 'affinity'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_ test_admission_limits_refuse_insufficient_required_facts[probe_error-probe] __
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_refuse_i12')
+change = 'probe_error', reason = 'probe'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("missing_cpu", "cpu"), ("missing_memory", "memory"), ("missing_cpuset", "cpuset"),
+        ("hidden_ancestor", "ancestry"), ("missing_ancestor", "ancestry"), ("zero_period", "period"),
+        ("low_ram", "ram_bytes"), ("low_scratch", "scratch_bytes"), ("low_inodes", "scratch_inodes"),
+        ("unknown_workload", "competing"), ("unknown_memavailable", "MemAvailable"),
+        ("unknown_affinity", "affinity"), ("probe_error", "probe"),
+    ])
+    def test_admission_limits_refuse_insufficient_required_facts(tmp_path, change, reason):
+        obs = observation()
+        if change == "missing_cpu": obs["cgroups"][1]["cpu_max"] = None
+        if change == "missing_memory": obs["cgroups"][1]["memory_max"] = None
+        if change == "missing_cpuset": obs["cgroups"][1]["cpuset"] = None
+        if change == "hidden_ancestor": obs["ancestry_complete"] = False
+        if change == "missing_ancestor": obs["cgroups"].pop(1)
+        if change == "zero_period": obs["cgroups"][1]["cpu_max"] = "50000 0"
+        if change == "low_ram": obs["cgroups"][1]["memory_current"] = "1901"
+        if change == "low_scratch": obs["scratch_free_bytes"] = 120
+        if change == "low_inodes": obs["scratch_free_inodes"] = 2
+        if change == "unknown_workload": obs["competing_workloads"] = None
+        if change == "unknown_memavailable": obs["meminfo"] = "MemTotal: 4 kB\n"
+        if change == "unknown_affinity": obs["affinity"] = None
+        if change == "probe_error": obs["probe_errors"] = ["probe failed"]
+>       result = assess(tmp_path, obs)
+                 ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+________ test_admission_limits_concurrency_and_replacement_reservations ________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_admission_limits_concurre0')
+
+    def test_admission_limits_concurrency_and_replacement_reservations(tmp_path):
+        req = request()
+        req["jobs"] *= 2
+        req["requested_job_concurrency"] = 2
+        req["jobs"][0]["budget"]["cpu_slots"] = 2
+>       result = assess(tmp_path, req=req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+______ test_profile_mapping_preserves_remapped_visibility_and_cpu_policy _______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_preserves0')
+
+    def test_profile_mapping_preserves_remapped_visibility_and_cpu_policy(tmp_path):
+        req, obs = cuda_pair()
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+__________ test_profile_mapping_refuses_unproved_cuda[cpu_build-CUDA] __________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u0')
+change = 'cpu_build', reason = 'CUDA'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+______ test_profile_mapping_refuses_unproved_cuda[unknown_uuid-authoriz] _______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u1')
+change = 'unknown_uuid', reason = 'authoriz'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_____ test_profile_mapping_refuses_unproved_cuda[duplicate_uuid-duplicate] _____
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u2')
+change = 'duplicate_uuid', reason = 'duplicate'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_____________ test_profile_mapping_refuses_unproved_cuda[mig-MIG] ______________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u3')
+change = 'mig', reason = 'MIG'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_______ test_profile_mapping_refuses_unproved_cuda[inherited-visibility] _______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u4')
+change = 'inherited', reason = 'visibility'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_______ test_profile_mapping_refuses_unproved_cuda[effective-visibility] _______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u5')
+change = 'effective', reason = 'visibility'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+__________ test_profile_mapping_refuses_unproved_cuda[driver-driver] ___________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u6')
+change = 'driver', reason = 'driver'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_________ test_profile_mapping_refuses_unproved_cuda[runtime-runtime] __________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u7')
+change = 'runtime', reason = 'runtime'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_________ test_profile_mapping_refuses_unproved_cuda[logical-logical] __________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u8')
+change = 'logical', reason = 'logical'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+__________ test_profile_mapping_refuses_unproved_cuda[job_device-job] __________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u9')
+change = 'job_device', reason = 'job'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+________ test_profile_mapping_refuses_unproved_cuda[job_visibility-job] ________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u10')
+change = 'job_visibility', reason = 'job'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+__________ test_profile_mapping_refuses_unproved_cuda[busy-competing] __________
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_profile_mapping_refuses_u11')
+change = 'busy', reason = 'competing'
+
+    @pytest.mark.parametrize("change,reason", [
+        ("cpu_build", "CUDA"), ("unknown_uuid", "authoriz"), ("duplicate_uuid", "duplicate"),
+        ("mig", "MIG"), ("inherited", "visibility"), ("effective", "visibility"),
+        ("driver", "driver"), ("runtime", "runtime"), ("logical", "logical"),
+        ("job_device", "job"), ("job_visibility", "job"), ("busy", "competing"),
+    ])
+    def test_profile_mapping_refuses_unproved_cuda(tmp_path, change, reason):
+        req, obs = cuda_pair()
+        if change == "cpu_build": obs["torch_build"] = "2.9+cpu"; obs["cuda_runtime"] = None
+        if change == "unknown_uuid": obs["devices"][0]["gpu_uuid"] = "GPU-unknown"
+        if change == "duplicate_uuid": obs["devices"][0] = copy.deepcopy(obs["devices"][1])
+        if change == "mig": obs["devices"][0]["mig_uuid"] = "MIG-unknown"
+        if change == "inherited": obs["inherited_visibility"] = "0"
+        if change == "effective": obs["effective_visibility"] = "0,1"
+        if change == "driver": obs["driver"] = None
+        if change == "runtime": obs["cuda_runtime"] = None
+        if change == "logical": obs["devices"][0]["logical_index"] = 5
+        if change == "job_device": req["jobs"][0]["devices"][0]["gpu_uuid"] = "GPU-other"
+        if change == "job_visibility": req["jobs"][0]["environment"]["CUDA_VISIBLE_DEVICES"] = "0,1"
+        if change == "busy": obs["competing_workloads"] = ["GPU-b process 999"]
+>       result = assess(tmp_path, obs, req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+__ test_discovery_closed_payload_rejects_wrong_types[scratch_free_bytes-True] __
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_discovery_closed_payload_0')
+field = 'scratch_free_bytes', value = True
+
+    @pytest.mark.parametrize("field,value", [("scratch_free_bytes", True), ("scratch_free_inodes", -1),
+                                             ("affinity", [0, 0]), ("affinity", [False]), ("unknown", "field")])
+    def test_discovery_closed_payload_rejects_wrong_types(tmp_path, field, value):
+        obs = observation()
+        obs[field] = value
+>       with pytest.raises(ValueError): assess(tmp_path, obs)
+                                        ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+__ test_discovery_closed_payload_rejects_wrong_types[scratch_free_inodes--1] ___
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_discovery_closed_payload_1')
+field = 'scratch_free_inodes', value = -1
+
+    @pytest.mark.parametrize("field,value", [("scratch_free_bytes", True), ("scratch_free_inodes", -1),
+                                             ("affinity", [0, 0]), ("affinity", [False]), ("unknown", "field")])
+    def test_discovery_closed_payload_rejects_wrong_types(tmp_path, field, value):
+        obs = observation()
+        obs[field] = value
+>       with pytest.raises(ValueError): assess(tmp_path, obs)
+                                        ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+______ test_discovery_closed_payload_rejects_wrong_types[affinity-value2] ______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_discovery_closed_payload_2')
+field = 'affinity', value = [0, 0]
+
+    @pytest.mark.parametrize("field,value", [("scratch_free_bytes", True), ("scratch_free_inodes", -1),
+                                             ("affinity", [0, 0]), ("affinity", [False]), ("unknown", "field")])
+    def test_discovery_closed_payload_rejects_wrong_types(tmp_path, field, value):
+        obs = observation()
+        obs[field] = value
+>       with pytest.raises(ValueError): assess(tmp_path, obs)
+                                        ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+______ test_discovery_closed_payload_rejects_wrong_types[affinity-value3] ______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_discovery_closed_payload_3')
+field = 'affinity', value = [False]
+
+    @pytest.mark.parametrize("field,value", [("scratch_free_bytes", True), ("scratch_free_inodes", -1),
+                                             ("affinity", [0, 0]), ("affinity", [False]), ("unknown", "field")])
+    def test_discovery_closed_payload_rejects_wrong_types(tmp_path, field, value):
+        obs = observation()
+        obs[field] = value
+>       with pytest.raises(ValueError): assess(tmp_path, obs)
+                                        ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+_______ test_discovery_closed_payload_rejects_wrong_types[unknown-field] _______
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+>           return importlib.import_module("capture_bac_hardware_v1")
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'capture_bac_hardware_v1'
+import_ = <function _gcd_import at 0x7ffa95b284a0>
+
+>   ???
+E   ModuleNotFoundError: No module named 'capture_bac_hardware_v1'
+
+<frozen importlib._bootstrap>:1324: ModuleNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-32/test_discovery_closed_payload_4')
+field = 'unknown', value = 'field'
+
+    @pytest.mark.parametrize("field,value", [("scratch_free_bytes", True), ("scratch_free_inodes", -1),
+                                             ("affinity", [0, 0]), ("affinity", [False]), ("unknown", "field")])
+    def test_discovery_closed_payload_rejects_wrong_types(tmp_path, field, value):
+        obs = observation()
+        obs[field] = value
+>       with pytest.raises(ValueError): assess(tmp_path, obs)
+                                        ^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_capture_bac_hardware_v1.py:61: in assess
+    return module().assess_resources(request() if req is None else req, obs, ref)
+           ^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def module():
+        # A missing implementation is a behavioral RED, not a collection error.
+        try:
+            return importlib.import_module("capture_bac_hardware_v1")
+        except ModuleNotFoundError:
+>           pytest.fail("P1 admission implementation is missing")
+E           Failed: P1 admission implementation is missing
+
+test_capture_bac_hardware_v1.py:22: Failed
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_nested_fraction_and_memory_headroom
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[affinity-1]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[cpuset-2]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[quota-0.5]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_bounded_by_all_cpu_observations[unlimited-4]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_cpu-cpu]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_memory-memory]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_cpuset-cpuset]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[hidden_ancestor-ancestry]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[missing_ancestor-ancestry]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[zero_period-period]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[low_ram-ram_bytes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[low_scratch-scratch_bytes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[low_inodes-scratch_inodes]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[unknown_workload-competing]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[unknown_memavailable-MemAvailable]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[unknown_affinity-affinity]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_refuse_insufficient_required_facts[probe_error-probe]
+FAILED test_capture_bac_hardware_v1.py::test_admission_limits_concurrency_and_replacement_reservations
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_preserves_remapped_visibility_and_cpu_policy
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[cpu_build-CUDA]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[unknown_uuid-authoriz]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[duplicate_uuid-duplicate]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[mig-MIG]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[inherited-visibility]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[effective-visibility]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[driver-driver]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[runtime-runtime]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[logical-logical]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[job_device-job]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[job_visibility-job]
+FAILED test_capture_bac_hardware_v1.py::test_profile_mapping_refuses_unproved_cuda[busy-competing]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_closed_payload_rejects_wrong_types[scratch_free_bytes-True]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_closed_payload_rejects_wrong_types[scratch_free_inodes--1]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_closed_payload_rejects_wrong_types[affinity-value2]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_closed_payload_rejects_wrong_types[affinity-value3]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_closed_payload_rejects_wrong_types[unknown-field]
+37 failed in 0.81s

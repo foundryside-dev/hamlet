@@ -1,0 +1,486 @@
+FFFFFFFFFFFFFFFFFFF                                                      [100%]
+=================================== FAILURES ===================================
+_____________________________ test_process_custody _____________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_process_custody0/source/inert-module.txt'), 'blobref': {'bytes...test_process_custody0/freeze.json', 'sha256': 'd53145cae9185a3f54983a3e4547f20f650627f438f5093d8358f47df4b6bbc3'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39cab96e0>
+
+    def test_process_custody(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch); c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_________________ test_source_freeze_witness[missing_barrier] __________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_mis0/source/inert-module.txt'), 'blobref...e_freeze_witness_mis0/freeze.json', 'sha256': 'a45399f1cf00e2995835b883ec6afb3a2f1d771836a1e93780c1b37604ea84e5'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39cabaea0>
+change = 'missing_barrier'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+___________________ test_source_freeze_witness[wrong_grant] ____________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_wro0/source/inert-module.txt'), 'blobref...e_freeze_witness_wro0/freeze.json', 'sha256': '321cb60ee75e6551cebfab4600f787dafa4b1b10f7506db9029265b18cd11be9'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39cac3770>
+change = 'wrong_grant'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+__________________ test_source_freeze_witness[expired_grant] ___________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_exp0/source/inert-module.txt'), 'blobref...e_freeze_witness_exp0/freeze.json', 'sha256': '982d5ea55644d09231fc18e63fc93e17a6bc8e356f3f177be3d1b631f6f3e9cd'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c8a1150>
+change = 'expired_grant'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+______________________ test_source_freeze_witness[source] ______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_sou0/source/inert-module.txt'), 'blobref...e_freeze_witness_sou0/freeze.json', 'sha256': '5b030b17101ee8c79ff0cc971ddee68fa1d1f9e67d1df8590e5d0ff372746731'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c8a17b0>
+change = 'source'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+______________________ test_source_freeze_witness[index] _______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_ind0/source/inert-module.txt'), 'blobref...e_freeze_witness_ind0/freeze.json', 'sha256': '464ed8268ecddd18015d9ba2a4cf07ea34b0eb85ae1ef4782c1b8ba4821b9923'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c909250>
+change = 'index'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+___________________ test_source_freeze_witness[interpreter] ____________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_int0/source/inert-module.txt'), 'blobref...e_freeze_witness_int0/freeze.json', 'sha256': '9c76bc6091d41cf188a714e0577daf62a0d917375c8de603e51521461c955305'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c909550>
+change = 'interpreter'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+______________________ test_source_freeze_witness[import] ______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_imp0/source/inert-module.txt'), 'blobref...e_freeze_witness_imp0/freeze.json', 'sha256': 'd8d17091f28492eb0552c2f7235bb13bad9f9e847fd46534b51a540df8be1929'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c8d9d60>
+change = 'import'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_______________________ test_source_freeze_witness[env] ________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_env0/source/inert-module.txt'), 'blobref...e_freeze_witness_env0/freeze.json', 'sha256': '36bc7eb381b83553deb6b00266c6f15a7cede804c6d0a88ae41cf4dc7a584b3d'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c8da300>
+change = 'env'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+__________________ test_source_freeze_witness[context_extra] ___________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_con0/source/inert-module.txt'), 'blobref...e_freeze_witness_con0/freeze.json', 'sha256': 'dad2c63ac28d7f06c024a43a34bce3e9cdf41905f2385e360c931b89f26a0967'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c958e50>
+change = 'context_extra'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_______________________ test_source_freeze_witness[tool] _______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_source_freeze_witness_too0/source/inert-module.txt'), 'blobref...e_freeze_witness_too0/freeze.json', 'sha256': '6ba4a1f419816be6cd4205748242ecb2edbd4b2f556b12af94b966e92d38bd3b'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c959a90>
+change = 'tool'
+
+    @pytest.mark.parametrize('change',['missing_barrier','wrong_grant','expired_grant','source','index','interpreter','import','env','context_extra','tool'])
+    def test_source_freeze_witness(capsule,monkeypatch,change):
+>       api=_prepare(capsule,monkeypatch);c=capsule['context']
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_________________ test_end_requires_actual_same_process_start __________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_end_requires_actual_same_0/source/inert-module.txt'), 'blobref...equires_actual_same_0/freeze.json', 'sha256': '7dcec4b6a29a6d7761b62983e36499a2a8e3e9222102b5c7ba7976e4b3b0f334'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c6413d0>
+
+    def test_end_requires_actual_same_process_start(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:214: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+__________________________ test_phase_specific_import __________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_phase_specific_import0/source/inert-module.txt'), 'blobref': {...hase_specific_import0/freeze.json', 'sha256': '9be15d6ead765f277d2e4bfd3ca04dc8fa5359fcd82770d891ce25250b5ed4e2'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39cb59550>
+
+    def test_phase_specific_import(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch);monkeypatch.delitem(sys.modules,'inert_module')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:223: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_______________________ test_missing_end_remains_missing _______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_missing_end_remains_missi0/source/inert-module.txt'), 'blobref...ng_end_remains_missi0/freeze.json', 'sha256': 'eaecd0beabd74329fc55e13045af1dd2e3f7a56247ea540c92a5ff92bf63ccc5'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39cc31fd0>
+
+    def test_missing_end_remains_missing(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch);api.record_process(capsule['context'],'start')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:229: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_________________________ test_nonperturbing_observer __________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_nonperturbing_observer0/source/inert-module.txt'), 'blobref': ...nperturbing_observer0/freeze.json', 'sha256': 'edd8f9cc37f72973100529a31912d38edc30830fd5999018b13f57ab58b40ce3'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39cb28b50>
+
+    def test_nonperturbing_observer(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+____ test_uninitialized_refuses_missing_unknown_or_initialized_marker[None] ____
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_uninitialized_refuses_mis0/source/inert-module.txt'), 'blobref...tialized_refuses_mis0/freeze.json', 'sha256': '9f5c9b1ded954a67b8e9c36ec1d2ef4b62687fdc460b1c2fbb8739893d38fe94'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39cb28e10>
+marker = None
+
+    @pytest.mark.parametrize('marker',[None,1,True])
+    def test_uninitialized_refuses_missing_unknown_or_initialized_marker(capsule,monkeypatch,marker):
+>       api=_prepare(capsule,monkeypatch);torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:250: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_____ test_uninitialized_refuses_missing_unknown_or_initialized_marker[1] ______
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_uninitialized_refuses_mis1/source/inert-module.txt'), 'blobref...tialized_refuses_mis1/freeze.json', 'sha256': '587cc8cd8c5773959ea4fb39902a89e698339894a54492b96da2a33830e58400'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c89f070>
+marker = 1
+
+    @pytest.mark.parametrize('marker',[None,1,True])
+    def test_uninitialized_refuses_missing_unknown_or_initialized_marker(capsule,monkeypatch,marker):
+>       api=_prepare(capsule,monkeypatch);torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:250: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+____ test_uninitialized_refuses_missing_unknown_or_initialized_marker[True] ____
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_uninitialized_refuses_mis2/source/inert-module.txt'), 'blobref...tialized_refuses_mis2/freeze.json', 'sha256': 'b41783cbdaee5411355922f623000e0332869251b62c0929f07bbaae8833d616'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c8ffed0>
+marker = True
+
+    @pytest.mark.parametrize('marker',[None,1,True])
+    def test_uninitialized_refuses_missing_unknown_or_initialized_marker(capsule,monkeypatch,marker):
+>       api=_prepare(capsule,monkeypatch);torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:250: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+_______________________ test_symlink_destination_refused _______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-73/test_symlink_destination_refus0/source/inert-module.txt'), 'blobref...nk_destination_refus0/freeze.json', 'sha256': '4a19e6b8c7b9e89250e334cfce960ef7cd52b131fa15bc406fb7d2346c4b8f09'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd39c9579b0>
+
+    def test_symlink_destination_refused(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:257: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:168: in _prepare
+    api=_api()
+        ^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _api():
+        spec = importlib.util.find_spec('bac_hardware_identity_v1')
+>       assert spec is not None, 'actual process identity implementation is missing'
+E       AssertionError: actual process identity implementation is missing
+E       assert None is not None
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:78: AssertionError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_process_custody - AssertionErro...
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[missing_barrier]
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[wrong_grant]
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[expired_grant]
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[source]
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[index] - ...
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[interpreter]
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[import]
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[env] - As...
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[context_extra]
+FAILED test_bac_hardware_identity_v1.py::test_source_freeze_witness[tool] - A...
+FAILED test_bac_hardware_identity_v1.py::test_end_requires_actual_same_process_start
+FAILED test_bac_hardware_identity_v1.py::test_phase_specific_import - Asserti...
+FAILED test_bac_hardware_identity_v1.py::test_missing_end_remains_missing - A...
+FAILED test_bac_hardware_identity_v1.py::test_nonperturbing_observer - Assert...
+FAILED test_bac_hardware_identity_v1.py::test_uninitialized_refuses_missing_unknown_or_initialized_marker[None]
+FAILED test_bac_hardware_identity_v1.py::test_uninitialized_refuses_missing_unknown_or_initialized_marker[1]
+FAILED test_bac_hardware_identity_v1.py::test_uninitialized_refuses_missing_unknown_or_initialized_marker[True]
+FAILED test_bac_hardware_identity_v1.py::test_symlink_destination_refused - A...
+19 failed, 3 deselected in 0.95s

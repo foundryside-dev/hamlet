@@ -1,0 +1,15 @@
+{
+  "authority": "root-implementation-grant-v1.json",
+  "scope": "W35-R0-PARENT-C1",
+  "before_sha256": "32459be2e1aa6e3f3ff1c1ca1c9ecd987382c20c6cfea24fa75e827485331587",
+  "after_sha256": "5fb3f57a16b4af128e65cdcecc1a06f08fa3f95a18dcf86f32ee859c5fbda079",
+  "added": "src/townlet/exploration/parent_custody.py",
+  "counts": {
+    "src/townlet/config/exploration_policy.py": 1311,
+    "src/townlet/exploration/scoped_curiosity.py": 1443,
+    "src/townlet/exploration/parent_custody.py": 234,
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": 740
+  },
+  "total": 3728,
+  "note": "Approved helper now exists; no new scope/branch/worktree."
+}

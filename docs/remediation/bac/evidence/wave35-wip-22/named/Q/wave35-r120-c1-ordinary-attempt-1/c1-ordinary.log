@@ -1,0 +1,185 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [62 items]
+
+......F.............................................F..F..F...           [100%]
+=================================== FAILURES ===================================
+_______________ test_retained_scope_requires_binding_and_expires _______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_retained_scope_requires_binding_and_expires(compiled: Any) -> None:
+        """Idle retention cannot confer draw authority and an exited scope cannot be reused."""
+        rig = make_parent(compiled)
+        controller = Controller()
+        with rig.runtime.retain_parent_custody() as scope:
+            with pytest.raises(RuntimeError):
+                rig.runtime.epsilon_tensor(batch_size=1, device="cpu")
+            with pytest.raises((TypeError, RuntimeError)):
+                copy(scope)
+            with pytest.raises((TypeError, RuntimeError)):
+                deepcopy(scope)
+            with pytest.raises((TypeError, RuntimeError)):
+                pickle.dumps(scope)
+            with pytest.raises(RuntimeError):
+                with rig.runtime.retain_parent_custody():
+                    pytest.fail("nested custody entered")
+            with pytest.raises(RuntimeError):
+                with rig.bank.retain_parent_custody():
+                    pytest.fail("runtime delegated BANK custody was borrowed")
+            with pytest.raises((TypeError, RuntimeError)):
+>               with scope.bind_operation(operation=object()):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:157: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:67: in bind_operation
+    with _binding(self, operation), _binding(record.bank, operation):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:130: in _binding
+    with process_rng_domain().admission(lineage=operation):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f73bd6fa510>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+>                   raise ValueError("RNG operation lineage is foreign or expired")
+E                   ValueError: RNG operation lineage is foreign or expired
+
+src/townlet/exploration/rng_custody.py:714: ValueError
+______________ test_scope_forgery_expired_lineage_and_pid_refuse _______________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f73b061fed0>
+
+    def test_scope_forgery_expired_lineage_and_pid_refuse(compiled: Any, monkeypatch: Any) -> None:
+        """Neither class resemblance, historical lineage nor a changed PID confers authority."""
+        import townlet.exploration.parent_custody as custody
+    
+        rig = make_parent(compiled)
+        controller = Controller()
+        with controller.invocation() as expired:
+            pass
+        with rig.runtime.retain_parent_custody() as scope:
+            with pytest.raises(RuntimeError):
+>               with scope.bind_operation(operation=expired):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:472: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:67: in bind_operation
+    with _binding(self, operation), _binding(record.bank, operation):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:130: in _binding
+    with process_rng_domain().admission(lineage=operation):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f73bd6fa510>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+>                   raise ValueError("RNG operation lineage is foreign or expired")
+E                   ValueError: RNG operation lineage is foreign or expired
+
+src/townlet/exploration/rng_custody.py:714: ValueError
+________________________ test_scope_releases_owner_pin _________________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_scope_releases_owner_pin(compiled: Any) -> None:
+        """Keeping an expired handle cannot keep its runtime/BANK fixture cycle alive."""
+        rig = make_parent(compiled)
+        runtime_ref, bank_ref = weakref.ref(rig.runtime), weakref.ref(rig.bank)
+        with rig.runtime.retain_parent_custody() as scope:
+            del rig
+            gc.collect()
+            assert runtime_ref() is not None and bank_ref() is not None
+        gc.collect()
+>       assert runtime_ref() is None and bank_ref() is None
+E       AssertionError: assert (<townlet.config.exploration_policy.ExplorationRuntime object at 0x7f73b1cbb410> is None)
+E        +  where <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f73b1cbb410> = <weakref at 0x7f73b1c66b10; to 'townlet.config.exploration_policy.ExplorationRuntime' at 0x7f73b1cbb410>()
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:495: AssertionError
+_________________ test_empty_cpu_and_refusals_never_touch_cuda _________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc80a41b3f0>
+
+    def test_empty_cpu_and_refusals_never_touch_cuda(compiled: Any, monkeypatch: Any) -> None:
+        """Empty declared inventory remains CUDA-lazy across scopes and completion."""
+        rig = make_parent(compiled)
+        controller = Controller()
+    
+        class NoCUDA:
+            def __getattribute__(self, name: str) -> Any:
+                pytest.fail("CPU route accessed CUDA: " + name)
+    
+>       monkeypatch.setattr(torch, "cuda", NoCUDA())
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:603: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_runtime_bank_parent_custody.test_empty_cpu_and_refusals_never_touch_cuda.<locals>.NoCUDA object at 0x7fc809eb9550>
+name = '__class__'
+
+    def __getattribute__(self, name: str) -> Any:
+>       pytest.fail("CPU route accessed CUDA: " + name)
+E       Failed: CPU route accessed CUDA: __class__
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:601: Failed
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_retained_scope_requires_binding_and_expires
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_scope_forgery_expired_lineage_and_pid_refuse
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_scope_releases_owner_pin
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_empty_cpu_and_refusals_never_touch_cuda
+======================== 4 failed, 58 passed in 26.14s =========================

@@ -1,0 +1,335 @@
+..........................................................FFFFFFFFFFFFFF [ 93%]
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+________ test_read_only_capture_emits_bound_spec_and_exclusive_refusal _________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_emits_b0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e35e9a90>
+
+    def test_read_only_capture_emits_bound_spec_and_exclusive_refusal(tmp_path, monkeypatch):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:439: AssertionError
+_ test_read_only_capture_refuses_bad_bindings_without_spec[registry-registry] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_refuses0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e35e8950>
+change = 'registry', reason = 'registry'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:457: AssertionError
+_ test_read_only_capture_refuses_bad_bindings_without_spec[availability-availability] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_refuses1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e2dbb960>
+change = 'availability', reason = 'availability'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:457: AssertionError
+__ test_read_only_capture_refuses_bad_bindings_without_spec[source-reference] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_refuses2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e2dbbcd0>
+change = 'source', reason = 'reference'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:457: AssertionError
+___ test_read_only_capture_refuses_bad_bindings_without_spec[expired-active] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_refuses3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e2d3f110>
+change = 'expired', reason = 'active'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:457: AssertionError
+_ test_read_only_capture_refuses_bad_bindings_without_spec[allocation-cpu_slots] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_refuses4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e2d3f430>
+change = 'allocation', reason = 'cpu_slots'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:457: AssertionError
+_____ test_read_only_capture_refuses_bad_bindings_without_spec[bound-CPU] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_refuses5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e3336e70>
+change = 'bound', reason = 'CPU'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:457: AssertionError
+_ test_read_only_capture_refuses_bad_bindings_without_spec[dependency-dependency] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_refuses6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33897d0>
+change = 'dependency', reason = 'dependency'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:457: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[none] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e338b6d0>
+change = 'none'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[pid] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33c3c40>
+change = 'pid'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[ppid] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33c03d0>
+change = 'ppid'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[start] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33c0d70>
+change = 'start'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[argv] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33c3850>
+change = 'argv'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[cwd] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33c1da0>
+change = 'cwd'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[time] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33c3230>
+change = 'time'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+_ test_discovery_launch_binds_actual_child_and_retains_failed_observations[interpreter] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_discovery_launch_binds_ac7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33dbb60>
+change = 'interpreter'
+
+    @pytest.mark.parametrize("change", ["none", "pid", "ppid", "start", "argv", "cwd", "time", "interpreter"])
+    def test_discovery_launch_binds_actual_child_and_retains_failed_observations(tmp_path, monkeypatch, change):
+>       tool = module(); assert callable(getattr(tool, "launch_discovery", None)), "discovery launch missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: discovery launch missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'launch_discovery', None)
+
+test_capture_bac_hardware_v1.py:500: AssertionError
+__________ test_read_only_capture_rejects_symlink_destination_parent ___________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_read_only_capture_rejects0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33d8280>
+
+    def test_read_only_capture_rejects_symlink_destination_parent(tmp_path, monkeypatch):
+>       tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: capture API missing
+E       assert False
+E        +  where False = callable(None)
+E        +    where None = getattr(<module 'capture_bac_hardware_v1' from '/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py'>, 'capture', None)
+
+test_capture_bac_hardware_v1.py:533: AssertionError
+________ test_real_cuda_backend_does_not_claim_unrelated_gpu_contention ________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_real_cuda_backend_does_no0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e339ca60>
+
+    def test_real_cuda_backend_does_not_claim_unrelated_gpu_contention(tmp_path, monkeypatch):
+        tool, obs, env, calls = gpu_probe(tmp_path, monkeypatch, "unrelated")
+        tool.collect_gpu(obs, env)
+>       assert obs["competing_workloads"] == []
+E       AssertionError: assert ['GPU-c,999,unrelated-work'] == []
+E         
+E         Left contains one more item: 'GPU-c,999,unrelated-work'
+E         Use -v to get more diff
+
+test_capture_bac_hardware_v1.py:544: AssertionError
+______________ test_driver_query_refuses_wrong_actual_executable _______________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-v1-fixtures/test_driver_query_refuses_wron0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f53e33c3150>
+
+    def test_driver_query_refuses_wrong_actual_executable(tmp_path, monkeypatch):
+        tool = module(); assert callable(getattr(tool, "run_query", None)), "query backend missing"
+        executable = reference(tmp_path / "driver", "inert driver")
+        class Child:
+            pid = 4321
+            returncode = 0
+            def communicate(self, timeout): return "", ""
+        monkeypatch.setattr(tool.subprocess, "Popen", lambda argv, **kwargs: Child())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(observation()["identity"], ppid=tool.os.getpid()))
+        monkeypatch.setattr(tool.os, "readlink", lambda path: str(tmp_path / "different-executable"))
+        records = []
+>       with pytest.raises(ValueError): tool.run_query(executable, ["--version"], records)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:559: Failed
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_emits_bound_spec_and_exclusive_refusal
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[registry-registry]
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[availability-availability]
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[source-reference]
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[expired-active]
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[allocation-cpu_slots]
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[bound-CPU]
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[dependency-dependency]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[none]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[pid]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[ppid]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[start]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[argv]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[cwd]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[time]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_launch_binds_actual_child_and_retains_failed_observations[interpreter]
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_rejects_symlink_destination_parent
+FAILED test_capture_bac_hardware_v1.py::test_real_cuda_backend_does_not_claim_unrelated_gpu_contention
+FAILED test_capture_bac_hardware_v1.py::test_driver_query_refuses_wrong_actual_executable
+19 failed, 58 passed in 0.84s

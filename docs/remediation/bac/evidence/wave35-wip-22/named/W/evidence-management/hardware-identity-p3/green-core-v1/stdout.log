@@ -1,0 +1,208 @@
+F..........FFFF....                                                      [100%]
+=================================== FAILURES ===================================
+_____________________________ test_process_custody _____________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-76/test_process_custody0/source/inert-module.txt'), 'blobref': {'bytes...test_process_custody0/freeze.json', 'sha256': '12e7ab0160b9c4c4391e60c9e55be73684e93e017e5b06fa516b325c4de85948'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe34e79d6e0>
+
+    def test_process_custody(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch); c=capsule['context']
+>       start=_read(api.record_process(c,'start')); end=_read(api.record_process(c,'end'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:348: in record_process
+    spec = _load(context['spec'], 'spec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:59: in _load
+    protocol.validate_record(kind, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:358: in _semantic
+    _require(value["argv"][0] == value["interpreter"], "argv interpreter differs")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'argv interpreter differs'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: argv interpreter differs
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+_________________ test_end_requires_actual_same_process_start __________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-76/test_end_requires_actual_same_0/source/inert-module.txt'), 'blobref...equires_actual_same_0/freeze.json', 'sha256': '2d981b4a6ac05c21da9e10c0008161ed50a5f91749e1b11051d947e813441592'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe34e857c70>
+
+    def test_end_requires_actual_same_process_start(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        with pytest.raises(ValueError): api.record_process(capsule['context'],'end')
+>       start=api.record_process(capsule['context'],'start')
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:216: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:348: in record_process
+    spec = _load(context['spec'], 'spec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:59: in _load
+    protocol.validate_record(kind, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:358: in _semantic
+    _require(value["argv"][0] == value["interpreter"], "argv interpreter differs")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'argv interpreter differs'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: argv interpreter differs
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+__________________________ test_phase_specific_import __________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-76/test_phase_specific_import0/source/inert-module.txt'), 'blobref': {...hase_specific_import0/freeze.json', 'sha256': 'c3e2be92d5bb0ed27ef2b1298d6e4fac932df066361fcc7435ca2e9f73ac825d'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe34e83d9d0>
+
+    def test_phase_specific_import(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch);monkeypatch.delitem(sys.modules,'inert_module')
+>       api.record_process(capsule['context'],'start')
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:348: in record_process
+    spec = _load(context['spec'], 'spec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:59: in _load
+    protocol.validate_record(kind, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:358: in _semantic
+    _require(value["argv"][0] == value["interpreter"], "argv interpreter differs")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'argv interpreter differs'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: argv interpreter differs
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+_______________________ test_missing_end_remains_missing _______________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-76/test_missing_end_remains_missi0/source/inert-module.txt'), 'blobref...ng_end_remains_missi0/freeze.json', 'sha256': 'dc0f1bd76b557e345751c83a59f3d32aa28574dfafd443eb2799744a52148807'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe34e83e510>
+
+    def test_missing_end_remains_missing(capsule,monkeypatch):
+>       api=_prepare(capsule,monkeypatch);api.record_process(capsule['context'],'start')
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:229: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:348: in record_process
+    spec = _load(context['spec'], 'spec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:59: in _load
+    protocol.validate_record(kind, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:358: in _semantic
+    _require(value["argv"][0] == value["interpreter"], "argv interpreter differs")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'argv interpreter differs'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: argv interpreter differs
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+_________________________ test_nonperturbing_observer __________________________
+
+capsule = {'blob': PosixPath('/tmp/pytest-of-agent/pytest-76/test_nonperturbing_observer0/source/inert-module.txt'), 'blobref': ...nperturbing_observer0/freeze.json', 'sha256': '61406edbbefb6c338b698e1c21a2ba52f31adcafc19b09d41b3feb374e1f3188'}, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe34e81a570>
+
+    def test_nonperturbing_observer(capsule,monkeypatch):
+        api=_prepare(capsule,monkeypatch)
+        torch=types.ModuleType('torch');cuda=types.ModuleType('torch.cuda');cuda._initialized=False
+        def forbidden(*a,**k): raise AssertionError('observer called Torch or CUDA')
+        torch.__getattr__=forbidden;cuda.__getattr__=forbidden
+        for name in ['get_num_threads','get_num_interop_threads','is_anomaly_enabled']:setattr(torch,name,forbidden)
+        torch.cuda=cuda;monkeypatch.setitem(sys.modules,'torch',torch);monkeypatch.setitem(sys.modules,'torch.cuda',cuda)
+>       value=_read(api.record_process(capsule['context'],'start'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:348: in record_process
+    spec = _load(context['spec'], 'spec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py:59: in _load
+    protocol.validate_record(kind, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:515: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:358: in _semantic
+    _require(value["argv"][0] == value["interpreter"], "argv interpreter differs")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'argv interpreter differs'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: argv interpreter differs
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED test_bac_hardware_identity_v1.py::test_process_custody - ValueError: a...
+FAILED test_bac_hardware_identity_v1.py::test_end_requires_actual_same_process_start
+FAILED test_bac_hardware_identity_v1.py::test_phase_specific_import - ValueEr...
+FAILED test_bac_hardware_identity_v1.py::test_missing_end_remains_missing - V...
+FAILED test_bac_hardware_identity_v1.py::test_nonperturbing_observer - ValueE...
+5 failed, 14 passed, 3 deselected in 0.83s

@@ -1,0 +1,29 @@
+{
+  "name": "c1-repaired-controls",
+  "exit_code": 0,
+  "seconds": 9.387132577001466,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_fixture_standalone_initial_restore[shared-none]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_runtime_contender_does_not_take_lock_before_domain",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_install_has_no_postpublication_invalidation",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[runtime]",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_ordinary_contender_survives_scope_expiration[bank]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls.log",
+  "sha256": "5dd72bdab27734a08127caf50758dd622e4d3b91eab6420c70162d61dea82d75",
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

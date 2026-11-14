@@ -1,0 +1,59 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_read_only_capture_refuses_bad_bindings_without_spec[overhead-overhead] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-capture-overhead-v1-fixtures/test_read_only_capture_refuses0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe173ab8180>
+change = 'overhead', reason = 'overhead'
+
+    @pytest.mark.parametrize("change,reason", [("registry", "registry"), ("availability", "availability"), ("source", "reference"),
+                                             ("expired", "active"), ("allocation", "cpu_slots"), ("overhead", "overhead"), ("bound", "CPU"), ("dependency", "dependency")])
+    def test_read_only_capture_refuses_bad_bindings_without_spec(tmp_path, monkeypatch, change, reason):
+        tool = module(); assert callable(getattr(tool, "capture", None)), "capture API missing"
+        candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+        stub_capture_observations(monkeypatch, tool, req, env, registry)
+        if change == "registry":
+            original = tool.git_read
+            monkeypatch.setattr(tool, "git_read", lambda root, args: "different" if args == ["worktree", "list", "--porcelain"] else original(root, args))
+        if change == "availability":
+            path = tmp_path / "availability.json"
+            payload = json.loads(path.read_text()); payload["worktrees"][0]["directory_exists"] = False
+            path.write_text(json.dumps(payload)); source["availability"] = protocol.file_reference(path)
+            candidate.write_text(json.dumps(source))
+        if change == "source": Path(source["inventory"]["source"][0]["path"]).write_text("drift")
+        if change in ("expired", "allocation", "overhead", "bound"):
+            # Re-seal a fully consistent synthetic reference graph; rejection must be semantic.
+            path = tmp_path / {"expired": "grant.json", "allocation": "allocation.json", "overhead": "allocation.json", "bound": "cpu-bound.json"}[change]
+            payload = json.loads(path.read_text())
+            if change == "expired": payload["end"] = "2026-01-02T00:00:00.000000Z"
+            if change == "allocation": payload["capacity"]["cpu_slots"] = 0
+            if change == "overhead": payload["overhead"]["scratch_bytes"] = 1
+            if change == "bound": payload["argv"] = [req["interpreter"]["path"], "different-workload"]
+            path.write_text(json.dumps(payload))
+            bound_ref = protocol.file_reference(tmp_path / "cpu-bound.json")
+            grant_path = tmp_path / "grant.json"; grant = json.loads(grant_path.read_text())
+            grant.update(allocation_grant=protocol.file_reference(tmp_path / "allocation.json"), cpu_reservation_evidence=[bound_ref])
+            grant_path.write_text(json.dumps(grant))
+            freeze_path = tmp_path / "freeze.json"; freeze = json.loads(freeze_path.read_text())
+            freeze["grant"] = protocol.file_reference(grant_path); freeze_path.write_text(json.dumps(freeze))
+            source["source_freeze"] = protocol.file_reference(freeze_path); candidate.write_text(json.dumps(source))
+            req["source_freeze"] = source["source_freeze"]; req["jobs"][0]["roles"][0]["cpu_reservation_evidence"] = bound_ref
+            request_path.write_text(json.dumps(req))
+        if change == "dependency": env["dependencies"][0]["version"] = "unexpected"
+        destination = tmp_path / "capture"
+        try:
+            result = tool.capture(candidate, request_path, destination)
+        except ValueError as exc:
+            assert change in ("source", "expired", "bound", "availability")
+            assert reason.lower() in str(exc).lower()
+        else:
+>           assert result["disposition"] == "refused" and result["spec"] is None
+E           AssertionError: assert ('admitted' == 'refused'
+E             
+E             - refused
+E             + admitted)
+
+test_capture_bac_hardware_v1.py:495: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_read_only_capture_refuses_bad_bindings_without_spec[overhead-overhead]
+1 failed, 86 deselected in 0.50s

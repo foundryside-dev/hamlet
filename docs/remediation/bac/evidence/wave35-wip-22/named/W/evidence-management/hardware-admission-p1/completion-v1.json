@@ -1,0 +1,74 @@
+{
+  "at": "2026-11-14T07:03:55.405035+00:00",
+  "status": "P1 TOOLING IMPLEMENTED; INDEPENDENT REVIEW PASS; ROOT ADOPTION PENDING",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/freeze-v2.json",
+    "bytes": 5059,
+    "sha256": "d8b4a363cc8f7d585e1d8fade9226a454ce54672995e08fc8dbb4bee30b30342"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P1-INDEPENDENT-REVIEW-v1.md",
+    "bytes": 9637,
+    "sha256": "06bd2fb33aaed49259707b32dc8f930aff975e98f37316396513a5dc9b272c26"
+  },
+  "output_interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+    "bytes": 5867,
+    "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+  },
+  "author_final": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/green-review-final-v1.json",
+    "bytes": 2678,
+    "sha256": "328c72393b613aa6b947b775e434f922b5683046c97b6522f7320619d7dd5f92"
+  },
+  "independent_author_suite": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/author-suite-v2.json",
+    "bytes": 2283,
+    "sha256": "e002018a4da19b3cbb83a3c064987b82fb9ed9229fe2fb31b62c178773fa4ad5"
+  },
+  "independent_controls": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/independent-green-v1.json",
+    "bytes": 2359,
+    "sha256": "c127a4905d4e96ffec5197139adc9ca6d39d24dc0ed28d152a6f0aa43863a810"
+  },
+  "packet": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "bytes": 6277,
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "lines": 520
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 59888,
+      "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a",
+      "lines": 922
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 49564,
+      "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b",
+      "lines": 756
+    }
+  ],
+  "budget": {
+    "files": 4,
+    "lines": 2301,
+    "maximum_lines": 2800
+  },
+  "results": {
+    "author_synthetic": "99 passed",
+    "independent_controls": "5 passed; not summed with author tests",
+    "actual_hardware": "UNRUN",
+    "application": "UNRUN"
+  },
+  "interface_status": "No remaining P1 schema gap. P2/root must adopt output-interface-v2 and require exact admitted terminal result.json before using a spec; capture-only BAC_CAPTURE_LEASE_FDS does not alter job environments.",
+  "authority_boundary": "Actual root grants, active no-writer custody, hardware/server admission and downstream P2-P5 integration remain root/owner work. No APP bodies/imports/runtime, Git writes, source staging, copies of application/plugins, server access, deployment or spending performed by this packet.",
+  "retention_limit": "No blanket supervision guarantee for deliberately escaped/FD-closing native descendants or uncatchable controller death; incomplete attempts cannot qualify. Root out-of-band grant authorization and no-writer source/namespace custody remain mandatory. All executed source versions retained; early unexecuted intermediate test drafts were not each separately snapshotted."
+}

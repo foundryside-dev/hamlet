@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_scope_releases_owner_pin",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_scope_releases_owner_pin(compiled: Any) -> None:\n        \"\"\"Keeping an expired handle cannot keep its runtime/BANK fixture cycle alive.\"\"\"\n        rig = make_parent(compiled)\n        runtime_ref, bank_ref = weakref.ref(rig.runtime), weakref.ref(rig.bank)\n        with rig.runtime.retain_parent_custody() as scope:\n            del rig\n            gc.collect()\n            assert runtime_ref() is not None and bank_ref() is not None\n        gc.collect()\n>       assert runtime_ref() is None and bank_ref() is None\nE       AssertionError: assert (<townlet.config.exploration_policy.ExplorationRuntime object at 0x7f73b1cbb410> is None)\nE        +  where <townlet.config.exploration_policy.ExplorationRuntime object at 0x7f73b1cbb410> = <weakref at 0x7f73b1c66b10; to 'townlet.config.exploration_policy.ExplorationRuntime' at 0x7f73b1cbb410>()\n\ntests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:495: AssertionError",
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff"
+}

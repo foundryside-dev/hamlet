@@ -1,0 +1,142 @@
+{
+  "schema": "bac-root-c1-review-reproduction-v1",
+  "at": "2026-11-14T07:21:29.283194+00:00",
+  "candidate": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r118-candidate.json",
+    "bytes": 207570,
+    "sha256": "60f43b8ed88fc9015c637a6eeec10861f497de224baf531279c2158a5401183a"
+  },
+  "checks": [
+    {
+      "name": "c1-collection",
+      "status": "64 COLLECTED; NOT RUNTIME ACCEPTANCE",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-collection-attempt-1-spec.json",
+        "bytes": 645,
+        "sha256": "c2a72ea0f3213e30f3564efadb70d0581d121de720b2dcdc97752adbe9569b7f"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-collection-attempt-1/c1-collection/identity-controller.json",
+          "bytes": 246,
+          "sha256": "bb2aeefae4bfdb9ab2efee4dcf21e57f0ddccc22dc8c8ca8400a8e879b9c2c81"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-collection-attempt-1/c1-collection-custody.json",
+          "bytes": 644,
+          "sha256": "a09cd98df89ee3165ab87db07a0182f6d078a9d33e4c3412fe06f2a392afc7da"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-collection-attempt-1/c1-collection-result.json",
+          "bytes": 887,
+          "sha256": "580a4c48f6bdd773737ff60deb45508ae80a8476bf8c054cc7ce198434fae5c4"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-collection-attempt-1/c1-collection.log",
+          "bytes": 6013,
+          "sha256": "03e52ceb0135d5d22e4d1faaffbc9e1fafd08c14cfbffd7dc00f6850acb62c1a"
+        }
+      ],
+      "utc_start": null,
+      "utc_end": null,
+      "absolute_timing_unavailable_reason": "Approved existing CPU runner records measured monotonic duration; per-job absolute UTC was not emitted. No timestamps inferred from file metadata."
+    },
+    {
+      "name": "c1-fixture-control",
+      "status": "1 PASS",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-fixture-control-attempt-1-spec.json",
+        "bytes": 683,
+        "sha256": "ead89dd5a62673269c9a9b9915a5c5b85e11ae5a808b4f9f2e79c73142ba5268"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-fixture-control-attempt-1/c1-fixture-control/identity-controller.json",
+          "bytes": 246,
+          "sha256": "bb2aeefae4bfdb9ab2efee4dcf21e57f0ddccc22dc8c8ca8400a8e879b9c2c81"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-fixture-control-attempt-1/c1-fixture-control-custody.json",
+          "bytes": 649,
+          "sha256": "5524f808da31b0e10c84b9a53e209685899af71bc51f348f42f076530b6d2696"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-fixture-control-attempt-1/c1-fixture-control-result.json",
+          "bytes": 934,
+          "sha256": "a8334579f3a0db37b12b60497424cc6365d3f58abffe3cbfccd53281d0a6e6ac"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-fixture-control-attempt-1/c1-fixture-control.log",
+          "bytes": 578,
+          "sha256": "c68d31e2017e9155207a7c4cbeca2a376b47928f6d518fba718e8e1cefd94697"
+        }
+      ],
+      "utc_start": null,
+      "utc_end": null,
+      "absolute_timing_unavailable_reason": "Approved existing CPU runner records measured monotonic duration; per-job absolute UTC was not emitted. No timestamps inferred from file metadata."
+    },
+    {
+      "name": "c1-expiration-red",
+      "status": "2 INTENDED ASSERTION FAILURES; RUNTIME/BANK EXPIRATION KeyError",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1-spec.json",
+        "bytes": 706,
+        "sha256": "072a652ae6c616799b75ae027af34252dbfb72c7e4ef7566a30c241c32421d95"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red/failure-controller-65e3b95e2a771fb3.json",
+          "bytes": 3747,
+          "sha256": "8da3a0c965597cbb8aba11a7d6192debedab6ba74e2338e1c49b152b0099f157"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red/failure-controller-dd4da8243a845661.json",
+          "bytes": 3735,
+          "sha256": "1c281d78fb9deed0d0e7a711cb8e7b62a28157e8d0e5d32bae93697e3269c159"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red/identity-controller.json",
+          "bytes": 246,
+          "sha256": "bb2aeefae4bfdb9ab2efee4dcf21e57f0ddccc22dc8c8ca8400a8e879b9c2c81"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red-failure-index.json",
+          "bytes": 1346,
+          "sha256": "80f1648a6918f63b99ae8b96ba0e64ac41b767c723fc5b54afb8cc1a2eb75942"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red-negative-custody.json",
+          "bytes": 957,
+          "sha256": "8170ff4f767c6e1c58d7e864b6628284df292b41338d222660e7215144d2cd98"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red-result.json",
+          "bytes": 955,
+          "sha256": "2674d84c666401a25d8ad8ccc2e8f7bb878ddc21bffd2dcb26482de30c77650c"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red.log",
+          "bytes": 8052,
+          "sha256": "fb2c9f89bb4c9f519c89534fb940336e95eea83dcea6d26abb3b1ec560d24e59"
+        }
+      ],
+      "utc_start": null,
+      "utc_end": null,
+      "absolute_timing_unavailable_reason": "Approved existing CPU runner records measured monotonic duration; per-job absolute UTC was not emitted. No timestamps inferred from file metadata."
+    }
+  ],
+  "source_snapshot_directory": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r118-executed-source",
+  "independent_static_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/static-v1.md",
+    "bytes": 6801,
+    "sha256": "2f3a106841af81f00d15a59807e587480991ae306dcecc00b336f9ca2f57cf25"
+  },
+  "status": "EXECUTION CLOSED; TWO RACE REDS VERIFIED; SOURCE/CONFIG/ARTIFACT/AUXILIARY GUARDS PASS",
+  "remaining_findings": [
+    "Expiry race confirmed by two independent authored nodes on actual candidate.",
+    "Postpublication runtime invalidation source-confirmed; causal regression still to run.",
+    "A-only selector fixture must select actual active rows."
+  ],
+  "authorization": "Writer may add postpublication/owned race regressions and fix known selector fixture/style ONLY. Production stays frozen until postpublication intended RED; then coherent material fixes and fresh qualification.",
+  "scope": "No C1 acceptance or hardware claim. New API patch unqualified pending fixes and all9groups; existing programme gates retained."
+}

@@ -1,0 +1,48 @@
+{
+  "status": "P1 repair freeze interface; independent revalidation pending, not hardware qualification",
+  "discovery_command": {
+    "schema": "literal bac-hardware-discovery-command-v1",
+    "request": "P0 reference to exact admission request",
+    "capture": "P0 reference to actual pinned capture implementation",
+    "executable": "P0 reference to request interpreter",
+    "capture_identity": "P0 identity observed from capture's actual own process",
+    "argv": "nonempty text list: exact actual Popen argv",
+    "cwd": "absolute authorized_root",
+    "environment": "exact Popen environment mapping",
+    "start": "UTC observation immediately before spawn",
+    "end": "UTC observation after actual wait; diagnostic observation when not launched",
+    "identity": "P0 identity from actual spawned PID before reaping, or null with errors",
+    "exit_code": "observed exact integer or null when not launched",
+    "stdout": "exact retained stdout",
+    "stderr": "exact retained stderr",
+    "errors": "list of explicit launch/identity/context errors"
+  },
+  "files": {
+    "start.json": "capture timestamp and candidate/request/tools/dependency refs",
+    "source-before.json": "actual HEAD, index equality to sealed tree, input refs, registry and availability before discovery",
+    "discovery-command.json": "closed discovery command wrapper described above; admission.discovery_process refers here",
+    "discovery.json": "closed raw observation; every derived fact provenance and device mapping_provenance refers here",
+    "source-after.json": "same source observations after discovery",
+    "admission.json": "P0 admission; measured insufficiency is retained refused",
+    "spec.json": "P0 spec created only after admission and prepublication checks. It is provisional until terminal result.json admits its exact reference; late failure preserves partial spec bytes but refuses terminal acceptance.",
+    "result.json": "Closed bac-hardware-capture-result-v1 with exact fields schema,disposition,reasons,admission,spec. Root/P2 require admitted, empty reasons, exact spec and admission references; missing/refused terminal record cannot qualify."
+  },
+  "bindings": [
+    "Wrapper stdout parsed with duplicate/nonfinite rejection equals exact raw discovery value.",
+    "Raw identity equals wrapper actual child identity; pid is actual spawned PID, ppid equals capture_identity.pid; host/boot match capture_identity; start token was observed before reaping.",
+    "Raw argv/interpreter/cwd/profile/TMPDIR/visibility and at reconcile wrapper/request context; raw at is within wrapper start/end.",
+    "Wrapper request/capture/executable references equal requested and admitted pins, including full pinned capture bytes.",
+    "limited_ram_bytes is min(host MemTotal, each finite ancestor memory.max); ram_current_bytes is actual leaf memory.current. Their subtraction is NOT the admission headroom.",
+    "RAM available is min(host MemAvailable, each finite ancestor memory.max-memory.current). CPU available is floor(min(affinity intersection all cpusets, every finite quota/period)).",
+    "admitted_budget is max(0,min(measured available,allocation capacity)-request reserve-allocation overhead), dimension by dimension.",
+    "CPU/RAM use top N simultaneous budgets; scratch bytes/inodes charge all retained jobs; source-root-authorized overhead covers capture/discovery/runner/log retention.",
+    "Spec preserves requested jobs except CUDA device.mapping_provenance replaced with exact fresh admission provenance after every other device field matches.",
+    "Locks use SHA256(key UTF-8)+.lock; pool:<pool_id> EX exclusive-pool else SH, allocation:<pool_id>:<allocation_id> EX, host-timing SH for capture, sorted device:<physical_parent_uuid> EX. All use shared host-wide lease_root, no unlink/replacement.",
+    "Capture-only managed environment key BAC_CAPTURE_LEASE_FDS is a canonical JSON list of inherited descriptor integers. Actual discovery Popen.pass_fds equals this list. Discovery requires nonempty unique integers greater than 2 and actual regular open descriptors; driver queries inherit the same descriptors. Sealed job environments are unchanged.",
+    "Host/boot and active source freeze/grant/allocation/partition are checked before expensive discovery; active authority is rechecked before driver queries, Torch import and per-device observations. Declared coordinator overhead CPU slots must be at least 1; additional phase peak demand remains the accepted root bound.",
+    "All held lease inode identities and the namespace root are rechecked immediately before admission/spec publication. Root no-writer custody remains necessary to exclude arbitrary transient replacement.",
+    "Discovery starts a new session/process group. Fixed discovery timeout is 120 seconds; driver query timeout is 30 seconds. Catchable cancellation/timeout terminates the owned discovery group with TERM, up to 5 seconds grace, then KILL and bounded direct-child reaping. Leases remain held through cleanup; surviving owned group members after normal exit cause refusal and cleanup.",
+    "A late failure sets terminal disposition refused and spec null while preserving prior partial files. Consumers must validate terminal result.json against their exact spec; a standalone provisional spec is not runnable admission."
+  ],
+  "boundary": "Capture grant authority is out-of-band root authorization. Source hashes and process samples detect observed drift; root no-writer/source and namespace custody remain mandatory. Synthetic tests never qualify actual devices. No claim is made to supervise deliberately escaped or FD-closing native descendants, or guarantee cleanup after uncatchable controller death. Incomplete attempts cannot qualify; root must maintain allocation/source/namespace custody. All cleanup tests stub OS signals and processes."
+}

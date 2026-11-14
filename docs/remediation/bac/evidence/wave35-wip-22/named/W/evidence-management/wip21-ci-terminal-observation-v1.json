@@ -1,0 +1,35 @@
+{
+  "at": "2026-11-14T07:54:48.968595+00:00",
+  "commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "tests_run": 43565106111,
+  "unit_job": 132357110576,
+  "status": "COMPLETED FAILURE; NOT GREEN",
+  "failed_step": "Run fast test suite",
+  "step_started": "2026-11-14T06:14:36Z",
+  "step_completed": "2026-11-14T07:16:10Z",
+  "specific_failure_cause": null,
+  "unavailable_reason": "Generic fetch rejects logs endpoint; dedicated workflow job log connector returns Transport closed. No workflow artifacts available. No repeat of same retrieval without changed prerequisite.",
+  "evidence": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-ci-observation-4-tests-native.json",
+      "bytes": 27369,
+      "sha256": "03f1fd0224785a7d6d2abe83893b803c916a3301f48145c478de0905b27544b5"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-ci-observation-4-jobs-native.json",
+      "bytes": 6629,
+      "sha256": "e8a668de2e83c56455ca97ffa21cf9f5ca212e2fba477f04c87499d62c8600fe"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-tests-log-fetch-attempt-1.json",
+      "bytes": 401,
+      "sha256": "32f9807a1c18edaabdae37a922a9c94684927f67e0a209d2443f7b2030a895f2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-tests-log-fetch-attempt-2.json",
+      "bytes": 320,
+      "sha256": "934d4b53200fa62f51615395a41c5da18a5e4c5eac3d20d8803e55261597f08f"
+    }
+  ],
+  "other_gates": "Config success and Lint failure retained in prior observation/classification; mypy15 diagnostics. Current C1 source differs from publishedWIP21; this is publicationCI, not currentcandidate result."
+}

@@ -1,0 +1,49 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r121-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-preflight-attempt-1",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "c1-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_contract.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+        "--collect-only",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    },
+    {
+      "name": "c1-repaired",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_retained_scope_requires_binding_and_expires",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_scope_forgery_expired_lineage_and_pid_refuse",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_scope_releases_owner_pin",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_empty_cpu_and_refusals_never_touch_cuda",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

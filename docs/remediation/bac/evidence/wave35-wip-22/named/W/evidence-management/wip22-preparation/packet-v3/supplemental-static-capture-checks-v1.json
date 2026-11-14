@@ -1,0 +1,209 @@
+{
+  "checks": [
+    {
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "check": "R122-static-black-0",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/config/exploration_policy.py"
+      ],
+      "count_unavailable_reason": "Static command, not pytest runtime coverage.",
+      "counts": null,
+      "ended_at": "2026-11-14T08:15:06.601967+00:00",
+      "exit_code": 0,
+      "kind": "static",
+      "record": {
+        "bytes": 943,
+        "path": "evidence-management/parent-c1/r122-static-attempt-1/black-0.json",
+        "root": "W",
+        "sha256": "7d7b88e39771bdcb8268c19a58df913d9253bde3dfc3bc94cf7844b936af491b"
+      },
+      "started_at": "2026-11-14T08:15:06.202608+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "check": "R122-static-black-1",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/exploration/scoped_curiosity.py"
+      ],
+      "count_unavailable_reason": "Static command, not pytest runtime coverage.",
+      "counts": null,
+      "ended_at": "2026-11-14T08:15:07.082841+00:00",
+      "exit_code": 0,
+      "kind": "static",
+      "record": {
+        "bytes": 946,
+        "path": "evidence-management/parent-c1/r122-static-attempt-1/black-1.json",
+        "root": "W",
+        "sha256": "194fe2083cc55c24e1151f03f0661ed57b1d719609d21b5d489bf7773346b9cb"
+      },
+      "started_at": "2026-11-14T08:15:06.602347+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "check": "R122-static-black-2",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/exploration/parent_custody.py"
+      ],
+      "count_unavailable_reason": "Static command, not pytest runtime coverage.",
+      "counts": null,
+      "ended_at": "2026-11-14T08:15:07.329799+00:00",
+      "exit_code": 0,
+      "kind": "static",
+      "record": {
+        "bytes": 944,
+        "path": "evidence-management/parent-c1/r122-static-attempt-1/black-2.json",
+        "root": "W",
+        "sha256": "9f0653996e0beb2ef23999d971818641940fe2a0e1610877186a2115320418f1"
+      },
+      "started_at": "2026-11-14T08:15:07.083140+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "check": "R122-static-black-3",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py"
+      ],
+      "count_unavailable_reason": "Static command, not pytest runtime coverage.",
+      "counts": null,
+      "ended_at": "2026-11-14T08:15:07.682448+00:00",
+      "exit_code": 0,
+      "kind": "static",
+      "record": {
+        "bytes": 973,
+        "path": "evidence-management/parent-c1/r122-static-attempt-1/black-3.json",
+        "root": "W",
+        "sha256": "a756f3629d3f3468580d8586611110130cae25b13ad70536142f2bc8ecaf6fcb"
+      },
+      "started_at": "2026-11-14T08:15:07.330766+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "check": "R122-static-mypy",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet",
+        "--show-error-codes",
+        "--no-incremental"
+      ],
+      "count_unavailable_reason": "Static command, not pytest runtime coverage.",
+      "counts": null,
+      "ended_at": "2026-11-14T08:15:05.197428+00:00",
+      "exit_code": 1,
+      "kind": "static",
+      "record": {
+        "bytes": 942,
+        "path": "evidence-management/parent-c1/r122-static-attempt-1/mypy.json",
+        "root": "W",
+        "sha256": "d42fabea7159b61f9630bb6727fc5e551a94b3b9e41601c7beb12805cf544b35"
+      },
+      "started_at": "2026-11-14T08:14:34.699928+00:00",
+      "status": "FAILED"
+    },
+    {
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "check": "R122-static-no-defaults",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ],
+      "count_unavailable_reason": "Static command, not pytest runtime coverage.",
+      "counts": null,
+      "ended_at": "2026-11-14T08:15:06.202294+00:00",
+      "exit_code": 0,
+      "kind": "static",
+      "record": {
+        "bytes": 1012,
+        "path": "evidence-management/parent-c1/r122-static-attempt-1/no-defaults.json",
+        "root": "W",
+        "sha256": "d897f04863caea461e79295ab423078756525eabb5eb8416ca5ecf95d8083c18"
+      },
+      "started_at": "2026-11-14T08:15:05.197841+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+      "check": "R122-static-ruff",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "count_unavailable_reason": "Static command, not pytest runtime coverage.",
+      "counts": null,
+      "ended_at": "2026-11-14T08:14:34.699396+00:00",
+      "exit_code": 0,
+      "kind": "static",
+      "record": {
+        "bytes": 895,
+        "path": "evidence-management/parent-c1/r122-static-attempt-1/ruff.json",
+        "root": "W",
+        "sha256": "8461d0b09acbc30853ca93fadd4db1ec672bd94682850954d1f0c03b6ff96a36"
+      },
+      "started_at": "2026-11-14T08:14:34.454415+00:00",
+      "status": "PASSED"
+    },
+    {
+      "check": "R117-capture-history-r117-capture-attempt-1-failure.json",
+      "kind": "capture",
+      "record": {
+        "bytes": 733,
+        "path": "evidence-management/parent-c1/r117-capture-attempt-1-failure.json",
+        "root": "W",
+        "sha256": "098aab8ef4daa83c6c8e4ce81647c042f46f67698611abb757196cadd2888fe0"
+      },
+      "scope": "Retained original failed/corrected capture artifacts; exact observed result remains in original record."
+    },
+    {
+      "check": "R117-capture-history-r117-capture-attempt-2.stderr",
+      "kind": "capture",
+      "record": {
+        "bytes": 0,
+        "path": "evidence-management/parent-c1/r117-capture-attempt-2.stderr",
+        "root": "W",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "scope": "Retained original failed/corrected capture artifacts; exact observed result remains in original record."
+    },
+    {
+      "check": "R117-capture-history-r117-capture-attempt-2.stdout",
+      "kind": "capture",
+      "record": {
+        "bytes": 5961,
+        "path": "evidence-management/parent-c1/r117-capture-attempt-2.stdout",
+        "root": "W",
+        "sha256": "ab8eb247c184572a95074f543cbaf6fbaafce821236dfd6f3c9eeaf082c4e862"
+      },
+      "scope": "Retained original failed/corrected capture artifacts; exact observed result remains in original record."
+    }
+  ],
+  "status": "EXACT SUPPORTING CHECKS; OUTSIDE Q NAMESPACE"
+}

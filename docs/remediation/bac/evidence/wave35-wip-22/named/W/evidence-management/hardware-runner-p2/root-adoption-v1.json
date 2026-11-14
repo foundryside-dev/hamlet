@@ -1,0 +1,43 @@
+{
+  "schema": "bac-root-tool-adoption-v1",
+  "at": "2026-11-14T07:48:02.239495+00:00",
+  "packet": "hardware-runner-P2",
+  "status": "ADOPTED BOUNDED SYNTHETIC RUNNER; INTEGRATION/HARDWARE OWED",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/freeze-v2.json",
+    "bytes": 7857,
+    "sha256": "fa917444e22b3cc3fde25392640a0d10b47c2246caebd8cfeee2ac6b40e3d5d6"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-INDEPENDENT-REVIEW-v2.md",
+    "bytes": 5790,
+    "sha256": "016cce902796efcf09f52634363fdbbf26dd3702ab6a9f76318075f58dec0413"
+  },
+  "evidence_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/artifact-inventory.json",
+    "bytes": 742750,
+    "sha256": "3de07ad8cde5278c2d93c8087035aedcdccb5e51cbb1eaad9177c34f30edf853"
+  },
+  "independent_execution": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/independent.json",
+      "bytes": 3304,
+      "sha256": "eda190032172e93c43520f4e53e4e0a2a047a146b4c112e7c74760d9aaec6f41"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/existing.json",
+      "bytes": 3224,
+      "sha256": "516cb2eccd6b12d8d82c24be7cc2f47e72f9a21ed6226da9e08bfb5faac44dea"
+    }
+  ],
+  "verified_references": 2184,
+  "author_result": "73 synthetic PASS",
+  "independent_result": "11 distinct probes PASS; author73 independently rerun PASS, not additional73 unique cases",
+  "fixed": [
+    "Remaining-demand resource accounting preserves reserves without charging retained owned usage twice",
+    "Raw CUDA marker cross-bound to initialization observation before no-initialize acceptance"
+  ],
+  "scope": "Synthetic transport, leases, resource and source custody; no actual CUDA or full toolchain qualification",
+  "limits": "One pytest process at a time and thread env1; no strict kernel one-CPU affinity cap. Sampling is not atomic OS enforcement; external namespace/source ownership remains required.",
+  "remaining": "P3 Python-debug/owner-launch/strict no-import fork amendments; P2-P3-P4-P5 actual integration; source-qualified owners, real hardware and final BAC gates."
+}

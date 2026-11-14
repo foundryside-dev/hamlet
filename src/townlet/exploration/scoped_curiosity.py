@@ -7,7 +7,7 @@ completion capabilities remain live and never enter world-local snapshots.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator, Mapping
-from contextlib import contextmanager
+from contextlib import AbstractContextManager, contextmanager
 from copy import copy, deepcopy
 from dataclasses import dataclass, replace
 from functools import partial, wraps
@@ -18,6 +18,7 @@ import torch
 
 from townlet.config.exploration_policy import IntrinsicTransitionContext, ResolvedExplorationPolicy
 from townlet.config.world_roster import WorldAcceptedEpisode, WorldOwnerReceipt
+from townlet.exploration.parent_custody import BankParentCustody, _bank_call, _lineage, _retain_bank
 from townlet.exploration.provider_factory import make_backend
 from townlet.exploration.rng_custody import RNGOperation, process_rng_domain
 from townlet.exploration.world_curiosity_state import (
@@ -142,7 +143,17 @@ def _serialized(method: Callable[..., Any]) -> Callable[..., Any]:
         kind = "call"
         if method.__name__ == "install_restore":
             kind = "install"
-        with self._admission(kind):
+        with _bank_call(self, method.__name__), self._admission(kind):
+            return method(self, *args, **kwargs)
+
+    return invoke
+
+
+def _preparation(method: Callable[..., Any]) -> Callable[..., Any]:
+    @wraps(method)
+    def invoke(self: Any, *args: Any, **kwargs: Any) -> Any:
+        # Guard spans both admitted phases and the operation-idle cohort gap.
+        with _bank_call(self, method.__name__):
             return method(self, *args, **kwargs)
 
     return invoke
@@ -253,6 +264,9 @@ def _same_outcome(left: LaneOutcome, right: LaneOutcome) -> bool:
 
 
 class CuriosityBank:
+    # Restore staging copies __dict__; these execution/lifetime facts cannot be staged.
+    __slots__ = ("_entered", "_lineage", "_completion_uncertain", "__dict__", "__weakref__")
+
     def __init__(
         self,
         *,
@@ -301,6 +315,7 @@ class CuriosityBank:
         self._completion_outcomes: tuple[LaneOutcome, ...] = ()
         self._completion_values: dict[str, tuple[list[float], float]] = {}
         self._failed = False
+        self._completion_uncertain = False
         self._quarantine: tuple[WorldAcceptedEpisode, str] | None = None
         self._accepted: WorldAcceptedEpisode | None = None
         self._activation: WorldOwnerReceipt | None = None
@@ -342,25 +357,37 @@ class CuriosityBank:
         if self.scope == "shared":
             self._shared = SharedWorldBackend.construct(factory=partial(self._factory, None, None), cuda_devices=devices)
 
+    def retain_parent_custody(self) -> AbstractContextManager[BankParentCustody]:
+        """Retain this BANK for a direct controller, outside runtime delegation."""
+        return _retain_bank(self)
+
     @contextmanager
     def _admission(self, kind: str) -> Iterator[RNGOperation]:
-        # All public entry, including metadata callbacks, enters the domain first.
-        published = None
-        try:
-            with process_rng_domain().operation(participant=self._rng_participant, operation_kind=kind, lineage=None) as lineage:
-                with self._lock:
-                    if self._entered:
-                        raise RuntimeError("curiosity bank reentry is forbidden")
-                    published = self._publications
-                    self._entered, self._lineage = True, lineage
-                    try:
+        domain = process_rng_domain()
+        with domain.admission(lineage=_lineage(self)), self._lock:
+            if self._entered:
+                raise RuntimeError("curiosity bank reentry is forbidden")
+            published = self._publications
+            invocation = domain.device_invocation(
+                participant=self._rng_participant, operation_kind=kind, lineage=_lineage(self), cuda_devices=self._devices
+            )
+            entered = False
+            try:
+                try:
+                    with invocation as lineage:
+                        entered = True
+                        self._entered, self._lineage = True, lineage
                         yield lineage
+                finally:
+                    try:
+                        if entered and invocation.completion_failed():
+                            object.__setattr__(self, "_completion_uncertain", True)
                     finally:
                         self._entered, self._lineage = False, None
-        except BaseException:
-            if published is not None and self._publications != published:
-                self._failed = True
-            raise
+            except BaseException:
+                if self._publications != published:
+                    self._failed = True
+                raise
 
     def _factory(self, world: str | None, rng: WorldRNGState | None) -> Any:
         descriptor = None
@@ -380,7 +407,7 @@ class CuriosityBank:
         return _allocation_estimate(self.policy, self.descriptor, self.device, operation, participants, outcome_bytes)
 
     def _healthy(self) -> None:
-        if self._failed:
+        if self._failed or self._completion_uncertain:
             raise RuntimeError("curiosity bank quarantined")
 
     def _auth(self, accepted: WorldAcceptedEpisode) -> None:
@@ -1182,6 +1209,7 @@ class CuriosityBank:
             raise
         return token
 
+    @_preparation
     def prepare_private_initialization(self, *, state: Any, initialization: str, parent_restore: Any, validate_parent_restore: Any) -> Any:
         """Prepare an explicit owned private origin; archived shared work stays inactive."""
         from townlet.exploration import curiosity_checkpoint as checkpoint
@@ -1273,6 +1301,7 @@ class CuriosityBank:
             checkpoint.validate_records(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
             return self._seal_restore(saved, cohort, None, identity, correlate)
 
+    @_preparation
     def prepare_restore(
         self,
         *,

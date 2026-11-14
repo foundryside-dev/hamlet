@@ -1,0 +1,58 @@
+{
+  "schema": "bac-terminal-review-independence-v1",
+  "producer": "/root",
+  "producers": [
+    "/root",
+    "/root/bac_astra_wip22_evidence_packet"
+  ],
+  "reviewer": "/root/bac_astra_wip22_terminal_review",
+  "independent": true,
+  "reviewed_subject": {
+    "contract": {
+      "root": "W",
+      "path": "evidence-management/wip22-preparation/root-checkpoint-contract-v1.json",
+      "bytes": 8105,
+      "sha256": "9f626e280f79d8ee58e08f97d777ba11df53a1b1b9d126b134f33fb00a61acd0"
+    },
+    "qualification_subject": {
+      "root": "W",
+      "path": "evidence-management/wip22-preparation/root-qualification-subject-v1.json",
+      "bytes": 6888,
+      "sha256": "0b9c30c54302d86129c8858d7257191add723dbff2f838decb84513f56806963"
+    },
+    "candidate_manifest": {
+      "root": "W",
+      "path": "wave35/r122-candidate.json",
+      "bytes": 207570,
+      "sha256": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e"
+    }
+  },
+  "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+  "scope": "Independent terminal evidence/publication-readiness review of bounded WIP22 R117\u2013R122; not full C1/BAC acceptance.",
+  "disposition": "READY FOR ROOT BOUNDED EVIDENCE PUBLICATION CHECKS",
+  "created_at": "2026-11-14T08:34:29.929581+00:00",
+  "independence_basis": "Fresh dedicated reviewer agent, distinct from root and packet producer. Reviewer did not author the reviewed contract, subject, candidate, packet, attempts, source review, or document proposals. Independently read original records and rehashed files; produced only this review, its own check helper and result.",
+  "reviewed_receipt_draft": {
+    "root": "W",
+    "path": "evidence-management/wip22-preparation/root-reviewed-receipt-draft-v1.json",
+    "bytes": 9824674,
+    "sha256": "094b6a64fe48373fce393ef46a4e58593844e022b7678a72a133b91e06be16ab"
+  },
+  "check_helper": {
+    "root": "W",
+    "path": "evidence-management/wip22-preparation/terminal-independent-check-v1.py",
+    "bytes": 6835,
+    "sha256": "00886fc5a25cc015a210f1a46de0b8d5720bd3e49d4a4b735aa74516c9e4c6af"
+  },
+  "check_result": {
+    "root": "W",
+    "path": "evidence-management/wip22-preparation/terminal-independent-check-result-v1.json",
+    "bytes": 1232,
+    "sha256": "226a47f2daa3a2c098e59a949ae1be6baa75484f7ebd0660d7621aad489b0a7e"
+  },
+  "limitations": [
+    "No new application execution or independent rereview of APP implementation bodies; exact-byte independent R122 source review is supporting evidence.",
+    "No full selector or assembly run, public document application, Git mutation, remote publication or CI performed by this reviewer.",
+    "Full C1 owner gate, global typing, integration, hardware, coverage and remaining final gates stay open."
+  ]
+}

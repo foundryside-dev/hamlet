@@ -1,0 +1,68 @@
+....................................FFFF........                         [100%]
+=================================== FAILURES ===================================
+________________ test_fixed_job_id_layout[wrong-job-id-output] _________________
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+amended_spec = {'admission': {'bytes': 25, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-m...ut_wrong0/authorized_root', 'budget': {'cpu_slots': 1, 'ram_bytes': 10, 'scratch_bytes': 10, 'scratch_inodes': 1}, ...}
+field = 'output', suffix = 'wrong-job-id'
+
+    @pytest.mark.parametrize('field', ['output', 'scratch'])
+    @pytest.mark.parametrize('suffix', ['wrong-job-id', 'nested/job'])
+    def test_fixed_job_id_layout(protocol, amended_spec, field, suffix):
+        amended_spec['jobs'][0][field] = amended_spec[field+'_root']+'/attempt/'+suffix
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:192: Failed
+________________ test_fixed_job_id_layout[wrong-job-id-scratch] ________________
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+amended_spec = {'admission': {'bytes': 25, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-m...ut_wrong1/authorized_root', 'budget': {'cpu_slots': 1, 'ram_bytes': 10, 'scratch_bytes': 10, 'scratch_inodes': 1}, ...}
+field = 'scratch', suffix = 'wrong-job-id'
+
+    @pytest.mark.parametrize('field', ['output', 'scratch'])
+    @pytest.mark.parametrize('suffix', ['wrong-job-id', 'nested/job'])
+    def test_fixed_job_id_layout(protocol, amended_spec, field, suffix):
+        amended_spec['jobs'][0][field] = amended_spec[field+'_root']+'/attempt/'+suffix
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:192: Failed
+_________________ test_fixed_job_id_layout[nested/job-output] __________________
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+amended_spec = {'admission': {'bytes': 25, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-m...ut_neste0/authorized_root', 'budget': {'cpu_slots': 1, 'ram_bytes': 10, 'scratch_bytes': 10, 'scratch_inodes': 1}, ...}
+field = 'output', suffix = 'nested/job'
+
+    @pytest.mark.parametrize('field', ['output', 'scratch'])
+    @pytest.mark.parametrize('suffix', ['wrong-job-id', 'nested/job'])
+    def test_fixed_job_id_layout(protocol, amended_spec, field, suffix):
+        amended_spec['jobs'][0][field] = amended_spec[field+'_root']+'/attempt/'+suffix
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:192: Failed
+_________________ test_fixed_job_id_layout[nested/job-scratch] _________________
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+amended_spec = {'admission': {'bytes': 25, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-m...ut_neste1/authorized_root', 'budget': {'cpu_slots': 1, 'ram_bytes': 10, 'scratch_bytes': 10, 'scratch_inodes': 1}, ...}
+field = 'scratch', suffix = 'nested/job'
+
+    @pytest.mark.parametrize('field', ['output', 'scratch'])
+    @pytest.mark.parametrize('suffix', ['wrong-job-id', 'nested/job'])
+    def test_fixed_job_id_layout(protocol, amended_spec, field, suffix):
+        amended_spec['jobs'][0][field] = amended_spec[field+'_root']+'/attempt/'+suffix
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:192: Failed
+=========================== short test summary info ============================
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_fixed_job_id_layout[wrong-job-id-output]
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_fixed_job_id_layout[wrong-job-id-scratch]
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_fixed_job_id_layout[nested/job-output]
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_fixed_job_id_layout[nested/job-scratch]
+4 failed, 44 passed in 0.57s

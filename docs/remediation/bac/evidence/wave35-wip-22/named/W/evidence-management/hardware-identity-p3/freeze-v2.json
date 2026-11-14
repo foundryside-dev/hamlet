@@ -1,0 +1,82 @@
+{
+  "schema": "bac-hardware-identity-freeze-v2",
+  "at": "2026-11-14T07:16:24.596358+00:00",
+  "status": "FROZEN LINKED REPAIR; fresh independent review in progress",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/freeze-v1.json",
+    "bytes": 9286,
+    "sha256": "829de9e2b48d3f82fdf5c52ec3b4000308918609fc90e83ac47208c38e2396e2"
+  },
+  "counted_files": 4,
+  "counted_lines": 1725,
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+      "bytes": 2917,
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+      "lines": 60
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "lines": 520
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "bytes": 35014,
+      "sha256": "938d44339e6c0fdc5b7763eb2b33031bf3794a66e97064cf3601e7b3dbf9b445",
+      "lines": 611
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "bytes": 30137,
+      "sha256": "5cb82462041e95dec1bd617cc05b4dd76988400611ee0ae3297038d95e8c11c7",
+      "lines": 534
+    }
+  ],
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/interface-contract-v2.json",
+    "bytes": 3756,
+    "sha256": "51369fe91bd72a44eaf1f8526f22ff7692fb5a62247a870c05d699f341b0d798"
+  },
+  "report": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-IDENTITY-P3-REPORT-v2.md",
+    "bytes": 1804,
+    "sha256": "932b96472f507ea1843fcec9d7c217b0d4ca30d756e255d3e976e44cb7af39ef"
+  },
+  "independent_red": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/independent-review/order-red-execution.json",
+    "bytes": 767,
+    "sha256": "e5f4e3c14aaaac6e346e7a8a06fd708f165c67c5ad4c0df014f88f997ff1c903"
+  },
+  "author_red": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/red-ordering-v2/execution.json",
+    "bytes": 901,
+    "sha256": "d7774d4cfa69257687a42a8544a3e38c6ef7e9469c183faf43af56e35046c9f3"
+  },
+  "terminal_execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-ordering-v2/execution.json",
+    "bytes": 1045,
+    "sha256": "5e8cce459097886a4852d721806fa610ff9f31c81fbf3d2c7314632a5d8b10a0"
+  },
+  "terminal_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-ordering-v2/stdout.log",
+    "bytes": 113,
+    "sha256": "c5d216b8a0e14977f3b2ca81958b3ae88ed9bae2502fc62735542a2482adcda9"
+  },
+  "snapshots": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-ordering-v2/bac_hardware_identity_v1.py.txt",
+      "bytes": 35014,
+      "sha256": "938d44339e6c0fdc5b7763eb2b33031bf3794a66e97064cf3601e7b3dbf9b445"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/green-ordering-v2/test_bac_hardware_identity_v1.py.txt",
+      "bytes": 30137,
+      "sha256": "5cb82462041e95dec1bd617cc05b4dd76988400611ee0ae3297038d95e8c11c7"
+    }
+  ],
+  "retained_fixture_root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/ordering-fixtures-v2",
+  "boundary": "Same synthetic/inert-only scope as v1. No independent/root acceptance or application/hardware qualification."
+}

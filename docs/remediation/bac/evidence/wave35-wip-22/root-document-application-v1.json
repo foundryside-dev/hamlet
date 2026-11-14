@@ -1,0 +1,46 @@
+{
+  "at": "2026-11-14T08:41:43.908721+00:00",
+  "status": "PASS; exact approved bytes applied; other source/config/artifact hashes preserved",
+  "approval": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-preparation/root-document-approval-v1.json",
+    "bytes": 2941,
+    "sha256": "fb3b447cb4b9b8eaa072925195197746b4a6d6b565fafe92384c16a0dad502b8"
+  },
+  "documents": [
+    {
+      "target": "/workspace/hamlet/docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-preparation/document-proposals-v2/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "bytes": 6107,
+      "sha256": "e89b4c5bb92ab38d4715b844bb26091785fa197ae343b81e21d1c5e6d0186058",
+      "original_sha256": null
+    },
+    {
+      "target": "/workspace/hamlet/docs/remediation/bac/STATUS.md",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-preparation/document-proposals-v2/STATUS.md",
+      "bytes": 110483,
+      "sha256": "c523b8959fba692e336894dffedf1e2dc4221cf4961e3ab1d8e209dbe5fc9135",
+      "original_sha256": "891e1871925f719fb65904fc21dd176cb799acecc8f12d5411b443e30964216d"
+    },
+    {
+      "target": "/workspace/hamlet/docs/remediation/bac/EVIDENCE-INDEX.md",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-preparation/document-proposals-v2/EVIDENCE-INDEX.md",
+      "bytes": 21486,
+      "sha256": "c0035652a7fa91cf93995f83ad924a8fcf8c439bc438b8ad69b947aca5292ff5",
+      "original_sha256": "43da02a369c6ced639c989c1b9dc7b6cdf20c7d923e781307fdb39b50cf6221e"
+    },
+    {
+      "target": "/workspace/hamlet/README.md",
+      "proposal": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-preparation/document-proposals-v2/README.md",
+      "bytes": 33215,
+      "sha256": "6a8a4c4ea597026cd2bc78105af676fbc4954e0500d4dd5faace745a4b17fcb3",
+      "original_sha256": "a79a6561a93a04a6c4701c5a15dec5a7b1783a46218d32d806b92f56001b8d40"
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "fbee02585e6703fcc4e2de0a452174b37fc907ee",
+    "tests": "027a2ab5ff235cd546d7d1da9f8bbf2e8fe375d8"
+  }
+}

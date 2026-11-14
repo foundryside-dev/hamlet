@@ -1,0 +1,18 @@
+{
+  "common_custody": "unrun",
+  "hardware": "unrun",
+  "job_id": "job",
+  "overall": "incomplete",
+  "reasons": [
+    "common or required case obligations incomplete"
+  ],
+  "schema": "bac-hardware-component-classification-v1",
+  "spec": {
+    "bytes": 8822,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_unknown_validator_never_s0/capture/spec.json",
+    "sha256": "03a79f6d9e8f3b6b81f229e9ebd541975ca6bdde020118c6d0a83bb818706050"
+  },
+  "strict_custody": "not-required",
+  "test_outcome": "completed-unverified",
+  "validator_receipts": []
+}

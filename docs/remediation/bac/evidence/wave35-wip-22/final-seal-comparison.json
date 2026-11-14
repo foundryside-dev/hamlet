@@ -1,0 +1,32 @@
+{
+  "schema": "bac-root-terminal-receipt-comparison-v1",
+  "at": "2026-11-14T08:41:43.845612+00:00",
+  "status": "PASS; only final seal fields and appended independent review/root publication support changed",
+  "changed_keys": [
+    "dependencies",
+    "draft_metadata_only",
+    "remaining_publication_actions",
+    "remaining_root_inputs",
+    "reviews",
+    "sealed_at_utc",
+    "status"
+  ],
+  "receipt": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-preparation/root-terminal-receipt-v1.json",
+    "bytes": 9830546,
+    "sha256": "33a0464c27bba829001dc18092ae54862bc7a25949a1a76fa5c5c61463f9d6a0"
+  },
+  "reviewed_draft": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip22-preparation/root-reviewed-receipt-draft-v1.json",
+    "bytes": 9824674,
+    "sha256": "094b6a64fe48373fce393ef46a4e58593844e022b7678a72a133b91e06be16ab"
+  },
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip22-preparation/root-qualification-subject-v1.json",
+    "bytes": 6888,
+    "sha256": "0b9c30c54302d86129c8858d7257191add723dbff2f838decb84513f56806963"
+  },
+  "unchanged_attempts_and_source": true,
+  "original_dependencies_preserved": true
+}

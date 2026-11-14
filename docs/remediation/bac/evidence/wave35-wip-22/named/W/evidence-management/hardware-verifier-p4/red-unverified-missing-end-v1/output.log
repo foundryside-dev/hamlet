@@ -1,0 +1,212 @@
+..............F......................................................... [ 98%]
+.                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_process_lifecycle_mutations[missing-end] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f427b844910>
+mutation = 'missing-end'
+
+    @pytest.mark.parametrize(
+        "mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"]
+    )
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid":
+                end["identity"]["pid"] += 1
+            if mutation == "wrong-start":
+                end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent":
+                end["identity"]["ppid"] = 999
+            if mutation == "wrong-env":
+                end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import":
+                end["imports"] = [{"name": "foreign", "reference": evidence.policy_ref}]
+            if mutation == "false-work":
+                end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        if mutation == "missing-end":
+>           receipt = evidence.verify()
+                      ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:876: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:791: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:980: in verify
+    by_ref, _raws, runtime, _policy_record, _starts = processes(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+result = {'attempt_id': 'attempt', 'collected_ids': ['test_inert'], 'command': {'bytes': 1697, 'path': '/workspace/hamlet/.supe...a256': 'f81cc183494d76f5d4d5ff8f2d9193de2331b9a8b34b1ca5c72a28fe3beb0279'}, 'disposition': 'completed-unverified', ...}
+spec_ref = {'bytes': 8894, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/ha...ss_lifecycle_mutatio0/capture/spec.json', 'sha256': '1b9fce3471fa069a053c1bd8f5061b0665bb0060c117e30cf9e2c12dacd19ce4'}
+spec = {'admission': {'bytes': 7433, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence...s_lifecycle_mutatio0/src', 'budget': {'cpu_slots': 1, 'ram_bytes': 10, 'scratch_bytes': 10, 'scratch_inodes': 10}, ...}
+job = {'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifie...t/hardware-verifier-p4/red-unverified-missing-end-v1/fixtures/test_process_lifecycle_mutatio0/src', 'devices': [], ...}
+command_ref = {'bytes': 1697, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/ha...e_mutatio0/out/attempt/job/command.json', 'sha256': 'f81cc183494d76f5d4d5ff8f2d9193de2331b9a8b34b1ca5c72a28fe3beb0279'}
+candidate = {'authorized_root': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwa...agement/hardware-verifier-p4/red-unverified-missing-end-v1/fixtures/test_process_lifecycle_mutatio0/src/imports'], ...}
+freeze = {'authorized_root': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardwa....json', 'sha256': 'd8c70a74df9bcfb811bfd55c840dce36f5ec1387c865f695692154561e846fe4'}, 'includes_untracked': True, ...}
+grant = {'allocation_grant': {'bytes': 12, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evi...ss_lifecycle_mutatio0/src/source', 'sha256': 'f18e862caa81197328b7cafc0728b81b2590737fbae02cf289bb12b0a7ee3de6'}], ...}
+dependencies = {'cuda_runtime': {'provenance': {'bytes': 12, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-u...nment': {'CUDA_VISIBLE_DEVICES': '', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1'}, ...}
+
+    def processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies):
+        policy_ref, policy = _policy(job, spec_ref)
+        require(policy_ref not in grant["inputs"], "policy cannot be candidate input")
+        runtime_ref = ref(policy["runtime_path"])
+        runtime = load(runtime_ref)
+        exact(runtime, "schema spec command trusted_grant policy runner_identity runner_source_start", "runtime")
+        require(
+            runtime["schema"] == "bac-hardware-identity-runtime-v1"
+            and runtime["spec"] == spec_ref
+            and runtime["command"] == command_ref
+            and runtime["trusted_grant"] == freeze["grant"]
+            and runtime["policy"] == policy_ref,
+            "runtime delegation",
+        )
+        protocol.validate_record("identity", runtime["runner_identity"])
+        runner_start = source_check(
+            runtime["runner_source_start"], spec["candidate"], candidate, spec["source_freeze"], freeze, grant, runtime["runner_identity"]
+        )
+        by_id, by_ref, raw_by_ref = {}, {}, {}
+        unique(result["process_records"], "process records")
+        roles = {r["id"]: r for r in job["roles"]}
+        allowed_imports = [r["reference"] for rows in candidate["inventory"].values() for r in rows] + [
+            d["reference"] for d in dependencies["dependencies"]
+        ]
+        for reference in result["process_records"]:
+            process = load(reference, "process")
+            bound(process, spec_ref, spec, job)
+            require(process["role_id"] in roles and process["role"] == roles[process["role_id"]]["role"], "process role")
+            role = roles[process["role_id"]]
+            require(
+                process["cwd"] == job["cwd"] and process["interpreter"] == dependencies["interpreter"] and process["devices"] == job["devices"],
+                "process execution context",
+            )
+            require(process["at"] >= runner_start["at"] and process["at"] >= result["start"], "process before launch")
+            if result["end"]["state"] == "measured":
+                require(process["at"] <= result["end"]["value"], "process after terminal")
+            source = source_check(
+                process["source_witness"], spec["candidate"], candidate, spec["source_freeze"], freeze, grant, process["identity"]
+            )
+            require(source["at"] <= process["at"], "source observation after process")
+            require(all(i["reference"] in allowed_imports for i in process["imports"]), "unexpected import origin")
+            for required in policy["required_imports"]:
+                if process["phase"] in required["phases"]:
+                    require({k: required[k] for k in ("name", "reference")} in process["imports"], "required import absent")
+            provenances = [process[k]["provenance"] for k in ("intra_op", "inter_op", "debug")]
+            require(provenances[0] == provenances[1] == provenances[2], "fact provenance differs")
+            raw_ref = provenances[0]
+            require(
+                raw_ref["path"] == str(Path(job["output"]) / f"process-{process['process_id']}-observation-{process['phase']}.json"),
+                "raw observation path",
+            )
+            raw = load(raw_ref)
+            exact(raw, "schema context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at", "raw")
+            require(raw["schema"] == "bac-hardware-process-observation-v1", "raw schema")
+            for field in ("identity", "phase", "environment", "at"):
+                require(raw[field] == process[field], "raw/process " + field)
+            require(type(raw["torch_loaded"]) is bool and (raw["cuda_marker"] is None or type(raw["cuda_marker"]) is bool), "raw bool types")
+            require(type(raw["observation_limit"]) is str and raw["observation_limit"].strip(), "observation limitation required")
+            context = raw["context"]
+            exact(
+                context,
+                "schema spec command trusted_grant job_id role_id required_imports worker_roles environment_delta parent_start replacement_start lifecycle worker_identity policy runtime",
+                "context",
+            )
+            require(
+                context["schema"] == "bac-hardware-identity-context-v1"
+                and context["spec"] == spec_ref
+                and context["command"] == command_ref
+                and context["trusted_grant"] == freeze["grant"]
+                and context["job_id"] == job["id"]
+                and context["role_id"] == process["role_id"],
+                "context binding",
+            )
+            require(context["policy"] == [policy_ref] and context["runtime"] == [runtime_ref], "missing delegated policy/runtime provenance")
+            for field in ("required_imports", "worker_roles", "environment_delta"):
+                require(context[field] == policy[field], "derived policy mismatch")
+            for field in ("parent_start", "replacement_start", "lifecycle"):
+                require(type(context[field]) is list and len(context[field]) <= 1, "context reference cardinality")
+                for item in context[field]:
+                    protocol.validate_record("reference", item)
+            expected_env = {**job["environment"], **policy["environment_delta"]["common"]}
+            if process["role"] == "controller":
+                require(process["argv"] == job["argv"] and process["role_id"] == policy["role_id"], "controller argv/role")
+                require(
+                    not any(context[f] for f in ("parent_start", "replacement_start", "lifecycle")) and context["worker_identity"] is None,
+                    "controller context ancestry",
+                )
+                require(not process["parent_identity"] and not process["replacement_of"], "controller parent fields")
+                require(
+                    process["identity"]["ppid"] == runtime["runner_identity"]["pid"]
+                    and all(process["identity"][k] == runtime["runner_identity"][k] for k in ("host", "boot_id")),
+                    "controller runner identity",
+                )
+            elif process["role"] == "worker":
+                _worker(context["worker_identity"], job)
+                worker = context["worker_identity"]
+                expected_env.update(policy["environment_delta"]["worker"])
+                expected_env.update(
+                    PYTEST_XDIST_WORKER=worker["workerid"],
+                    PYTEST_XDIST_WORKER_COUNT=str(worker["workercount"]),
+                    PYTEST_XDIST_TESTRUNUID=worker["testrunuid"],
+                )
+                require(len(context["parent_start"]) == len(context["lifecycle"]) == 1, "worker missing parent lifecycle")
+            else:
+                raise ValueError("child/observer owner delegation is unimplemented; P5 contract required")
+            require(
+                raw["worker_identity"] == context["worker_identity"] and process["environment"] == expected_env,
+                "actual environment/context mismatch",
+            )
+            if role["observer"] == "guard-only":
+                require(
+                    process["torch_observation"] == "forbidden-inherited-module-witness" and process["cuda_observation"] == "forbidden",
+                    "guard observations",
+                )
+            elif not raw["torch_loaded"]:
+                require(
+                    process["torch_observation"] == "not-loaded"
+                    and process["cuda_observation"] == "uninitialized"
+                    and raw["cuda_marker"] is None,
+                    "absent Torch observations",
+                )
+                require(
+                    not (process["phase"] == "end" and (role["observer"] == "work" or role["torch_policy"] == "work")),
+                    "work end has no Torch observations",
+                )
+            else:
+                require(
+                    type(raw["cuda_marker"]) is bool
+                    and process["cuda_observation"] == ("initialized" if raw["cuda_marker"] else "uninitialized"),
+                    "CUDA marker",
+                )
+                require(role["cuda_policy"] != "no-initialize" or raw["cuda_marker"] is False, "observer initialized CUDA")
+                require(
+                    process["torch_observation"]
+                    == ("work" if role["observer"] == "work" or role["torch_policy"] == "work" else "loaded-without-calls"),
+                    "Torch observation mode",
+                )
+            measured = raw["torch_loaded"] and process["torch_observation"] == "work"
+            for field in ("intra_op", "inter_op", "debug"):
+                fact = process[field]
+                require(fact["state"] == ("measured" if measured else "unavailable"), "role fact availability")
+                if measured:
+                    require(type(fact["value"]) is type(role[field]) and fact["value"] == role[field], "role fact mismatch")
+            entry = by_id.setdefault(process["process_id"], {})
+            require(process["phase"] not in entry, "duplicate process phase")
+            entry[process["phase"]] = (reference, process, raw)
+            by_ref[key(reference)] = process
+            raw_by_ref[key(reference)] = raw
+        require(by_id, "missing process observations")
+        starts = []
+        for phases in by_id.values():
+            if set(phases) != {"start", "end"}:
+>               raise IncompleteEvidence("missing process start/end")
+E               verify_bac_hardware_v1.IncompleteEvidence: missing process start/end
+
+verify_bac_hardware_v1.py:458: IncompleteEvidence
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[missing-end]
+1 failed, 72 passed in 6.52s

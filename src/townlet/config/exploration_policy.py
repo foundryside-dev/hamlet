@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 from collections.abc import Callable, Mapping
+from contextlib import AbstractContextManager
 from copy import deepcopy
 from dataclasses import dataclass, fields, replace
 from functools import wraps
@@ -27,6 +28,7 @@ from townlet.config.training_v2_config import TrainingV2Config
 if TYPE_CHECKING:
     from townlet.config.world_roster import WorldAcceptedEpisode
     from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
+    from townlet.exploration.parent_custody import RuntimeParentCustody
     from townlet.exploration.world_curiosity_state import CuriosityStepStamp
 
 Strategy = Literal["none", "rnd", "adaptive_rnd", "count_based", "icm"]
@@ -755,7 +757,9 @@ def _runtime_keys(value: Any, names: tuple[str, ...], location: str) -> None:
 def _runtime_operation(method: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(method)
     def invoke(self: ExplorationRuntime, *args: Any, **kwargs: Any) -> Any:
-        with self._lock:
+        from townlet.exploration.parent_custody import _runtime_call
+
+        with _runtime_call(self, method.__name__):
             if self._operation_active:
                 raise RuntimeError("reentrant runtime operation")
             self._operation_active = True
@@ -856,10 +860,18 @@ class ExplorationRuntime:
         self._revision += 1
         self._restores.clear()
 
+    def retain_parent_custody(self) -> AbstractContextManager[RuntimeParentCustody]:
+        """Retain runtime/BANK exclusion before entering a genuine parent invocation."""
+        from townlet.exploration.parent_custody import _retain_runtime
+
+        return _retain_runtime(self)
+
     def _bank_call(self, method: str, **kwargs: Any) -> Any:
+        from townlet.exploration.parent_custody import _forward_bank
+
         revision = self._bank.mutation_revision
         try:
-            return getattr(self._bank, method)(**kwargs)
+            return _forward_bank(self, method, kwargs)
         finally:
             if self._bank.mutation_revision != revision:
                 self._invalidate()
@@ -1259,6 +1271,8 @@ class ExplorationRuntime:
 
     @_runtime_operation
     def install_restore(self, *, prepared: PreparedExplorationRestore) -> None:
+        from townlet.exploration.parent_custody import _forward_bank
+
         _runtime_require(type(prepared) is PreparedExplorationRestore and prepared in self._restores, "foreign or consumed runtime restore")
         publication = self._restores[prepared]
         self._fresh(publication.revision, publication.bank_revision)
@@ -1269,7 +1283,7 @@ class ExplorationRuntime:
         # Guard stays active inside BANK's final accepted-token authentication.
         # Its own handle/freshness checks remain authoritative. No fallible work,
         # callback, loader, allocation or corrective check follows its publish.
-        self._bank.install_restore(prepared=publication.bank_handle)
+        _forward_bank(self, "install_restore", {"prepared": publication.bank_handle})
         self._state = publication.state
         self._revision = publication.next_revision
         self._restores = publication.empty_handles

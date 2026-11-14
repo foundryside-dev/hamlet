@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "-"
+  ],
+  "pid": 184802,
+  "utc": "2026-11-14T06:44:11.042267+00:00",
+  "exit": 0,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "e4a94e819bb97e39c5f71cdb80eda8d309fcfaef70d15cc67daceb1d80acf751",
+      "bytes": 56496
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "04fe92dd1acc9fa6f91510c67af572c3ace9d5582adb510f1e090f5c8e90bfab",
+      "bytes": 42670
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    }
+  ]
+}

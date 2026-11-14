@@ -1,0 +1,35 @@
+.................................................F                       [100%]
+=================================== FAILURES ===================================
+__________ test_direct_controller_retains_leases_after_runner_sigkill __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-74/test_direct_controller_retains0')
+
+    def test_direct_controller_retains_leases_after_runner_sigkill(tmp_path):
+        r = implementation()
+        code = 'import os,time;from pathlib import Path;Path.cwd().parent.joinpath("output/attempt/a/actual-pid.txt").write_text(str(os.getpid()));time.sleep(10)'
+        path, s, registry = sealed_fixture(tmp_path, code)
+        bootstrap = ('import sys;from pathlib import Path;sys.path.insert(0,sys.argv[1]);import run_bac_hardware_v1 as r;'
+            'r._git=lambda root,args: "a"*40+"\\n" if args==["rev-parse","HEAD"] else sys.argv[3] if args==["worktree","list","--porcelain"] else "";'
+            'r._live_capacity=lambda raw,scratch: {"cpu_slots":1024,"ram_bytes":10**12,"scratch_bytes":10**12,"scratch_inodes":10**9};'
+            'sys.exit(r.run(Path(sys.argv[2])))')
+        runner = subprocess.Popen([sys.executable, '-c', bootstrap, str(Q), str(path), registry],
+            env={'PATH': '/usr/bin:/bin', 'PYTHONDONTWRITEBYTECODE': '1'}, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        manager = r.Leases(Path(s['lease_root'])); allocation = json.loads((path.parent / 'allocation.json').read_text())
+        controller = None; retained_identity = None
+        try:
+            marker = Path(s['jobs'][0]['output']) / 'actual-pid.txt'; deadline = time.monotonic() + 5
+            while not marker.exists() and runner.poll() is None and time.monotonic() < deadline: time.sleep(.01)
+            assert marker.exists(), runner.communicate(timeout=1) if runner.poll() is not None else 'no controller marker'
+            controller = int(marker.read_text()); retained_identity = r._identity(controller)
+            assert retained_identity['ppid'] == runner.pid
+            runner.kill(); runner.communicate(timeout=3)
+            held = manager.try_allocation(allocation)
+>           try: assert held is None, 'runner death released allocation while its admitted direct controller was alive'
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AssertionError: runner death released allocation while its admitted direct controller was alive
+E           assert <p2_runner.HeldLeases object at 0x7fa0960f2f90> is None
+
+test_run_bac_hardware_v1.py:773: AssertionError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_direct_controller_retains_leases_after_runner_sigkill
+1 failed, 49 passed in 7.59s

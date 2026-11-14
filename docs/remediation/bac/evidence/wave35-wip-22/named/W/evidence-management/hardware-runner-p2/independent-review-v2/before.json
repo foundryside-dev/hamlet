@@ -1,0 +1,27 @@
+[
+  {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "fc235ddfe853cab303c7299e782188e2e6c3fd895b16d1638d8525f2c152cedc",
+    "lines": 1249
+  },
+  {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "sha256": "c01fbb52ac3f8b0509adfceb7417c65d0ba31704c058d039e2ab3759a04cda27",
+    "lines": 959
+  },
+  {
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+    "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+    "lines": 520
+  },
+  {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "lines": 20
+  },
+  {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/test_independent.py",
+    "sha256": "394fe7161e39bdd5c7f020e5ffc8ffc2329ec3422aa1be76b4751af168bb702b",
+    "lines": 57
+  }
+]

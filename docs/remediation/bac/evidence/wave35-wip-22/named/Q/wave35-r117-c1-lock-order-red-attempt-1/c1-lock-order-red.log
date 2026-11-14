@@ -1,0 +1,56 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py F [100%]
+
+=================================== FAILURES ===================================
+___________ test_runtime_contender_does_not_take_lock_before_domain ____________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fdfa4b9da70>
+
+    def test_runtime_contender_does_not_take_lock_before_domain(compiled: Any, monkeypatch: Any) -> None:
+        """The old runtime-before-domain order enters the observed lock while domain is held."""
+        rig = make_parent(compiled)
+        actual = rig.runtime._lock
+        lock_attempted, started, finished = Event(), Event(), Event()
+        errors: list[BaseException] = []
+    
+        class ObservedLock:
+            def __enter__(self) -> Any:
+                lock_attempted.set()
+                return actual.__enter__()
+    
+            def __exit__(self, *args: Any) -> Any:
+                return actual.__exit__(*args)
+    
+        monkeypatch.setattr(rig.runtime, "_lock", ObservedLock())
+    
+        def contender() -> None:
+            started.set()
+            try:
+                rig.runtime.epsilon_tensor(batch_size=1, device="cpu")
+            except BaseException as error:
+                errors.append(error)
+            finally:
+                finished.set()
+    
+        with process_rng_domain().admission(lineage=None):
+            thread = Thread(target=contender, daemon=True)
+            thread.start()
+            assert started.wait(2)
+>           assert not lock_attempted.wait(0.2), "contender acquired runtime side before domain admission"
+E           AssertionError: contender acquired runtime side before domain admission
+E           assert not True
+E            +  where True = wait(0.2)
+E            +    where wait = <threading.Event at 0x7fdf99802710: set>.wait
+
+tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:183: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_runtime_contender_does_not_take_lock_before_domain
+============================== 1 failed in 3.33s ===============================

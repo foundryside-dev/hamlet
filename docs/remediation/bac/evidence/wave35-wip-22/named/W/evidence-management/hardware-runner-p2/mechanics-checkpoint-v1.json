@@ -1,0 +1,76 @@
+{
+  "at": "2026-11-14T06:02:14.869332+00:00",
+  "status": "mechanics-only checkpoint; NOT complete P2, consumer adoption or runtime permission",
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "bytes": 2043,
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 31365,
+      "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 15686,
+      "sha256": "e15f6712db026f059e31f86e6c9e4c2e5b0feb48af1f7c0d0f40564e4313dba6"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 14055,
+      "sha256": "ed29118154aa77b8be5cfc7ca994f30084db83104d33f4d485a91c2d4c22ba9e"
+    }
+  ],
+  "lines": {
+    "run_bac_packet_checks_locked.py": 20,
+    "bac_hardware_protocol_v1.py": 467,
+    "run_bac_hardware_v1.py": 357,
+    "test_run_bac_hardware_v1.py": 295
+  },
+  "limit": {
+    "files": 4,
+    "lines": 3600
+  },
+  "last_test": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/green-interruption-v1.json",
+    "bytes": 950,
+    "sha256": "aa9a76707937059ecb84b9d87cfddeebd33d831407dc1cdf11f053917cda86b4"
+  },
+  "last_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/green-interruption-v1.log",
+    "bytes": 99,
+    "sha256": "7d329029c894324e1e609f30032671d554617418be3916175ba81bc76a42e735"
+  },
+  "result": "17 passed; synthetic inert subprocesses only",
+  "test_coverage": [
+    "exclusive attempt/output/scratch/log/result refusal",
+    "canonical multi-device, RNG and host-timing leases",
+    "CPU bypass of unrelated GPU contention",
+    "nested process/replacement reservations and retained scratch accounting",
+    "exact argv/environment/cwd/seed transport mechanics",
+    "nonzero exit, real signal, timeout and launch refusal observations",
+    "partial logs preserved and descendant process-group cleanup before lease release"
+  ],
+  "remaining": [
+    "root-authorized P0 amendment after WIP21 archive gate",
+    "root-sealed resource allocation/grant/CPU-bound private payloads",
+    "strict P0 admission/spec/grant/dependency/source-witness integration",
+    "job-evidence envelope and exact attempt/result/seal transport",
+    "independent Astra review of complete exact P2 bytes"
+  ],
+  "public_entrypoint": "run(spec_path) rejects frozen P0 after structural validation; no application launch",
+  "new_source_snapshots": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/run_bac_hardware_v1.py.green-interruption-v1.py.txt",
+      "bytes": 15686,
+      "sha256": "e15f6712db026f059e31f86e6c9e4c2e5b0feb48af1f7c0d0f40564e4313dba6"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/test_run_bac_hardware_v1.py.green-interruption-v1.py.txt",
+      "bytes": 14055,
+      "sha256": "ed29118154aa77b8be5cfc7ca994f30084db83104d33f4d485a91c2d4c22ba9e"
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+........................................................................ [ 76%]
+............FFF...FFFF                                                   [100%]
+=================================== FAILURES ===================================
+______ test_discovery_preflight_bounds_expensive_probe_before_cuda[host] _______
+
+change = 'host'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing", "host", "boot", "expired"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+        tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+        obs, req = observation(), request()
+        allocation = {"host": "synthetic", "boot_id": "inert-boot", "start": "2026-01-01T00:00:00.000000Z", "end": None, "authority": "synthetic",
+                      "authorized_cpu_ids": [0, 1, 2, 3], "capacity": {"cpu_slots": 4, "ram_bytes": 1000, "scratch_bytes": 1000, "scratch_inodes": 20},
+                      "overhead": {"cpu_slots": 1, "ram_bytes": 100, "scratch_bytes": 100, "scratch_inodes": 1}}
+        if change == "cpu": allocation["overhead"]["cpu_slots"] = 4
+        if change == "ram": obs["cgroups"][1]["memory_current"] = "1950"
+        if change == "scratch": allocation["overhead"]["scratch_bytes"] = 1000
+        if change == "affinity": allocation["authorized_cpu_ids"] = [0]
+        if change == "missing": obs["cgroups"][0]["cpu_max"] = None
+        if change == "host": allocation["host"] = "wrong-host"
+        if change == "boot": allocation["boot_id"] = "wrong-boot"
+        if change == "expired": allocation["end"] = "2026-01-02T00:00:00.000000Z"
+        if change == "none": tool.discovery_preflight(obs, req, allocation)
+        else:
+>           with pytest.raises(ValueError): tool.discovery_preflight(obs, req, allocation)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:589: Failed
+______ test_discovery_preflight_bounds_expensive_probe_before_cuda[boot] _______
+
+change = 'boot'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing", "host", "boot", "expired"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+        tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+        obs, req = observation(), request()
+        allocation = {"host": "synthetic", "boot_id": "inert-boot", "start": "2026-01-01T00:00:00.000000Z", "end": None, "authority": "synthetic",
+                      "authorized_cpu_ids": [0, 1, 2, 3], "capacity": {"cpu_slots": 4, "ram_bytes": 1000, "scratch_bytes": 1000, "scratch_inodes": 20},
+                      "overhead": {"cpu_slots": 1, "ram_bytes": 100, "scratch_bytes": 100, "scratch_inodes": 1}}
+        if change == "cpu": allocation["overhead"]["cpu_slots"] = 4
+        if change == "ram": obs["cgroups"][1]["memory_current"] = "1950"
+        if change == "scratch": allocation["overhead"]["scratch_bytes"] = 1000
+        if change == "affinity": allocation["authorized_cpu_ids"] = [0]
+        if change == "missing": obs["cgroups"][0]["cpu_max"] = None
+        if change == "host": allocation["host"] = "wrong-host"
+        if change == "boot": allocation["boot_id"] = "wrong-boot"
+        if change == "expired": allocation["end"] = "2026-01-02T00:00:00.000000Z"
+        if change == "none": tool.discovery_preflight(obs, req, allocation)
+        else:
+>           with pytest.raises(ValueError): tool.discovery_preflight(obs, req, allocation)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:589: Failed
+_____ test_discovery_preflight_bounds_expensive_probe_before_cuda[expired] _____
+
+change = 'expired'
+
+    @pytest.mark.parametrize("change", ["none", "cpu", "ram", "scratch", "affinity", "missing", "host", "boot", "expired"])
+    def test_discovery_preflight_bounds_expensive_probe_before_cuda(change):
+        tool = module(); assert callable(getattr(tool, "discovery_preflight", None)), "discovery resource preflight missing"
+        obs, req = observation(), request()
+        allocation = {"host": "synthetic", "boot_id": "inert-boot", "start": "2026-01-01T00:00:00.000000Z", "end": None, "authority": "synthetic",
+                      "authorized_cpu_ids": [0, 1, 2, 3], "capacity": {"cpu_slots": 4, "ram_bytes": 1000, "scratch_bytes": 1000, "scratch_inodes": 20},
+                      "overhead": {"cpu_slots": 1, "ram_bytes": 100, "scratch_bytes": 100, "scratch_inodes": 1}}
+        if change == "cpu": allocation["overhead"]["cpu_slots"] = 4
+        if change == "ram": obs["cgroups"][1]["memory_current"] = "1950"
+        if change == "scratch": allocation["overhead"]["scratch_bytes"] = 1000
+        if change == "affinity": allocation["authorized_cpu_ids"] = [0]
+        if change == "missing": obs["cgroups"][0]["cpu_max"] = None
+        if change == "host": allocation["host"] = "wrong-host"
+        if change == "boot": allocation["boot_id"] = "wrong-boot"
+        if change == "expired": allocation["end"] = "2026-01-02T00:00:00.000000Z"
+        if change == "none": tool.discovery_preflight(obs, req, allocation)
+        else:
+>           with pytest.raises(ValueError): tool.discovery_preflight(obs, req, allocation)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:589: Failed
+___________ test_capture_binds_host_before_launching_discovery[host] ___________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1-fixtures/test_capture_binds_host_before0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fddf90ae740>
+change = 'host'
+
+    @pytest.mark.parametrize("change", ["host", "boot_id"])
+    def test_capture_binds_host_before_launching_discovery(tmp_path, monkeypatch, change):
+        tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+        stub_capture_observations(monkeypatch, tool, req, env, registry)
+        identity = dict(observation()["identity"], pid=tool.os.getpid(), ppid=tool.os.getppid())
+        identity[change] = "wrong"
+        monkeypatch.setattr(tool, "process_identity", lambda pid: identity)
+        def forbidden(*args): pytest.fail("discovery launched before actual capture host/boot authorization")
+        monkeypatch.setattr(tool, "launch_discovery", forbidden)
+>       result = tool.capture(candidate, request_path, tmp_path / "capture")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:671: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:777: in capture
+    obs, command = launch_discovery(admission_request, request, environment)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admiss... 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...})
+
+>   def forbidden(*args): pytest.fail("discovery launched before actual capture host/boot authorization")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: discovery launched before actual capture host/boot authorization
+
+test_capture_bac_hardware_v1.py:669: Failed
+_________ test_capture_binds_host_before_launching_discovery[boot_id] __________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1-fixtures/test_capture_binds_host_before1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fddf8907930>
+change = 'boot_id'
+
+    @pytest.mark.parametrize("change", ["host", "boot_id"])
+    def test_capture_binds_host_before_launching_discovery(tmp_path, monkeypatch, change):
+        tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+        stub_capture_observations(monkeypatch, tool, req, env, registry)
+        identity = dict(observation()["identity"], pid=tool.os.getpid(), ppid=tool.os.getppid())
+        identity[change] = "wrong"
+        monkeypatch.setattr(tool, "process_identity", lambda pid: identity)
+        def forbidden(*args): pytest.fail("discovery launched before actual capture host/boot authorization")
+        monkeypatch.setattr(tool, "launch_discovery", forbidden)
+>       result = tool.capture(candidate, request_path, tmp_path / "capture")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:671: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:777: in capture
+    obs, command = launch_discovery(admission_request, request, environment)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admiss... 'environment': {'CUDA_VISIBLE_DEVICES': '', 'LC_ALL': 'C', 'MKL_NUM_THREADS': '1', 'OMP_NUM_THREADS': '1', ...}, ...})
+
+>   def forbidden(*args): pytest.fail("discovery launched before actual capture host/boot authorization")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: discovery launched before actual capture host/boot authorization
+
+test_capture_bac_hardware_v1.py:669: Failed
+_________ test_capture_checks_held_lease_inode_before_publishing_spec __________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1-fixtures/test_capture_checks_held_lease0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fddf8905fd0>
+
+    def test_capture_checks_held_lease_inode_before_publishing_spec(tmp_path, monkeypatch):
+        import hashlib
+        from types import SimpleNamespace
+        tool = module(); candidate, request_path, _, req, env, registry = capture_fixture(tmp_path)
+        stub_capture_observations(monkeypatch, tool, req, env, registry)
+        original_launch, original_stat, changed = tool.launch_discovery, tool.os.stat, []
+        name = hashlib.sha256(b"pool:pool").hexdigest() + ".lock"
+        def discovery(*args):
+            outcome = original_launch(*args); changed.append(True); return outcome
+        def replaced(path, *args, **kwargs):
+            value = original_stat(path, *args, **kwargs)
+            if changed and str(path) == name:
+                return SimpleNamespace(st_dev=value.st_dev, st_ino=value.st_ino+1, st_mode=value.st_mode, st_blocks=value.st_blocks)
+            return value
+        monkeypatch.setattr(tool, "launch_discovery", discovery); monkeypatch.setattr(tool.os, "stat", replaced)
+        destination = tmp_path / "capture"; result = tool.capture(candidate, request_path, destination)
+>       assert result["disposition"] == "refused" and result["spec"] is None
+E       AssertionError: assert ('admitted' == 'refused'
+E         
+E         - refused
+E         + admitted)
+
+test_capture_bac_hardware_v1.py:692: AssertionError
+_________ test_discovery_cancellation_terminates_owned_group_and_reaps _________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/red-review-fixes-v1-fixtures/test_discovery_cancellation_te0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fddf8907e70>
+
+    def test_discovery_cancellation_terminates_owned_group_and_reaps(tmp_path, monkeypatch):
+        tool = module(); _, request_path, _, req, env, _ = capture_fixture(tmp_path)
+        events = []
+        class Child:
+            pid = 4321
+            returncode = None
+            def communicate(self, timeout):
+                events.append(("communicate", timeout))
+                if len(events) == 1: raise KeyboardInterrupt
+                self.returncode = -15
+                return "partial observation", "canceled stderr"
+        monkeypatch.setattr(tool.subprocess, "Popen", lambda argv, **kwargs: Child())
+        monkeypatch.setattr(tool, "process_identity", lambda pid: dict(observation()["identity"], pid=pid, ppid=tool.os.getpid()))
+        monkeypatch.setattr(tool.os, "killpg", lambda pid, sig: events.append(("killpg", pid, sig)))
+        try: outcome = tool.launch_discovery(request_path, req, env)
+        except KeyboardInterrupt: outcome = None
+>       assert any(row[0] == "killpg" for row in events), "cancellation left owned discovery group alive"
+E       AssertionError: cancellation left owned discovery group alive
+E       assert False
+E        +  where False = any(<generator object test_discovery_cancellation_terminates_owned_group_and_reaps.<locals>.<genexpr> at 0x7fddf88a41e0>)
+
+test_capture_bac_hardware_v1.py:713: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[host]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[boot]
+FAILED test_capture_bac_hardware_v1.py::test_discovery_preflight_bounds_expensive_probe_before_cuda[expired]
+FAILED test_capture_bac_hardware_v1.py::test_capture_binds_host_before_launching_discovery[host]
+FAILED test_capture_bac_hardware_v1.py::test_capture_binds_host_before_launching_discovery[boot_id]
+FAILED test_capture_bac_hardware_v1.py::test_capture_checks_held_lease_inode_before_publishing_spec
+FAILED test_capture_bac_hardware_v1.py::test_discovery_cancellation_terminates_owned_group_and_reaps
+7 failed, 87 passed in 1.16s

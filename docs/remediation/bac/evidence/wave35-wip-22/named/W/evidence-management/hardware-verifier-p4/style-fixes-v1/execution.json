@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "--no-cache",
+    "--fix",
+    "--unsafe-fixes",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+  ],
+  "pid": 191518,
+  "start": "2026-11-14T07:31:27.575459+00:00",
+  "end": "2026-11-14T07:31:29.418400+00:00",
+  "exit_code": 1,
+  "sources_before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "bytes": 56755,
+      "sha256": "b95c41c4feeec9e2a4ee8e47b2027ae20b3cd7b1857193ae5a7b218fe30e9b46"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "bytes": 46947,
+      "sha256": "e849db0610a7e7807f65877994d19336a4e8b9144beb9e823c8708624dd9ef54"
+    }
+  ],
+  "format": "black line_length140 fast=False after Ruff; intermediate bytes retained"
+}

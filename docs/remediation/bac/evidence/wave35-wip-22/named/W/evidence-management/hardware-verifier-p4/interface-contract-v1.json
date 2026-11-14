@@ -1,0 +1,214 @@
+{
+  "P0_representation_limit": "P0 requires all obligations satisfied before custody/hardware satisfied. Preserve conservative aggregate; private component receipt distinguishes independently satisfied common custody from required unrun P5/hardware/application obligations. Explicit aggregate-incomplete reason prevents reporting common source failure.",
+  "authority": "Root exact-spec invocation authorizes referenced case-validator inventory in job.prerequisites. Inventory is authored after frozen verifier bytes and root review; hash/text alone never authenticates root authorship. Test fixture inventories are synthetic only.",
+  "body_inventory": [
+    {
+      "bytes": 3032,
+      "lines": 33,
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 34237,
+      "lines": 520,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "bytes": 56901,
+      "lines": 1127,
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "sha256": "029274afdf79d51b8c02c6b1f2bd2e72a0946cdee708a1604b10e48afb324961"
+    },
+    {
+      "bytes": 48037,
+      "lines": 1196,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "sha256": "e2d17f43a0066f7a9f4a3788a9542efc2d59cd0b832ea607f6f0ac5004bde7a5"
+    }
+  ],
+  "boundary": "73 inert synthetic tests only; no APP/Torch/CUDA/server execution, no original helper mutations, no Git/index/branch/worktree/install/access operations. This packet does not claim full toolchain qualification.",
+  "common_payload_exact_fields": {
+    "case_id": "exact required case text",
+    "kind": "one common obligation kind",
+    "processes": "exact unique P0 job-result process_records",
+    "reports": "exact unique P3 report references for this outcome",
+    "schema": "literal bac-hardware-common-observation-v1",
+    "source_witnesses": "exact unique P0 job-result source_witnesses"
+  },
+  "component_receipt_exact_fields": {
+    "common_custody": "satisfied|unsatisfied|unrun",
+    "hardware": "satisfied|unsatisfied|unrun",
+    "job_id": "P0 id",
+    "overall": "satisfied|incomplete for declared obligations only; never implicit APP/hardware qualification",
+    "reasons": "text list",
+    "schema": "literal bac-hardware-component-classification-v1",
+    "spec": "P0 reference",
+    "strict_custody": "satisfied|unsatisfied|unrun|not-required",
+    "test_outcome": "P0 terminal disposition",
+    "validator_receipts": "P0 references to retained validation receipts"
+  },
+  "implemented_validator": {
+    "enclosing_profiles": [
+      "cpu",
+      "cuda"
+    ],
+    "entrypoint": "internal common_validation; fixed direct call only, never import from references",
+    "evidence_classes": [
+      "cpu",
+      "cpu-standin"
+    ],
+    "id": "p4-common-v1",
+    "kinds": [
+      "process-custody",
+      "source-freeze",
+      "required-cases"
+    ],
+    "witness_schema_declaration": {
+      "schema": "bac-hardware-common-observation-v1"
+    },
+    "witness_schema_rule": "exact one-field JSON identifier for the built-in closed payload type below, parsed and pinned via contract + authorized inventory; not arbitrary JSON Schema executable logic"
+  },
+  "independent_checks": [
+    "P1 terminal admitted exact spec/admission; provisional or late-refused spec rejects",
+    "P0 actual protocol SHA and capture accepted SHA; own verifier pin; every tool/dependency/spec/candidate/reference rehashed",
+    "Exact requested versus normalized job argv/cwd/env/seed/roles/device context, admitted dependency and device mappings",
+    "P2 actual parent launch/wait identity, actual terminal exit/signal/time/duration, required logs, seal complete inventory plus original capture terminal, terminal precedence",
+    "P3 delegated policy/runtime/root grant/source linkage; exact actual maps and permitted environment additions; provenance raw/process correspondence, observation matrix, required import origins and phases",
+    "Controller/worker start/end cardinalities, actual parent/role/source identity, full process tokens, disjoint PID reuse, exact down/configure/replacement predecessor chains and finite role limits",
+    "Exact actual collection and report inventories, no duplicates/hidden phases, per-case same-process chronology, setup/call/teardown outcome equality, no skip/xfail/xpass satisfaction",
+    "Source grant/candidate/root/input/freeze and source witness binding; actual runner pre/post witnesses and process sources; no-writer statement never inferred from hashes",
+    "Common inventory/contracts/schema/payload independently recomputed; actual verifier identity/UTC in emitted immutable validator receipt"
+  ],
+  "inventory_exact_fields": {
+    "authority": "nonempty text (statement only; out-of-band exact-spec authority required)",
+    "schema": "literal bac-hardware-validator-inventory-v1",
+    "validators": "exactly one common entry currently; unknown IDs rejected"
+  },
+  "metadata_dependencies": [
+    {
+      "bytes": 13184,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+      "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+    },
+    {
+      "bytes": 22624,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/schema-inventory-v2.json",
+      "sha256": "d6882e7ab20c788299a9c29584920bdd8a76bd503c1a4ed12a0bff48f248e63d"
+    },
+    {
+      "bytes": 4220,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v2.json",
+      "sha256": "8d0d2200698113980adec51f45b56b0b8fbda1decdca809d12a380aa6169693d"
+    },
+    {
+      "bytes": 12233,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/root-adoption-v1.json",
+      "sha256": "6235ac38bb563d5676420cf932cdb09d7d54187ec1a60546aefe99f13ded6c96"
+    },
+    {
+      "bytes": 5867,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+      "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+    },
+    {
+      "bytes": 9803,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/interface-contract-v1.json",
+      "sha256": "35e0547eac55727dc9063023f8e987cf86451c55e7197d6d7f12b5e16ee56a2c"
+    },
+    {
+      "bytes": 5150,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-v3.md",
+      "sha256": "1eb2d8b5e2e11621ce59aef78a7c982d2cafe4ab81117004897a6ed5a9447faf"
+    },
+    {
+      "bytes": 7777,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/context-contract-proposal-v2.md",
+      "sha256": "0c640ebd57ffc2475e15dc1754837bdd88250d9576c4a171697f637ffd8a84c6"
+    },
+    {
+      "bytes": 3756,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/interface-contract-v2.json",
+      "sha256": "51369fe91bd72a44eaf1f8526f22ff7692fb5a62247a870c05d699f341b0d798"
+    },
+    {
+      "bytes": 2224,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/root-adoption-v1.json",
+      "sha256": "d93c6db06f4411ff7d4eef909b1b440104f0c4f98187cdd3cf3c4b159decd7e8"
+    },
+    {
+      "bytes": 1552,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/observation-matrix-v1.md",
+      "sha256": "6af9c6a3fef54b7faca5e4a97f2b536025d224cd8c43ac1281eea2bd50177bb1"
+    }
+  ],
+  "proposal_links": [
+    {
+      "bytes": 2521,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/validator-interface-proposal-v1.md",
+      "sha256": "3fc079001fcf776e9258da5daa8bbfd4611b0faf4603deb4b67f9450f2ee8aef"
+    },
+    {
+      "bytes": 2986,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/validator-interface-proposal-v2.md",
+      "sha256": "ad86e3136b09f0d148569b07bc562664c3b33036fc72daa20ad075294d0f2133"
+    },
+    {
+      "bytes": 1817,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/validator-interface-proposal-v3.md",
+      "sha256": "269261a145ce00533f6d8858b20fd8e761e4362dbe246c30bdb589aabdbe1c9f"
+    }
+  ],
+  "public_api": "verify(spec_path: str, job_id: str, destination: str) -> dict; absolute canonical paths; exact root-authorized spec invocation under no-writer source/namespace custody",
+  "publication": "Exclusive destination+.components directory, one obligation-id.json per built-in verdict plus classification.json; then exclusive destination P0 receipt. Existing/aliased directories/files refuse. Partial artifacts retained; retry uses new destination. Receipt inventory pins component/validator receipts.",
+  "rejections": "Invalid shape/reference/binding raises ValueError; destination existence may ValueError/FileExistsError. Missing completion/end retained as unqualified terminal result with no invented witness. No caller-provided executable dispatch.",
+  "schema": "bac-hardware-verifier-interface-v1",
+  "seal_precedence": [
+    "interrupted",
+    "completed-failed",
+    "completed-unverified",
+    "refused",
+    "unrun",
+    "successful"
+  ],
+  "status": "FROZEN AUTHOR PACKET; fresh independent review and root adoption required",
+  "unimplemented_required_dependencies": [
+    "P5 strict-child-core, strict-child-producer, rng-custody, fork-three-trials, phase-pair remain unsatisfied/unrun without semantic implementation; no old transport compatibility adapter",
+    "Six real CUDA groups and application B/parent/recurrent obligations remain unsatisfied/unrun; metadata/device availability/mock receipts cannot satisfy actual work",
+    "Direct arbitrary child/observer P3 contexts rejected pending separately accepted owner delegation and P5 producer integration",
+    "P5 pure-data entrypoint import requires explicit root integration reslice; currently no P5 helper imports",
+    "Root must create concrete inventory after independent review and frozen bytes; synthetic test inventories are not adoption",
+    "Fresh independent Astra review, P0-P5 end-to-end integration, actual CPU/server/CUDA qualification still owed"
+  ],
+  "validator_entry_exact_fields": {
+    "contracts": "nonempty unique accepted case-contract refs",
+    "dependencies": "exact [actual protocol P0 reference]",
+    "evidence_classes": "exact [cpu,cpu-standin]",
+    "id": "literal p4-common-v1",
+    "kinds": "unique exact three common kinds",
+    "validator": "exact actual verifier source P0 reference",
+    "witness_schemas": "nonempty unique accepted witness-schema refs"
+  },
+  "validator_receipt_exact_fields": {
+    "cases": "unique nonempty text list matching contract",
+    "contract": "P0 case-contract reference",
+    "dependencies": "unique P0 references; exactly accepted protocol for common",
+    "end": "UTC microsecond observation after built-in validation",
+    "evidence": "unique P0 obligation-evidence references with exact case membership",
+    "evidence_class": "cpu | cpu-standin | real-cuda; built-in accepts first two only",
+    "job_id": "P0 id",
+    "obligation_id": "P0 id",
+    "payloads": "unique P0 references matching each evidence payload",
+    "producer_processes": "unique referenced P0 process-start records linked to reports",
+    "reasons": "text list, empty only satisfied",
+    "related_attempts": "unique P0 references; common requires empty",
+    "schema": "literal bac-hardware-case-validator-receipt-v1",
+    "spec": "P0 reference",
+    "start": "UTC microsecond observation before verify",
+    "validation_process": "P0 identity sampled from actual verifier /proc PID/PPID/start/hostname/boot",
+    "validator": "P0 reference",
+    "validator_id": "literal p4-common-v1 for implemented built-in",
+    "verdict": "satisfied | unsatisfied | unrun",
+    "witness_schema": "P0 reference"
+  }
+}

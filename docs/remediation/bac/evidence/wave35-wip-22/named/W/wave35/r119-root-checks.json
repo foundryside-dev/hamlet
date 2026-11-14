@@ -1,0 +1,143 @@
+{
+  "schema": "bac-root-c1-owned-regression-red-v1",
+  "at": "2026-11-14T07:27:22.342828+00:00",
+  "candidate": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r119-candidate.json",
+    "bytes": 207316,
+    "sha256": "620adae8f07799e5b0d114b1d829a27e0b1bee2855f0dd3b549332b12141fba0"
+  },
+  "checks": [
+    {
+      "name": "c1-collection",
+      "status": "3 COLLECTED",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-collection-attempt-1-spec.json",
+        "bytes": 976,
+        "sha256": "33bf9ae670e1e17df8fcf5339f454c0c2c74109fd63ff2f4b58e0742465a7412"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-collection-attempt-1/c1-collection/identity-controller.json",
+          "bytes": 246,
+          "sha256": "ea4a43d648a397be7f0f86af94a0853b8c14c7a518c77259b41e846fddab8263"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-collection-attempt-1/c1-collection-custody.json",
+          "bytes": 644,
+          "sha256": "f0446166101a98846df541090f2ba2a0a0307411f0394c79d172b2a5e7bfbfee"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-collection-attempt-1/c1-collection-result.json",
+          "bytes": 1210,
+          "sha256": "d32fe862a42fa533f61de2d3c3a561c5508e933fd549af13a10053f779949336"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-collection-attempt-1/c1-collection.log",
+          "bytes": 887,
+          "sha256": "c5c0ae0aa927fbdad1b58df1c7ffb50130d71cb4c6510b6e922269e63fb39e13"
+        }
+      ],
+      "utc_start": null,
+      "utc_end": null,
+      "timing_reason": "Existing approved CPU harness records monotonic duration only; absolute child UTC not emitted, not inferred."
+    },
+    {
+      "name": "c1-install-red",
+      "status": "1 EXPECTED FAIL: postpublication runtime invalidation",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-install-red-attempt-1-spec.json",
+        "bytes": 671,
+        "sha256": "61af8c0707ace7909bda5f81abe8b7fd45e3316ad7152f39fd87ad965ac51fa7"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-install-red-attempt-1/c1-install-red/failure-controller-ae3d3d5a62b4d7b2.json",
+          "bytes": 2360,
+          "sha256": "c489b3f298d6b1c6f11551d9287f8d658faf27a152c30be602e4b1afeb590a3a"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-install-red-attempt-1/c1-install-red/identity-controller.json",
+          "bytes": 246,
+          "sha256": "ea4a43d648a397be7f0f86af94a0853b8c14c7a518c77259b41e846fddab8263"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-install-red-attempt-1/c1-install-red-failure-index.json",
+          "bytes": 664,
+          "sha256": "fcdfc8c2658935377b50db623386205ca749179b012ca8fd9e0a2ab4f3f837bf"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-install-red-attempt-1/c1-install-red-negative-custody.json",
+          "bytes": 959,
+          "sha256": "b1e9115e7ba6acd3f7311650b7c1be190207902e7bf097c045c28187b4cf625b"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-install-red-attempt-1/c1-install-red-result.json",
+          "bytes": 919,
+          "sha256": "f9e758c679ba2e0ce05cc30e6877032656d5848b78d9c46f579c3184b45dfdaf"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-install-red-attempt-1/c1-install-red.log",
+          "bytes": 2970,
+          "sha256": "de9ec9d0b47f2bb50c884bbc969e7c2009a27a31528f48b945a0577e8e64f565"
+        }
+      ],
+      "utc_start": null,
+      "utc_end": null,
+      "timing_reason": "Existing approved CPU harness records monotonic duration only; absolute child UTC not emitted, not inferred."
+    },
+    {
+      "name": "c1-expiration-red",
+      "status": "2 EXPECTED FAIL: ordinary runtime/bank scope expiry KeyError",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1-spec.json",
+        "bytes": 826,
+        "sha256": "3e040cd14ca1d12c4c9e3d9472640b0f45c1276d07a1f106ae5a0bbb36a158b1"
+      },
+      "artifacts": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red/failure-controller-463cc99033196725.json",
+          "bytes": 2851,
+          "sha256": "bd5ec1fac454e7ea839df1e25e70ed549bf8949d1e2f399d543d1007bb3fd07b"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red/failure-controller-c55d5d362b52eced.json",
+          "bytes": 2839,
+          "sha256": "bdcd47fd02111f7e0827a0b59fb812284e5e292d07d8d6eb729315c97f20e14d"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red/identity-controller.json",
+          "bytes": 246,
+          "sha256": "ea4a43d648a397be7f0f86af94a0853b8c14c7a518c77259b41e846fddab8263"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red-failure-index.json",
+          "bytes": 1030,
+          "sha256": "82fb0453431fc0513ca3e63fe3634139ac3068e68da4d348344accc575f641e6"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red-negative-custody.json",
+          "bytes": 958,
+          "sha256": "28aaf5328e879b984ae4d21ebbf1a142116e255c2dd1c6238a1456761558528c"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red-result.json",
+          "bytes": 1072,
+          "sha256": "5d1666e1a0ed3ee222d4f029a1a30eee3cab25086f03c78333e975e1e8b71c53"
+        },
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r119-c1-expiration-red-attempt-1/c1-expiration-red.log",
+          "bytes": 6225,
+          "sha256": "800a11bc7c31b3180fc21612deccc60472e3f2431ba8b5d57952b024556432da"
+        }
+      ],
+      "utc_start": null,
+      "utc_end": null,
+      "timing_reason": "Existing approved CPU harness records monotonic duration only; absolute child UTC not emitted, not inferred."
+    }
+  ],
+  "status": "THREE INTENDED ASSERTION FAILURES; CUSTODY VERIFIED; EXECUTION CLOSED",
+  "source_snapshot_directory": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r119-executed-source",
+  "parallelism": "Two independent fresh pytest processes ran concurrently; index-mutating postflight metadata checks serialized. No xdist or poisoned work in these checks.",
+  "authorization": "Release source freeze for sole writer: fix both confirmed production defects, formatter/type cleanup only within owned4files, complete measured poison profile witness; freeze fresh candidate for green. All9acceptance groups/final independent review still owed.",
+  "scope": "No C1/hardware/wholeBAC acceptance claimed; no failure waived."
+}

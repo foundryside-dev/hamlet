@@ -1,0 +1,34 @@
+{
+  "common_custody": "satisfied",
+  "hardware": "unsatisfied",
+  "job_id": "job",
+  "overall": "incomplete",
+  "reasons": [
+    "aggregate obligation gate incomplete; common source/process custody independently satisfied"
+  ],
+  "schema": "bac-hardware-component-classification-v1",
+  "spec": {
+    "bytes": 9992,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be0/capture/spec.json",
+    "sha256": "5d92a5b84e4adb000822c1348b36a93e9347bb073545759d3b4c61015581d357"
+  },
+  "strict_custody": "not-required",
+  "test_outcome": "successful",
+  "validator_receipts": [
+    {
+      "bytes": 3116,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be0/receipt.json.components/process-custody.json",
+      "sha256": "18ab571c5bace75f758a80d573c125624688663bd1912c3ae40f0de7d6e54bfd"
+    },
+    {
+      "bytes": 3108,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be0/receipt.json.components/source-freeze.json",
+      "sha256": "3d40d372228faa4bc542d291bc7b2a99e2b132a30c03e709036c75a2cf472b08"
+    },
+    {
+      "bytes": 3112,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v3/suite-fixtures/test_owner_semantics_cannot_be0/receipt.json.components/required-cases.json",
+      "sha256": "f5088cd17c1592c2304acbcf8751ee7c27e1753180d00ca54cb3cbb4b0c9e942"
+    }
+  ]
+}

@@ -1,0 +1,295 @@
+"""P2 inert subprocess checks; no application or hardware imports/execution."""
+import importlib.util
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import threading
+import time
+
+import pytest
+
+Q = Path(__file__).parent
+RUNNER = Q / 'run_bac_hardware_v1.py'
+
+
+def implementation():
+    assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+    spec = importlib.util.spec_from_file_location('p2_runner', RUNNER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def job(tmp_path, name, *, cpu=1, devices=(), domains=(), timing='ordinary', code=None, timeout=4, grace=.05):
+    return {'id': name, 'argv': [sys.executable, '-c', code or 'print("observed", flush=True)'],
+            'interpreter': sys.executable, 'cwd': str(tmp_path),
+            'environment': {'OMP_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1',
+                            'CUDA_VISIBLE_DEVICES': '', 'PYTHONHASHSEED': '17'},
+            'seed': {'policy': 'explicit', 'python': 17, 'numpy': 18, 'torch': 19, 'cuda': []},
+            'roles': [{'count': 1, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1}],
+            'budget': {'cpu_slots': cpu, 'ram_bytes': 2, 'scratch_bytes': 2, 'scratch_inodes': 2},
+            'devices': [{'physical_parent_uuid': d} for d in devices], 'serialization_domains': list(domains),
+            'timing': timing, 'output': str(tmp_path / 'out' / 'attempt' / name),
+            'scratch': str(tmp_path / 'scratch' / 'attempt' / name),
+            'timeout_seconds': timeout, 'termination_grace_seconds': grace}
+
+
+def spec(tmp_path, jobs, *, cpu=4, concurrency=4):
+    (tmp_path / 'out').mkdir(exist_ok=True)
+    (tmp_path / 'scratch').mkdir(exist_ok=True)
+    (tmp_path / 'leases').mkdir(exist_ok=True)
+    return {'attempt_id': 'attempt', 'output_root': str(tmp_path / 'out'), 'scratch_root': str(tmp_path / 'scratch'),
+            'lease_root': str(tmp_path / 'leases'), 'job_concurrency': concurrency,
+            'budget': {'cpu_slots': cpu, 'ram_bytes': 100, 'scratch_bytes': 100, 'scratch_inodes': 100}, 'jobs': jobs}
+
+
+def test_nested_budget(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'nested', cpu=16)
+    j['roles'] = [{'count': 1, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1},
+                  {'count': 16, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1}]
+    with pytest.raises(ValueError, match='CPU'):
+        r.check_resources(spec(tmp_path, [j], cpu=16, concurrency=16))
+    j['roles'] = [{'count': 1, 'replacement_limit': 1, 'intra_op': 1, 'inter_op': 5}]
+    j['budget']['cpu_slots'] = 1
+    with pytest.raises(ValueError, match='CPU'):
+        r.check_resources(spec(tmp_path, [j]))
+
+
+def test_exclusive_attempt_race(tmp_path):
+    r = implementation()
+    s = spec(tmp_path, [job(tmp_path, 'a')])
+    barrier = threading.Barrier(2)
+    results = []
+    def reserve():
+        barrier.wait()
+        try:
+            a = r.Attempt(s)
+            results.append(a)
+        except (ValueError, FileExistsError):
+            results.append(None)
+    threads = [threading.Thread(target=reserve) for _ in range(2)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    assert sum(v is not None for v in results) == 1
+    for value in results:
+        if value is not None: value.close()
+
+
+@pytest.mark.parametrize('occupied', ['attempt', 'scratch', 'symlink'])
+def test_occupied_destinations_are_preserved(tmp_path, occupied):
+    r = implementation()
+    s = spec(tmp_path, [job(tmp_path, 'a')])
+    target = tmp_path / ('scratch' if occupied == 'scratch' else 'out') / 'attempt'
+    if occupied == 'symlink':
+        other = tmp_path / 'other'; other.mkdir()
+        target.symlink_to(other, target_is_directory=True)
+    else:
+        target.mkdir()
+    (target / 'stdout.log').write_text('do not overwrite')
+    with pytest.raises((ValueError, FileExistsError)):
+        r.Attempt(s)
+    assert (target / 'stdout.log').read_text() == 'do not overwrite'
+
+
+def test_lease_domains_and_canonical_multi_device_acquisition(tmp_path):
+    r = implementation()
+    root = tmp_path / 'leases'; root.mkdir()
+    first = r.Leases(root)
+    second = r.Leases(root)
+    a = job(tmp_path, 'a', devices=('GPU-B', 'GPU-A'), domains=('rng-shared',))
+    b = job(tmp_path, 'b', devices=('GPU-A', 'GPU-B'), domains=('rng-other',))
+    with first.try_acquire(a) as held:
+        assert held
+        assert second.try_acquire(b) is None
+        assert second.try_acquire(job(tmp_path, 'rng', domains=('rng-shared',))) is None
+        with second.try_acquire(job(tmp_path, 'cpu')) as cpu:
+            assert cpu
+        with second.try_acquire(job(tmp_path, 'other', devices=('GPU-C',))) as gpu:
+            assert gpu
+        assert second.try_acquire(job(tmp_path, 'timing', timing='exclusive-host')) is None
+    with second.try_acquire(b) as recovered:
+        assert recovered
+    with first.try_acquire(job(tmp_path, 'timing', timing='exclusive-host')):
+        assert second.try_acquire(job(tmp_path, 'cpu')) is None
+    first.close(); second.close()
+
+
+def test_scheduler_advances_cpu_past_blocked_gpu(tmp_path):
+    r = implementation()
+    gpu = job(tmp_path, 'gpu', devices=('GPU-A',), domains=('gpu-rng',))
+    cpu = job(tmp_path, 'cpu', domains=('cpu-rng',), code='from pathlib import Path; Path("cpu-ran").write_text("yes")')
+    s = spec(tmp_path, [gpu, cpu], concurrency=2)
+    lease = r.Leases(Path(s['lease_root']))
+    held = lease.try_acquire(gpu)
+    outcomes = []
+    thread = threading.Thread(target=lambda: outcomes.extend(r.execute_jobs(s)))
+    thread.start()
+    deadline = time.monotonic() + 5
+    while not (tmp_path / 'cpu-ran').exists() and time.monotonic() < deadline:
+        time.sleep(.01)
+    assert (tmp_path / 'cpu-ran').is_file(), 'CPU stalled behind an unrelated physical-device lease'
+    held.close(); lease.close(); thread.join(5)
+    assert not thread.is_alive()
+    assert {x['job_id'] for x in outcomes} == {'cpu', 'gpu'}
+
+
+def test_failure_and_exact_environment(tmp_path):
+    r = implementation()
+    code = 'import os,json,sys; print(json.dumps({"cwd":os.getcwd(),"env":dict(os.environ),"argv":sys.argv}),flush=True); sys.exit(7)'
+    j = job(tmp_path, 'bad', code=code)
+    s = spec(tmp_path, [j])
+    os.environ['P2_MUST_NOT_LEAK'] = 'secret-sentinel'
+    results = r.execute_jobs(s)
+    assert results[0]['exit_code'] == 7
+    assert results[0]['disposition'] == 'completed-failed'
+    output = Path(j['output'])
+    observed = json.loads((output / 'stdout.log').read_text())
+    assert observed['cwd'] == str(tmp_path)
+    assert 'P2_MUST_NOT_LEAK' not in observed['env']
+    assert observed['env']['PYTHONHASHSEED'] == '17'
+    command = json.loads((output / 'command.json').read_text())
+    assert command['argv'] == j['argv'] and command['environment'] == j['environment'] and command['seed'] == j['seed']
+    assert not (output / 'completion.json').exists()
+
+
+def test_zero_exit_does_not_invent_witnesses(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'zero')
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == 0
+    assert result['disposition'] == 'completed-unverified'
+    assert result['process_records'] == []
+    assert not (Path(j['output']) / 'completion.json').exists()
+
+
+def test_timeout_preserves_actual_partial_and_kills_process_group(tmp_path):
+    r = implementation()
+    code = ('import os,signal,time; from pathlib import Path; '
+            'signal.signal(signal.SIGTERM,signal.SIG_IGN); '
+            'Path("partial").write_text("actual partial"); print("before timeout",flush=True); time.sleep(20)')
+    j = job(tmp_path, 'timeout', code=code, timeout=.2, grace=.05)
+    started = time.monotonic()
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert time.monotonic() - started < 3
+    assert result['disposition'] == 'interrupted'
+    assert result['exit_code'] == -signal.SIGKILL
+    assert 'timeout' in result['reason']
+    assert (tmp_path / 'partial').read_text() == 'actual partial'
+    assert (Path(j['output']) / 'stdout.log').read_text() == 'before timeout\n'
+    assert not (Path(j['output']) / 'completion.json').exists()
+
+
+def test_runtime_cpu_capacity_and_persistent_scratch(tmp_path):
+    r = implementation()
+    code = 'import time; print("begin",flush=True); time.sleep(.15); print("end",flush=True)'
+    jobs = [job(tmp_path, name, cpu=2, code=code) for name in ('a', 'b', 'c')]
+    results = r.execute_jobs(spec(tmp_path, jobs, cpu=2, concurrency=3))
+    times = sorted((v['monotonic_start_ns'], v['monotonic_end_ns']) for v in results)
+    assert all(a[1] <= b[0] for a, b in zip(times, times[1:]))
+    other = tmp_path / 'other'; other.mkdir()
+    jobs = [job(other, name) for name in ('a', 'b')]
+    s = spec(other, jobs); s['budget']['scratch_bytes'] = 3
+    with pytest.raises(ValueError, match='scratch'):
+        r.execute_jobs(s)
+
+
+def test_signal_preserves_started_and_unrun_evidence(tmp_path):
+    implementation()
+    first = job(tmp_path, 'active', code='import time; print("ready",flush=True); time.sleep(30)', timeout=10)
+    pending = job(tmp_path, 'pending')
+    s = spec(tmp_path, [first, pending], cpu=1, concurrency=1)
+    source = tmp_path / 'mechanics-input.json'; source.write_text(json.dumps(s))
+    code = ('import json,sys; from pathlib import Path; '
+            'sys.path.insert(0,sys.argv[1]); import run_bac_hardware_v1 as r; '
+            'results=r.execute_jobs(json.loads(Path(sys.argv[2]).read_text())); '
+            'sys.exit(1 if any(x["disposition"]!="successful" for x in results) else 0)')
+    child = subprocess.Popen([sys.executable, '-c', code, str(Q), str(source)],
+                             env={'PATH': '/usr/bin:/bin', 'PYTHONDONTWRITEBYTECODE': '1'},
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        log = Path(first['output']) / 'stdout.log'
+        deadline = time.monotonic() + 5
+        while (not log.exists() or 'ready' not in log.read_text()) and time.monotonic() < deadline:
+            time.sleep(.01)
+        assert log.exists() and log.read_text() == 'ready\n'
+        child.send_signal(signal.SIGTERM)
+        stdout, stderr = child.communicate(timeout=4)
+        assert child.returncode == 1, (stdout, stderr, child.returncode)
+        active = json.loads((Path(first['output']) / 'result.json').read_text())
+        unrun = json.loads((Path(pending['output']) / 'result.json').read_text())
+        assert active['disposition'] == 'interrupted'
+        assert active['exit_code'] == -signal.SIGTERM
+        assert unrun['disposition'] == 'unrun' and unrun['exit_code'] is None
+        assert not (Path(pending['output']) / 'command.json').exists()
+    finally:
+        if child.poll() is None:
+            child.kill(); child.wait()
+
+
+def test_launch_error_is_retained_and_other_jobs_finish(tmp_path):
+    r = implementation()
+    broken = job(tmp_path, 'missing')
+    broken['argv'][0] = broken['interpreter'] = str(tmp_path / 'missing-executable')
+    good = job(tmp_path, 'good')
+    results = {x['job_id']: x for x in r.execute_jobs(spec(tmp_path, [broken, good]))}
+    assert results['missing']['disposition'] == 'refused'
+    assert results['missing']['exit_code'] is None
+    assert 'launch' in results['missing']['reason']
+    assert results['good']['exit_code'] == 0
+    assert (Path(broken['output']) / 'command.json').is_file()
+
+
+def test_negative_command_signal_is_interrupted(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'signal', code='import os,signal; os.kill(os.getpid(),signal.SIGTERM)')
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == -signal.SIGTERM
+    assert result['disposition'] == 'interrupted'
+
+
+def test_descendant_cannot_outlive_controller_and_lease(tmp_path):
+    r = implementation()
+    code = ('import subprocess,sys; '
+            'subprocess.Popen([sys.executable,"-c",'
+            '"import time; from pathlib import Path; time.sleep(.6); Path(\'orphan-side-effect\').write_text(\'bad\')"]); '
+            'print("controller finished",flush=True)')
+    j = job(tmp_path, 'orphan', code=code)
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == 0
+    assert result['disposition'] == 'completed-unverified'
+    time.sleep(.7)
+    assert not (tmp_path / 'orphan-side-effect').exists(), 'lease released while a child could continue work'
+
+
+def test_occupied_log_and_result_refuse_overwrite(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'a')
+    a = r.Attempt(spec(tmp_path, [j]))
+    try:
+        with pytest.raises(FileExistsError): a.open_file('a', 'stdout.log')
+        a.write('a', 'result.json', {'original': 1})
+        with pytest.raises(FileExistsError): a.write('a', 'result.json', {'replacement': 2})
+        assert json.loads((Path(j['output']) / 'result.json').read_text()) == {'original': 1}
+        old = Path(j['output']); moved = old.with_name('moved')
+        old.rename(moved); old.mkdir()
+        with pytest.raises(ValueError, match='namespace replaced'): a.open_file('a', 'late.json')
+        assert not (old / 'late.json').exists() and not (moved / 'late.json').exists()
+    finally: a.close()
+
+
+def test_cpu_ram_and_timing_overlap_are_observed(tmp_path):
+    r = implementation()
+    code = 'import time; time.sleep(.15)'
+    jobs = [job(tmp_path, name, code=code) for name in ('a', 'b')]
+    results = r.execute_jobs(spec(tmp_path, jobs, cpu=2, concurrency=2))
+    times = sorted((x['monotonic_start_ns'], x['monotonic_end_ns']) for x in results)
+    assert times[1][0] < times[0][1], 'independent work was serialized'
+    other = tmp_path / 'timed'; other.mkdir()
+    jobs = [job(other, 'timing', code=code, timing='exclusive-host'), job(other, 'cpu', code=code)]
+    results = r.execute_jobs(spec(other, jobs, cpu=2, concurrency=2))
+    times = sorted((x['monotonic_start_ns'], x['monotonic_end_ns']) for x in results)
+    assert times[0][1] <= times[1][0]

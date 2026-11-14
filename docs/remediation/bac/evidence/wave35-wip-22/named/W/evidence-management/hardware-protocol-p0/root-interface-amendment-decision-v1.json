@@ -1,0 +1,28 @@
+{
+  "schema": "bac-root-hardware-interface-amendment-decision-v1",
+  "at": "2026-11-14T06:02:07.664003+00:00",
+  "status": "DESIGN APPROVED; P0 SOURCE MUTATION HELD UNTIL WIP21 PUBLICATION",
+  "reviews": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P1-P2-INTERFACE-AMENDMENT-REVIEW-v1.md",
+      "bytes": 8425,
+      "sha256": "be18e84095ebb2d0cd3a9b6547b9d1cc507885253c8dfc61ad08d7a7bd8edfa2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P1-P2-INTERFACE-AMENDMENT-REVIEW-v2.md",
+      "bytes": 1834,
+      "sha256": "30b648243afcd1091f83984a830e37ac097aa0093090d74c5ee8cdad430d9f20"
+    }
+  ],
+  "decision": "Adopt consolidated v1 field/resource/causal-evidence requirements and v2 discovery clarification; former proposal conflicts resolved in favor of these reviews. Existing P0v2 is preserved as bounded common transport evidence, not full consumer readiness.",
+  "cpu_rule": "Explicit per-role peak reservation with pinned accepted-case or measured bound for exact role/config/cases; interop setting alone does not determine active CPU demand; unknown bound refuses. Include simultaneously live replacements and explicit orchestration overhead.",
+  "allocation_rule": "One active runner per root-authorized resource allocation, enforced by stable shared allocation lease. Separate allocations may run concurrently only with root-proven disjoint capacity partitions. Full admitted intra-allocation job concurrency remains supported. P1/P2 owners must seal exact private allocation/grant fields and review before integration.",
+  "source_hold_reason": "Current P0 Q source/test bytes are exact dependencies in sealed WIP21 subject; changing them before materialization/publication would break source custody. Independent P1/P2 mechanics continue without mutating these inputs.",
+  "required_next": [
+    "Exact private allocation/grant metadata addendum",
+    "After WIP21 publication, linked P0 amendment with contemporaneous inert source snapshots, red/green tests and independent review",
+    "P1/P2 consumer integration and independent review",
+    "P3\u2013P5 and owner contracts, measured server admission, actual hardware qualification"
+  ],
+  "authority": "Existing user authorization for additive BAC implementation/design; no capability removal, new branch/worktree, access/spending or hardware qualification authorized here."
+}

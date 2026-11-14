@@ -1,0 +1,51 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py:3:1
+   |
+ 1 |   """Causal producer custody controls; parent/ENV/runner qualification is separate."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import gc
+ 6 | | import hashlib
+ 7 | | import json
+ 8 | | import os
+ 9 | | import pickle
+10 | | import sys
+11 | | import weakref
+12 | | from contextlib import contextmanager
+13 | | from copy import copy, deepcopy
+14 | | from pathlib import Path
+15 | | from threading import Event, Thread
+16 | | from typing import Any
+17 | |
+18 | | import pytest
+19 | | import torch
+20 | |
+21 | | from tests.test_townlet.regressions.bac.test_initial_participation_population import begin, close, prepare_close
+22 | | from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import (
+23 | |     IDS,
+24 | |     compiled as compiled,
+25 | |     equal,
+26 | |     make_parent,
+27 | |     observe_runtime,
+28 | | )
+29 | | from townlet.exploration.rng_custody import process_rng_domain
+30 | | from townlet.exploration.world_curiosity_state import ServiceClock
+31 | | from townlet.training.state import BatchedAgentState
+   | |____________________________________________________^
+help: Organize imports
+   |
+23 |     IDS,
+   -     compiled as compiled,
+24 |     equal,
+25 |     make_parent,
+26 |     observe_runtime,
+27 | )
+28 + from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import (
+29 +     compiled as compiled,
+30 + )
+31 | from townlet.exploration.rng_custody import process_rng_domain
+   |
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

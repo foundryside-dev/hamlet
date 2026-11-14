@@ -1,0 +1,27 @@
+{
+  "before_sha256": "3c880faedb3a664e883e7eb99ed6906e6e134e8c2d016f15eede5943a7ae30fe",
+  "after_sha256": "7aeaed8ccd2498f3145d3e0734a59352a680c737837be35abfdfe7c32cbfa59c",
+  "authority": "root-implementation-grant-v1.json",
+  "scope": "W35-R0-PARENT-C1",
+  "rows": [
+    {
+      "alias": "C1-runtime",
+      "path": "src/townlet/config/exploration_policy.py",
+      "projected_lines": 1600,
+      "access": "modify"
+    },
+    {
+      "alias": "C1-bank",
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "projected_lines": 1750,
+      "access": "modify"
+    },
+    {
+      "alias": "C1-test",
+      "path": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "projected_lines": 900,
+      "access": "create_test"
+    }
+  ],
+  "note": "RED test draft; helper absent. Add approved helper row only after creation for next candidate, never mutate executed candidate."
+}

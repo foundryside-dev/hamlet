@@ -1,0 +1,16 @@
+{
+  "at": "2026-11-14T06:57:54.668402+00:00",
+  "command": [
+    "python",
+    "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+    "r117",
+    "wave35",
+    "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+    "wave35/r116-candidate.json"
+  ],
+  "exit_code": 1,
+  "boundary": "capture before candidate/runtime",
+  "error": "AssertionError: CURRENT-RNG-CUSTODY-CORE-CONTRACT.md 248 lines exceeds stale240 projection after reviewed WIP21 documentation publication.",
+  "changes_before_failure": "Authorized C1 test staged by capture; no candidate manifest or APP execution.",
+  "repair": "Update exact metadata projection to current reviewed248 bytes; all other maintenance scope limits measured and satisfied."
+}

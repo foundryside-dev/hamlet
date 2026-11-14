@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-14T07:15:18.566607+00:00",
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+      "sha256": "a47a69c1e6639dae842d76e4b8f87b8ef21ec99cf07e926cda595a01a2f9c048"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_identity_v1.py",
+      "sha256": "3ab11afad87ea26fb68f64aa01c2b520f135dcd8b3708e4444a4686ed4ac1af4"
+    }
+  ]
+}

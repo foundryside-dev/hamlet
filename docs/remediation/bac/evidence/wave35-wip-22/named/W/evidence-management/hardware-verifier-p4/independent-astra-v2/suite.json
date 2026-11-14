@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "pytest.main",
+    "-p",
+    "pytest_cov.plugin",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "--noconftest",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v2/suite-fixtures"
+  ],
+  "pid": 195493,
+  "start": "2026-11-14T07:57:46.006550+00:00",
+  "exit_code": 0,
+  "end": "2026-11-14T07:58:03.399882+00:00"
+}

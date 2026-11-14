@@ -1,0 +1,275 @@
+# No-Defaults Linter Whitelist (Structural)
+#
+# Format: <filepath>::<class>::<function>::<variable>:<rule_id>
+# Use * for wildcards, ** for path components
+#
+# This uses STRUCTURAL patterns instead of line-based patterns.
+# Benefits:
+#   - Stable across refactors (doesn't break when code moves)
+#   - More semantic (whitelist whole classes/modules)
+#   - Easier to maintain (20 patterns vs 278 line numbers)
+#
+# Generated: 2025-11-04
+# Replaces: 278 line-based entries with ~20 structural patterns
+#
+
+# ============================================================================
+# MODULE-LEVEL WHITELISTS
+# ============================================================================
+# Whitelist entire modules that are legacy/temporary
+
+# Demo/Runner - Temporary entry point, extensive dict.get usage
+# Will be replaced by TASK-003 DTOs and moved to townlet/training/
+src/townlet/demo/**:*
+
+# Recording - Optional feature system, some defaults acceptable
+src/townlet/recording/**:*
+
+# ============================================================================
+# FILE-LEVEL WHITELISTS
+# ============================================================================
+# Whitelist entire files that need refactoring
+
+# Legacy agent networks - will be replaced by BRAIN_AS_CODE (TASK-005)
+src/townlet/agent/networks.py:*
+
+# Curriculum - will be config-driven in TASK-004A
+src/townlet/curriculum/adversarial.py:*
+src/townlet/curriculum/static.py:*
+
+# TensorBoard logger - telemetry system, many dict.get calls
+src/townlet/training/tensorboard_logger.py:*
+
+# ============================================================================
+# CLASS-LEVEL WHITELISTS
+# ============================================================================
+# Whitelist specific classes that have acceptable defaults
+
+# Environment modules - will be refactored in TASK-003/TASK-004A
+src/townlet/environment/affordance_engine.py:*
+src/townlet/environment/vectorized_env.py:*
+
+# Action Labels for Substrate
+src/townlet/environment/action_labels.py:*
+src/townlet/substrate/**:*
+
+# ActionConfig and ActionSpaceBuilder - INTERNAL fields only
+# Behavioral fields (costs, effects) have NO defaults (operator must specify)
+# Metadata fields (delta, teleport_to, icon, description, source_affordance) use None as STRUCTURAL defaults
+# enabled is INTERNAL (computed by builder, not from config)
+# VFS fields (reads, writes) default to empty lists for backward compatibility during Phase 1
+src/townlet/environment/action_config.py:ActionConfig:*:delta:CALL003
+src/townlet/environment/action_config.py:ActionConfig:*:teleport_to:CALL003
+src/townlet/environment/action_config.py:ActionConfig:*:description:CALL003
+src/townlet/environment/action_config.py:ActionConfig:*:icon:CALL003
+src/townlet/environment/action_config.py:ActionConfig:*:source:CALL003
+src/townlet/environment/action_config.py:ActionConfig:*:source_affordance:CALL003
+src/townlet/environment/action_config.py:ActionConfig:*:writes:CALL003
+src/townlet/environment/action_builder.py:ActionSpaceBuilder:__init__:enabled_action_names:DEF001
+
+# Exploration - will be config-driven in BRAIN_AS_CODE (TASK-005)
+src/townlet/exploration/**:*
+
+# Population - will use config DTOs in TASK-003
+src/townlet/population/**:*
+
+# Training infrastructure - will use DTOs in TASK-003
+src/townlet/training/replay_buffer.py:*
+src/townlet/training/sequential_replay_buffer.py:*
+src/townlet/training/prioritized_replay_buffer.py:*
+
+# State DTOs - some defaults are metadata (acceptable per no-defaults principle)
+src/townlet/training/state.py:*
+
+# VFS (Variable & Feature System) - Phase 1 schemas
+# Optional/metadata fields with acceptable defaults per no-defaults principle:
+#   - NormalizationSpec: min/max/mean/std are optional (kind determines which are used)
+#   - VariableDef: dims optional (only for vecNi/vecNf), description optional (metadata)
+src/townlet/vfs/schema.py:NormalizationSpec:*:min:CALL003
+src/townlet/vfs/schema.py:NormalizationSpec:*:max:CALL003
+src/townlet/vfs/schema.py:NormalizationSpec:*:mean:CALL003
+src/townlet/vfs/schema.py:NormalizationSpec:*:std:CALL003
+src/townlet/vfs/schema.py:VariableDef:*:dims:CALL003
+src/townlet/vfs/schema.py:VariableDef:*:description:CALL003
+
+# Needs review
+src/townlet/vfs/registry.py:*
+src/townlet/config/base.py:*
+src/townlet/universe/dto/action_metadata.py:*
+src/townlet/environment/action_config.py:*
+src/townlet/environment/substrate_action_validator.py:*
+src/townlet/training/checkpoint_utils.py:*
+src/townlet/universe/compiled.py:*
+src/townlet/universe/compiler.py:*
+src/townlet/universe/dto/universe_metadata.py:*
+src/townlet/universe/errors.py:*
+src/townlet/universe/optimization.py:*
+src/townlet/universe/source_map.py:*
+src/townlet/universe/symbol_table.py:*
+src/townlet/vfs/schema.py:*
+
+# Drive As Code (DAC) - TASK-004C
+# ExtrinsicStrategyConfig: Optional fields (base, bars, bar_bonuses, variable_bonuses, etc.)
+#   - Strategy-specific fields default to None (each strategy uses different subset)
+#   - Operator must specify fields relevant to chosen strategy type
+# IntrinsicStrategyConfig: apply_modifiers defaults to [] (no modifiers applied)
+# DriveAsCodeConfig: shaping defaults to [] (no shaping bonuses)
+# DACEngine: Runtime defaults for optional strategy fields (base, bar_bonuses, etc.)
+#   - Ternary expressions provide sensible defaults when YAML omits optional fields
+#   - dict.get() for kwargs (shaping bonuses receive context as needed)
+src/townlet/config/drive_as_code.py:*
+src/townlet/environment/dac_engine.py:*
+
+# Brain As Code (BAC) - TASK-005 Phase 1
+# OptimizerConfig: Optimizer-specific fields default to None (each optimizer uses different subset)
+#   - Adam/AdamW: adam_beta1, adam_beta2, adam_eps
+#   - SGD: sgd_momentum, sgd_nesterov
+#   - RMSprop: rmsprop_alpha, rmsprop_eps
+#   - Pydantic validator ensures required fields are present for selected optimizer type
+# ArchitectureConfig: feedforward/recurrent/hybrid fields default to None (only relevant config must be present)
+# FeedforwardConfig: layer_norm defaults to False
+# TODO(TASK-005 Phase 2): Revisit this whitelist when brain.yaml becomes required for all config packs
+
+# ============================================================================
+# EXCEPTIONAL LINE-BASED WHITELISTS
+# ============================================================================
+# Use line-based patterns ONLY for one-off exceptions that don't fit structural patterns
+
+# VFS Phase 1 - ActionConfig VFS integration fields (backward compatibility)
+src/townlet/environment/action_config.py:68:CALL003
+src/townlet/environment/action_config.py:72:CALL003
+
+# VFS Phase 1 - Schema optional/metadata fields
+src/townlet/vfs/schema.py:44:CALL003
+src/townlet/vfs/schema.py:48:CALL003
+src/townlet/vfs/schema.py:54:CALL003
+src/townlet/vfs/schema.py:58:CALL003
+src/townlet/vfs/schema.py:150:CALL003
+src/townlet/vfs/schema.py:212:CALL003
+src/townlet/vfs/schema.py:236:CALL003
+
+# To clean up
+src/townlet/agent/network_factory.py:*
+src/townlet/config/actions_config.py:*
+src/townlet/config/affordances_v2_config.py:*
+src/townlet/config/training_v2_config.py:*
+src/townlet/universe/raw_configs_v21.py:*
+src/townlet/config/environment_config.py:*
+
+# VFS Lint
+src/townlet/config/brain_config.py:*
+src/townlet/config/effects_config.py:*
+src/townlet/config/items_config.py:*
+src/townlet/config/stratum_config.py:*
+src/townlet/effects/catalog.py:*
+src/townlet/effects/collections.py:*
+src/townlet/effects/compiler.py:*
+src/townlet/effects/context.py:*
+src/townlet/effects/executor.py:*
+src/townlet/effects/manager.py:*
+src/townlet/effects/parser.py:*
+src/townlet/effects/scheduler.py:*
+src/townlet/effects/schema.py:*
+src/townlet/items/action_handlers.py:*
+src/townlet/items/instance.py:*
+src/townlet/items/inventory.py:*
+src/townlet/items/manager.py:*
+src/townlet/universe/__main__.py:*
+src/townlet/vfs/evaluator.py:*
+src/townlet/vfs/history.py:*
+src/townlet/vfs/profiles.py:*
+src/townlet/world/expression/context.py:*
+src/townlet/world/expression/functions.py:*
+src/townlet/world/expression/parser.py:*
+src/townlet/world/expression/type_checker.py:*
+
+# ============================================================================
+# TEMPORARY - Will be removed by TASK-003 and TASK-004A
+# ============================================================================
+#
+# Most of these whitelisted patterns exist because:
+#   1. Config loading uses dict.get() instead of Pydantic DTOs (TASK-003)
+#   2. Affordance system has hardcoded defaults (TASK-004A)
+#   3. Runner is temporary entry point (will move to townlet/training/)
+#   4. Exploration/curriculum not yet config-driven (TASK-005)
+#
+# NEXT STEPS:
+# 1. TASK-003: Replace dict.get() with Pydantic DTOs (no-defaults principle)
+# 2. TASK-004A: Universe compiler validates all config
+# 3. Move runner to townlet/training/, use DTOs
+# 4. TASK-005: Make networks/exploration config-driven (BRAIN_AS_CODE)
+# 5. Remove most entries from this whitelist
+#
+# Track progress: python scripts/no_defaults_lint.py src/townlet/ --whitelist .defaults-whitelist.txt
+#
+# ============================================================================
+# RECOVERY-ERA ADDITIONS (2026-08-15, hamlet-2100105c9a)
+# ============================================================================
+# The no-defaults gate had not run in CI since 2025-11-28; every module below
+# postdates that run and had never been gated. Adjudicated per the house style
+# above: mechanical patterns (accumulator .get, control-flow ternaries, CLI
+# plumbing) at file/module level. Stale entries for 12 deleted files pruned in
+# the same pass.
+
+# Oracle differential harness (WS-7) - verification instrument: CLI arg
+# defaults, trace IO plumbing. No authored config flows through it.
+src/townlet/oracle/**:*
+
+# Universe compiler stage modules - internal derivation and accumulator
+# patterns (compiler.py / compiled.py / symbol_table.py are already
+# whitelisted above; the compilers/ split postdates the ledger).
+src/townlet/universe/compilers/**:*
+src/townlet/universe/loaders/preflight.py:*
+src/townlet/universe/validation/limits.py:*
+src/townlet/universe/validation/references.py:*
+
+# Runtime action executor - control-flow ternary + accumulator setdefault
+# (WS-1 task 3 code, accepted; no config value defaulted).
+src/townlet/environment/action_executor.py:*
+
+# VFS modules added after the ledger's last maintenance - mechanical patterns.
+src/townlet/vfs/schema_hashes.py:*
+src/townlet/vfs/transition_schedule.py:*
+
+# PROVISIONAL - suppressed pending adjudication in hamlet-c4ce5515cc; do NOT
+# read this entry as "adjudicated fine". vtc.py's raw-mapping parsing does
+# ad-hoc schema defaulting (.get("composition", ""), inherit-phase, priority
+# fallback) that is a genuine no-defaults concern if those mappings are
+# authored config.
+src/townlet/vfs/vtc.py:*
+
+# ============================================================================
+# 2026-08-29 — Lint gate restored after 47 consecutive reds (2026-08-22 → 29).
+# Every entry below is a STRUCTURAL default or a false positive, not a
+# behavioural config default. Three real hits in the same sweep were fixed in
+# code instead (TokenTypeSchema.slot_bindings, owner_capacity, source_map).
+# ============================================================================
+
+# transition_rules.yaml (hamlet-84cf93a1b9): the DECLARED "(computed)" fields —
+# phase / priority / telemetry_label derive from the rule or from declaration
+# order when omitted. The linter cannot name class-body fields, so the entry is
+# class+rule; these two classes hold exactly those computed fields. The
+# behavioural optionals in the same DTOs (condition, clamp, effect, scope)
+# carry NO default and require an explicit null.
+src/townlet/config/transition_rules_config.py::TransitionRuleWriteConfig:CALL003
+src/townlet/config/transition_rules_config.py::TransitionRuleConfig:CALL003
+
+# Internal publisher registry (dict[type_name, list[publisher]]) — a container
+# idiom, not a config default.
+src/townlet/environment/observation_encoder.py::TokenObservationEncoder::__init__:CALL001
+src/townlet/environment/observation_encoder.py::TokenObservationEncoder::encode:CALL001
+
+# token_spec.py — boolean/arithmetic expressions the AST rules misread as
+# defaults: `bounded = a or b` is a predicate; the ternaries are the
+# normalization maths and a None-passthrough, computed from DECLARED params.
+src/townlet/universe/dto/token_spec.py::*::require_exposure_normalization::bounded:ASG001
+src/townlet/universe/dto/token_spec.py::*::normalize_declared_scalar::v:ASG002
+src/townlet/universe/dto/token_spec.py::*::normalization_param_vector::clip:ASG002
+src/townlet/universe/dto/token_spec.py::*::normalization_param_vector::scale:ASG002
+# None-passthrough when serialising an Optional static signature.
+src/townlet/universe/token_hashes.py::*::canonical_observation_schema::binding_entry:ASG002
+
+# Diagnostic instrumentation (spec §6 cold-token hook, per-interval metrics):
+# optional INPUTS to a measurement, not universe behaviour.
+src/townlet/agent/token_diagnostics.py::*::cold_token_injection:DEF001
+src/townlet/agent/token_diagnostics.py::*::token_diagnostic_metrics:DEF001

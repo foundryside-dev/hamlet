@@ -1,0 +1,162 @@
+{
+  "actual_generic_custody": {
+    "bytes": 650,
+    "path": "wave35-r122-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+    "root": "Q",
+    "sha256": "224f92ccc91c10d33820a6f1dcec1f2eb41054fe47482e916bb2ca6d4aebd334"
+  },
+  "actual_outer_record": {
+    "argv": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-body-same-attempt-1-spec.json"
+    ],
+    "end_utc": "2026-11-14T08:09:44.123988+00:00",
+    "environment_delta": {
+      "BAC_PARENT_C1_POISON_CASE": "body_same"
+    },
+    "exit_code": 0,
+    "launcher_pid": 197796,
+    "launcher_start_ticks": 12308554,
+    "orchestrator_pid": 197792,
+    "role": "body_same",
+    "script_sha256": "535c44f5701de108da810aa5aa177fe3cbebe2d91701774c49b8777b6c407b05",
+    "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-body-same-attempt-1-spec.json",
+    "spec_sha256": "24244afa818546062f0378c292b04c1b5fcfcddaf1b559e6e643764926fce1a0",
+    "start_utc": "2026-11-14T08:09:35.204148+00:00"
+  },
+  "actual_result": {
+    "bytes": 932,
+    "path": "wave35-r122-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+    "root": "Q",
+    "sha256": "2feb2cfd71ec21dc22b961b3c7347fd256149d206c7121426340916a0498b6ef"
+  },
+  "actual_spec": {
+    "bytes": 680,
+    "path": "wave35-r122-c1-poison-body-same-attempt-1-spec.json",
+    "root": "Q",
+    "sha256": "24244afa818546062f0378c292b04c1b5fcfcddaf1b559e6e643764926fce1a0"
+  },
+  "actual_spec_fields": {
+    "jobs": [
+      {
+        "args": [
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[same]",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q"
+        ],
+        "name": "c1-poison-body-same"
+      }
+    ],
+    "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+    "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r122-c1-poison-body-same-attempt-1",
+    "root": "/workspace/hamlet",
+    "workers": 2
+  },
+  "association_checks": {
+    "child_ppid_equals_outer_launcher": true,
+    "child_start_after_launcher": true,
+    "expected_commit_equals_base": true,
+    "expected_tree_equals_actual_candidate": true,
+    "node_present_in_actual_command": true,
+    "role_equals_outer_role": true,
+    "spec_output_equals_actual_attempt": true
+  },
+  "attempt_id": "wave35-r122-c1-poison-body-same-attempt-1--c1-poison-body-same",
+  "candidate_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+  "original_assertion_facts": {
+    "assertions_reached": true,
+    "bank_completion_failed": [
+      true
+    ],
+    "completion_events": [
+      [
+        "bank",
+        []
+      ]
+    ],
+    "completion_uncertain": true,
+    "parent_completion_failed": null,
+    "same_error_identity": true
+  },
+  "original_fields": {
+    "cmdline": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[same]",
+      "--no-cov",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "no:benchmark",
+      "-p",
+      "bac_source_identity",
+      "-q"
+    ],
+    "expected_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+    "expected_tree": "7d3be1eeda87015e939f1dd90275b05a1586676b",
+    "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json",
+    "node": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[same]",
+    "orig_argv": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py::test_body_and_completion_failure_identity[same]",
+      "--no-cov",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "no:benchmark",
+      "-p",
+      "bac_source_identity",
+      "-q"
+    ],
+    "pid": 197821,
+    "ppid": 197796,
+    "role": "body_same",
+    "runtime_profile": {
+      "anomaly_enabled": false,
+      "executable": "/workspace/hamlet/.venv/bin/python",
+      "inter_op": 5,
+      "intra_op": 1,
+      "torch_origin": "/workspace/hamlet/.venv/lib/python3.13/site-packages/torch/__init__.py",
+      "torch_version": "2.11.0+cu130"
+    },
+    "schema": "bac-parent-c1-poison-self-v1",
+    "sha256": {
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r122-candidate.json": "6075b1b51c3d2de05a78691fe8646963ee4bbc4b0fa22d2839ec0af91856f80e",
+      "/workspace/hamlet/src/townlet/config/exploration_policy.py": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9",
+      "/workspace/hamlet/src/townlet/exploration/parent_custody.py": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f",
+      "/workspace/hamlet/src/townlet/exploration/rng_custody.py": "6cb01ca77b58db5f4c4784dc36da566c06cf68c2a7c2ce227bb780549f3344f8",
+      "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4",
+      "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": "ca3b0fd10c1fb49e508237901054dd655c9df34fea3745592c216e6c4d5ad5bc"
+    },
+    "source_root": "/workspace/hamlet",
+    "start_ticks": 12308579
+  },
+  "original_witness": {
+    "bytes": 2414,
+    "path": "wave35-r122-c1-poison-body-same-attempt-1/c1-poison-body-same/parent-c1-body_same.json",
+    "root": "Q",
+    "sha256": "1d1d68cc6e7a37e724ced3c6d10ab9fc29b7e79028ff751269c52904760cb83c"
+  },
+  "schema": "bac-child-source-attempt-association-proposal-v1",
+  "scope": "Derived explicit association of recorded candidate/strict outer spec/PID to this original attempt; original witness has no candidate_tree or attempt_id keys and is not rewritten. Root approval required.",
+  "strict_verification": {
+    "bytes": 1301,
+    "path": "wave35-r122-c1-poison-body-same-attempt-1/root-poison-witness-verification.json",
+    "root": "Q",
+    "sha256": "7f3d525c7f9921d550b81ba66858161e5b2dd48e96aafc9e8ba8be569a12a558"
+  },
+  "topology_limitation": "Spec workers is scheduler capacity; actual pytest argv has no xdist flag and recorded topology is one controller / zero workers, established by original actual records, not inferred from spec capacity."
+}

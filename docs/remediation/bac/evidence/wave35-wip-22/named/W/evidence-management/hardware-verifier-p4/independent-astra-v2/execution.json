@@ -1,0 +1,68 @@
+{
+  "argv": [
+    ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py"
+  ],
+  "pid": 195493,
+  "ppid": 195492,
+  "start": "2026-11-14T07:57:45.786580+00:00",
+  "cwd": "/workspace/hamlet",
+  "affinity": [
+    3
+  ],
+  "environment_delta": {
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "bytes": 3032,
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34237,
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "bytes": 59003,
+      "sha256": "708f4f39b41639a56dbe90a62083f434e3ea1fe909de75342a38a2b11c92d5f4"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "bytes": 53083,
+      "sha256": "dc4cc904d81e31a22a7d0e616b8c6ecafc36958356fcc84134737895f895a79b"
+    }
+  ],
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py",
+    "bytes": 7717,
+    "sha256": "a8b561f940f0a26f4dc9c1b9f1df459d57a5b0158be14933a0752ba9dcc4bc8c"
+  },
+  "snapshots": [
+    {
+      "bytes": 3032,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-green-final/verify_bac_run.py.txt",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 34237,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-green-final/bac_hardware_protocol_v1.py.txt",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c"
+    },
+    {
+      "bytes": 59003,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-green-final/verify_bac_hardware_v1.py.txt",
+      "sha256": "708f4f39b41639a56dbe90a62083f434e3ea1fe909de75342a38a2b11c92d5f4"
+    },
+    {
+      "bytes": 53083,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/repair-v2-green-final/test_verify_bac_hardware_v1.py.txt",
+      "sha256": "dc4cc904d81e31a22a7d0e616b8c6ecafc36958356fcc84134737895f895a79b"
+    }
+  ],
+  "end": "2026-11-14T07:58:09.849359+00:00",
+  "exit_code": 0,
+  "suite_exit_code": 0
+}

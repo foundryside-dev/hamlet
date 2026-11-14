@@ -1,0 +1,249 @@
+{
+  "at": "2026-11-14T07:53:41.264480+00:00",
+  "manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r120-candidate.json",
+    "bytes": 207570,
+    "sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64"
+  },
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "status": "R120 EXECUTION CLOSED; FOUR ORDINARY FAILURES REQUIRE CAUSAL TEST REPAIR, NOT ACCEPTANCE",
+  "snapshots": [
+    {
+      "source": "src/townlet/config/exploration_policy.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r120-executed-source/exploration_policy.py.txt",
+      "bytes": 63680,
+      "sha256": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9"
+    },
+    {
+      "source": "src/townlet/exploration/scoped_curiosity.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r120-executed-source/scoped_curiosity.py.txt",
+      "bytes": 68489,
+      "sha256": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4"
+    },
+    {
+      "source": "src/townlet/exploration/parent_custody.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r120-executed-source/parent_custody.py.txt",
+      "bytes": 7985,
+      "sha256": "5b592ac955d8e45b3369d4dac3a1bc2996093dfaa8427d732183d321aada801a"
+    },
+    {
+      "source": "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/r120-executed-source/test_runtime_bank_parent_custody.py.txt",
+      "bytes": 36294,
+      "sha256": "579ade676a5d42a66ee24fcb6aa7743b3cc00739114aec0c685e8fa0bb6043e7"
+    }
+  ],
+  "checks": [
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-collection-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-collection-attempt-1/c1-collection-result.json",
+          "bytes": 887,
+          "sha256": "94a3ac8fd5199b90866363194e198924e36594b1100d2de5c60e3b2e85173f8f"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-collection-attempt-1/c1-collection-custody.json",
+          "bytes": 644,
+          "sha256": "ea3cf01245bf57dedfe516f9825b10175fd846cdb20d6f0449cb7513cf394860"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-independent-expiration-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration-result.json",
+          "bytes": 980,
+          "sha256": "2efa0f6fb8229af5d63eba76883d480d58a3f938d1d6deaf4325775904312003"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-independent-expiration-attempt-1/c1-independent-expiration-custody.json",
+          "bytes": 656,
+          "sha256": "ddaeb6b08b276077245087ee969b4a913d9863428864d4acbaa5194bcc3316d7"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-ordinary-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-ordinary-attempt-1/c1-ordinary-result.json",
+          "bytes": 1268,
+          "sha256": "0ad79603b5f045db8894ba1f41c40afa221beba9d3ed5d7c882afa20c16333f7"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-ordinary-attempt-1/c1-ordinary-negative-custody.json",
+          "bytes": 960,
+          "sha256": "fd9b81541d63ac591db46db9b2110e122442a04a6d793ec424002805da117d2a"
+        }
+      ],
+      "status": "COMPLETED FAILED"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic-result.json",
+          "bytes": 973,
+          "sha256": "ced10a8295d79ef484935b623e87831d5deb49b39dd056977492978ff195bf31"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic-custody.json",
+          "bytes": 648,
+          "sha256": "bd0e4a0d3ff289d50f01874237db2d5fcaa0e8cdddefbdde20ae827c429d1574"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-2",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic-result.json",
+          "bytes": 974,
+          "sha256": "ea407b12170514ce63097c59ff15444ecb66d59a67217b76e606a6f3dd413c04"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-2/c1-pin-diagnostic-custody.json",
+          "bytes": 649,
+          "sha256": "a9e9bd4da522cc435bed444350727678b3632c484686e9239bbfd76e29bc3803"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-result.json",
+          "bytes": 948,
+          "sha256": "8607a42666ca96ea4a0ba2c0d0081eda91e72a2eef6af5561a0df3b23a13e9a2"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-distinct-attempt-1/c1-poison-body-distinct-custody.json",
+          "bytes": 654,
+          "sha256": "a4056441ccab4a78e5ad97b3f7438d3519f26958a0fb0361e6e968da76ed4faa"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-result.json",
+          "bytes": 930,
+          "sha256": "85a55461f1166f76f4a90bc647300dc055e32ee44029bf64e30af45d5130c252"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-body-same-attempt-1/c1-poison-body-same-custody.json",
+          "bytes": 648,
+          "sha256": "4c6a6b14aaaeb0aac05a1f3b58eebafe5065139aee1a88e959eb56fe75905e56"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-result.json",
+          "bytes": 977,
+          "sha256": "46e7cf587d7b021098be2350f0f69f324400afbbf494eae1953b7e12d3d03256"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-false-parent-true-attempt-1/c1-poison-child-false-parent-true-custody.json",
+          "bytes": 665,
+          "sha256": "1272ae16b892d7c950dbecc0fc22b602b4cc303deb210b864af93f97ebd1c4ab"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-result.json",
+          "bytes": 979,
+          "sha256": "4f5b6c8e651c1a3920773a721eabe129be2ae9a35b9d3ce3d9d63dd1d87a3e4e"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-child-true-parent-false-attempt-1/c1-poison-child-true-parent-false-custody.json",
+          "bytes": 664,
+          "sha256": "542917c06e177b30e8683589aed80169c0b6fc098db37ca7f9fca36169949c73"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-result.json",
+          "bytes": 972,
+          "sha256": "ac654942d4d620f44e343e899c7475182d2fde1fec333342fc2eac7d8ad1423b"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-poison-install-completion-attempt-1/c1-poison-install-completion-custody.json",
+          "bytes": 659,
+          "sha256": "d247b3813bffbcf170e0179e775fcbd8651e1d100e565aff53abd869326aa37c"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    },
+    {
+      "attempt": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-repaired-controls-attempt-1",
+      "results": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls-result.json",
+          "bytes": 1476,
+          "sha256": "ba6dd39e48a0af75d7df89c5e577b3cc198d3d594e285ca0f353e5364e286367"
+        }
+      ],
+      "custody": [
+        {
+          "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-repaired-controls-attempt-1/c1-repaired-controls-custody.json",
+          "bytes": 651,
+          "sha256": "08dcbcbc52597ed43bdb6d665230bf23bbbb5fe43de094059fbeaff799b3e085"
+        }
+      ],
+      "status": "COMPLETED; COLLECTION/DIAGNOSTIC/RUNTIME SCOPES DISTINCT"
+    }
+  ],
+  "accounting": "Ordinary58PASS4FAIL of62; repaired5 overlap ordinary; five separate poisonPASS0skip; independentexpiry2 separate reviewerprobes; two diagnostic passes not acceptance; collection67 not runtime.",
+  "diagnostics": "Full fixture retains runtime/BANK without C1 as well as with expired scope; both C1 registries empty. Runtime referenced by full make_parent frame; external root not attributed. Requires isolated genuine-owner lifetime control, no global leak claim.",
+  "unrun": [
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-collection-spec.json",
+      "reason": "Old capture emits unrelated T21 specs; not selected for C1; no execution."
+    },
+    {
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-owned-spec.json",
+      "reason": "Old capture emits unrelated T21 specs; not selected for C1; no execution."
+    }
+  ],
+  "next": "Correct two ValueError expectations, sentinel installation, and isolate genuine owner retention after baseline establishes collectibility; then fresh candidate all C1 cases and owner suites/static/independent review."
+}

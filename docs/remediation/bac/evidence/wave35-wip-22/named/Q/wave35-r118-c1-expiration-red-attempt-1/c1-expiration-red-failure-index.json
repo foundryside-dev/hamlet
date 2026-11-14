@@ -1,0 +1,31 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "candidate_tree": "0444b7d5dea599729ece9f3e72fd847701c89fbf",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py"
+  ],
+  "signatures": [
+    {
+      "error": "assert not [KeyError(<weakref at 0x7fab2e34a200; to 'townlet.exploration.parent_custody.RuntimeParentCustody' at 0x7fab2e3af0e0>)]",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py::test_contender_lookup_survives_issuer_scope_expiration[runtime]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "assert not [KeyError(<weakref at 0x7fab393b0bd0; to 'townlet.exploration.parent_custody.BankParentCustody' at 0x7fab2e39f530>)]",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py::test_contender_lookup_survives_issuer_scope_expiration[bank]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

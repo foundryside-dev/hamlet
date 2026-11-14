@@ -1,0 +1,75 @@
+{
+  "schema": "bac-hardware-p0-root-adoption-v2",
+  "at": "2026-11-14T06:23:06.950673+00:00",
+  "status": "ADOPTED AMENDED COMMON TRANSPORT FOR P1/P2 INTEGRATION",
+  "predecessor": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-adoption-v1.json",
+    "bytes": 2955,
+    "sha256": "bb765dec2408877248d94ff0193cef7cb5404574c1a01948064c99689ab09b42"
+  },
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/freeze-v4.json",
+    "bytes": 3836,
+    "sha256": "a70793847584bafd5ef8a3ddbf71a844b92e828b850b944a4ed7a198b2c743b8"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-PROTOCOL-P0-INDEPENDENT-REVIEW-v4.md",
+    "bytes": 4312,
+    "sha256": "75dad55c4ea5db79de906731d4a3046f5a2d847f2cf9dc2afc47c3f712bc46c0"
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v4.json",
+    "bytes": 13184,
+    "sha256": "0a0b4de21d8f9f168785f6b2483c7c1ad5e1ec79ec27fe56ec56838833b421b5"
+  },
+  "schema_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/schema-inventory-v2.json",
+    "bytes": 22624,
+    "sha256": "d6882e7ab20c788299a9c29584920bdd8a76bd503c1a4ed12a0bff48f248e63d"
+  },
+  "independent_execution_records": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/author-suite-v5.json",
+      "bytes": 1798,
+      "sha256": "435c05223f11076fc412535ab8ea4ce4a5fd34b864749bce6965e2535c2e38ca"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/author-suite-v5.log",
+      "bytes": 180,
+      "sha256": "73a7e99f2e467c331f26875b0340bf56e6d1b84d6c7772e1a6b082fc58b0cd9d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v6.json",
+      "bytes": 1877,
+      "sha256": "e463c77a26009c35da955a05ab948164bde7703b6d86b163f7e39fcc317260ab"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v6.log",
+      "bytes": 99,
+      "sha256": "67f3b2b7900905d0c1841e10fb4b57641a076975b7bdf815421056bec34c13d6"
+    }
+  ],
+  "root_authorized_private_payload_contracts": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/private-payload-contract-proposal-v2.md",
+      "bytes": 5230,
+      "sha256": "b0754003f7c35b44b753f2cf61cdccb4feff59b8759318012e490c79f6bd3baf"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/allocation-cpu-private-addendum-proposal-v2.md",
+      "bytes": 5739,
+      "sha256": "1509c1e66049b36b6917890979f6bc24fa7aa5a2f3e71a84325b25d28f542fc2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/discovery-probe-private-addendum-proposal-v2.md",
+      "bytes": 3473,
+      "sha256": "306067e47bb21d589a622a75eb4cab9525ca32338d50b8cdcfc3412ebc70ee41"
+    }
+  ],
+  "decision": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/root-interface-amendment-decision-v1.json",
+    "bytes": 2511,
+    "sha256": "5b23d1616de3b2857026f315bbc4ad6b17a4017ad2d766ad78bf08d98d21bb4c"
+  },
+  "boundary": "P0 structural/reference/local invariant qualification only. P1/P2 semantic capture/scheduling and P3\u2013P5/owner contracts require implementation+independent review. No real CUDA/hardware/APP qualification; frozen WIP21 old P0 evidence remains exact history."
+}

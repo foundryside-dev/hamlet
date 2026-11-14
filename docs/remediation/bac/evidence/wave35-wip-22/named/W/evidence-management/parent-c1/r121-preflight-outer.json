@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r121-c1-preflight-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T07:56:17.116474+00:00",
+  "parent_pid": 195197,
+  "manifest_sha256": "9fe86fd0968fd5059590e3ef88ed4069575e3232f1677e2cf1e3810e11dc1305",
+  "spec_sha256": "346552490e67cac8e10cf4948deb77061acde8a55273539266b07e926062f0e3",
+  "pid": 195198,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T07:56:26.328832+00:00"
+}

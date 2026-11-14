@@ -1,0 +1,972 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                           [100%]
+=================================== FAILURES ===================================
+_______________________ test_required_capability_exists ________________________
+
+    def test_required_capability_exists():
+>       assert callable(verifier().verify)
+                        ^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:171: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+____________________ test_unknown_validator_never_satisfies ____________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb09be0>
+
+    def test_unknown_validator_never_satisfies(evidence):
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_______________________ test_exact_bindings[argv-value0] _______________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb982d0>
+field = 'argv', value = ['/wrong']
+
+    @pytest.mark.parametrize("field,value", [("argv", ["/wrong"]), ("seed", dict(policy="explicit", python=99, numpy=2, torch=3, cuda=[])), ("environment", {})])
+    def test_exact_bindings(evidence, field, value):
+        evidence.command[field] = value
+        evidence.result["command"] = write(evidence.output / "command.json", evidence.command)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_______________________ test_exact_bindings[seed-value1] _______________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98a50>
+field = 'seed'
+value = {'cuda': [], 'numpy': 2, 'policy': 'explicit', 'python': 99, ...}
+
+    @pytest.mark.parametrize("field,value", [("argv", ["/wrong"]), ("seed", dict(policy="explicit", python=99, numpy=2, torch=3, cuda=[])), ("environment", {})])
+    def test_exact_bindings(evidence, field, value):
+        evidence.command[field] = value
+        evidence.result["command"] = write(evidence.output / "command.json", evidence.command)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+___________________ test_exact_bindings[environment-value2] ____________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98e10>
+field = 'environment', value = {}
+
+    @pytest.mark.parametrize("field,value", [("argv", ["/wrong"]), ("seed", dict(policy="explicit", python=99, numpy=2, torch=3, cuda=[])), ("environment", {})])
+    def test_exact_bindings(evidence, field, value):
+        evidence.command[field] = value
+        evidence.result["command"] = write(evidence.output / "command.json", evidence.command)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+__________________ test_required_case_outcomes[setup-failed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98f50>
+phase = 'setup', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+__________________ test_required_case_outcomes[call-skipped] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99090>
+phase = 'call', status = 'skipped'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+__________________ test_required_case_outcomes[call-xfailed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb991d0>
+phase = 'call', status = 'xfailed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+__________________ test_required_case_outcomes[call-xpassed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99310>
+phase = 'call', status = 'xpassed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_________________ test_required_case_outcomes[teardown-failed] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99450>
+phase = 'teardown', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+____________________ test_required_collection_set[missing] _____________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99590>
+mutation = 'missing'
+
+    @pytest.mark.parametrize("mutation", ["missing", "duplicate", "extra", "collection-only"])
+    def test_required_collection_set(evidence, mutation):
+        if mutation == "missing":
+            evidence.result["collected_ids"] = []
+            evidence.result["outcomes"] = []
+        elif mutation == "duplicate":
+            evidence.result["collected_ids"].append("test_inert")
+        elif mutation == "extra":
+            evidence.result["collected_ids"].append("test_extra")
+        else:
+            evidence.result["outcomes"] = []
+        evidence.seal()
+        receipt = None
+        try:
+>           receipt = evidence.verify()
+                      ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+___________________ test_required_collection_set[duplicate] ____________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb996d0>
+mutation = 'duplicate'
+
+    @pytest.mark.parametrize("mutation", ["missing", "duplicate", "extra", "collection-only"])
+    def test_required_collection_set(evidence, mutation):
+        if mutation == "missing":
+            evidence.result["collected_ids"] = []
+            evidence.result["outcomes"] = []
+        elif mutation == "duplicate":
+            evidence.result["collected_ids"].append("test_inert")
+        elif mutation == "extra":
+            evidence.result["collected_ids"].append("test_extra")
+        else:
+            evidence.result["outcomes"] = []
+        evidence.seal()
+        receipt = None
+        try:
+>           receipt = evidence.verify()
+                      ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_____________________ test_required_collection_set[extra] ______________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99810>
+mutation = 'extra'
+
+    @pytest.mark.parametrize("mutation", ["missing", "duplicate", "extra", "collection-only"])
+    def test_required_collection_set(evidence, mutation):
+        if mutation == "missing":
+            evidence.result["collected_ids"] = []
+            evidence.result["outcomes"] = []
+        elif mutation == "duplicate":
+            evidence.result["collected_ids"].append("test_inert")
+        elif mutation == "extra":
+            evidence.result["collected_ids"].append("test_extra")
+        else:
+            evidence.result["outcomes"] = []
+        evidence.seal()
+        receipt = None
+        try:
+>           receipt = evidence.verify()
+                      ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+________________ test_required_collection_set[collection-only] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99950>
+mutation = 'collection-only'
+
+    @pytest.mark.parametrize("mutation", ["missing", "duplicate", "extra", "collection-only"])
+    def test_required_collection_set(evidence, mutation):
+        if mutation == "missing":
+            evidence.result["collected_ids"] = []
+            evidence.result["outcomes"] = []
+        elif mutation == "duplicate":
+            evidence.result["collected_ids"].append("test_inert")
+        elif mutation == "extra":
+            evidence.result["collected_ids"].append("test_extra")
+        else:
+            evidence.result["outcomes"] = []
+        evidence.seal()
+        receipt = None
+        try:
+>           receipt = evidence.verify()
+                      ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+________________ test_process_lifecycle_mutations[missing-end] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99810>
+mutation = 'missing-end'
+
+    @pytest.mark.parametrize("mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"])
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid": end["identity"]["pid"] += 1
+            if mutation == "wrong-start": end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent": end["identity"]["ppid"] = 999
+            if mutation == "wrong-env": end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import": end["imports"] = [dict(name="foreign", reference=evidence.policy_ref)]
+            if mutation == "false-work": end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_________________ test_process_lifecycle_mutations[wrong-pid] __________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb996d0>
+mutation = 'wrong-pid'
+
+    @pytest.mark.parametrize("mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"])
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid": end["identity"]["pid"] += 1
+            if mutation == "wrong-start": end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent": end["identity"]["ppid"] = 999
+            if mutation == "wrong-env": end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import": end["imports"] = [dict(name="foreign", reference=evidence.policy_ref)]
+            if mutation == "false-work": end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+________________ test_process_lifecycle_mutations[wrong-start] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99590>
+mutation = 'wrong-start'
+
+    @pytest.mark.parametrize("mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"])
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid": end["identity"]["pid"] += 1
+            if mutation == "wrong-start": end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent": end["identity"]["ppid"] = 999
+            if mutation == "wrong-env": end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import": end["imports"] = [dict(name="foreign", reference=evidence.policy_ref)]
+            if mutation == "false-work": end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+________________ test_process_lifecycle_mutations[wrong-parent] ________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99310>
+mutation = 'wrong-parent'
+
+    @pytest.mark.parametrize("mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"])
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid": end["identity"]["pid"] += 1
+            if mutation == "wrong-start": end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent": end["identity"]["ppid"] = 999
+            if mutation == "wrong-env": end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import": end["imports"] = [dict(name="foreign", reference=evidence.policy_ref)]
+            if mutation == "false-work": end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_________________ test_process_lifecycle_mutations[wrong-env] __________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb991d0>
+mutation = 'wrong-env'
+
+    @pytest.mark.parametrize("mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"])
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid": end["identity"]["pid"] += 1
+            if mutation == "wrong-start": end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent": end["identity"]["ppid"] = 999
+            if mutation == "wrong-env": end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import": end["imports"] = [dict(name="foreign", reference=evidence.policy_ref)]
+            if mutation == "false-work": end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_____________ test_process_lifecycle_mutations[unexpected-import] ______________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99090>
+mutation = 'unexpected-import'
+
+    @pytest.mark.parametrize("mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"])
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid": end["identity"]["pid"] += 1
+            if mutation == "wrong-start": end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent": end["identity"]["ppid"] = 999
+            if mutation == "wrong-env": end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import": end["imports"] = [dict(name="foreign", reference=evidence.policy_ref)]
+            if mutation == "false-work": end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_________________ test_process_lifecycle_mutations[false-work] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98f50>
+mutation = 'false-work'
+
+    @pytest.mark.parametrize("mutation", ["missing-end", "wrong-pid", "wrong-start", "wrong-parent", "wrong-env", "unexpected-import", "false-work"])
+    def test_process_lifecycle_mutations(evidence, mutation):
+        end = json.loads(Path(evidence.processes[1]["path"]).read_text())
+        if mutation == "missing-end":
+            evidence.result["process_records"] = evidence.processes[:1]
+        else:
+            if mutation == "wrong-pid": end["identity"]["pid"] += 1
+            if mutation == "wrong-start": end["identity"]["start_identity"] = "reused"
+            if mutation == "wrong-parent": end["identity"]["ppid"] = 999
+            if mutation == "wrong-env": end["environment"] = {**end["environment"], "UNSEALED": "1"}
+            if mutation == "unexpected-import": end["imports"] = [dict(name="foreign", reference=evidence.policy_ref)]
+            if mutation == "false-work": end["torch_observation"] = "work"
+            evidence.result["process_records"][1] = write(Path(evidence.processes[1]["path"]), end)
+        evidence.seal()
+        with pytest.raises(ValueError):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+______________ test_admission_and_seal_required[missing-terminal] ______________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99450>
+mutation = 'missing-terminal'
+
+    @pytest.mark.parametrize("mutation", ["missing-terminal", "refused-terminal", "partial-spec", "log-tamper", "missing-seal"])
+    def test_admission_and_seal_required(evidence, mutation):
+        if mutation == "missing-terminal": (evidence.capture / "result.json").rename(evidence.capture / "retained-terminal.json")
+        if mutation == "refused-terminal": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="refused", reasons=["late failure"], admission=evidence.admission, spec=None))
+        if mutation == "partial-spec": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="admitted", reasons=[], admission=evidence.admission, spec=evidence.inert))
+        if mutation == "log-tamper": evidence.log.write_text("999 passed forged log")
+        if mutation == "missing-seal": (evidence.output.parent / "seal.json").rename(evidence.output.parent / "retained-seal.json")
+>       with pytest.raises(ValueError): evidence.verify()
+                                        ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+______________ test_admission_and_seal_required[refused-terminal] ______________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98e10>
+mutation = 'refused-terminal'
+
+    @pytest.mark.parametrize("mutation", ["missing-terminal", "refused-terminal", "partial-spec", "log-tamper", "missing-seal"])
+    def test_admission_and_seal_required(evidence, mutation):
+        if mutation == "missing-terminal": (evidence.capture / "result.json").rename(evidence.capture / "retained-terminal.json")
+        if mutation == "refused-terminal": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="refused", reasons=["late failure"], admission=evidence.admission, spec=None))
+        if mutation == "partial-spec": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="admitted", reasons=[], admission=evidence.admission, spec=evidence.inert))
+        if mutation == "log-tamper": evidence.log.write_text("999 passed forged log")
+        if mutation == "missing-seal": (evidence.output.parent / "seal.json").rename(evidence.output.parent / "retained-seal.json")
+>       with pytest.raises(ValueError): evidence.verify()
+                                        ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+________________ test_admission_and_seal_required[partial-spec] ________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98a50>
+mutation = 'partial-spec'
+
+    @pytest.mark.parametrize("mutation", ["missing-terminal", "refused-terminal", "partial-spec", "log-tamper", "missing-seal"])
+    def test_admission_and_seal_required(evidence, mutation):
+        if mutation == "missing-terminal": (evidence.capture / "result.json").rename(evidence.capture / "retained-terminal.json")
+        if mutation == "refused-terminal": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="refused", reasons=["late failure"], admission=evidence.admission, spec=None))
+        if mutation == "partial-spec": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="admitted", reasons=[], admission=evidence.admission, spec=evidence.inert))
+        if mutation == "log-tamper": evidence.log.write_text("999 passed forged log")
+        if mutation == "missing-seal": (evidence.output.parent / "seal.json").rename(evidence.output.parent / "retained-seal.json")
+>       with pytest.raises(ValueError): evidence.verify()
+                                        ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_________________ test_admission_and_seal_required[log-tamper] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb982d0>
+mutation = 'log-tamper'
+
+    @pytest.mark.parametrize("mutation", ["missing-terminal", "refused-terminal", "partial-spec", "log-tamper", "missing-seal"])
+    def test_admission_and_seal_required(evidence, mutation):
+        if mutation == "missing-terminal": (evidence.capture / "result.json").rename(evidence.capture / "retained-terminal.json")
+        if mutation == "refused-terminal": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="refused", reasons=["late failure"], admission=evidence.admission, spec=None))
+        if mutation == "partial-spec": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="admitted", reasons=[], admission=evidence.admission, spec=evidence.inert))
+        if mutation == "log-tamper": evidence.log.write_text("999 passed forged log")
+        if mutation == "missing-seal": (evidence.output.parent / "seal.json").rename(evidence.output.parent / "retained-seal.json")
+>       with pytest.raises(ValueError): evidence.verify()
+                                        ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+________________ test_admission_and_seal_required[missing-seal] ________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99a90>
+mutation = 'missing-seal'
+
+    @pytest.mark.parametrize("mutation", ["missing-terminal", "refused-terminal", "partial-spec", "log-tamper", "missing-seal"])
+    def test_admission_and_seal_required(evidence, mutation):
+        if mutation == "missing-terminal": (evidence.capture / "result.json").rename(evidence.capture / "retained-terminal.json")
+        if mutation == "refused-terminal": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="refused", reasons=["late failure"], admission=evidence.admission, spec=None))
+        if mutation == "partial-spec": write(evidence.capture / "result.json", dict(schema="bac-hardware-capture-result-v1", disposition="admitted", reasons=[], admission=evidence.admission, spec=evidence.inert))
+        if mutation == "log-tamper": evidence.log.write_text("999 passed forged log")
+        if mutation == "missing-seal": (evidence.output.parent / "seal.json").rename(evidence.output.parent / "retained-seal.json")
+>       with pytest.raises(ValueError): evidence.verify()
+                                        ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+____________________________ test_immutable_receipt ____________________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98a50>
+
+    def test_immutable_receipt(evidence):
+>       first = evidence.verify()
+                ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:248: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+___________________________ test_unsafe_receipt_path ___________________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98e10>
+
+    def test_unsafe_receipt_path(evidence):
+        alias = evidence.root / "alias"
+        alias.symlink_to(evidence.capture, target_is_directory=True)
+>       with pytest.raises(ValueError): verifier().verify(str(evidence.spec_path), "job", str(alias / "receipt.json"))
+                                        ^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:259: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+_________________________ test_duplicate_json_rejected _________________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb99450>
+
+    def test_duplicate_json_rejected(evidence):
+        evidence.spec_path.write_text('{"schema":"bac-hardware-v1","schema":"forged"}')
+>       with pytest.raises(ValueError): evidence.verify()
+                                        ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+___________ test_evidence_class_never_inferred_from_device_presence ____________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f3dcfb98f50>
+
+    def test_evidence_class_never_inferred_from_device_presence(evidence):
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def verifier():
+>       assert importlib.util.find_spec("verify_bac_hardware_v1"), "P4 independent verifier capability absent"
+E       AssertionError: P4 independent verifier capability absent
+E       assert None
+E        +  where None = <function find_spec at 0x7f3dd07f8400>('verify_bac_hardware_v1')
+E        +    where <function find_spec at 0x7f3dd07f8400> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+test_verify_bac_hardware_v1.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_required_capability_exists - Asse...
+FAILED test_verify_bac_hardware_v1.py::test_unknown_validator_never_satisfies
+FAILED test_verify_bac_hardware_v1.py::test_exact_bindings[argv-value0] - Ass...
+FAILED test_verify_bac_hardware_v1.py::test_exact_bindings[seed-value1] - Ass...
+FAILED test_verify_bac_hardware_v1.py::test_exact_bindings[environment-value2]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[setup-failed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-skipped]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-xfailed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-xpassed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[teardown-failed]
+FAILED test_verify_bac_hardware_v1.py::test_required_collection_set[missing]
+FAILED test_verify_bac_hardware_v1.py::test_required_collection_set[duplicate]
+FAILED test_verify_bac_hardware_v1.py::test_required_collection_set[extra] - ...
+FAILED test_verify_bac_hardware_v1.py::test_required_collection_set[collection-only]
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[missing-end]
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[wrong-pid]
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[wrong-start]
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[wrong-parent]
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[wrong-env]
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[unexpected-import]
+FAILED test_verify_bac_hardware_v1.py::test_process_lifecycle_mutations[false-work]
+FAILED test_verify_bac_hardware_v1.py::test_admission_and_seal_required[missing-terminal]
+FAILED test_verify_bac_hardware_v1.py::test_admission_and_seal_required[refused-terminal]
+FAILED test_verify_bac_hardware_v1.py::test_admission_and_seal_required[partial-spec]
+FAILED test_verify_bac_hardware_v1.py::test_admission_and_seal_required[log-tamper]
+FAILED test_verify_bac_hardware_v1.py::test_admission_and_seal_required[missing-seal]
+FAILED test_verify_bac_hardware_v1.py::test_immutable_receipt - AssertionErro...
+FAILED test_verify_bac_hardware_v1.py::test_unsafe_receipt_path - AssertionEr...
+FAILED test_verify_bac_hardware_v1.py::test_duplicate_json_rejected - Asserti...
+FAILED test_verify_bac_hardware_v1.py::test_evidence_class_never_inferred_from_device_presence
+30 failed in 0.95s

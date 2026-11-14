@@ -1,0 +1,43 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--noconftest",
+    "-q"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "utc_start": "2026-11-14T06:46:23.554448+00:00",
+  "parent_pid": 185131,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "e4a94e819bb97e39c5f71cdb80eda8d309fcfaef70d15cc67daceb1d80acf751",
+      "bytes": 56496
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "04fe92dd1acc9fa6f91510c67af572c3ace9d5582adb510f1e090f5c8e90bfab",
+      "bytes": 42670
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+      "bytes": 34237
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/independent-review/test_p1_independent.py",
+      "sha256": "527b41f49e971e944ab8ea3c6d84b601d24da0305820851c395b208c819d3a2b",
+      "bytes": 3697
+    }
+  ],
+  "pid": 185132,
+  "exit": 1,
+  "utc_end": "2026-11-14T06:46:24.075447+00:00"
+}

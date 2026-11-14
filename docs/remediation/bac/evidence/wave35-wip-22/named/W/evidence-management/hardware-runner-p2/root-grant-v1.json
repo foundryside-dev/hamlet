@@ -1,0 +1,24 @@
+{
+  "schema": "bac-root-tool-packet-grant-v1",
+  "at": "2026-11-14T05:51:57.292317+00:00",
+  "packet": "hardware-runner-p2",
+  "owner": "/root/bac_hardware_runner_p2",
+  "plan_sha256": "9e41f9c959862994b6e877162a374e58f337e8e026f288249967905e7d977b05",
+  "p0_adoption_sha256": "bb765dec2408877248d94ff0193cef7cb5404574c1a01948064c99689ab09b42",
+  "counted_files": [
+    "run_bac_packet_checks_locked.py",
+    "bac_hardware_protocol_v1.py",
+    "run_bac_hardware_v1.py",
+    "test_run_bac_hardware_v1.py"
+  ],
+  "maximum_bodies": 4,
+  "maximum_lines": 3600,
+  "authorization": "Only named new implementation/test pair and synthetic evidence; existing P0 and historical tools immutable.",
+  "restrictions": [
+    "No APP source/import/runtime",
+    "No server/hardware execution or claims",
+    "No new branch/worktree/checkout/copy/git init",
+    "Independent review before adoption",
+    "Root owns integration/publication"
+  ]
+}

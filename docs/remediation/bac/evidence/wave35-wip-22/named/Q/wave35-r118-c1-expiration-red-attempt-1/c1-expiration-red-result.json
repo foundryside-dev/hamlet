@@ -1,0 +1,25 @@
+{
+  "name": "c1-expiration-red",
+  "exit_code": 1,
+  "seconds": 7.57916226600355,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r118-c1-expiration-red-attempt-1/c1-expiration-red.log",
+  "sha256": "fb2c9f89bb4c9f519c89534fb940336e95eea83dcea6d26abb3b1ec560d24e59",
+  "candidate_tree": "0444b7d5dea599729ece9f3e72fd847701c89fbf",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "60f43b8ed88fc9015c637a6eeec10861f497de224baf531279c2158a5401183a",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "bac-c1-independent-outer-v1",
+  "outer_pid": 192360,
+  "outer_ppid": 192357,
+  "outer_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-"
+  ],
+  "cwd": "/workspace/hamlet",
+  "started_utc": "2026-11-14T07:36:18.992627+00:00",
+  "source_before": {
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-independent-expiration-attempt-1-spec.json": "1a643c971cb82ee50c506ef560c800ce89e6ec4f00033ca2861b3d078182cdbd",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r120-candidate.json": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+    "/workspace/hamlet/src/townlet/config/exploration_policy.py": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9",
+    "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4",
+    "/workspace/hamlet/src/townlet/exploration/parent_custody.py": "5b592ac955d8e45b3369d4dac3a1bc2996093dfaa8427d732183d321aada801a",
+    "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": "579ade676a5d42a66ee24fcb6aa7743b3cc00739114aec0c685e8fa0bb6043e7",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py": "774219868be84b1f9d07f66a9edb9d677d97883cd8d7071f8f162fdeef188c87"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-independent-expiration-attempt-1-spec.json"
+      ],
+      "pid": 192361,
+      "started_utc": "2026-11-14T07:36:18.994524+00:00",
+      "finished_utc": "2026-11-14T07:36:26.867865+00:00",
+      "returncode": 0,
+      "stdout": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/r120-independent-run_bac_cold_checks_locked.py.stdout.txt",
+      "stderr": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/r120-independent-run_bac_cold_checks_locked.py.stderr.txt"
+    },
+    {
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-independent-expiration-attempt-1-spec.json"
+      ],
+      "pid": 192455,
+      "started_utc": "2026-11-14T07:36:26.868062+00:00",
+      "finished_utc": "2026-11-14T07:36:26.998052+00:00",
+      "returncode": 0,
+      "stdout": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/r120-independent-verify_bac_run.py.stdout.txt",
+      "stderr": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/r120-independent-verify_bac_run.py.stderr.txt"
+    }
+  ],
+  "finished_utc": "2026-11-14T07:36:26.998130+00:00",
+  "source_after": {
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-independent-expiration-attempt-1-spec.json": "1a643c971cb82ee50c506ef560c800ce89e6ec4f00033ca2861b3d078182cdbd",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r120-candidate.json": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+    "/workspace/hamlet/src/townlet/config/exploration_policy.py": "50a738825ae151cbf7a2907660e4cd06df7e42ae78128135eda891b3c6c885f9",
+    "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py": "55e0ac73ed65932aaf19c0622c8f11c5bb3801fda8957492ccf513d270a104b4",
+    "/workspace/hamlet/src/townlet/exploration/parent_custody.py": "5b592ac955d8e45b3369d4dac3a1bc2996093dfaa8427d732183d321aada801a",
+    "/workspace/hamlet/tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py": "579ade676a5d42a66ee24fcb6aa7743b3cc00739114aec0c685e8fa0bb6043e7",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/independent-review/test_scope_expiration_race.py": "774219868be84b1f9d07f66a9edb9d677d97883cd8d7071f8f162fdeef188c87"
+  },
+  "source_unchanged": true
+}

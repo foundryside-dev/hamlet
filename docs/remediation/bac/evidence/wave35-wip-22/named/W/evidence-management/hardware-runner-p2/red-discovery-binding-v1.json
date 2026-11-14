@@ -1,0 +1,30 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "-p",
+    "pytest_cov",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-q"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+  },
+  "source_hashes_before": {
+    "run_bac_hardware_v1.py": "c1b89dca1d1d1dc7426368287ad085e66f7e0bfc1f966720774d7473bd263c00",
+    "test_run_bac_hardware_v1.py": "bd67acb6bb61da8a517de69cf00ce60719e712a10c518ee99b425dd2c4579b54",
+    "bac_hardware_protocol_v1.py": "adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c",
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+  },
+  "start": "2026-11-14T06:33:36.739529+00:00",
+  "end": "2026-11-14T06:33:41.521615+00:00",
+  "exit_code": 1,
+  "log_sha256": "53628a8e4309162cf8c1506e2218c14b783ff54b5325d590f6b63faf8825ebfe"
+}

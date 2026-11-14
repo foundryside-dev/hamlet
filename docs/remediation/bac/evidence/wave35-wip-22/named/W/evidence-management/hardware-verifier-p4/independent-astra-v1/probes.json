@@ -1,0 +1,110 @@
+[
+  {
+    "name": "baseline",
+    "start": "2026-11-14T07:48:17.846803+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:17.966963+00:00"
+  },
+  {
+    "name": "late-launch",
+    "start": "2026-11-14T07:48:17.967037+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:18.100048+00:00"
+  },
+  {
+    "name": "process-monotonic-after-wait",
+    "start": "2026-11-14T07:48:18.100126+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:18.268533+00:00"
+  },
+  {
+    "name": "completion-source-omission",
+    "start": "2026-11-14T07:48:18.268623+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:18.390017+00:00"
+  },
+  {
+    "name": "completion-inventory-omission",
+    "start": "2026-11-14T07:48:18.390087+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:18.521623+00:00"
+  },
+  {
+    "name": "foreign-worker-run",
+    "start": "2026-11-14T07:48:18.521694+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:18.765380+00:00"
+  },
+  {
+    "name": "duplicate-worker-id",
+    "start": "2026-11-14T07:48:18.765590+00:00",
+    "result": "accepted",
+    "custody": "satisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:19.034584+00:00"
+  },
+  {
+    "name": "unknown-validator-id",
+    "start": "2026-11-14T07:48:19.034669+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "unknown validator ID; arbitrary dispatch forbidden",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 81, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 914, in verify\n    accepted_validator = validator_inventory(job, tools)\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 780, in validator_inventory\n    require(entry[\"id\"] == \"p4-common-v1\", \"unknown validator ID; arbitrary dispatch forbidden\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: unknown validator ID; arbitrary dispatch forbidden\n",
+    "end": "2026-11-14T07:48:19.172690+00:00"
+  },
+  {
+    "name": "wrong-validator-source",
+    "start": "2026-11-14T07:48:19.172767+00:00",
+    "result": "refused",
+    "exception": "ValueError",
+    "message": "validator source/dependency pins",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/independent-astra-v1/probe.py\", line 81, in <module>\n    receipt=e.verify()\n  File \"/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py\", line 791, in verify\n    return verifier().verify(str(self.spec_path), \"job\", str(self.root / name))\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 914, in verify\n    accepted_validator = validator_inventory(job, tools)\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 782, in validator_inventory\n    require(entry[\"validator\"] == tools[\"verifier\"] and entry[\"dependencies\"] == [tools[\"protocol\"]], \"validator source/dependency pins\")\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py\", line 29, in require\n    raise ValueError(message)\nValueError: validator source/dependency pins\n",
+    "end": "2026-11-14T07:48:19.312741+00:00"
+  },
+  {
+    "name": "missing-inventory",
+    "start": "2026-11-14T07:48:19.312849+00:00",
+    "result": "accepted",
+    "custody": "unsatisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:19.494875+00:00"
+  },
+  {
+    "name": "missing-process-end",
+    "start": "2026-11-14T07:48:19.494942+00:00",
+    "result": "accepted",
+    "custody": "unsatisfied",
+    "outcome": "completed-unverified",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:19.603042+00:00"
+  },
+  {
+    "name": "p5-required",
+    "start": "2026-11-14T07:48:19.603117+00:00",
+    "result": "accepted",
+    "custody": "unsatisfied",
+    "outcome": "successful",
+    "hardware": "unrun",
+    "end": "2026-11-14T07:48:19.735025+00:00"
+  }
+]

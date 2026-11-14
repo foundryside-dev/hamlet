@@ -1,0 +1,25 @@
+{
+  "name": "c1-pin-diagnostic",
+  "exit_code": 0,
+  "seconds": 10.82736020599259,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/parent-c1/diagnostics/test_owner_pin_referrers.py::test_owner_pin_referrers",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r120-c1-pin-diagnostic-attempt-1/c1-pin-diagnostic.log",
+  "sha256": "9f27bd7e2184e9ddfef14a3ca6ccaaf27eb9948e443fd5425ee704d8881e64aa",
+  "candidate_tree": "1d7718b127523db7bb4f6824d0404c3bc0b5eaff",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "34c8ce0bab31a09e392a4c88ac1a1043e102ed399998946493f31b0b331dbd64",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

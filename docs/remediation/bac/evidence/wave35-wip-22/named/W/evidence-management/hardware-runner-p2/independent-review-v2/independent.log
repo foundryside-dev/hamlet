@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: cov-7.1.0
+collected 11 items
+
+../../hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/independent-review-v2/test_independent.py . [  9%]
+..........                                                               [100%]
+
+============================== 11 passed in 2.67s ==============================

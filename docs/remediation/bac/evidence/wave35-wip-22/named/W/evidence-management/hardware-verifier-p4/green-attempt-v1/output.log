@@ -1,0 +1,381 @@
+.F...FFFFF................F..F                                           [100%]
+=================================== FAILURES ===================================
+____________________ test_unknown_validator_never_satisfies ____________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a2012b0>
+
+    def test_unknown_validator_never_satisfies(evidence):
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+__________________ test_required_case_outcomes[setup-failed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a238f50>
+phase = 'setup', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a238f50>
+phase = 'setup', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'unknown record kind'
+
+test_verify_bac_hardware_v1.py:194: AssertionError
+__________________ test_required_case_outcomes[call-skipped] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a239090>
+phase = 'call', status = 'skipped'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a239090>
+phase = 'call', status = 'skipped'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'unknown record kind'
+
+test_verify_bac_hardware_v1.py:194: AssertionError
+__________________ test_required_case_outcomes[call-xfailed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a2396d0>
+phase = 'call', status = 'xfailed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a2396d0>
+phase = 'call', status = 'xfailed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'unknown record kind'
+
+test_verify_bac_hardware_v1.py:194: AssertionError
+__________________ test_required_case_outcomes[call-xpassed] ___________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a239950>
+phase = 'call', status = 'xpassed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a239950>
+phase = 'call', status = 'xpassed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'unknown record kind'
+
+test_verify_bac_hardware_v1.py:194: AssertionError
+_________________ test_required_case_outcomes[teardown-failed] _________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a2396d0>
+phase = 'teardown', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+        with pytest.raises(ValueError, match="report|outcome"):
+>           evidence.verify()
+
+test_verify_bac_hardware_v1.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+
+During handling of the above exception, another exception occurred:
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a2396d0>
+phase = 'teardown', status = 'failed'
+
+    @pytest.mark.parametrize("phase,status", [("setup","failed"),("call","skipped"),("call","xfailed"),("call","xpassed"),("teardown","failed")])
+    def test_required_case_outcomes(evidence, phase, status):
+        evidence.result["outcomes"][0][phase] = status
+        evidence.seal()
+>       with pytest.raises(ValueError, match="report|outcome"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'report|outcome'
+E        Input: 'unknown record kind'
+
+test_verify_bac_hardware_v1.py:194: AssertionError
+____________________________ test_immutable_receipt ____________________________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a239bd0>
+
+    def test_immutable_receipt(evidence):
+>       first = evidence.verify()
+                ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:248: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+___________ test_evidence_class_never_inferred_from_device_presence ____________
+
+evidence = <test_verify_bac_hardware_v1.Evidence object at 0x7f492a239a90>
+
+    def test_evidence_class_never_inferred_from_device_presence(evidence):
+>       receipt = evidence.verify()
+                  ^^^^^^^^^^^^^^^^^
+
+test_verify_bac_hardware_v1.py:268: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test_verify_bac_hardware_v1.py:162: in verify
+    return verifier().verify(str(self.spec_path), "job", str(self.root / name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:448: in verify
+    by_ref, raws, runtime, policy, starts = processes(result, spec_ref, spec, job, command_ref, candidate, freeze, grant, dependencies)
+                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:224: in processes
+    policy_ref, policy = _policy(job, spec_ref)
+                         ^^^^^^^^^^^^^^^^^^^^^^
+verify_bac_hardware_v1.py:199: in _policy
+    protocol.validate_record("env", values)
+bac_hardware_protocol_v1.py:514: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_unknown_validator_never_satisfies
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[setup-failed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-skipped]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-xfailed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[call-xpassed]
+FAILED test_verify_bac_hardware_v1.py::test_required_case_outcomes[teardown-failed]
+FAILED test_verify_bac_hardware_v1.py::test_immutable_receipt - ValueError: u...
+FAILED test_verify_bac_hardware_v1.py::test_evidence_class_never_inferred_from_device_presence
+8 failed, 22 passed in 1.47s

@@ -1,0 +1,26 @@
+{
+  "name": "c1-collection",
+  "exit_code": 0,
+  "seconds": 5.110413948001224,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_runtime_bank_parent_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "--collect-only",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r117-c1-collection-attempt-1/c1-collection.log",
+  "sha256": "72499f140550b41ffa2050a2aa7d47ecf1908cffad7ca25ed3a058a873bbacac",
+  "candidate_tree": "b50248fef715b19b241f7612b77694a271a5ea90",
+  "base_commit": "2f579092eae2b67eb3efd514aa7b61c909efa9f1",
+  "manifest_sha256": "0f2c6e25356a8edb9fba0761b934d562b85762d4f6350c0f939622e924d61499",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

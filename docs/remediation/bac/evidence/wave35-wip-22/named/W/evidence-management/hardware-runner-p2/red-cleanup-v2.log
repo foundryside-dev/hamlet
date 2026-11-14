@@ -1,0 +1,75 @@
+.......................................FF..F                             [100%]
+=================================== FAILURES ===================================
+_______________ test_process_group_cleanup_precedes_pid_reaping ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-61/test_process_group_cleanup_pre0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f198ea0d7f0>
+
+    def test_process_group_cleanup_precedes_pid_reaping(tmp_path, monkeypatch):
+        r = implementation(); events = []
+        actual_poll, actual_wait, actual_killpg = subprocess.Popen._internal_poll, subprocess.Popen.wait, os.killpg
+        def poll(process, *args, **kwargs):
+            result = actual_poll(process, *args, **kwargs)
+            if result is not None: events.append('reaped')
+            return result
+        def wait(process, *args, **kwargs):
+            result = actual_wait(process, *args, **kwargs); events.append('reaped'); return result
+        def killpg(pid, signum):
+            if signum == signal.SIGTERM: events.append('cleanup')
+            return actual_killpg(pid, signum)
+        monkeypatch.setattr(r.subprocess.Popen, '_internal_poll', poll)
+        monkeypatch.setattr(r.subprocess.Popen, 'wait', wait)
+        monkeypatch.setattr(r.os, 'killpg', killpg)
+        result = r.execute_jobs(spec(tmp_path, [job(tmp_path, 'short')]))[0]
+        assert result['exit_code'] == 0
+>       assert events.index('cleanup') < events.index('reaped'), 'PID was released before process-group ownership cleanup'
+E       AssertionError: PID was released before process-group ownership cleanup
+E       assert 1 < 0
+E        +  where 1 = <built-in method index of list object at 0x7f198e249880>('cleanup')
+E        +    where <built-in method index of list object at 0x7f198e249880> = ['reaped', 'cleanup', 'reaped', 'reaped'].index
+E        +  and   0 = <built-in method index of list object at 0x7f198e249880>('reaped')
+E        +    where <built-in method index of list object at 0x7f198e249880> = ['reaped', 'cleanup', 'reaped', 'reaped'].index
+
+test_run_bac_hardware_v1.py:609: AssertionError
+_______ test_post_spawn_observation_error_never_fabricates_nonexecution ________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-61/test_post_spawn_observation_er0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f198e967690>
+
+    def test_post_spawn_observation_error_never_fabricates_nonexecution(tmp_path, monkeypatch):
+        r = implementation(); path, s, registry = sealed_fixture(tmp_path, 'import time; time.sleep(.5)'); stub_source(monkeypatch, r, registry)
+        original = r._identity
+        def observe(pid):
+            if pid != os.getpid(): raise OSError('synthetic post-spawn observation failure')
+            return original(pid)
+        monkeypatch.setattr(r, '_identity', observe)
+        with pytest.raises((ValueError, OSError)): r.run(path)
+        output = Path(s['jobs'][0]['output'])
+        assert (output / 'command.json').exists()
+        if (output / 'result.json').exists():
+            result = json.loads((output / 'result.json').read_text())
+>           assert result['disposition'] not in ('refused', 'unrun'), 'started child relabeled as nonexecution'
+E           AssertionError: started child relabeled as nonexecution
+E           assert 'refused' not in ('refused', 'unrun')
+
+test_run_bac_hardware_v1.py:624: AssertionError
+____________ test_sealed_execution_timeout_does_not_expire_in_queue ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-61/test_sealed_execution_timeout_0')
+
+    def test_sealed_execution_timeout_does_not_expire_in_queue(tmp_path):
+        r = implementation()
+        first = job(tmp_path, 'first', code='import time; time.sleep(.15)', timeout=1)
+        second = job(tmp_path, 'queued', timeout=.05)
+        results = r.execute_jobs(spec(tmp_path, [first, second], cpu=1, concurrency=1))
+>       assert len(results) == 2 and all(x['exit_code'] == 0 for x in results)
+E       AssertionError: assert (2 == 2 and False)
+E        +  where 2 = len([{'disposition': 'unrun', 'exit_code': None, 'job_id': 'queued', 'process_records': [], ...}, {'command': {'bytes': 50...ade8c2b0706057afd'}, 'disposition': 'completed-unverified', 'end': '2026-11-14T06:41:28.815454Z', 'exit_code': 0, ...}])
+E        +  and   False = all(<generator object test_sealed_execution_timeout_does_not_expire_in_queue.<locals>.<genexpr> at 0x7f198e4e8790>)
+
+test_run_bac_hardware_v1.py:667: AssertionError
+=========================== short test summary info ============================
+FAILED test_run_bac_hardware_v1.py::test_process_group_cleanup_precedes_pid_reaping
+FAILED test_run_bac_hardware_v1.py::test_post_spawn_observation_error_never_fabricates_nonexecution
+FAILED test_run_bac_hardware_v1.py::test_sealed_execution_timeout_does_not_expire_in_queue
+3 failed, 41 passed in 5.22s

@@ -1,0 +1,9 @@
+{
+  "recorded_at": "2026-11-14T08:41:15.641952+00:00",
+  "status": "FAILED; root publication metadata check before document mutation",
+  "cause": "git rev-parse :configs asks for an indexed file; directory tree identity requires git write-tree followed by TREE:configs",
+  "exit_code": 1,
+  "completed": "All selected inputs, destination objects and candidate inventories rehashed; .defaults-ratchet index check passed",
+  "not_reached": "Publication copies, document application and navigation changes",
+  "repair": "Use actual index tree and resolve subtrees from that tree. Preserve this failed metadata attempt; no APP test repeated."
+}

@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-14T08:42:11.655092+00:00",
+  "selection_and_assembly": "First full selection and assembly passed; root independently rehashed all 10412 selected aliases and 8072 materialized/reused objects.",
+  "retained_root_metadata_failure": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-22/root-publication-check-attempt-1.json",
+    "bytes": 641,
+    "sha256": "141f3bcfe0f4f90650d28a45fe657558090bb5a8391255404b87966455b4af57"
+  },
+  "final_verification": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-22/root-final-selection-verification-v1.json",
+    "bytes": 660,
+    "sha256": "992b53935951b435145aa92a1d8ac8bd8878fb3a9dec52e241a02f5a0072d1fe"
+  },
+  "known_CI": "WIP21 Config PASS, Lint FAIL (mypy 15), Tests FAIL (cause unclassified; log retrieval unavailable). No WIP22 CI result inferred.",
+  "scope": "67 unique C1 CPU cases plus separate two expiry probes. R121 owner gate 215 FAIL / 266 PASS remains required. P0\u2013P4 synthetic tooling only; actual CUDA UNRUN.",
+  "authority": "Authorized push to existing branch; no branch/worktree/PR creation or merge.",
+  "execution_time_limitations": "Original absolute times unavailable where stated. Selector/assembly command results observed in tool output; absolute operation start/end not captured contemporaneously."
+}

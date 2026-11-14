@@ -1,0 +1,22 @@
+{
+  "schema": "bac-cold-import-historical-recovery-root-adoption-v1",
+  "at": "2026-11-14T05:30:38.726267+00:00",
+  "status": "HASH VERIFICATION PASS",
+  "recovery": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-recovery-v1.json",
+    "bytes": 9667,
+    "sha256": "4c0502a54f6e7dc3c17aaa881b83daf7b1afa1bc266d6d83dab90434a0fafeef"
+  },
+  "supplement": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-provenance-supplement-v1.md",
+    "bytes": 2327,
+    "sha256": "9f8596b4778cc79eba43f35ecf33a4955c3ce2d69980df7fb734ee004ae23049"
+  },
+  "original_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/root-adoption-v1.json",
+    "bytes": 3561,
+    "sha256": "4f5af41fb4ca0fa4d59033fbc8095ff1457eb18c4fd979b19e12f396882f6ae4"
+  },
+  "verified_snapshots": 12,
+  "scope": "Post-attempt recovered exact historical bytes verified by root; no new execution or original contemporaneous source-retention claim. Original adoption preserved."
+}

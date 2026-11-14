@@ -1,0 +1,932 @@
+{
+  "schema": "bac-r116-root-checks-v1",
+  "at": "2026-11-14T05:45:15.279914+00:00",
+  "candidate_manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json",
+    "bytes": 206037,
+    "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+  },
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "status": "BOUNDED COLD IMPORT AND OWNER REGRESSION QUALIFICATION PASS",
+  "source_guards": {
+    "source_files": 819,
+    "configs": 573,
+    "artifacts": 13
+  },
+  "registry_records": 14,
+  "available_worktrees": 1,
+  "owners": [
+    {
+      "name": "fixture-prerequisites",
+      "passed": 14,
+      "strict_child": false,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-fixture-prerequisites-spec.json",
+        "bytes": 2532,
+        "sha256": "1a015d8b482aa326dc54450d40f130bb6fa7bffd789743cd90daf2288e098379"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-fixture-prerequisites-dispatch.json",
+        "bytes": 700,
+        "sha256": "2c537959b13a86b5cbe75a8e5d39511e92e9b5f13158f66ef81c6acfbc999b54"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-fixture-prerequisites-verification.json",
+        "bytes": 1118,
+        "sha256": "d19a9ba9ed568d8a2871194dda8075e6a1b0b2e0254c8aaebab1d77b8509032a"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-fixture-prerequisites/fixture-prerequisites-custody.json",
+        "bytes": 653,
+        "sha256": "9e46ee5d8ede2ef88f14eb896e80f83d659b7f8f2c9be1e8e6097734fc0e5576"
+      }
+    },
+    {
+      "name": "core-healthy",
+      "passed": 73,
+      "strict_child": false,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-core-healthy-spec.json",
+        "bytes": 10281,
+        "sha256": "6bbd63037a28f8835f81f46187051584b93bef3ef4c54982b3394deaca60ab60"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-core-healthy-dispatch.json",
+        "bytes": 682,
+        "sha256": "e0899215374bee85c2436f287cfdaf7af3f55747a8df83fe73acdf6a8e09e9f9"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-core-healthy-verification.json",
+        "bytes": 1100,
+        "sha256": "9b382349b308dbb56cebb652a6647775e635f4eb1d1f0b17870488927c93aec9"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-core-healthy/core-healthy-custody.json",
+        "bytes": 644,
+        "sha256": "caf7dc6701aedfbeab217c0efe503354acce3a637ee08e83f86838fd9096f5ef"
+      }
+    },
+    {
+      "name": "activation",
+      "passed": 67,
+      "strict_child": false,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-activation-spec.json",
+        "bytes": 10164,
+        "sha256": "c0c17d7803ed75068f684d938bdc7071341d524d1b742c803df2df560163d89a"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-activation-dispatch.json",
+        "bytes": 678,
+        "sha256": "34a3329d4ef8cc7d777993417068fb33da357289c3c570123629f372462dc1ab"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-activation-verification.json",
+        "bytes": 1096,
+        "sha256": "fb979df282e6dbc35a5a0b7fce86c6fe188c90f0778aa3d6da2d44f1e6542b83"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-activation/activation-custody.json",
+        "bytes": 642,
+        "sha256": "caebef128f62b09d834e1c50d55dfbb2e693f510283abb619f620fa6c4bdc084"
+      }
+    },
+    {
+      "name": "producer-rest-a",
+      "passed": 408,
+      "strict_child": false,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-a-spec.json",
+        "bytes": 56923,
+        "sha256": "ca0aa5d0b0c3359c0be8e903c3de5b251ba57f579c52f38e0a0321584aa07cb4"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-a-dispatch.json",
+        "bytes": 688,
+        "sha256": "fbf6ad607ccd960c20343ad88b2024375b2879dafe5b48eab9e7eb1acb93f19b"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-a-verification.json",
+        "bytes": 1139,
+        "sha256": "c06bc234f0d7e89c83dc83d06fb165828ff2edb2fec82faf094798e0777a3205"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-a/producer-rest-a-custody.json",
+        "bytes": 648,
+        "sha256": "521a83a3db12f6da8118033f934f61c0ac8be7079f463f29fb25c8f20f6588b3"
+      }
+    },
+    {
+      "name": "producer-rest-b",
+      "passed": 408,
+      "strict_child": false,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-b-spec.json",
+        "bytes": 59305,
+        "sha256": "10861cb8df88de5727af59482b0008272c4a0795bf1791b8b839a938c74a1583"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-b-dispatch.json",
+        "bytes": 688,
+        "sha256": "bdb61969c5186f9f1b10646c251ca7a28c4b415a05b8d31a7a46baccccf72e6c"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-b-verification.json",
+        "bytes": 1138,
+        "sha256": "992a5ac8cb50c7e86dd3a93dfaa89fa49bc68446a0bdc9529feb13696daa156e"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-b/producer-rest-b-custody.json",
+        "bytes": 647,
+        "sha256": "7d7238f572993da54eb03c41b242f9a1e19f72b39190d6ba496f297f685bc1c7"
+      }
+    },
+    {
+      "name": "cuda-core-bootstrap-failure",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-bootstrap-failure-spec.json",
+        "bytes": 678,
+        "sha256": "8b34a300e81a592a53494741f4a58d8e0ef7d5070a979845baadc7f3438a6634"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-bootstrap-failure-dispatch.json",
+        "bytes": 713,
+        "sha256": "0a0f2808d8cb5da944a8658fa21441138040833874a7656b96815284f60a31cf"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-bootstrap-failure-verification.json",
+        "bytes": 3284,
+        "sha256": "f8eeac535882fc7c5af5465b687a6abb9bfa9954a4a5b2875907442f21256d1a"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json",
+        "bytes": 658,
+        "sha256": "66ad09e82ccb7d3568a64c6378859930af7d49a1d3bdc18f72b76fd4f19316ee"
+      }
+    },
+    {
+      "name": "cuda-core-runtime-query-failure",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-runtime-query-failure-spec.json",
+        "bytes": 690,
+        "sha256": "4d00abc20e60ffe8d87e1a91a0066abcf3858752b94d423e4f3030c8787c4bc5"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-runtime-query-failure-dispatch.json",
+        "bytes": 720,
+        "sha256": "6c0a42f039c3ee414522fb98f2a46cc9fc84b5c73d010e644b785f7262510ecf"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-runtime-query-failure-verification.json",
+        "bytes": 3308,
+        "sha256": "28a7f75a931ea676cd510d660f44bad2fa4e2bd9ec605622e4469a6380e70471"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-custody.json",
+        "bytes": 662,
+        "sha256": "11d7f521db65d85da0b9af8e62723b22a491504cf6e8c8e2b6d95e518818303e"
+      }
+    },
+    {
+      "name": "cuda-core-local-completion-single",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-single-spec.json",
+        "bytes": 696,
+        "sha256": "59098bc4277a8519fc7d6331b1c13c9b7252dcaa78f377d14bb207cadbb9eeeb"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-single-dispatch.json",
+        "bytes": 723,
+        "sha256": "f12bc851fd073465c75e0e11c12d1ec9a7ebe1b3f32945a9a7750a7853a11afd"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-single-verification.json",
+        "bytes": 3319,
+        "sha256": "30e20ffea5ef8556baa25f245a31dc272ee180ef918bf90610e4cfe0ebd81f06"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single-custody.json",
+        "bytes": 663,
+        "sha256": "67cd2f4f61380aa302a6b292f84b622698f308723fde28f7b8b87c010d0caa60"
+      }
+    },
+    {
+      "name": "cuda-core-local-completion-multiple-body",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-multiple-body-spec.json",
+        "bytes": 717,
+        "sha256": "ab07921785ec04048ee6ed199487489d97bcd574ebdb3a1e32cb401db4285700"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-multiple-body-dispatch.json",
+        "bytes": 738,
+        "sha256": "8fecfab70de853fd008a1e466e896147e73e47453f495e3434eadb978d6124de"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-multiple-body-verification.json",
+        "bytes": 3362,
+        "sha256": "b38cce01907f1b896cf7aaca536dd18e027838cfe56a978fe24026889bada3b1"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json",
+        "bytes": 671,
+        "sha256": "1d6e71da4750b7c31b6e454b91bcfd7d7f0c39830e576c77669bdd0f893227b5"
+      }
+    },
+    {
+      "name": "cuda-core-poison-unknown-ready",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-unknown-ready-spec.json",
+        "bytes": 687,
+        "sha256": "9e3bbb293f44150693fa024044217a353aaf523c868272459b7d9916651d023a"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-unknown-ready-dispatch.json",
+        "bytes": 718,
+        "sha256": "234274fa185071bcc0d249a24e359c84633453844ccbf5f57265178e674e09f5"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-unknown-ready-verification.json",
+        "bytes": 3302,
+        "sha256": "1ba6f21dba9482d90e847d617e106ed64770fb2facb5b6ec13b88adeb1c128c9"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-custody.json",
+        "bytes": 661,
+        "sha256": "8b3ce5db066cfd984f5132ce9f85681944ce76fa70b4ddc29b7f58d330cb258d"
+      }
+    },
+    {
+      "name": "cuda-core-poison-ready-qualified",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-qualified-spec.json",
+        "bytes": 693,
+        "sha256": "41daa077f6a5ec005682fdce1aaf41e33792cb22bc471d63a765b10f206dcee7"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-qualified-dispatch.json",
+        "bytes": 722,
+        "sha256": "19fcf3054fde240a46ca2560f73d3fc54f53f63885482f8fa352d76b2b6af7a2"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-qualified-verification.json",
+        "bytes": 3314,
+        "sha256": "10bce369666f88f780e33e44b05d5e28e7806d9169a2fb7fc22fc634be39b1dc"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-custody.json",
+        "bytes": 663,
+        "sha256": "a54144c83f35d0a87ae6371c9789417a84099649b4ecd56eb31faf4e530feb10"
+      }
+    },
+    {
+      "name": "cuda-core-poison-ready-healthy-only",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-healthy-only-spec.json",
+        "bytes": 702,
+        "sha256": "80faf50c349c1fa49871e8a6ae649b9cbddc43d04125b8141bbea34d0d121763"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-healthy-only-dispatch.json",
+        "bytes": 729,
+        "sha256": "3ac7a340b6dba0c3d665e53b75071767b08f5fd19a86b854c6133729d4bcc4e8"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-healthy-only-verification.json",
+        "bytes": 3333,
+        "sha256": "7f110f9a40accf634fa8892024434d35252f5aa2ee8e29fa2ce066b183b048d0"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-custody.json",
+        "bytes": 667,
+        "sha256": "602e72b50682ce74dba72b6dd0b6e1abdb9de704fc421ad412d96b30667cec96"
+      }
+    },
+    {
+      "name": "cuda-core-operation-body-completion",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-operation-body-completion-spec.json",
+        "bytes": 702,
+        "sha256": "22c780b84f8737429aa9cf975d0441e5f168ff9f7824f135f7fc9e828f0d2fb4"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-operation-body-completion-dispatch.json",
+        "bytes": 728,
+        "sha256": "f961ca69aa02c0c4219370d5a053c5d04af665541be1268522349825c4bb2499"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-operation-body-completion-verification.json",
+        "bytes": 3332,
+        "sha256": "ab5cd84c3ba5f6535105d85db233507fd1e6b0965b3eae69c6bdb2f964e3a229"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion-custody.json",
+        "bytes": 666,
+        "sha256": "62645de30c5ead279ad172c2eb02fceb0803589ed1d93affcec888037ef4543c"
+      }
+    },
+    {
+      "name": "cuda-core-local-completion-duplicate-parent",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-duplicate-parent-spec.json",
+        "bytes": 726,
+        "sha256": "b1031901996da9761fb399ff8235f617819fb192db0fbd254db890f4fd57b7e6"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-duplicate-parent-dispatch.json",
+        "bytes": 744,
+        "sha256": "11667df4270ec1faaefdc570550fd7f55deca339e2687daa6e31f151b306ba89"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-duplicate-parent-verification.json",
+        "bytes": 3380,
+        "sha256": "a7a26f6bfe8f3d57327aec97c2d24148226329d1a640960fec8705928b627282"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-custody.json",
+        "bytes": 674,
+        "sha256": "bdc608f63990521061d19b8078236be31ba81b1c6890c4d3caa041f9733bff86"
+      }
+    },
+    {
+      "name": "cuda-core-inherited-pid",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid-spec.json",
+        "bytes": 662,
+        "sha256": "f137fd2604da3bd1fc98b6ac539810e4eb8ae10f794d89b8be7bf87611e51a28"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid-dispatch.json",
+        "bytes": 704,
+        "sha256": "2c8a5e94b6aeabbf350e12333c0df490485d1d452ed91a8928400fb6ec14a7d6"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid-verification.json",
+        "bytes": 4612,
+        "sha256": "f8e775d824f77f4b0966d11631bf3ff06e2a3441095b6706a633837d2a3620e2"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json",
+        "bytes": 654,
+        "sha256": "3f0543dff6b4179d29a3d3533e3a27babb2572528d6cba690d335f0753414c33"
+      }
+    },
+    {
+      "name": "cuda-core-invocation-same-error",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-same-error-spec.json",
+        "bytes": 690,
+        "sha256": "536675709c9f14e2572fb3d5de9068bf6c3e6f169d4fd3d90b92200c758c30d6"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-same-error-dispatch.json",
+        "bytes": 720,
+        "sha256": "80629e4845ac5a374e00f68027a4a4535d7314e6b0c13ef8e4c4e6a7b8edb1fe"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-same-error-verification.json",
+        "bytes": 3309,
+        "sha256": "af71e9d18f4a05f080c9967e0cf855fbce2c6cecebebc02c23d4fc13b921f3f6"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error-custody.json",
+        "bytes": 663,
+        "sha256": "d895d2264e86222e64d258c9f3711de5966640d1dca7224d7c6bdb8b245c4a10"
+      }
+    },
+    {
+      "name": "cuda-core-invocation-child-failure",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-child-failure-spec.json",
+        "bytes": 699,
+        "sha256": "6d70f9e743b7a4c318b494d2d1e523d4c76f3fedcbfe8c10b7510f052e4a3614"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-child-failure-dispatch.json",
+        "bytes": 726,
+        "sha256": "7f456884ea44ea2597f6cf815321586e69d2e015ef2b957796edea35bcdb2a28"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-child-failure-verification.json",
+        "bytes": 3326,
+        "sha256": "78832a359ea2c4fa41e7112d4a3b4a0665c1f198849d932401be16d1991ca26b"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-custody.json",
+        "bytes": 665,
+        "sha256": "3fb186a457a6ad5e4dff6cf8f16d61368f6db9ec6f91c77c7418e8b3a4c8a011"
+      }
+    },
+    {
+      "name": "cuda-core-invocation-parent-failure",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-parent-failure-spec.json",
+        "bytes": 702,
+        "sha256": "c8ccaa5ce0f41ca31ee95de5c87138d6eebaa6e95926c299f42df8667c69da14"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-parent-failure-dispatch.json",
+        "bytes": 728,
+        "sha256": "5e9557eeb6a2565f9ee84e0c10100fae1ad70c8e8b2040ae05e8e20c34dac7ca"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-parent-failure-verification.json",
+        "bytes": 3332,
+        "sha256": "5fa781547dbc6e09a1a4ae8085e8078059be5b297fa6b8ce8844e2d9b091e323"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-custody.json",
+        "bytes": 666,
+        "sha256": "1f660f867834880c8b96b2323d19e6e31b9d3fe8ac2a1c3aec2277f0e847d44c"
+      }
+    },
+    {
+      "name": "cuda-core-invocation-reported-failure",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-reported-failure-spec.json",
+        "bytes": 708,
+        "sha256": "c33612c4de4e2480323e7bdc17cac05082e88cc70c786443e1f5ed4e74338110"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-reported-failure-dispatch.json",
+        "bytes": 732,
+        "sha256": "2de363efba0122021b1e7cce40d4c0feb5f2d73ecc4fd9691fff01c941a359bb"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-reported-failure-verification.json",
+        "bytes": 3344,
+        "sha256": "d206de03018f8ef89e22769a8e80aa9b1a2374dfb2418f1c121b6ea8902594c4"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-custody.json",
+        "bytes": 668,
+        "sha256": "8eab0e3e757f107428cef81cd8ad804e6907818a942ad8f9031206913835a044"
+      }
+    },
+    {
+      "name": "cuda-core-invocation-phase-reference",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-reference-spec.json",
+        "bytes": 705,
+        "sha256": "035363e039f6f66c35811a30c16bb856fd5988777d2e3ee36dcec2290cc2e985"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-reference-dispatch.json",
+        "bytes": 730,
+        "sha256": "1b246e37e1d17175186d8e51f85a87b8dea63d8449cf72dd444f938515c40ef0"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-reference-verification.json",
+        "bytes": 3440,
+        "sha256": "f123a10ae3eda151728d9aee48066157dbc0e2ebd538fa2c553dc387a3be0946"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-custody.json",
+        "bytes": 667,
+        "sha256": "094ee1ff76df2d29a4b17d5e5144f61fc940c6f09e28e539f17b8005ea4363e2"
+      }
+    },
+    {
+      "name": "cuda-core-invocation-phase-failure",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-failure-spec.json",
+        "bytes": 699,
+        "sha256": "8ef3393f396ffeadaf7928dc71b9347cabf0372d5ebc253f87f77ee7b89a3cc7"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-failure-dispatch.json",
+        "bytes": 726,
+        "sha256": "24f8d9c72f1f8ca618d41afdb4ca2a766b2eaab290a49f66966af154a62d3c33"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-failure-verification.json",
+        "bytes": 3428,
+        "sha256": "bb3fe1553bf5021ede747ec5435d9bc49f0a7ce1146e0d92fa29cb6ed6288980"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-custody.json",
+        "bytes": 665,
+        "sha256": "3ced5704c4c5fc5005dad25aa804b564ced51d18174ff788a7a52834e6a1504c"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-flat_local_single",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_single-spec.json",
+        "bytes": 702,
+        "sha256": "f4272933e5d23db0e7bee4e8c9bb03bbbb25d2f04b4159c84c9f789359f4769a"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_single-dispatch.json",
+        "bytes": 734,
+        "sha256": "6a5a0aa284907e641b585ef18919fcc980e711707a8cedf5ff7486777a3328ff"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_single-verification.json",
+        "bytes": 4724,
+        "sha256": "47a8711cc4b44e81dacfd76e261aa6a632b960f87f929f2d024447c4591adf30"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-custody.json",
+        "bytes": 669,
+        "sha256": "0438fb899a8c3143581dbf75a56bac547c34d4e7459093d73320eb2adaa775a1"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-flat_local_distinct",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_distinct-spec.json",
+        "bytes": 708,
+        "sha256": "b74cc1579a97ded74ebd64d257f98cf8ec9fd47211fdb739a270584686e840dd"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_distinct-dispatch.json",
+        "bytes": 739,
+        "sha256": "1b7a44f41c58c6a561c6cca586d77eb07f8f5b5ac1b4c1192f9cc2acfd098a31"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_distinct-verification.json",
+        "bytes": 5363,
+        "sha256": "e58432b43604376c388ce9510e3bb20cde6e6f76454b3ebea69c067a7ae529ce"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-custody.json",
+        "bytes": 671,
+        "sha256": "f8b9a56c3fae5ed9981dcc7d8a0110948c4423fe924b13c7c0619b356dc8708e"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-flat_local_same",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_same-spec.json",
+        "bytes": 696,
+        "sha256": "63798b1b5ae37e375f92d252aed8ed74f2b51a5696b70451476d2f45a5b7d970"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_same-dispatch.json",
+        "bytes": 730,
+        "sha256": "fba3529c6c492223a4c4bd7825d798d8dd522d45b04e54a6ce1e4fe1f04a3221"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_same-verification.json",
+        "bytes": 4700,
+        "sha256": "97a0908864d2d48baa6d9f33ebd6969ebe7b3262e059cca18dbee50461fc4956"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-custody.json",
+        "bytes": 667,
+        "sha256": "7e00851ddd93c10b22cd832b3b7500f037b686fb3c61753d338a4827f532181b"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-flat_admitted_single",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_single-spec.json",
+        "bytes": 711,
+        "sha256": "b6f65aa03657bec64b3f976b5fcd7ee088e0903b94b7f64a78f3fcec7ed31332"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_single-dispatch.json",
+        "bytes": 740,
+        "sha256": "c275336c9cdc803440cab51d22b70199256e5e7b62045a5b096396b8e10998bf"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_single-verification.json",
+        "bytes": 4735,
+        "sha256": "69f6434adccd22c11cd64cffaf3ddef05189192ca90b9a7208c45918e6471cec"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-custody.json",
+        "bytes": 672,
+        "sha256": "262e794970c5fcca3d837b543fdbdf309a041ad37f682c85ce5dae2ae01b084f"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-flat_admitted_same",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_same-spec.json",
+        "bytes": 705,
+        "sha256": "83341b97618aea899dd6acf9b2611174ac96b1b1e0ffbf627536070090d83b61"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_same-dispatch.json",
+        "bytes": 736,
+        "sha256": "3ce2405c43c7e9da8c87df3c151aa010c1da9ec8123051886c0bdc1228794e1b"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_same-verification.json",
+        "bytes": 4711,
+        "sha256": "feadb2c203d84bebd0b9d56cd87236e70ebd86178c089ac7fc9471941cb12741"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-custody.json",
+        "bytes": 670,
+        "sha256": "5eea52aac32cabf58c7d08fb15546e7129f4781aaf384febfc7637df3b407a35"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-per_local_single",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_single-spec.json",
+        "bytes": 699,
+        "sha256": "64f682c2ef1e8c74d38bc9ab5576799397196ed2b99d695139d8bb5c86e205e9"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_single-dispatch.json",
+        "bytes": 732,
+        "sha256": "fafb505dbe4e9d58db775a9149a1043738e931a5f8e4b3e642dcc8861aea9673"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_single-verification.json",
+        "bytes": 4717,
+        "sha256": "a2e44370bedb59fa9b74d52231a44c7bb438a8e4e1025a2d6d2c6ea9f2bb4828"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-custody.json",
+        "bytes": 668,
+        "sha256": "3dc8e3d3f2e83591cb8aed1087661e57226fd87760d51017fa19b82173a57ad4"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-per_local_distinct",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_distinct-spec.json",
+        "bytes": 705,
+        "sha256": "014c12ac29f429f5d9562985d7edc134ba88c64a185478eba0aa13c46ecc785f"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_distinct-dispatch.json",
+        "bytes": 737,
+        "sha256": "517e42e7cb63a8ba5493799dac65046ff458c37a1885439d2c345536393dfc0b"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_distinct-verification.json",
+        "bytes": 5354,
+        "sha256": "f8f11f9f208f1314e868edb302c81b42974bce2873881543dfcf5bbe8a871efd"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-custody.json",
+        "bytes": 670,
+        "sha256": "66cdc52cd6da81004401e43fad1d65dfea47770406f3c516f1571254211d4520"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-per_local_same",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_same-spec.json",
+        "bytes": 693,
+        "sha256": "5ab3d47bf6415847e713ab88cea56199dc6cadb197d2c38dd7060e859b02ecc3"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_same-dispatch.json",
+        "bytes": 728,
+        "sha256": "8ab2cb9ed3fe0495a3d22c6fd965bb6985119db9e16f688fb767ee5d5c4f8907"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_same-verification.json",
+        "bytes": 4694,
+        "sha256": "af441d5db632906b5019b8babbcda0605ffa6e38288212b3d61c942404569eb1"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-custody.json",
+        "bytes": 667,
+        "sha256": "a717f41207ddc85772c5bf5198c0449f11997a96fb0700f074150f9574357e53"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-per_admitted_single",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_single-spec.json",
+        "bytes": 708,
+        "sha256": "0ba82c6a158b6ba9f6b205fab22b7982ff11460533a24ea680bdd862e00022a2"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_single-dispatch.json",
+        "bytes": 738,
+        "sha256": "0eed7ab12f54700853dffab2e04c9ff0b2e7953f2fe970958e93d9ddeb5d243b"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_single-verification.json",
+        "bytes": 4728,
+        "sha256": "865d9b5fa4dcc1dff067a2b05dea5e149febce9006489556044954255517e84c"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-custody.json",
+        "bytes": 671,
+        "sha256": "3f6f6e7e1418c147712374222795b5e883a1aeeaed0c5c574a7e581cf33eb3ff"
+      }
+    },
+    {
+      "name": "cuda-producer-poison-per_admitted_same",
+      "passed": 1,
+      "strict_child": true,
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_same-spec.json",
+        "bytes": 702,
+        "sha256": "97a6cef16ddfbe6dd3d963cb6e597d938647a2c574bb4b5e7d6eda270d53b926"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_same-dispatch.json",
+        "bytes": 734,
+        "sha256": "4fc2d51c2557dc363b2bc9531c90958ed95d29b9252de3587d50faa838720631"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_same-verification.json",
+        "bytes": 4704,
+        "sha256": "4f352e8a04d9020b9e0de4eb1f91ee4d5e22f6d458cfc02c26ebae587c23df6b"
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-custody.json",
+        "bytes": 669,
+        "sha256": "c2fd85e3d64afef3bd900452bda9c80c591db546d2c27e443b4c2a7e3dd3bf65"
+      }
+    }
+  ],
+  "cold": [
+    {
+      "role": "cuda_core_cold_preflight_preloaded",
+      "status": "COLD IMPORT EXPECTED REJECTION VERIFIED",
+      "receipt": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-custody.json",
+        "bytes": 3912,
+        "sha256": "48474b720874e88e4816d8956e5bcf12131a3e4ef2a75d1bd7978e293bb9ae93"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-dispatch.json",
+        "bytes": 805,
+        "sha256": "48b5104d5c5fffa868943ed0088afb1623119150b49dcdd218a53ec4e8fc5b58"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-verification.json",
+        "bytes": 5816,
+        "sha256": "2069bcbb738502bb74a7698c75adc638dfda1b4dfb96f23595ca3ebb87b9a8c9"
+      }
+    },
+    {
+      "role": "cuda_core_cold_preflight_cuda_touch",
+      "status": "COLD IMPORT EXPECTED REJECTION VERIFIED",
+      "receipt": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/cold-import-custody.json",
+        "bytes": 3929,
+        "sha256": "f75a8af209da69ca74fd614cb8fd3b633529ea25065702a879020be8cf816ae4"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-dispatch.json",
+        "bytes": 807,
+        "sha256": "aa91a4bbfe3ce728cab673f140d55562c567d0c1d65d54a21a7650214983da84"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-verification.json",
+        "bytes": 5836,
+        "sha256": "826b40ef81ff608bf540111b432273369ae6e0165c0bc4d79a65e3379bc81c46"
+      }
+    },
+    {
+      "role": "cuda_core_cold_import_core",
+      "status": "COLD IMPORT POSITIVE VERIFIED",
+      "receipt": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/cold-import-custody.json",
+        "bytes": 3755,
+        "sha256": "55d56887e248d214e456adc96b4593535b4f86aea5e17f3373f5f90bab45c06f"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_core-attempt-2-dispatch.json",
+        "bytes": 789,
+        "sha256": "01d88bcbb87c3cd6e357d4a8efbd1ff23504d367f5f21aa1620bdaffc0a616a9"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_core-attempt-2-verification.json",
+        "bytes": 5635,
+        "sha256": "6dafcb21335c54ec3db44121572758c4e85228f0129f45eb25b2b1ae908c10d6"
+      }
+    },
+    {
+      "role": "cuda_core_cold_import_flat",
+      "status": "COLD IMPORT POSITIVE VERIFIED",
+      "receipt": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/cold-import-custody.json",
+        "bytes": 3755,
+        "sha256": "d83cf4e7e82c1f71423dd722699341d5d48a2c14acfc9f30a5e62034c2cac7d8"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_flat-attempt-2-dispatch.json",
+        "bytes": 789,
+        "sha256": "3d5a6b6a3c270457ae2171fece3b2f2c0fabb2f12b608262c0edc676f508569c"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_flat-attempt-2-verification.json",
+        "bytes": 5635,
+        "sha256": "370826d3ffdddebcea1eaabab1e2b14f43463ac1f7ea9ada54ef0149aa10f5c3"
+      }
+    },
+    {
+      "role": "cuda_core_cold_import_per",
+      "status": "COLD IMPORT POSITIVE VERIFIED",
+      "receipt": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/cold-import-custody.json",
+        "bytes": 3738,
+        "sha256": "b80f3223a888afea35db57111562ace4c79f8994f5f83e4d8fe142ab2430348f"
+      },
+      "dispatch": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_per-attempt-2-dispatch.json",
+        "bytes": 787,
+        "sha256": "667632a8e5c028cd729cd1a84b40286d325a1cba2279a73083233dbdfa36a477"
+      },
+      "verification": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_per-attempt-2-verification.json",
+        "bytes": 5615,
+        "sha256": "61f8fb42d9f1521a2c035a54cea275061fd243f03d7fed026e80269c293d8f53"
+      }
+    }
+  ],
+  "phase_pair": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-invocation-phase-pair-custody.json",
+    "bytes": 6573,
+    "sha256": "4930d76cd12364caec73444c816e123a3cf9ac08f02b70dfd63c551463f8333a"
+  },
+  "collection": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-core-node-selection.json",
+    "bytes": 24359,
+    "sha256": "46d3a212ba757448cea4ea51c79552b44212da6e4a1f6cb4dbf964a326dcd8d4"
+  },
+  "tool_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/root-adoption-v1.json",
+    "bytes": 1743,
+    "sha256": "9e67d593ac73bacd89a6ef4bc29bb9027dd3fdcc755a4c9ff733cc040fafb1b9"
+  },
+  "preserved_launch_history": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r116-preparation/r116-partial-attempt-inventory-v1.json",
+    "bytes": 28488,
+    "sha256": "c7f472ac4a6afbc29fde1a66118636c3ebae956afc5ebf750399a07b236a6504"
+  },
+  "accounting": {
+    "core_existing": 89,
+    "core_new": 5,
+    "activation": 67,
+    "producer": 840,
+    "unique_pass": 1001,
+    "isolated_children_included_not_added": 31,
+    "package_qualified": 28,
+    "package_remaining": 38,
+    "package_total": 66
+  },
+  "remaining": [
+    "B6 actual post-poison GPU capability proof",
+    "Parent/recurrent integration and other accepted BAC contracts",
+    "Actual CUDA and hardware-specific checks UNRUN",
+    "Required global coverage/slow/type/final CI gates; known15 mypy errors remain unresolved",
+    "Independent terminal checkpoint review and source-verified documentation/publication"
+  ],
+  "scope": "CPU import/gate and owner tests only. Retains setup failures and unrun capture templates. No full B/R0/package/BAC closure, GPU evidence, green global CI or new publication claim."
+}

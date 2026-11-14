@@ -1,0 +1,22 @@
+{
+  "job": "producer-rest-b",
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "exit_code": 0,
+  "counts": {
+    "passed": 408,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 8.08449387550354,
+  "source_guards": 819,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

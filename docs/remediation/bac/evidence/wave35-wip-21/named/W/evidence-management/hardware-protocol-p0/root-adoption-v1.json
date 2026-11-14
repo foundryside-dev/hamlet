@@ -1,0 +1,58 @@
+{
+  "schema": "bac-hardware-p0-root-adoption-v1",
+  "at": "2026-11-14T05:49:12.281517+00:00",
+  "status": "ADOPTED COMMON TRANSPORT INTERFACE ONLY",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/freeze-v2.json",
+    "bytes": 3093,
+    "sha256": "32c8f8fd80b6b9407c87aac6da4d8e74e7da1ac4aaad557bce79d360e62c5bd7"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-PROTOCOL-P0-INDEPENDENT-REVIEW-v2.md",
+    "bytes": 3685,
+    "sha256": "2525b1fc3ce86fb9b9d1ac6eeedd3f70d1cc086202b9c40232ecf155e28e8bb4"
+  },
+  "verified_freeze_references": 8,
+  "independent_executions": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/author-suite-v3.json",
+      "bytes": 1798,
+      "sha256": "5cf3e09838d6ff5bc547ae25fc1289e7694fbada2e4bd76c98896e91eb886cd6"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/author-suite-v3.log",
+      "bytes": 179,
+      "sha256": "365e69adc5dd53fdcff0d0e7ad51b592246546508f1593de62a21a43d2fdd8db"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v4.json",
+      "bytes": 1877,
+      "sha256": "99e56c4799e2581f7f81fde71aec366162f66a50b24490eac1be12893220c79d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v4.log",
+      "bytes": 99,
+      "sha256": "ec3622cd28ed58d936296959047810aafa476cb0738b1aa83ec2cccffc39214a"
+    }
+  ],
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v2.json",
+    "bytes": 7982,
+    "sha256": "f20950a73809a5044278fca1575aa42764c62ac35797f1899dfc2f29aba56e6a"
+  },
+  "schema_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/schema-inventory-v1.json",
+    "bytes": 21015,
+    "sha256": "453c49da810df5f8a6626f7ae05489fa067d06dd298ebce9166e09f34a6b08ad"
+  },
+  "remaining_required": [
+    "P1 admission",
+    "P2 scheduling",
+    "P3 process witnesses",
+    "P4 verification",
+    "P5 strict child contracts",
+    "Owner-supplied child/CUDA case contracts and validators",
+    "Measured server admission and actual hardware executions"
+  ],
+  "boundary": "Structural validation never grants application/hardware/behavioral qualification; all three v1 review findings and red/green attempts retained. No runtime tool consumer has been integrated yet."
+}

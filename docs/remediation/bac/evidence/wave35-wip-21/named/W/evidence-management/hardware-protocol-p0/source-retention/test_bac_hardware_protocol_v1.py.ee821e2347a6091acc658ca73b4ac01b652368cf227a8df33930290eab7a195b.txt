@@ -1,0 +1,417 @@
+"""Inert P0 acceptance: no application imports, discovery, subprocess or GPU use."""
+import copy
+import hashlib
+import importlib.util
+from pathlib import Path
+
+import pytest
+
+MODULE = Path(__file__).with_name("bac_hardware_protocol_v1.py")
+
+
+def test_protocol_interface_available():
+    assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+
+
+@pytest.fixture
+def protocol():
+    if not MODULE.is_file():
+        pytest.skip("P0 implementation absent; availability acceptance fails separately")
+    spec = importlib.util.spec_from_file_location("bac_hardware_protocol_v1", MODULE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.fixture
+def records(tmp_path):
+    # A literal independent fixture; every referenced byte is synthetic inert data.
+    artifact = tmp_path / "inert.txt"
+    artifact.write_bytes(b"abc")
+    ref = {"path": str(artifact), "bytes": 3, "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"}
+    schema = "bac-hardware-v1"
+    stamp = "2026-11-14T00:00:00.000000Z"
+    fact = lambda value: {"state": "measured", "value": value, "reason": "", "provenance": ref}
+    budget = {"cpu_slots": 2, "ram_bytes": 1024, "scratch_bytes": 1024, "scratch_inodes": 4}
+    role = {"id": "controller", "role": "controller", "count": 1, "replacement_limit": 0,
+            "observer": "uninitialized", "intra_op": 1, "inter_op": 5, "debug": True,
+            "torch_policy": "observe-loaded", "cuda_policy": "no-initialize"}
+    obligation = {"id": "custody", "kind": "process-custody", "required_cases": ["synthetic::test_case"],
+                  "contract": ref, "validator": ref, "evidence_class": "cpu", "minimum_devices": 0}
+    job = {"id": "job", "profile": "cpu", "argv": ["/synthetic/python", "-m", "pytest", "synthetic::test_case"],
+           "interpreter": "/synthetic/python", "cwd": "/synthetic/source", "environment": {
+               "CUDA_VISIBLE_DEVICES": "", "OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1"},
+           "seed": {"policy": "explicit", "python": 11, "numpy": 11, "torch": 11, "cuda": []},
+           "required_collected_ids": ["synthetic::test_case"], "xdist_workers": 0, "roles": [role],
+           "budget": budget, "devices": [], "serialization_domains": ["rng:synthetic"],
+           "timing": "ordinary", "timing_contract": [], "prerequisites": [], "obligations": [obligation, dict(obligation, id="freeze", kind="source-freeze"),
+                                                        dict(obligation, id="cases", kind="required-cases")],
+           "output": "/synthetic/output/attempt/job", "scratch": "/synthetic/scratch/attempt/job"}
+    spec = {"schema": schema, "kind": "spec", "attempt_id": "attempt", "candidate": ref,
+            "tools": [{"name": name, "reference": ref} for name in (
+                "protocol", "capture", "runner", "identity", "verifier", "children-verifier")],
+            "dependencies": ref, "admission": ref, "profile": "cpu", "authorized_root": "/synthetic/source",
+            "output_root": "/synthetic/output/attempt", "scratch_root": "/synthetic/scratch/attempt",
+            "job_concurrency": 1, "budget": budget, "jobs": [job], "source_freeze": ref}
+    freeze = {"schema": schema, "kind": "source-freeze", "authorized_root": "/synthetic/source", "grant": ref,
+              "start": stamp, "end": {"state": "unavailable", "value": None, "reason": "open interval"},
+              "no_writer_barrier": True, "includes_untracked": True, "index_lock": "/synthetic/index.lock",
+              "retention": "root-authorized-no-writer; not privileged-writer protection"}
+    inventory = [{"path": str(artifact), "reference": ref}]
+    candidate = {"schema": schema, "kind": "candidate", "head": "a" * 40, "tree": "b" * 40,
+                 "authorized_root": str(tmp_path), "import_roots": [str(tmp_path / "src")],
+                 "inventory": {key: inventory for key in ("source", "tests", "configs", "scripts", "ratchet", "artifacts")},
+                 "registry": ref, "availability": ref, "source_freeze": ref}
+    environment = {"schema": schema, "kind": "environment", "interpreter": ref, "python_version": "3.synthetic",
+                   "dependencies": [{"name": "synthetic", "version": "0", "reference": ref}],
+                   "environment": {"PATH": "/synthetic/bin"}, "platform": "synthetic-linux", "torch_build": fact("cpu-only"),
+                   "cuda_runtime": {"state": "unavailable", "value": None, "reason": "CPU fixture", "provenance": ref},
+                   "driver": {"state": "unavailable", "value": None, "reason": "CPU fixture", "provenance": ref}}
+    admission = {"schema": schema, "kind": "admission", "request": ref, "discovery_process": ref,
+                 "at": stamp, "profile": "cpu", "disposition": "admitted", "reasons": [],
+                 "cgroups": [{"path": "/synthetic/cgroup", "cpu_quota_us": fact(200000), "cpu_period_us": fact(100000),
+                              "memory_limit_bytes": fact(4096), "cpuset": fact([0, 1])}],
+                 "affinity": fact([0, 1]), "effective_cpu_capacity": fact(2.0), "host_ram_bytes": fact(4096),
+                 "limited_ram_bytes": fact(4096), "ram_current_bytes": fact(0), "scratch_free_bytes": fact(4096),
+                 "scratch_free_inodes": fact(32), "tmpdir": "/synthetic/scratch", "cpu_topology": fact("synthetic"),
+                 "numa_topology": fact("synthetic"), "gpu_topology": fact("none"), "environment": ref,
+                 "requested_visibility": "", "effective_visibility": "", "devices": [], "competing_workloads": fact([]),
+                 "probe_errors": [], "minimum": budget, "reserve": budget, "admitted_budget": budget}
+    context = {"attempt_id": "attempt", "job_id": "job", "spec": ref}
+    identity = {"pid": 123, "ppid": 122, "start_identity": "1000", "host": "synthetic-host", "boot_id": "synthetic-boot"}
+    process = {"schema": schema, "kind": "process", **context, "process_id": "controller-1", "role_id": "controller",
+               "role": "controller", "phase": "start", "identity": identity, "parent_identity": [], "replacement_of": [],
+               "interpreter": ref, "argv": job["argv"], "cwd": job["cwd"], "imports": [], "source_witness": ref,
+               "environment": job["environment"], "devices": [], "intra_op": fact(1), "inter_op": fact(5),
+               "debug": fact(True), "torch_observation": "loaded-without-calls", "cuda_observation": "uninitialized",
+               "at": stamp, "monotonic_ns": 10, "elapsed_ns": {"state": "unavailable", "value": None, "reason": "start"}}
+    outcome = {"case_id": "synthetic::test_case", "setup": "passed", "call": "passed", "teardown": "passed", "evidence": [ref]}
+    start = {"schema": schema, "kind": "attempt-start", "attempt_id": "attempt", "spec": ref, "at": stamp,
+             "source_witness": ref, "source_freeze": ref, "retention": "exclusive immutable files"}
+    result = {"schema": schema, "kind": "job-result", **context, "disposition": "successful", "exit_code": 0,
+              "signal": 0, "reason": "", "start": stamp, "end": {"state": "measured", "value": stamp, "reason": ""},
+              "elapsed_ns": {"state": "measured", "value": 10, "reason": ""}, "command": ref, "log": ref,
+              "collected_ids": ["synthetic::test_case"], "outcomes": [outcome], "process_records": [ref],
+              "obligation_records": [ref], "source_witnesses": [ref], "inventory": [ref]}
+    evidence = {"schema": schema, "kind": "obligation-evidence", **context, "obligation_id": "custody",
+                "obligation_kind": "process-custody", "contract": ref, "validator": ref, "case_id": "synthetic::test_case",
+                "evidence_class": "cpu", "payload": ref, "producer_process": ref, "related_attempts": []}
+    receipt = {"schema": schema, "kind": "receipt", **context, "verifier": ref, "at": stamp, "result": ref,
+               "custody": "unsatisfied", "test_outcome": "successful", "hardware": "unrun",
+               "obligations": [{"id": "custody", "disposition": "unsatisfied", "reason": "case validator not implemented",
+                                "contract": ref, "validator": ref, "evidence": [], "validator_receipt": []}],
+               "reasons": ["synthetic data has no execution claim"], "inventory": [ref]}
+    request = {"schema": schema, "kind": "admission-request", "authorized_root": "/synthetic/source",
+               "interpreter": ref, "scratch_root": "/synthetic/scratch/attempt", "output_root": "/synthetic/output/attempt",
+               "profile": "cpu", "requested_job_concurrency": 1, "minimum": budget, "reserve": budget,
+               "authorized_devices": [], "requested_visibility": "", "jobs": [job], "source_freeze": ref,
+               "tools": spec["tools"], "dependencies": ref}
+    command = {"schema": schema, "kind": "command", **context, "argv": job["argv"], "cwd": job["cwd"],
+               "environment": job["environment"], "seed": job["seed"], "runner": ref, "at": stamp}
+    witness = {"schema": schema, "kind": "source-witness", "candidate": ref, "source_freeze": ref,
+               "head": "a" * 40, "tree": "b" * 40, "inventory": [ref], "at": stamp, "process_identity": identity}
+    seal = {"schema": schema, "kind": "attempt-seal", "attempt_id": "attempt", "spec": ref, "start": ref,
+            "disposition": "successful", "job_results": [ref], "inventory": [ref], "at": stamp, "source_freeze": ref}
+    contract = {"schema": schema, "kind": "case-contract", "obligation_kind": "process-custody",
+                "required_cases": ["synthetic::test_case"], "witness_schema": ref, "validator": ref,
+                "roles": [role], "evidence_class": "cpu", "minimum_devices": 0}
+    return {"admission-request": request, "command": command, "source-witness": witness, "attempt-seal": seal,
+            "case-contract": contract, "spec": spec, "reference": ref, "role": role, "obligation": obligation, "job": job,
+            "source-freeze": freeze, "candidate": candidate, "environment": environment, "admission": admission,
+            "process": process, "attempt-start": start, "job-result": result, "obligation-evidence": evidence, "receipt": receipt}
+
+
+def test_closed_schema_complete_synthetic_records(protocol, records):
+    for kind, value in records.items():
+        protocol.validate_record(kind, value)
+    assert protocol.validate_spec(records["spec"]) is None
+
+
+@pytest.mark.parametrize("change", [
+    lambda s: s.update(schema="bac-hardware-v0"), lambda s: s.update(schema="future"),
+    lambda s: s.update(extra=1), lambda s: s.update(job_concurrency=True),
+    lambda s: s["budget"].update(cpu_slots=float("nan")),
+    lambda s: s["jobs"].append(copy.deepcopy(s["jobs"][0])),
+    lambda s: s["jobs"][0].update(output="/synthetic/output/attempt/../escaped"),
+    lambda s: s["jobs"][0].update(output="/synthetic/output/attempt-other/job"),
+    lambda s: s["jobs"][0].update(output="/synthetic/output/attempt"),
+    lambda s: s["tools"].pop(), lambda s: s["tools"].append(copy.deepcopy(s["tools"][0])),
+    lambda s: s["jobs"][0]["environment"].update(CUDA_VISIBLE_DEVICES="0"),
+    lambda s: s["jobs"][0]["environment"].update(OMP_NUM_THREADS="2"),
+    lambda s: s["jobs"][0].update(required_collected_ids=["x", "x"]),
+    lambda s: s["jobs"][0].update(argv=["/wrong/python"]),
+    lambda s: s["jobs"][0].update(cwd="/outside"),
+    lambda s: s["jobs"][0]["roles"][0].update(intra_op=2),
+    lambda s: s["jobs"][0]["roles"][0].update(role="invented-role"),
+    lambda s: s["jobs"][0]["obligations"][0].update(kind="invented-obligation"),
+    lambda s: s["jobs"][0].update(obligations=[]),
+    lambda s: s.update(profile="cuda"), lambda s: s["jobs"][0].update(xdist_workers=16),
+])
+def test_closed_schema_refusals(protocol, records, change):
+    value = copy.deepcopy(records["spec"])
+    change(value)
+    with pytest.raises(ValueError):
+        protocol.validate_spec(value)
+
+
+@pytest.mark.parametrize("kind", ["spec", "candidate", "environment", "admission", "process", "attempt-start",
+                                      "job-result", "obligation-evidence", "receipt", "source-freeze", "role", "obligation", "job", "reference",
+                                      "admission-request", "command", "source-witness", "attempt-seal", "case-contract"])
+def test_every_record_rejects_unknown_and_missing_fields(protocol, records, kind):
+    value = copy.deepcopy(records[kind])
+    value["unknown"] = None
+    with pytest.raises(ValueError):
+        protocol.validate_record(kind, value)
+    value = copy.deepcopy(records[kind])
+    value.pop(next(iter(value)))
+    with pytest.raises(ValueError):
+        protocol.validate_record(kind, value)
+
+
+@pytest.mark.parametrize("bad", [True, -1, 1.0, float("inf"), float("nan"), "3"])
+def test_exact_reference_byte_type(protocol, records, bad):
+    records["reference"]["bytes"] = bad
+    with pytest.raises(ValueError):
+        protocol.validate_record("reference", records["reference"])
+
+
+def test_reference_tamper(protocol, records):
+    ref = records["reference"]
+    assert protocol.file_reference(Path(ref["path"])) == ref
+    Path(ref["path"]).write_bytes(b"abd")
+    with pytest.raises(ValueError):
+        protocol.validate_record("reference", ref)
+
+
+def test_reference_length_and_missing_dependency(protocol, records):
+    value = copy.deepcopy(records["reference"])
+    value["bytes"] = 4
+    with pytest.raises(ValueError):
+        protocol.validate_record("reference", value)
+    records["spec"]["dependencies"] = dict(value, path="/synthetic/nonexistent")
+    with pytest.raises(ValueError):
+        protocol.validate_spec(records["spec"])
+
+
+def test_reference_rejects_symlink_parent_and_leaf(protocol, records, tmp_path):
+    leaf = tmp_path / "leaf-link"
+    leaf.symlink_to(records["reference"]["path"])
+    parent = tmp_path / "parent-link"
+    parent.symlink_to(tmp_path, target_is_directory=True)
+    for path in (leaf, parent / "inert.txt"):
+        with pytest.raises(ValueError):
+            protocol.file_reference(path)
+
+
+@pytest.mark.parametrize("path", ["relative", "/tmp/../escape", "/tmp//double", "/tmp/./dot", "/tmp/trailing/", "/tmp/evil\x00"])
+def test_reference_unsafe_paths(protocol, path):
+    with pytest.raises(ValueError):
+        protocol.file_reference(Path(path)) if path == "relative" else protocol.validate_record(
+            "reference", {"path": path, "bytes": 0, "sha256": "0" * 64})
+
+
+def test_reference_directory_refuses(protocol, tmp_path):
+    with pytest.raises(ValueError):
+        protocol.file_reference(tmp_path)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -1, True, "2"])
+def test_finite_resource_measurements(protocol, records, value):
+    records["admission"]["effective_cpu_capacity"]["value"] = value
+    with pytest.raises(ValueError):
+        protocol.validate_record("admission", records["admission"])
+
+
+def test_unknown_required_admission_fact_refuses_admitted(protocol, records):
+    fact = records["admission"]["effective_cpu_capacity"]
+    fact.update(state="unavailable", value=None, reason="missing controller")
+    with pytest.raises(ValueError):
+        protocol.validate_record("admission", records["admission"])
+    records["admission"].update(disposition="refused", reasons=["missing controller"])
+    protocol.validate_record("admission", records["admission"])
+
+
+def test_unlimited_cgroup_is_explicit(protocol, records):
+    records["admission"]["cgroups"][0]["cpu_quota_us"].update(state="unlimited", value=None, reason="cpu.max is max")
+    protocol.validate_record("admission", records["admission"])
+
+
+def test_fork_guard_role_no_torch_and_strict_obligation(protocol, records):
+    role = dict(records["role"], role="fork-guard", observer="guard-only", torch_policy="forbidden", cuda_policy="forbidden")
+    protocol.validate_record("role", role)
+    role["torch_policy"] = "observe-loaded"
+    with pytest.raises(ValueError):
+        protocol.validate_record("role", role)
+    obligation = dict(records["obligation"], kind="fork-three-trials")
+    protocol.validate_record("obligation", obligation)
+
+
+def test_cuda_obligation_cannot_be_cpu_standin(protocol, records):
+    obligation = dict(records["obligation"], kind="cuda-cross-device", minimum_devices=2)
+    with pytest.raises(ValueError):
+        protocol.validate_record("obligation", obligation)
+    obligation["evidence_class"] = "real-cuda"
+    protocol.validate_record("obligation", obligation)
+    obligation["minimum_devices"] = 1
+    with pytest.raises(ValueError):
+        protocol.validate_record("obligation", obligation)
+
+
+def test_unsupplied_validator_cannot_satisfy_obligation(protocol, records):
+    receipt = records["receipt"]
+    receipt["obligations"][0].update(disposition="satisfied", reason="")
+    with pytest.raises(ValueError):
+        protocol.validate_record("receipt", receipt)
+
+
+@pytest.mark.parametrize("disposition,code,signal", [("completed-failed", 1, 0), ("interrupted", None, 15),
+                                                       ("refused", None, 0), ("unrun", None, 0)])
+def test_failure_interruption_no_invented_finish(protocol, records, disposition, code, signal):
+    result = records["job-result"]
+    result.update(disposition=disposition, exit_code=code, signal=signal, reason="synthetic refusal or termination")
+    if disposition != "completed-failed":
+        result["end"] = {"state": "unavailable", "value": None, "reason": "not observed"}
+        result["elapsed_ns"] = {"state": "unavailable", "value": None, "reason": "not observed"}
+    if disposition in ("refused", "unrun"):
+        result.update(collected_ids=[], outcomes=[], process_records=[], obligation_records=[])
+    protocol.validate_record("job-result", result)
+    result["disposition"] = "successful"
+    with pytest.raises(ValueError):
+        protocol.validate_record("job-result", result)
+
+
+def test_success_cannot_hide_skip_or_missing_call(protocol, records):
+    result = records["job-result"]
+    for state in ("skipped", "xfailed", "xpassed", "not-run", "failed"):
+        result["outcomes"][0]["call"] = state
+        with pytest.raises(ValueError):
+            protocol.validate_record("job-result", result)
+
+
+def test_unknown_kind_and_wrong_top_type(protocol):
+    for kind, value in (("old-result", {}), ("spec", []), ("reference", None)):
+        with pytest.raises(ValueError):
+            protocol.validate_record(kind, value)
+
+
+def test_freeze_no_writer_required(protocol, records):
+    records["source-freeze"]["no_writer_barrier"] = False
+    with pytest.raises(ValueError):
+        protocol.validate_record("source-freeze", records["source-freeze"])
+
+
+def test_process_start_cannot_invent_elapsed_or_guard_torch_call(protocol, records):
+    process = records["process"]
+    process["elapsed_ns"] = {"state": "measured", "value": 10, "reason": ""}
+    with pytest.raises(ValueError):
+        protocol.validate_record("process", process)
+    process.update(phase="end", role="fork-guard")
+    with pytest.raises(ValueError):
+        protocol.validate_record("process", process)
+
+
+def test_mandatory_common_obligations(protocol, records):
+    value = copy.deepcopy(records["spec"])
+    value["jobs"][0]["obligations"] = [value["jobs"][0]["obligations"][0]]
+    with pytest.raises(ValueError):
+        protocol.validate_spec(value)
+
+
+def test_child_role_requires_owned_contract_and_strict_threads(protocol, records):
+    job = records["job"]
+    child = dict(records["role"], id="child", role="spawn-child")
+    job["roles"].append(child)
+    with pytest.raises(ValueError):
+        protocol.validate_record("job", job)
+    child_contract = dict(records["obligation"], id="child-contract", kind="strict-child-core", evidence_class="cpu-standin")
+    job["obligations"].append(child_contract)
+    protocol.validate_record("job", job)
+    child["inter_op"] = 4
+    with pytest.raises(ValueError):
+        protocol.validate_record("job", job)
+    child["inter_op"] = 5
+    child["debug"] = False
+    with pytest.raises(ValueError):
+        protocol.validate_record("job", job)
+
+
+def test_candidate_reference_is_actual_inventory_path(protocol, records):
+    records["candidate"]["inventory"]["source"][0]["path"] = records["candidate"]["authorized_root"] + "/different"
+    with pytest.raises(ValueError):
+        protocol.validate_record("candidate", records["candidate"])
+
+
+def test_unlimited_is_only_resource_limit_state(protocol, records):
+    records["process"]["debug"].update(state="unlimited", value=None, reason="not meaningful")
+    with pytest.raises(ValueError):
+        protocol.validate_record("process", records["process"])
+
+
+def test_huge_numeric_measurement_refuses_as_valueerror(protocol, records):
+    records["admission"]["effective_cpu_capacity"]["value"] = 10 ** 1000
+    with pytest.raises(ValueError):
+        protocol.validate_record("admission", records["admission"])
+
+
+def test_completion_time_cannot_precede_start(protocol, records):
+    records["job-result"]["end"]["value"] = "2026-11-13T00:00:00.000000Z"
+    with pytest.raises(ValueError):
+        protocol.validate_record("job-result", records["job-result"])
+
+
+def test_missing_process_end_duration_refuses(protocol, records):
+    records["process"]["phase"] = "end"
+    with pytest.raises(ValueError):
+        protocol.validate_record("process", records["process"])
+
+
+def test_cuda_job_keeps_explicit_mapped_allocation(protocol, records):
+    job = records["job"]
+    job["profile"] = "cuda"
+    job["environment"]["CUDA_VISIBLE_DEVICES"] = "GPU-synthetic"
+    job["seed"]["cuda"] = [11]
+    job["devices"] = [{"logical_index": 0, "gpu_uuid": "GPU-synthetic", "mig_uuid": None,
+                       "physical_parent_uuid": "GPU-synthetic", "model": "inert", "vram_bytes": 1024,
+                       "isolation": "physical-exclusive", "mapping_provenance": records["reference"]}]
+    job["obligations"].append(dict(records["obligation"], id="real-cuda", kind="cuda-nondefault-rng",
+                                   evidence_class="real-cuda", minimum_devices=1))
+    protocol.validate_record("job", job)
+    job["devices"].append(copy.deepcopy(job["devices"][0]))
+    with pytest.raises(ValueError):
+        protocol.validate_record("job", job)
+
+
+def test_reference_parent_replacement_during_hash_refuses(protocol, tmp_path, monkeypatch):
+    parent = tmp_path / "original"
+    parent.mkdir()
+    target = parent / "data"
+    target.write_bytes(b"original bytes")
+    original_read = protocol.os.read
+    changed = False
+
+    def read_and_replace(fd, length):
+        nonlocal changed
+        chunk = original_read(fd, length)
+        if chunk and not changed:
+            changed = True
+            parent.rename(tmp_path / "retained")
+            parent.mkdir()
+            target.write_bytes(b"replacement bytes")
+        return chunk
+
+    monkeypatch.setattr(protocol.os, "read", read_and_replace)
+    with pytest.raises(ValueError):
+        protocol.file_reference(target)
+
+
+@pytest.mark.parametrize("disposition", ["refused", "unrun"])
+def test_nonexecution_cannot_relabel_success(protocol, records, disposition):
+    records["job-result"].update(disposition=disposition, reason="not executed")
+    with pytest.raises(ValueError):
+        protocol.validate_record("job-result", records["job-result"])
+
+
+def test_source_freeze_end_cannot_precede_start(protocol, records):
+    records["source-freeze"]["end"] = {"state": "measured", "value": "2026-11-13T00:00:00.000000Z", "reason": ""}
+    with pytest.raises(ValueError):
+        protocol.validate_record("source-freeze", records["source-freeze"])

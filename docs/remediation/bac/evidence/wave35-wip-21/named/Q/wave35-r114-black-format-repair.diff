@@ -1,0 +1,13 @@
+--- R114-before/test_replay_rng_custody.py
++++ R115-after/test_replay_rng_custody.py
+@@ -344,9 +344,7 @@
+         lineage: RNGOperation | None,
+         cuda_devices: tuple[int, ...],
+     ) -> RNGDeviceInvocation:
+-        invocation = original_invocation(
+-            participant=participant, operation_kind=operation_kind, lineage=lineage, cuda_devices=cuda_devices
+-        )
++        invocation = original_invocation(participant=participant, operation_kind=operation_kind, lineage=lineage, cuda_devices=cuda_devices)
+         if threading.current_thread() is worker:
+             invocations.append((participant, operation_kind, lineage, cuda_devices, invocation))
+         return invocation

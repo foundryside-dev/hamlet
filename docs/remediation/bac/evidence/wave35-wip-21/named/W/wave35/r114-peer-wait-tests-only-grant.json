@@ -1,0 +1,40 @@
+{
+  "schema": "bac-root-bounded-implementation-grant-v1",
+  "at": "2026-11-14T04:56:05.968993+00:00",
+  "integration_owner": "/root",
+  "writer": "/root/bac_peer_wait_diagnosis",
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "review": {
+    "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-PLAN-REVIEW.md",
+    "sha256": "ad226cbd95ddb0e36a19631e79fef25512f633989da4cff92714b50d2bc94d42"
+  },
+  "write_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "boundary": "Only existing peer-wait test, explanatory text and necessary annotations/imports; original contexts and authentic factory/token outputs remain unmodified. No production, helper, fixture API, timeout, compatibility or assertion degradation. Preserve recurrent route and three parameter cases.",
+  "read_bodies": [
+    {
+      "path": "src/townlet/exploration/rng_custody.py",
+      "lines": 1195
+    },
+    {
+      "path": "src/townlet/training/replay_contract.py",
+      "lines": 881
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+      "lines": 1098,
+      "projected_lines": 1250
+    }
+  ],
+  "maximum_projected_body_lines": 3326,
+  "red_evidence": "Exact R113 healthy53=51PASS/2FAIL and affected54=52PASS/2FAIL retained in published WIP20; no repeat known prerequisite failure needed.",
+  "verification": "Independent exact patch review; root frozen collection/focused3 then disjoint healthy53+isolatedpoison1, changed-teststyle and exact child custody. Focused3 overlap affected54.",
+  "prohibitions": [
+    "No runtime/test execution by writer",
+    "No Git/index/branch/worktree/checkout/source execution copy creation",
+    "No tracked document or other source edits",
+    "No new subagents"
+  ],
+  "scope": "Closes only bounded observer repair after actual evidence; full B/BAC gates remain."
+}

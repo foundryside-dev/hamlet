@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_single-spec.json"
+  ],
+  "start": "2026-11-14T05:43:51.225718+00:00",
+  "end": "2026-11-14T05:43:59.150050+00:00",
+  "seconds": 7.924409460989409,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_local_single-dispatch.log",
+  "sha256": "05f88aa7909f30a9a482520a1c130eda2104dad6652e9d5e3d6747200c3d7188",
+  "spec_sha256": "f4272933e5d23db0e7bee4e8c9bb03bbbb25d2f04b4159c84c9f789359f4769a"
+}

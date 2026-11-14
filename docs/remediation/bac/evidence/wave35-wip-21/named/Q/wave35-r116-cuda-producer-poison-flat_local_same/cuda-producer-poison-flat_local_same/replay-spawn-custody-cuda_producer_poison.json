@@ -1,0 +1,75 @@
+{
+  "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+  "job": "cuda-producer-poison-flat_local_same",
+  "case": "cuda_producer_poison",
+  "expected_message": "cuda producer flat_local_same poison quarantines under owner custody",
+  "parent_job_exit_code": 0,
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "manifest_sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f",
+  "spec_sha256": "63798b1b5ae37e375f92d252aed8ed74f2b51a5696b70451476d2f45a5b7d970",
+  "result_sha256": "f97430d791741b7f95973e151859df4d3aaf08021257ddb4c442118f23f3ec07",
+  "controller_sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3",
+  "child_receipt_sha256": "bcdad383949d465395389ac41da2f631f006886774f0c3c1c3ab8b4d344955db",
+  "parent_observation_sha256": "834e6405127d5e676b0b1a2662e9cdada399180af90a46e5e6acf719af3e993c",
+  "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+  "child_pid": 177837,
+  "parent_pid": 177753,
+  "child_ppid": 177753,
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop_threads": 5,
+  "debug": true,
+  "source_guards": 819,
+  "configs": 573,
+  "artifacts": 13,
+  "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+  "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+  "preflight_sha256": "da0ef991723c2662b7b00e64eeb031662f1aa5c07ba85ab7d701e6b61b2521a5",
+  "after_sha256": "8c664054314dd45a8f1318bdd78926d3512f266d755741af56c8530967859069",
+  "parent_before_sha256": "8b44a66fe568da1a818f07564b520990be76dac12458f3d71523bc1508229a42",
+  "producer_case": "flat_local_same",
+  "producer_observations": {
+    "ambient_refused": true,
+    "completion_failed": [
+      true
+    ],
+    "cpu_local_available": true,
+    "domain_after": [
+      3,
+      1,
+      true
+    ],
+    "healthy_controls": true,
+    "outcome_errors": [],
+    "owner_quarantined": true,
+    "peer_blocked": true,
+    "peer_errors": [
+      {
+        "children": [],
+        "id": 140714157669728,
+        "message": "Replay owner is quarantined after uncertain publication",
+        "type": "RuntimeError"
+      }
+    ],
+    "quarantine_before_unlock": [
+      true
+    ],
+    "reached": true,
+    "started_work": true,
+    "syncs": [
+      0,
+      1
+    ],
+    "worker_errors": [
+      {
+        "children": [],
+        "id": 140714157669536,
+        "message": "flat_local_same: body",
+        "type": "ValueError"
+      }
+    ]
+  },
+  "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+}

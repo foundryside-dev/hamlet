@@ -1,0 +1,166 @@
+"""Real runner subprocesses over authored inert files; no application execution."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+import pytest
+
+Q = Path(__file__).resolve().parent
+RUNNER = Path(os.environ.get('BAC_TEST_RUNNER', str(Q / 'run_bac_cold_checks_locked.py')))
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+@pytest.fixture
+def packet(tmp_path):
+    root = tmp_path / 'inert-root'
+    (root / '.venv/bin').mkdir(parents=True)
+    (root / '.superpowers').mkdir()
+    (root / 'src').mkdir()
+    source = root / 'src/cold_runner_inert_fixture.py'
+    source.write_text('VALUE = "inert source import reached"\n')
+    python = root / '.venv/bin/python'
+    python.write_text('#!/bin/sh\nexec ' + sys.executable + ' "$@"\n')
+    python.chmod(0o755)
+    binaries = tmp_path / 'inert-bin'
+    binaries.mkdir()
+    git = binaries / 'git'
+    git.write_text('#!' + sys.executable + '\n' + '''import json, os, sys
+from pathlib import Path
+assert Path.cwd() == Path(os.environ['SYNTHETIC_ROOT'])
+calls = {('rev-parse', 'HEAD'): 'a' * 40, ('write-tree',): 'b' * 40, ('diff', '--quiet'): ''}
+args = tuple(sys.argv[1:])
+assert args in calls, args
+with open(os.environ['SYNTHETIC_GUARD_LOG'], 'a') as stream:
+    stream.write(json.dumps(list(args)) + '\\n')
+if calls[args]:
+    print(calls[args])
+''')
+    git.chmod(0o755)
+    manifest = tmp_path / 'manifest.json'
+    manifest.write_text(json.dumps(dict(base_commit='a' * 40, candidate_tree='b' * 40,
+                                       source_files={'src/cold_runner_inert_fixture.py': sha(source)})))
+    output = tmp_path / 'attempts/cold-role/run'
+    spec = dict(root=str(root), manifest=str(manifest), output=str(output), workers=1,
+                jobs=[dict(name='cold-role', args=['-c', 'print("child reached")'])])
+    guard_log = tmp_path / 'guard-calls.jsonl'
+    env = dict(os.environ, PATH=str(binaries) + os.pathsep + os.environ['PATH'],
+               PYTHONDONTWRITEBYTECODE='1', PYTHONPATH='/deliberately-wrong-inherited-path',
+               SYNTHETIC_ROOT=str(root), SYNTHETIC_GUARD_LOG=str(guard_log))
+    return dict(root=root, output=output, spec=spec, path=tmp_path / 'spec.json', env=env,
+                manifest=manifest, source=source, guards=guard_log)
+
+
+def launch(packet):
+    packet['path'].write_text(json.dumps(packet['spec']))
+    return subprocess.run([sys.executable, '-B', str(RUNNER), str(packet['path'])],
+                          env=packet['env'], cwd=packet['path'].parent, capture_output=True, text=True)
+
+
+def test_missing_nested_parents_launch_and_retain_provenance(packet):
+    completed = launch(packet)
+    assert completed.returncode == 0, completed.stderr
+    log = packet['output'] / 'cold-role.log'
+    result = json.loads((packet['output'] / 'cold-role-result.json').read_bytes())
+    assert log.read_text() == 'child reached\n'
+    assert result == dict(name='cold-role', exit_code=0, seconds=result['seconds'],
+                         command=[str(packet['root'] / '.venv/bin/python'), '-c', 'print("child reached")'],
+                         log=str(log), sha256=sha(log), candidate_tree='b' * 40, base_commit='a' * 40,
+                         manifest_sha256=sha(packet['manifest']), harness_sha256=sha(RUNNER))
+    assert result['seconds'] > 0
+    assert json.loads(completed.stdout) == result
+    assert [json.loads(line) for line in packet['guards'].read_text().splitlines()] == [
+        ['rev-parse', 'HEAD'], ['write-tree'], ['diff', '--quiet'],
+        ['rev-parse', 'HEAD'], ['write-tree'], ['diff', '--quiet']]
+
+
+def test_real_plugin_discovery_and_inert_source_import(packet):
+    # Existing parents isolate the old runner's import-path defect from its mkdir defect.
+    packet['output'].parent.mkdir(parents=True)
+    script = '''import importlib.util, json, os
+from pathlib import Path
+import cold_runner_inert_fixture
+plugins = {name: importlib.util.find_spec(name) for name in ('bac_source_identity', 'bac_cold_worker_identity')}
+assert all(plugins.values()), 'canonical tool plugins undiscoverable'
+print(json.dumps(dict(plugins={name: spec.origin for name, spec in plugins.items()},
+                     source=cold_runner_inert_fixture.VALUE,
+                     environment={key: os.environ[key] for key in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS',
+                     'OPENBLAS_NUM_THREADS', 'CUDA_VISIBLE_DEVICES', 'PYTHONPATH', 'BAC_QUAL_ROOT',
+                     'BAC_QUAL_OUTPUT', 'BAC_QUAL_SHA', 'BAC_QUAL_TREE', 'BAC_QUAL_MANIFEST')})))
+'''
+    packet['spec']['jobs'][0]['args'] = ['-c', script]
+    completed = launch(packet)
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads((packet['output'] / 'cold-role-result.json').read_bytes())
+    assert result['exit_code'] == 0, (packet['output'] / 'cold-role.log').read_text()
+    seen = json.loads((packet['output'] / 'cold-role.log').read_text())
+    assert seen['plugins'] == {name: str(Q / (name + '.py')) for name in ('bac_source_identity', 'bac_cold_worker_identity')}
+    assert seen['source'] == 'inert source import reached'
+    assert seen['environment'] == dict(OMP_NUM_THREADS='1', MKL_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1',
+        CUDA_VISIBLE_DEVICES='', PYTHONPATH=str(Q) + os.pathsep + str(packet['root'] / 'src'),
+        BAC_QUAL_ROOT=str(packet['root']), BAC_QUAL_OUTPUT=str(packet['output'] / 'cold-role'),
+        BAC_QUAL_SHA='a' * 40, BAC_QUAL_TREE='b' * 40, BAC_QUAL_MANIFEST=str(packet['manifest']))
+
+
+@pytest.mark.parametrize('occupied', ['empty_directory', 'recorded_directory', 'file'])
+def test_occupied_attempt_is_refused_without_overwrite(packet, occupied):
+    output = packet['output']
+    output.parent.mkdir(parents=True)
+    if occupied == 'file':
+        output.write_bytes(b'preserved prior file')
+    else:
+        output.mkdir()
+        if occupied == 'recorded_directory':
+            (output / 'cold-role.log').write_bytes(b'preserved prior log')
+            (output / 'cold-role-result.json').write_bytes(b'preserved prior result')
+    before = {str(p): p.read_bytes() for p in output.rglob('*') if p.is_file()} if output.is_dir() else output.read_bytes()
+    completed = launch(packet)
+    assert completed.returncode != 0
+    after = {str(p): p.read_bytes() for p in output.rglob('*') if p.is_file()} if output.is_dir() else output.read_bytes()
+    assert after == before
+    assert not packet['guards'].exists()
+
+
+def test_child_failure_propagates_with_record_and_final_guard(packet):
+    packet['output'].parent.mkdir(parents=True)
+    packet['spec']['jobs'][0]['args'] = ['-c', 'print("retained child failure"); raise SystemExit(7)']
+    completed = launch(packet)
+    assert completed.returncode != 0
+    result = json.loads((packet['output'] / 'cold-role-result.json').read_bytes())
+    assert result['exit_code'] == 7
+    assert (packet['output'] / 'cold-role.log').read_text() == 'retained child failure\n'
+    assert len(packet['guards'].read_text().splitlines()) == 6
+
+
+def test_source_guard_rejects_drift_before_child_launch(packet):
+    packet['output'].parent.mkdir(parents=True)
+    packet['source'].write_text('VALUE = "drifted inert data"\n')
+    completed = launch(packet)
+    assert completed.returncode != 0
+    assert not (packet['output'] / 'cold-role.log').exists()
+    assert not (packet['output'] / 'cold-role-result.json').exists()
+
+
+def test_non_directory_parent_is_refused(packet):
+    packet['output'].parent.parent.mkdir()
+    packet['output'].parent.write_bytes(b'preserve occupied parent')
+    completed = launch(packet)
+    assert completed.returncode != 0
+    assert packet['output'].parent.read_bytes() == b'preserve occupied parent'
+
+
+@pytest.mark.parametrize('name', ['../escape', 'duplicate'])
+def test_unsafe_or_duplicate_job_names_cannot_overwrite(packet, name):
+    packet['output'].parent.mkdir(parents=True)
+    packet['spec']['jobs'][0]['name'] = name
+    if name == 'duplicate':
+        packet['spec']['jobs'].append(dict(packet['spec']['jobs'][0]))
+    completed = launch(packet)
+    assert completed.returncode != 0
+    assert not (packet['output'].parent / 'escape.log').exists()
+    assert not packet['guards'].exists()

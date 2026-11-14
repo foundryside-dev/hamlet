@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "reformatted tests/test_townlet/regressions/bac/test_replay_rng_custody.py\n\nAll done! \u2728 \ud83c\udf70 \u2728\n1 file reformatted.\n",
+  "started_at": "2026-11-14T05:02:33.190556+00:00",
+  "ended_at": "2026-11-14T05:02:34.507409+00:00",
+  "seconds": 1.3168649340077536,
+  "before_sha256": "0bf62bb8d0a411b12f55ad05459e7d5d7bbbbf1a0f879b3b592b405f9acab80d",
+  "after_sha256": "e64eaa3fd18489ca40d6193800a012ad53d9bc0086911a645a4e12df5ded7d50",
+  "after_lines": 1156,
+  "ast_without_locations_identical": true,
+  "diff_sha256": "a9de8492d5232402bc784bcef2b9b601bc05a238e1b7115ce84519b073107913",
+  "scope": "Root formatting-only repair after closed R114 prerequisite failure; fresh R115 capture and exact updated review binding required before runtime."
+}

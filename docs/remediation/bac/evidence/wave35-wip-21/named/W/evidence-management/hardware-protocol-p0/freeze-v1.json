@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-14T05:43:54.623212+00:00",
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 29909,
+      "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+      "bytes": 22158,
+      "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+    }
+  ],
+  "line_counts": {
+    "bac_hardware_protocol_v1.py": 448,
+    "test_bac_hardware_protocol_v1.py": 379
+  },
+  "budget": {
+    "files": 2,
+    "maximum_lines": 1400
+  },
+  "schema": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/schema-inventory-v1.json",
+    "bytes": 21015,
+    "sha256": "453c49da810df5f8a6626f7ae05489fa067d06dd298ebce9166e09f34a6b08ad"
+  },
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/interface-contract-v1.json",
+    "bytes": 6242,
+    "sha256": "ce0c57436554595406f4726bfc271a2b07a3ebf8b2c85440bf0253b99f9deb71"
+  },
+  "before": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/before-v1.json",
+    "bytes": 798,
+    "sha256": "e00b5fa3283e1f928fe775eb798f050db12435b49ca3b7b2d3fc55a39d26350b"
+  },
+  "existing_tools_after": {
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "capture_wave14_round.py": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+    "bac_source_identity.py": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "verify_bac_run.py": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+    "verify_bac_replay_spawn_identity.py": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+    "verify_bac_failed_run.py": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+  },
+  "existing_tools_unchanged": true,
+  "source_boundary": "R116 application bytes were not read, edited, imported or executed by P0; root owns candidate-wide witness.",
+  "tests": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/green-transport-v1.json",
+    "bytes": 642,
+    "sha256": "a976d355a58da09344e5806442dc40a2695823dea6934d55373bec8e0d85cb40"
+  },
+  "test_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/green-transport-v1.log",
+    "bytes": 179,
+    "sha256": "9d22250e40dd01c1ea20f5552c26f2f99989bc5498202d7a53374abe0752b462"
+  }
+}

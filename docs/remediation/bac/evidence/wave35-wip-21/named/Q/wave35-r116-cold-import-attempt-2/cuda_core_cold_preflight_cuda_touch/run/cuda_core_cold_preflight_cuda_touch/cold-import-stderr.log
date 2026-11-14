@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<string>", line 202, in <module>
+    torch.cuda.is_initialized
+  File "<string>", line 158, in __getattribute__
+    raise RuntimeError("cold import CUDA sentinel touched")
+RuntimeError: cold import CUDA sentinel touched

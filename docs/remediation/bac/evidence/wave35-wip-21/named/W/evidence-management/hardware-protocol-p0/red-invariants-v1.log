@@ -1,0 +1,140 @@
+........................................................................ [ 90%]
+FF.FFFF.                                                                 [100%]
+=================================== FAILURES ===================================
+______________________ test_mandatory_common_obligations _______________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af... 'reason': 'CPU fixture', 'state': 'unavailable', 'value': None}, 'environment': {'PATH': '/synthetic/bin'}, ...}, ...}
+
+    def test_mandatory_common_obligations(protocol, records):
+        value = copy.deepcopy(records["spec"])
+        value["jobs"][0]["obligations"] = [value["jobs"][0]["obligations"][0]]
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:298: Failed
+__________ test_child_role_requires_owned_contract_and_strict_threads __________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af... 'reason': 'CPU fixture', 'state': 'unavailable', 'value': None}, 'environment': {'PATH': '/synthetic/bin'}, ...}, ...}
+
+    def test_child_role_requires_owned_contract_and_strict_threads(protocol, records):
+        job = records["job"]
+        child = dict(records["role"], id="child", role="spawn-child")
+        job["roles"].append(child)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:306: Failed
+_________________ test_unlimited_is_only_resource_limit_state __________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af... 'reason': 'CPU fixture', 'state': 'unavailable', 'value': None}, 'environment': {'PATH': '/synthetic/bin'}, ...}, ...}
+
+    def test_unlimited_is_only_resource_limit_state(protocol, records):
+        records["process"]["debug"].update(state="unlimited", value=None, reason="not meaningful")
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:328: Failed
+_____________ test_huge_numeric_measurement_refuses_as_valueerror ______________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af... 'reason': 'CPU fixture', 'state': 'unavailable', 'value': None}, 'environment': {'PATH': '/synthetic/bin'}, ...}, ...}
+
+    def test_huge_numeric_measurement_refuses_as_valueerror(protocol, records):
+        records["admission"]["effective_cpu_capacity"]["value"] = 10 ** 1000
+        with pytest.raises(ValueError):
+>           protocol.validate_record("admission", records["admission"])
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:335: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:401: in validate_record
+    _check(kind, value, kind)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:208: in _check
+    _check(TYPES[rule], value, location)
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:182: in _check
+    _check(child, value[key], f"{location}.{key}")
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:203: in _check
+    _check(rule[1], value["value"], location)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rule = 'number', value = 100000000000000000...0000000000000000000
+location = 'admission.effective_cpu_capacity'
+
+    def _check(rule, value, location):
+        if type(rule) is dict:
+            _require(type(value) is dict and set(value) == set(rule), f"{location}: exact fields required")
+            for key, child in rule.items():
+                _check(child, value[key], f"{location}.{key}")
+        elif type(rule) is list:
+            tag = rule[0]
+            if tag == "enum":
+                _require(any(type(value) is type(option) and value == option for option in rule[1:]), f"{location}: invalid enum")
+            elif tag == "list":
+                _require(type(value) is list and len(value) >= rule[2], f"{location}: list cardinality")
+                for index, item in enumerate(value):
+                    _check(rule[1], item, f"{location}[{index}]")
+            elif tag == "nullable":
+                if value is not None:
+                    _check(rule[1], value, location)
+            else:
+                fields = {"state", "value", "reason"} | ({"provenance"} if tag == "fact" else set())
+                _require(type(value) is dict and set(value) == fields, f"{location}: exact measurement fields")
+                allowed = ("measured", "unavailable", "unsupported", "unlimited") if tag == "fact" else ("measured", "unavailable")
+                _check(enum(*allowed), value["state"], location)
+                _check("string", value["reason"], location)
+                if tag == "fact":
+                    _check("reference", value["provenance"], location)
+                if value["state"] == "measured":
+                    _check(rule[1], value["value"], location)
+                    _require(value["reason"] == "", f"{location}: measured reason must be empty")
+                else:
+                    _require(value["value"] is None and bool(value["reason"].strip()), f"{location}: missing fact requires reason and null")
+        elif rule in TYPES:
+            _check(TYPES[rule], value, location)
+            _semantic(rule, value)
+        elif rule in ("int", "uint", "positive-int"):
+            _require(type(value) is int, f"{location}: exact integer required")
+            _require(rule == "int" or value >= (1 if rule == "positive-int" else 0), f"{location}: integer range")
+        elif rule == "number":
+>           _require(type(value) in (int, float) and math.isfinite(value) and value >= 0, f"{location}: finite nonnegative number required")
+                                                     ^^^^^^^^^^^^^^^^^^^^
+E           OverflowError: int too large to convert to float
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:214: OverflowError
+__________________ test_completion_time_cannot_precede_start ___________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af... 'reason': 'CPU fixture', 'state': 'unavailable', 'value': None}, 'environment': {'PATH': '/synthetic/bin'}, ...}, ...}
+
+    def test_completion_time_cannot_precede_start(protocol, records):
+        records["job-result"]["end"]["value"] = "2026-11-13T00:00:00.000000Z"
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:340: Failed
+__________________ test_missing_process_end_duration_refuses ___________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af... 'reason': 'CPU fixture', 'state': 'unavailable', 'value': None}, 'environment': {'PATH': '/synthetic/bin'}, ...}, ...}
+
+    def test_missing_process_end_duration_refuses(protocol, records):
+        records["process"]["phase"] = "end"
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:346: Failed
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_mandatory_common_obligations
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_child_role_requires_owned_contract_and_strict_threads
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_unlimited_is_only_resource_limit_state
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_huge_numeric_measurement_refuses_as_valueerror
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_completion_time_cannot_precede_start
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_missing_process_end_duration_refuses
+6 failed, 74 passed in 1.02s

@@ -1,0 +1,105 @@
+"""Stdlib-only source-issued worker PID witness for the five closed cold jobs."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import sys
+import threading
+
+TEST = 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py'
+NODES = {
+    'test_cold_import_probe_faults[preloaded]': 'cuda_core_cold_preflight_preloaded',
+    'test_cold_import_probe_faults[cuda_touch]': 'cuda_core_cold_preflight_cuda_touch',
+    'test_fresh_process_canonical_import_order[core]': 'cuda_core_cold_import_core',
+    'test_fresh_process_canonical_import_order[flat]': 'cuda_core_cold_import_flat',
+    'test_fresh_process_canonical_import_order[per]': 'cuda_core_cold_import_per',
+}
+ENV = ('BAC_QUAL_ROOT', 'BAC_QUAL_OUTPUT', 'BAC_QUAL_MANIFEST', 'BAC_QUAL_SHA', 'BAC_QUAL_TREE')
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def canonical(value):
+    path = Path(value)
+    require(path.is_absolute() and str(path) == value and path.resolve() == path, 'noncanonical worker path')
+    require(not any(p.is_symlink() for p in (path, *path.parents)), 'symlink worker path')
+    return path
+
+
+def reference(path):
+    path = canonical(str(path))
+    require(path.is_file(), 'worker reference is not a file')
+    data = path.read_bytes()
+    return dict(path=str(path), bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+
+
+def proc_argv():
+    data = Path('/proc/self/cmdline').read_bytes()
+    require(data.endswith(b'\0'), 'missing proc argv terminator')
+    return [part.decode('utf-8') for part in data[:-1].split(b'\0')]
+
+
+def start_ticks():
+    fields = Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()
+    ticks = int(fields[19])
+    require(ticks > 0, 'invalid worker start ticks')
+    return ticks
+
+
+def pairs(items):
+    result = {}
+    for key, value in items:
+        require(key not in result, 'duplicate manifest key')
+        result[key] = value
+    return result
+
+
+def pytest_sessionstart(session):
+    active = [key in os.environ for key in ENV]
+    if not any(active) and 'BAC_COLD_SPEC' not in os.environ:
+        return
+    require(all(active), 'incomplete qualified cold-worker environment')
+    root = canonical(os.environ['BAC_QUAL_ROOT'])
+    output = canonical(os.environ['BAC_QUAL_OUTPUT'])
+    manifest_path = canonical(os.environ['BAC_QUAL_MANIFEST'])
+    require(output.is_dir(), 'qualified worker output missing')
+    require(Path.cwd() == root, 'qualified worker cwd mismatch')
+    launch = str(root / '.venv/bin/python')
+    require(sys.executable == launch, 'worker venv invocation spelling mismatch')
+    orig = list(sys.orig_argv)
+    proc = proc_argv()
+    require(orig == proc, 'worker proc/orig argv mismatch')
+    matches = []
+    for node, role in NODES.items():
+        expected = [launch, '-m', 'pytest', TEST + '::' + node, '--no-cov', '-p', 'no:cacheprovider',
+                    '-p', 'no:benchmark', '-p', 'bac_source_identity', '-p', 'bac_cold_worker_identity', '-q', '-s']
+        if orig == expected:
+            matches.append((node, role))
+    require(len(matches) == 1, 'worker command is not a closed one-node cold job')
+    node, role = matches[0]
+    manifest = json.loads(manifest_path.read_bytes(), object_pairs_hook=pairs)
+    require(type(manifest) is dict, 'worker manifest object required')
+    require(manifest['base_commit'] == os.environ['BAC_QUAL_SHA'], 'worker commit mismatch')
+    require(manifest['candidate_tree'] == os.environ['BAC_QUAL_TREE'], 'worker tree mismatch')
+    test_ref = reference(root / TEST)
+    require(test_ref['sha256'] == manifest['source_files'][TEST], 'worker test source mismatch')
+    binary = Path('/proc/self/exe').resolve()
+    python_threads = sorted([dict(name=t.name, ident=t.ident, native_id=t.native_id) for t in threading.enumerate()],
+                            key=lambda t: (t['name'], t['ident'], t['native_id']))
+    require(all(type(t['ident']) is int and t['ident'] > 0 and type(t['native_id']) is int and t['native_id'] > 0
+                for t in python_threads), 'unidentified worker thread')
+    record = dict(schema='cuda-core-cold-worker-v2', role=role, node=node, pid=os.getpid(), ppid=os.getppid(),
+                  start_ticks=start_ticks(), root=str(root), cwd=str(Path.cwd()), launch_python=launch,
+                  binary=str(binary), binary_sha256=reference(binary)['sha256'], orig_argv=orig, proc_argv=proc,
+                  command_sha256=hashlib.sha256(json.dumps(orig, ensure_ascii=True, separators=(',', ':')).encode()).hexdigest(),
+                  manifest_ref=reference(manifest_path), test_ref=test_ref, plugin_ref=reference(Path(__file__).resolve()),
+                  base_commit=manifest['base_commit'], candidate_tree=manifest['candidate_tree'],
+                  python_threads=python_threads, os_threads=len(list(Path('/proc/self/task').iterdir())))
+    destination = output / 'cold-import-worker.json'
+    data = (json.dumps(record, indent=2) + '\n').encode('utf-8')
+    with destination.open('xb') as stream:
+        stream.write(data)
+    print('BAC_COLD_WORKER_SHA256=' + hashlib.sha256(data).hexdigest(), flush=True)

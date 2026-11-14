@@ -1,0 +1,32 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v2-tmp"
+  ],
+  "cwd": "/tmp",
+  "env_overrides": {
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "started_at": "2026-11-14T05:45:34.654766+00:00",
+  "source_before": {
+    "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+  },
+  "exit_code": 4,
+  "finished_at": "2026-11-14T05:45:34.835952+00:00",
+  "source_after": {
+    "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+  }
+}

@@ -1,0 +1,471 @@
+{
+  "candidate_manifest": {
+    "bytes": 205968,
+    "path": "wave35/r115-candidate.json",
+    "root": "W",
+    "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+  },
+  "files": [
+    {
+      "bytes": 5224,
+      "path": "wave35-r115-capture.log",
+      "root": "Q",
+      "sha256": "af4999a732be8729dd246af726e3374b8e8a50b720425ec3f4f4f13a41a0444f"
+    },
+    {
+      "bytes": 723,
+      "path": "wave35-r115-changed-test-style/black-result.json",
+      "root": "Q",
+      "sha256": "6f4abc71eb56767b8161cd1aa8ea5d8a3d893892f1b3645f86baa2793c4c7227"
+    },
+    {
+      "bytes": 55,
+      "path": "wave35-r115-changed-test-style/black.log",
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "bytes": 719,
+      "path": "wave35-r115-changed-test-style/ruff-result.json",
+      "root": "Q",
+      "sha256": "41ffe0e1bf722f73f1afe0f8dec2be08ce5b989b62251e17ce39a01f42a6c3b6"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r115-changed-test-style/ruff.log",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 1350,
+      "path": "wave35-r115-changed-test-style-runner.log",
+      "root": "Q",
+      "sha256": "27b5167bc4fee48975d52691e324f8816d4b5b66500d5b1c79d21265a5f705cd"
+    },
+    {
+      "bytes": 634,
+      "path": "wave35-r115-changed-test-style-spec.json",
+      "root": "Q",
+      "sha256": "335912e50fb87865f62804e3d13c29bd25a02d0124926c7c478474cb72f15198"
+    },
+    {
+      "bytes": 582,
+      "path": "wave35-r115-collection-spec.json",
+      "root": "Q",
+      "sha256": "4032fe37e043588d6c6150445904db6a069c97bda29119a6c58c1b2675952b36"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r115-owned-spec.json",
+      "root": "Q",
+      "sha256": "2b3ad2ae3a67bc82db1053093827505089876541b7f91e3d5990ab3e680d4a17"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-peer-collection/peer-collection/identity-controller.json",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r115-peer-collection/peer-collection-custody.json",
+      "root": "Q",
+      "sha256": "518c3f38a66886ddfaef3dc5f9cdb831a4786b3cbe951bf556bb596b3b3706b0"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r115-peer-collection/peer-collection-result.json",
+      "root": "Q",
+      "sha256": "50bf6afd5daf4b590d7415444c53da56e976b03961350709e58db7e8fd76b196"
+    },
+    {
+      "bytes": 5965,
+      "path": "wave35-r115-peer-collection/peer-collection.log",
+      "root": "Q",
+      "sha256": "7727f4068ca87a302f775bfbe116d7184edfb735757f6683b346edebba8d7511"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r115-peer-collection-custody.json",
+      "root": "Q",
+      "sha256": "518c3f38a66886ddfaef3dc5f9cdb831a4786b3cbe951bf556bb596b3b3706b0"
+    },
+    {
+      "bytes": 774,
+      "path": "wave35-r115-peer-collection-runner.log",
+      "root": "Q",
+      "sha256": "74faf6a569e9a29595f9fc2124c47f4ffc1705a5a4e693a708ba39bdc7f5a9fb"
+    },
+    {
+      "bytes": 592,
+      "path": "wave35-r115-peer-collection-spec.json",
+      "root": "Q",
+      "sha256": "cb3cc55966657753210f7d0fb56b6d8edd0bf3e94c7c69f960794393f17b25ef"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-peer-focused/peer-focused/identity-controller.json",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 643,
+      "path": "wave35-r115-peer-focused/peer-focused-custody.json",
+      "root": "Q",
+      "sha256": "1c0fc039918ad00d8b3a22a6e4b938a5093527cc6bc0cde8c696a95bc97c4e36"
+    },
+    {
+      "bytes": 965,
+      "path": "wave35-r115-peer-focused/peer-focused-result.json",
+      "root": "Q",
+      "sha256": "d26822f78336e94bf508ed96a84fb748b2fba7eb5027a453a23ec2a1ce14fcd7"
+    },
+    {
+      "bytes": 773,
+      "path": "wave35-r115-peer-focused/peer-focused.log",
+      "root": "Q",
+      "sha256": "f3dccfa09088aa3fc10608f138668408bf9eb55491be7462167af4e80cdbab48"
+    },
+    {
+      "bytes": 643,
+      "path": "wave35-r115-peer-focused-custody.json",
+      "root": "Q",
+      "sha256": "1c0fc039918ad00d8b3a22a6e4b938a5093527cc6bc0cde8c696a95bc97c4e36"
+    },
+    {
+      "bytes": 895,
+      "path": "wave35-r115-peer-focused-runner.log",
+      "root": "Q",
+      "sha256": "98aeef130376248c1d46627e8b9a432daa10901fbb4483682a1857757a8f8a0d"
+    },
+    {
+      "bytes": 716,
+      "path": "wave35-r115-peer-focused-spec.json",
+      "root": "Q",
+      "sha256": "616f6019a2499d1aa0836307052629311cef579bfac2bd7e267900c05eb0b4cd"
+    },
+    {
+      "bytes": 1828,
+      "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+      "root": "Q",
+      "sha256": "7e87636e79c08d0a39c0c932e052c10d2f8bf3cfd7db761b26f797a3b1a801f0"
+    },
+    {
+      "bytes": 3319,
+      "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+      "root": "Q",
+      "sha256": "8708ccd01db446a038d21976450dcc4e90a3677381e23b65852a8f50b7c027cb"
+    },
+    {
+      "bytes": 16170,
+      "path": "wave35-r115-peer-owner-selection.json",
+      "root": "Q",
+      "sha256": "a3f6a88740fc3a71154f215f60806c302e945cc62f78a053bd2a2885542e9413"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-replay-healthy/replay-healthy/identity-controller.json",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r115-replay-healthy/replay-healthy-custody.json",
+      "root": "Q",
+      "sha256": "512d6e13f4f0e10b6dbc1c6a890e7e15b4204684b55e1816e1def9cc5518cf59"
+    },
+    {
+      "bytes": 8387,
+      "path": "wave35-r115-replay-healthy/replay-healthy-result.json",
+      "root": "Q",
+      "sha256": "3911bf91ba437c5523f407c019a73da1b5aa867379a549ea5dc4b39a88a428d6"
+    },
+    {
+      "bytes": 854,
+      "path": "wave35-r115-replay-healthy/replay-healthy.log",
+      "root": "Q",
+      "sha256": "3a47e188e5f6b1606d825c1fc4be118279a8646dc3ae378aa3082e73d7cf008d"
+    },
+    {
+      "bytes": 8109,
+      "path": "wave35-r115-replay-healthy-runner.log",
+      "root": "Q",
+      "sha256": "e13a5bdc1a72920bab44cf76df2d2e40c4933ef7cad8cfc505a466362c79d2df"
+    },
+    {
+      "bytes": 8344,
+      "path": "wave35-r115-replay-healthy-spec.json",
+      "root": "Q",
+      "sha256": "8664debe61a801c094958f043632f1ca32b83e023ce4e2620acceecad769097b"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-replay-poison/replay-poison/identity-controller.json",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 1073,
+      "path": "wave35-r115-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "root": "Q",
+      "sha256": "c5673ced731c8e6a4d1997d6829507766beea0e1420e4233f8663226316940dc"
+    },
+    {
+      "bytes": 228,
+      "path": "wave35-r115-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "root": "Q",
+      "sha256": "0a69c253de9ce8c1d73500926561488b9ac23a2b991369ee9a4ddb4d2b3dad15"
+    },
+    {
+      "bytes": 644,
+      "path": "wave35-r115-replay-poison/replay-poison-custody.json",
+      "root": "Q",
+      "sha256": "fed911b42433ae24521b08ed46b5b530fb7856dbc744e0a8c088103e71b6c95c"
+    },
+    {
+      "bytes": 972,
+      "path": "wave35-r115-replay-poison/replay-poison-result.json",
+      "root": "Q",
+      "sha256": "db37ed9de197e0c84f23704583db1c54c2faf85f6ae12c28b09569297245dd7f"
+    },
+    {
+      "bytes": 772,
+      "path": "wave35-r115-replay-poison/replay-poison.log",
+      "root": "Q",
+      "sha256": "d5f2122e32d0aa3a9421d1a0b6d70e97ba88a5ef306b1da308c88d46e1a0ac46"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/identity-controller.json",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 1529,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/replay-spawn-custody-replay_poison.json",
+      "root": "Q",
+      "sha256": "66a813516e081ac4483cb01451d0165287965ae8ec5dbc7383cc3076f7ef201d"
+    },
+    {
+      "bytes": 1073,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-identity-replay_poison.json",
+      "root": "Q",
+      "sha256": "a12e9e0aab52ad2e39b15d9b66037f9696529d492720c441b023d76b92a65cb0"
+    },
+    {
+      "bytes": 228,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-observation-replay_poison.json",
+      "root": "Q",
+      "sha256": "53af758c911bef0b0ef00f8df3df9d76756edd30ad5d7e00b2f431de6e105415"
+    },
+    {
+      "bytes": 644,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison-custody.json",
+      "root": "Q",
+      "sha256": "4130a1ddd50e798c3d9681f6c14b89b51067ed026a249af07b740431d9c6e539"
+    },
+    {
+      "bytes": 912,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison-result.json",
+      "root": "Q",
+      "sha256": "7cbd2878bd6be21c2a34f8e241ad2c3a394d4811062ed721662f9f4ce459956c"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison.log",
+      "root": "Q",
+      "sha256": "3503d82d09071b0443aa0cb706670d66a38b83c0fb7a8d9f958e9854a0c316d5"
+    },
+    {
+      "bytes": 838,
+      "path": "wave35-r115-replay-poison-protocol-runner.log",
+      "root": "Q",
+      "sha256": "2adaba36cc6a85e73ff2e44d1b78c71362af59613d5559f702dac94bdea6c567"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r115-replay-poison-protocol-spec.json",
+      "root": "Q",
+      "sha256": "7b42e4c15fa2704c845f558c7b6d24d64ddc44df714d90d322213317aee590b9"
+    },
+    {
+      "bytes": 902,
+      "path": "wave35-r115-replay-poison-runner.log",
+      "root": "Q",
+      "sha256": "8f210191b1222ccb83e1f1b8cf6ecab7453ecd8f1a010ef7b86367b645418034"
+    },
+    {
+      "bytes": 722,
+      "path": "wave35-r115-replay-poison-spec.json",
+      "root": "Q",
+      "sha256": "82bd8add3c6cf225f811ca47d6c62669da4da01b64a0e3bb2955b7063a88e20b"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "support",
+      "path": "wave35-r115-capture.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-changed-test-style",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-changed-test-style-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-changed-test-style-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-collection-spec.json",
+      "round": 115,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-owned-spec.json",
+      "round": 115,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-collection",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-collection-custody.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-collection-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-collection-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-focused",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-focused-custody.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-focused-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-focused-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+      "round": 115,
+      "status": "FAILED"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-owner-selection.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-replay-healthy",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-healthy-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-healthy-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-replay-poison",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-replay-poison-protocol",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-protocol-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-protocol-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "root_disposition": {
+    "bytes": 16596,
+    "path": "wave35/r115-root-checks.json",
+    "root": "W",
+    "sha256": "fe1e238784b6a51b04a7dc9db9e904c069bdbb9592c094130861063933d3e824"
+  },
+  "round": 115,
+  "schema": "bac-closed-round-inventory-v1",
+  "status": "CLOSED HISTORICAL NAMESPACE; NOT TERMINAL"
+}

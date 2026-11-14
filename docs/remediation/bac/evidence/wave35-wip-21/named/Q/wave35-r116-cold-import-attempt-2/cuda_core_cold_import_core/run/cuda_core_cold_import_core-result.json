@@ -1,0 +1,28 @@
+{
+  "name": "cuda_core_cold_import_core",
+  "exit_code": 0,
+  "seconds": 8.341501461007283,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_fresh_process_canonical_import_order[core]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-p",
+    "bac_cold_worker_identity",
+    "-q",
+    "-s"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core.log",
+  "sha256": "37b56509729ad9d1ee013a9f714be0140d9364af6ad46d9ccdb030af1cd46546",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "manifest_sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-14T05:24:08.528515+00:00",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "manifest_sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f",
+  "source_sha256": "b1f05946a4f2c0e145c44226323dc7b599f36a1364c854d26f090fa45b1a4409",
+  "tool_sha256": "5263c63dd4881a9d2b4af951819e89876b76b8c63cd724ba36d953fa515fb9cb",
+  "literal_sha256": "449a01b27740c7744f9e44e4f86beaf7acf56f0fa646609e43e0588d30093705",
+  "fault_sites": {
+    "preflight_preloaded": {
+      "site_function": "_cold_boundary",
+      "site_line": 192,
+      "caller_function": "<module>",
+      "caller_line": 200
+    },
+    "preflight_cuda_touch": {
+      "site_function": "__getattribute__",
+      "site_line": 158,
+      "caller_function": "<module>",
+      "caller_line": 202
+    }
+  },
+  "cold_spec": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-spec.json",
+    "bytes": 2925,
+    "sha256": "96cbed103365c021b0f20a1492be6ac9bd09944b2236a826c2a6a09452541e29"
+  },
+  "root_specs": {
+    "cuda_core_cold_preflight_preloaded": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-spec.json",
+      "bytes": 764,
+      "sha256": "21d997c6764500bba3b25035695bc8561d55b4c1e65030fedef5902522512b65"
+    },
+    "cuda_core_cold_preflight_cuda_touch": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_cuda_touch-spec.json",
+      "bytes": 767,
+      "sha256": "7ad0dc867393ab0ce35a14b364138fcc979141045118d89a8b202beb0e3a5326"
+    },
+    "cuda_core_cold_import_core": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_core-spec.json",
+      "bytes": 755,
+      "sha256": "cd9ed84da369c217434362bf2055122065637044084ccd70c374ab410b3c7ade"
+    },
+    "cuda_core_cold_import_flat": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_flat-spec.json",
+      "bytes": 755,
+      "sha256": "390b81e542dfae1e5e675da7b6ed5df6a01af5d0cd9abf57df456b83992509a0"
+    },
+    "cuda_core_cold_import_per": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_per-spec.json",
+      "bytes": 752,
+      "sha256": "db98a893a01047d297a1b7c93e711fb5b3d896fa074ad015b432c4b2c10f6c4e"
+    }
+  },
+  "validation": "Qualified literal/AST parser applied successfully to actual frozen APP source; exact job argv generated from qualified command() with no manual extras. No application import or execution.",
+  "environment": "BAC_COLD_SPEC is exact shared frozen cold spec for each role; six thread environment values set to1 on root launch.",
+  "order": "Collection/style first; two negative roles and validators next; three positive roles only after both negative verifications pass."
+}

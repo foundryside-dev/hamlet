@@ -1,0 +1,856 @@
+EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE  [100%]
+==================================== ERRORS ====================================
+_______ ERROR at setup of test_closed_schema_complete_synthetic_records ________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>0] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>1] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>2] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>3] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>4] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>5] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>6] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>7] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>8] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_closed_schema_refusals[<lambda>9] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>10] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>11] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>12] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>13] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>14] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>15] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>16] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>17] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>18] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>19] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>20] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_closed_schema_refusals[<lambda>21] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[spec] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[candidate] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[environment] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[admission] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[process] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[attempt-start] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[job-result] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[obligation-evidence] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[receipt] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[source-freeze] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[role] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[obligation] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[job] __
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_every_record_rejects_unknown_and_missing_fields[reference] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____________ ERROR at setup of test_exact_reference_byte_type[True] ____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_____________ ERROR at setup of test_exact_reference_byte_type[-1] _____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____________ ERROR at setup of test_exact_reference_byte_type[1.0] _____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____________ ERROR at setup of test_exact_reference_byte_type[inf] _____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____________ ERROR at setup of test_exact_reference_byte_type[nan] _____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_____________ ERROR at setup of test_exact_reference_byte_type[3] ______________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________________ ERROR at setup of test_reference_tamper ____________________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+________ ERROR at setup of test_reference_length_and_missing_dependency ________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_______ ERROR at setup of test_reference_rejects_symlink_parent_and_leaf _______
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_reference_unsafe_paths[relative] ____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+________ ERROR at setup of test_reference_unsafe_paths[/tmp/../escape] _________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_________ ERROR at setup of test_reference_unsafe_paths[/tmp//double] __________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_reference_unsafe_paths[/tmp/./dot] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+________ ERROR at setup of test_reference_unsafe_paths[/tmp/trailing/] _________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_________ ERROR at setup of test_reference_unsafe_paths[/tmp/evil\x00] _________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+______________ ERROR at setup of test_reference_directory_refuses ______________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_finite_resource_measurements[nan] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_finite_resource_measurements[inf] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___________ ERROR at setup of test_finite_resource_measurements[-1] ____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+__________ ERROR at setup of test_finite_resource_measurements[True] ___________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____________ ERROR at setup of test_finite_resource_measurements[2] ____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+___ ERROR at setup of test_unknown_required_admission_fact_refuses_admitted ____
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_____________ ERROR at setup of test_unlimited_cgroup_is_explicit ______________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____ ERROR at setup of test_fork_guard_role_no_torch_and_strict_obligation _____
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_________ ERROR at setup of test_cuda_obligation_cannot_be_cpu_standin _________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____ ERROR at setup of test_unsupplied_validator_cannot_satisfy_obligation _____
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_failure_interruption_no_invented_finish[completed-failed-1-0] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_failure_interruption_no_invented_finish[interrupted-None-15] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_failure_interruption_no_invented_finish[refused-None-0] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_failure_interruption_no_invented_finish[unrun-None-0] _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_______ ERROR at setup of test_success_cannot_hide_skip_or_missing_call ________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+____________ ERROR at setup of test_unknown_kind_and_wrong_top_type ____________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_______________ ERROR at setup of test_freeze_no_writer_required _______________
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+_ ERROR at setup of test_process_start_cannot_invent_elapsed_or_guard_torch_call _
+
+    @pytest.fixture
+    def protocol():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:14: AssertionError
+=========================== short test summary info ============================
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_complete_synthetic_records
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>0]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>1]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>2]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>3]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>4]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>5]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>6]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>7]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>8]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>9]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>10]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>11]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>12]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>13]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>14]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>15]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>16]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>17]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>18]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>19]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>20]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_refusals[<lambda>21]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[spec]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[candidate]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[environment]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[admission]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[process]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[attempt-start]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[job-result]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[obligation-evidence]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[receipt]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[source-freeze]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[role]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[obligation]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[job]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_every_record_rejects_unknown_and_missing_fields[reference]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_reference_byte_type[True]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_reference_byte_type[-1]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_reference_byte_type[1.0]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_reference_byte_type[inf]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_reference_byte_type[nan]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_exact_reference_byte_type[3]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_tamper
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_length_and_missing_dependency
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_rejects_symlink_parent_and_leaf
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_unsafe_paths[relative]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_unsafe_paths[/tmp/../escape]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_unsafe_paths[/tmp//double]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_unsafe_paths[/tmp/./dot]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_unsafe_paths[/tmp/trailing/]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_unsafe_paths[/tmp/evil\x00]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_directory_refuses
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_finite_resource_measurements[nan]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_finite_resource_measurements[inf]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_finite_resource_measurements[-1]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_finite_resource_measurements[True]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_finite_resource_measurements[2]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_unknown_required_admission_fact_refuses_admitted
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_unlimited_cgroup_is_explicit
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_fork_guard_role_no_torch_and_strict_obligation
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_cuda_obligation_cannot_be_cpu_standin
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_unsupplied_validator_cannot_satisfy_obligation
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_failure_interruption_no_invented_finish[completed-failed-1-0]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_failure_interruption_no_invented_finish[interrupted-None-15]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_failure_interruption_no_invented_finish[refused-None-0]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_failure_interruption_no_invented_finish[unrun-None-0]
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_success_cannot_hide_skip_or_missing_call
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_unknown_kind_and_wrong_top_type
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_freeze_no_writer_required
+ERROR ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_process_start_cannot_invent_elapsed_or_guard_torch_call
+71 errors in 1.04s

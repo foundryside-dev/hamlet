@@ -1,0 +1,26 @@
+{
+  "utc": "2026-11-14T05:33:34.021744+00:00",
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/run_bac_packet_checks_locked.py.txt",
+      "bytes": 2043,
+      "lines": 20,
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_cold_import_identity.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/verify_bac_cold_import_identity.py.txt",
+      "bytes": 35312,
+      "lines": 605,
+      "sha256": "5263c63dd4881a9d2b4af951819e89876b76b8c63cd724ba36d953fa515fb9cb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/test_verify_bac_cold_import_identity.py.txt",
+      "bytes": 38421,
+      "lines": 702,
+      "sha256": "1e3c9272c28af735f6f64e8ad9f53ebbdce02c27741a73749893c72fbfd8e1c0"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-b-spec.json"
+  ],
+  "start": "2026-11-14T05:43:06.396526+00:00",
+  "end": "2026-11-14T05:43:14.864133+00:00",
+  "seconds": 8.467612870008452,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-b-dispatch.log",
+  "sha256": "5b8501be955fcff380c9a6594ff5b86be5609d7842e92d69642156d5e906e2e7",
+  "spec_sha256": "10861cb8df88de5727af59482b0008272c4a0795bf1791b8b839a938c74a1583"
+}

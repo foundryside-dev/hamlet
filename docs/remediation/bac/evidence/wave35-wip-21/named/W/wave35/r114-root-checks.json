@@ -1,0 +1,11 @@
+{
+  "schema": "bac-root-prerequisite-checks-v1",
+  "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+  "manifest_sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb",
+  "status": "COLLECTION PASSED; BLACK FORMAT PREREQUISITE FAILED; NO RUNTIME EXECUTED",
+  "collection": 54,
+  "ruff_exit_code": 0,
+  "black_exit_code": 1,
+  "runtime_status": "UNRUN pending formatting prerequisite repair",
+  "scope": "Existing approved peer-wait assertions unchanged; no counts claimed as runtime passes. R114 failure retained; next source candidate required."
+}

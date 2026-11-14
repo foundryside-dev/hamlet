@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-operation-body-completion-spec.json"
+  ],
+  "start": "2026-11-14T05:43:29.193562+00:00",
+  "end": "2026-11-14T05:43:36.755896+00:00",
+  "seconds": 7.562359365998418,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-operation-body-completion-dispatch.log",
+  "sha256": "daf3ddf582f9dfa3d6dc20c44e7c49e31b3715d31e2e200f4a4f49260ab99560",
+  "spec_sha256": "22c780b84f8737429aa9cf975d0441e5f168ff9f7824f135f7fc9e828f0d2fb4"
+}

@@ -1,0 +1,1407 @@
+{
+  "actual_hardware": "UNRUN",
+  "application_candidate": null,
+  "application_candidate_reason": "P0 synthetic common transport is independent of APP candidate. No application tree is fabricated for required-component schema.",
+  "artifact_references": [
+    {
+      "bytes": 798,
+      "path": "evidence-management/hardware-protocol-p0/before-v1.json",
+      "root": "W",
+      "sha256": "e00b5fa3283e1f928fe775eb798f050db12435b49ca3b7b2d3fc55a39d26350b"
+    },
+    {
+      "bytes": 2812,
+      "path": "evidence-management/hardware-protocol-p0/freeze-v1.json",
+      "root": "W",
+      "sha256": "a345c9131f85a6a439eb945ca5102a5cac685dc53b66b20da45a10eb877e8463"
+    },
+    {
+      "bytes": 3093,
+      "path": "evidence-management/hardware-protocol-p0/freeze-v2.json",
+      "root": "W",
+      "sha256": "32c8f8fd80b6b9407c87aac6da4d8e74e7da1ac4aaad557bce79d360e62c5bd7"
+    },
+    {
+      "bytes": 642,
+      "path": "evidence-management/hardware-protocol-p0/green-attempt-v1.json",
+      "root": "W",
+      "sha256": "0204ada7e4283ad809a0e8b0b2e4515b3000edcc0494d1e9757fb49899ee4d34"
+    },
+    {
+      "bytes": 99,
+      "path": "evidence-management/hardware-protocol-p0/green-attempt-v1.log",
+      "root": "W",
+      "sha256": "0c82155a87f54945c672fd22b00353ae595878dd3faa35dbfd5200b1f510b1f5"
+    },
+    {
+      "bytes": 642,
+      "path": "evidence-management/hardware-protocol-p0/green-invariants-v1.json",
+      "root": "W",
+      "sha256": "8d73dcfc4173220d8e7aadc6dce02138bfbc84d74c321c5171f10b6be9ff0400"
+    },
+    {
+      "bytes": 179,
+      "path": "evidence-management/hardware-protocol-p0/green-invariants-v1.log",
+      "root": "W",
+      "sha256": "8f09cc1a696dadcf41418a1467767ade200f33a90700139fffff3958970f5579"
+    },
+    {
+      "bytes": 642,
+      "path": "evidence-management/hardware-protocol-p0/green-review-fixes-v1.json",
+      "root": "W",
+      "sha256": "f378d8ca0c9b4c5f2ad5da4dfb1658b4406f7aef776118142fe2fc189e40b8d7"
+    },
+    {
+      "bytes": 179,
+      "path": "evidence-management/hardware-protocol-p0/green-review-fixes-v1.log",
+      "root": "W",
+      "sha256": "c929088643fb82f73ec3db098f061327cf4cac7dca153849b9095483d1de9b79"
+    },
+    {
+      "bytes": 642,
+      "path": "evidence-management/hardware-protocol-p0/green-transport-v1.json",
+      "root": "W",
+      "sha256": "a976d355a58da09344e5806442dc40a2695823dea6934d55373bec8e0d85cb40"
+    },
+    {
+      "bytes": 179,
+      "path": "evidence-management/hardware-protocol-p0/green-transport-v1.log",
+      "root": "W",
+      "sha256": "9d22250e40dd01c1ea20f5552c26f2f99989bc5498202d7a53374abe0752b462"
+    },
+    {
+      "bytes": 6242,
+      "path": "evidence-management/hardware-protocol-p0/interface-contract-v1.json",
+      "root": "W",
+      "sha256": "ce0c57436554595406f4726bfc271a2b07a3ebf8b2c85440bf0253b99f9deb71"
+    },
+    {
+      "bytes": 7982,
+      "path": "evidence-management/hardware-protocol-p0/interface-contract-v2.json",
+      "root": "W",
+      "sha256": "f20950a73809a5044278fca1575aa42764c62ac35797f1899dfc2f29aba56e6a"
+    },
+    {
+      "bytes": 642,
+      "path": "evidence-management/hardware-protocol-p0/red-invariants-v1.json",
+      "root": "W",
+      "sha256": "736f065f48ce8425b74d99283571608a4e21f903fb0e48178ec7b6f20d3c5e1f"
+    },
+    {
+      "bytes": 9684,
+      "path": "evidence-management/hardware-protocol-p0/red-invariants-v1.log",
+      "root": "W",
+      "sha256": "bcd16781e51772a296590cf68ad6c56097f9382cdec0aadb7ace0c8040c87716"
+    },
+    {
+      "bytes": 413,
+      "path": "evidence-management/hardware-protocol-p0/red-invariants-v2.json",
+      "root": "W",
+      "sha256": "32ecdcc2554369829503be8e7fb07334082d86565e451391549467f156cd82cd"
+    },
+    {
+      "bytes": 10708,
+      "path": "evidence-management/hardware-protocol-p0/red-invariants-v2.log",
+      "root": "W",
+      "sha256": "2fc90a1006309e0072e9a3980acec31e2bae49df614148ab2916c44f7b1cea96"
+    },
+    {
+      "bytes": 642,
+      "path": "evidence-management/hardware-protocol-p0/red-review-fixes-v1.json",
+      "root": "W",
+      "sha256": "519ac6042ee4d46686f3f49f1a3d15602144048892d9103e2b71b4b16c05eeae"
+    },
+    {
+      "bytes": 4993,
+      "path": "evidence-management/hardware-protocol-p0/red-review-fixes-v1.log",
+      "root": "W",
+      "sha256": "fea63c218d0d56882d06b3ce07c250234503f7dbceb468b9eb938076267e110a"
+    },
+    {
+      "bytes": 413,
+      "path": "evidence-management/hardware-protocol-p0/red-transport-v1.json",
+      "root": "W",
+      "sha256": "dc2217c760bce539d3a42014950cfc17eb16cd40dbade3c3d04794af3a9f9ce6"
+    },
+    {
+      "bytes": 1830,
+      "path": "evidence-management/hardware-protocol-p0/red-transport-v1.log",
+      "root": "W",
+      "sha256": "5e0ee229f386f6f8e17a4d3744b651a2068c17f80aa148e51b697c862fb6e44a"
+    },
+    {
+      "bytes": 495,
+      "path": "evidence-management/hardware-protocol-p0/red-v1.json",
+      "root": "W",
+      "sha256": "290a34f6e608105b07760aabad3d53d4021e5b437c1d1e287024fd2d1a28723e"
+    },
+    {
+      "bytes": 98,
+      "path": "evidence-management/hardware-protocol-p0/red-v1.log",
+      "root": "W",
+      "sha256": "a638fde482278dbb4e0085e3a8dffd741f866654f77984dfc6e25d536fdae37a"
+    },
+    {
+      "bytes": 413,
+      "path": "evidence-management/hardware-protocol-p0/red-v2.json",
+      "root": "W",
+      "sha256": "ff9998f02866cea0ca02b2367d1fc844c98e3eeec013f4c1cab6eb840d83f15e"
+    },
+    {
+      "bytes": 49288,
+      "path": "evidence-management/hardware-protocol-p0/red-v2.log",
+      "root": "W",
+      "sha256": "9fa595dae79eb26e2c057cd7f4c49c8a6154d71b5ae6dfade32dffd22ad44eb5"
+    },
+    {
+      "bytes": 498,
+      "path": "evidence-management/hardware-protocol-p0/red-v3.json",
+      "root": "W",
+      "sha256": "0610b122899932d906714b9f048545b380be1b38535a86cb7b4161a0dd636492"
+    },
+    {
+      "bytes": 955,
+      "path": "evidence-management/hardware-protocol-p0/red-v3.log",
+      "root": "W",
+      "sha256": "c810c9aaba5a2797b3f013ec96d2d7fc4b434e83b1a5cda3e8c0e0fe5ae5ce06"
+    },
+    {
+      "bytes": 2955,
+      "path": "evidence-management/hardware-protocol-p0/root-adoption-v1.json",
+      "root": "W",
+      "sha256": "bb765dec2408877248d94ff0193cef7cb5404574c1a01948064c99689ab09b42"
+    },
+    {
+      "bytes": 1160,
+      "path": "evidence-management/hardware-protocol-p0/root-grant-v1.json",
+      "root": "W",
+      "sha256": "bc596c62c9b7557f014b98ebf7445d5291cf77bd45f510fd283c68347cd4ff19"
+    },
+    {
+      "bytes": 21015,
+      "path": "evidence-management/hardware-protocol-p0/schema-inventory-v1.json",
+      "root": "W",
+      "sha256": "453c49da810df5f8a6626f7ae05489fa067d06dd298ebce9166e09f34a6b08ad"
+    },
+    {
+      "bytes": 1000,
+      "path": "evidence-management/hardware-protocol-p0/source-retention-current-v2.json",
+      "root": "W",
+      "sha256": "09531375888622fd0b6828ceb3a72910a4d9f350e9fa124b64743a9988ce76fe"
+    },
+    {
+      "bytes": 1936,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v1.json",
+      "root": "W",
+      "sha256": "d0322a7b27ec624505f59ed4610b1ba1d259f5a6d715151b26b1d334e7ef4b00"
+    },
+    {
+      "bytes": 97,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v1.log",
+      "root": "W",
+      "sha256": "51f5550d86043279227c92b72199d4ee1f66d30623405f70c98442058ffe76c7"
+    },
+    {
+      "bytes": 1772,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v2.json",
+      "root": "W",
+      "sha256": "c1bec3a4c9be3d7dc321ac3661bccec217b9e420541017f03e88451d0a59d0ed"
+    },
+    {
+      "bytes": 179,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v2.log",
+      "root": "W",
+      "sha256": "9d22250e40dd01c1ea20f5552c26f2f99989bc5498202d7a53374abe0752b462"
+    },
+    {
+      "bytes": 1798,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v3.json",
+      "root": "W",
+      "sha256": "5cf3e09838d6ff5bc547ae25fc1289e7694fbada2e4bd76c98896e91eb886cd6"
+    },
+    {
+      "bytes": 179,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v3.log",
+      "root": "W",
+      "sha256": "365e69adc5dd53fdcff0d0e7ad51b592246546508f1593de62a21a43d2fdd8db"
+    },
+    {
+      "bytes": 2015,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v1.json",
+      "root": "W",
+      "sha256": "bbdc93f64e281154528bead8693dcd06f49b1d52529a4c058b987b3fd711e247"
+    },
+    {
+      "bytes": 97,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v1.log",
+      "root": "W",
+      "sha256": "51f5550d86043279227c92b72199d4ee1f66d30623405f70c98442058ffe76c7"
+    },
+    {
+      "bytes": 1851,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v2.json",
+      "root": "W",
+      "sha256": "b316093314449a3dcd6b835426c6f93bb9b825d3bdcdfe789ad5b4043c172f95"
+    },
+    {
+      "bytes": 241,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v2.log",
+      "root": "W",
+      "sha256": "07dee8d3097dbe85b18c8bf6d28c1accd293bfc679bbf386e80796a56522bddc"
+    },
+    {
+      "bytes": 1877,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v3.json",
+      "root": "W",
+      "sha256": "bdb9939ae9bb21004ccf44beab67d07c3baf6dc0525c5fac290cdf2b16b64243"
+    },
+    {
+      "bytes": 5900,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v3.log",
+      "root": "W",
+      "sha256": "bebe15718598b475524ccecf4d2c70c60a046f588d455a7188cfec2aa65502b5"
+    },
+    {
+      "bytes": 1877,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v4.json",
+      "root": "W",
+      "sha256": "99e56c4799e2581f7f81fde71aec366162f66a50b24490eac1be12893220c79d"
+    },
+    {
+      "bytes": 99,
+      "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v4.log",
+      "root": "W",
+      "sha256": "ec3622cd28ed58d936296959047810aafa476cb0738b1aa83ec2cccffc39214a"
+    },
+    {
+      "bytes": 4819,
+      "path": "wave35-preparation/CUDA-HARDWARE-PROTOCOL-P0-INDEPENDENT-REVIEW-v1.md",
+      "root": "W",
+      "sha256": "6d5a0f3a5cbe11a25fbdde74e8a0341cadcf11a1245ea6446f6e6d40808b9085"
+    },
+    {
+      "bytes": 3685,
+      "path": "wave35-preparation/CUDA-HARDWARE-PROTOCOL-P0-INDEPENDENT-REVIEW-v2.md",
+      "root": "W",
+      "sha256": "2525b1fc3ce86fb9b9d1ac6eeedd3f70d1cc086202b9c40232ecf155e28e8bb4"
+    },
+    {
+      "bytes": 31365,
+      "path": "evidence-management/wip21-preparation/p0-source-snapshots/bac_hardware_protocol_v1.py.txt",
+      "root": "W",
+      "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+    },
+    {
+      "bytes": 23656,
+      "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_bac_hardware_protocol_v1.py.txt",
+      "root": "W",
+      "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+    },
+    {
+      "bytes": 4914,
+      "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+      "root": "W",
+      "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+    }
+  ],
+  "attempts": [
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "passed": 72
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:40:05.722034+00:00",
+      "exit_code": 0,
+      "id": "green-attempt-v1",
+      "log": {
+        "bytes": 99,
+        "path": "evidence-management/hardware-protocol-p0/green-attempt-v1.log",
+        "root": "W",
+        "sha256": "0c82155a87f54945c672fd22b00353ae595878dd3faa35dbfd5200b1f510b1f5"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 642,
+        "path": "evidence-management/hardware-protocol-p0/green-attempt-v1.json",
+        "root": "W",
+        "sha256": "0204ada7e4283ad809a0e8b0b2e4515b3000edcc0494d1e9757fb49899ee4d34"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "c16e86a959f7ff53d51a43b6eec62b71e3fabad4e1047523cfebb538a2d992a4"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "d061d6676f54a105db0ed612832fca006fcefb336e0929380997e4a19720c705"
+        }
+      ],
+      "started_at": "2026-11-14T05:40:04.050089+00:00",
+      "status": "PASSED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "passed": 80
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:41:44.140206+00:00",
+      "exit_code": 0,
+      "id": "green-invariants-v1",
+      "log": {
+        "bytes": 179,
+        "path": "evidence-management/hardware-protocol-p0/green-invariants-v1.log",
+        "root": "W",
+        "sha256": "8f09cc1a696dadcf41418a1467767ade200f33a90700139fffff3958970f5579"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 642,
+        "path": "evidence-management/hardware-protocol-p0/green-invariants-v1.json",
+        "root": "W",
+        "sha256": "8d73dcfc4173220d8e7aadc6dce02138bfbc84d74c321c5171f10b6be9ff0400"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "f1bf74ff0a16399d18316462284554a80dc38aa07fd5293235ec0f5980c7fecd"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "096aa309be3d34b2454acb68462e6ab4b34eccac8a9b68713b31aba5581b9772"
+        }
+      ],
+      "started_at": "2026-11-14T05:41:42.705516+00:00",
+      "status": "PASSED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "passed": 89
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:47:00.243687+00:00",
+      "exit_code": 0,
+      "id": "green-review-fixes-v1",
+      "log": {
+        "bytes": 179,
+        "path": "evidence-management/hardware-protocol-p0/green-review-fixes-v1.log",
+        "root": "W",
+        "sha256": "c929088643fb82f73ec3db098f061327cf4cac7dca153849b9095483d1de9b79"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 642,
+        "path": "evidence-management/hardware-protocol-p0/green-review-fixes-v1.json",
+        "root": "W",
+        "sha256": "f378d8ca0c9b4c5f2ad5da4dfb1658b4406f7aef776118142fe2fc189e40b8d7"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": {
+            "bytes": 31365,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/bac_hardware_protocol_v1.py.txt",
+            "root": "W",
+            "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+          },
+          "recorded_source": "bac_hardware_protocol_v1.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 23656,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_bac_hardware_protocol_v1.py.txt",
+            "root": "W",
+            "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+          },
+          "recorded_source": "test_bac_hardware_protocol_v1.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+        }
+      ],
+      "started_at": "2026-11-14T05:46:58.479602+00:00",
+      "status": "PASSED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "passed": 85
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:42:38.709490+00:00",
+      "exit_code": 0,
+      "id": "green-transport-v1",
+      "log": {
+        "bytes": 179,
+        "path": "evidence-management/hardware-protocol-p0/green-transport-v1.log",
+        "root": "W",
+        "sha256": "9d22250e40dd01c1ea20f5552c26f2f99989bc5498202d7a53374abe0752b462"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 642,
+        "path": "evidence-management/hardware-protocol-p0/green-transport-v1.json",
+        "root": "W",
+        "sha256": "a976d355a58da09344e5806442dc40a2695823dea6934d55373bec8e0d85cb40"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+        }
+      ],
+      "started_at": "2026-11-14T05:42:37.274691+00:00",
+      "status": "PASSED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "failed": 6,
+        "passed": 74
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:41:06.401988+00:00",
+      "exit_code": 1,
+      "id": "red-invariants-v1",
+      "log": {
+        "bytes": 9684,
+        "path": "evidence-management/hardware-protocol-p0/red-invariants-v1.log",
+        "root": "W",
+        "sha256": "bcd16781e51772a296590cf68ad6c56097f9382cdec0aadb7ace0c8040c87716"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 642,
+        "path": "evidence-management/hardware-protocol-p0/red-invariants-v1.json",
+        "root": "W",
+        "sha256": "736f065f48ce8425b74d99283571608a4e21f903fb0e48178ec7b6f20d3c5e1f"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "c16e86a959f7ff53d51a43b6eec62b71e3fabad4e1047523cfebb538a2d992a4"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "7b5b5db2569e4201fa66a4353b661f7996329315806f0d1b62baf92b1c3f0198"
+        }
+      ],
+      "started_at": "2026-11-14T05:41:04.952031+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "failed": 7,
+        "passed": 73
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:41:19.797715+00:00",
+      "exit_code": 1,
+      "id": "red-invariants-v2",
+      "log": {
+        "bytes": 10708,
+        "path": "evidence-management/hardware-protocol-p0/red-invariants-v2.log",
+        "root": "W",
+        "sha256": "2fc90a1006309e0072e9a3980acec31e2bae49df614148ab2916c44f7b1cea96"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 413,
+        "path": "evidence-management/hardware-protocol-p0/red-invariants-v2.json",
+        "root": "W",
+        "sha256": "32ecdcc2554369829503be8e7fb07334082d86565e451391549467f156cd82cd"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": "Attempt record has no source hash map; cannot reconstruct source identity from later freeze.",
+      "source_versions": [],
+      "started_at": "2026-11-14T05:41:18.261410+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "failed": 4,
+        "passed": 85
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:46:34.079360+00:00",
+      "exit_code": 1,
+      "id": "red-review-fixes-v1",
+      "log": {
+        "bytes": 4993,
+        "path": "evidence-management/hardware-protocol-p0/red-review-fixes-v1.log",
+        "root": "W",
+        "sha256": "fea63c218d0d56882d06b3ce07c250234503f7dbceb468b9eb938076267e110a"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 642,
+        "path": "evidence-management/hardware-protocol-p0/red-review-fixes-v1.json",
+        "root": "W",
+        "sha256": "519ac6042ee4d46686f3f49f1a3d15602144048892d9103e2b71b4b16c05eeae"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 23656,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_bac_hardware_protocol_v1.py.txt",
+            "root": "W",
+            "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+          },
+          "recorded_source": "test_bac_hardware_protocol_v1.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+        }
+      ],
+      "started_at": "2026-11-14T05:46:32.321269+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "failed": 1,
+        "passed": 84
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:42:12.592300+00:00",
+      "exit_code": 1,
+      "id": "red-transport-v1",
+      "log": {
+        "bytes": 1830,
+        "path": "evidence-management/hardware-protocol-p0/red-transport-v1.log",
+        "root": "W",
+        "sha256": "5e0ee229f386f6f8e17a4d3744b651a2068c17f80aa148e51b697c862fb6e44a"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 413,
+        "path": "evidence-management/hardware-protocol-p0/red-transport-v1.json",
+        "root": "W",
+        "sha256": "dc2217c760bce539d3a42014950cfc17eb16cd40dbade3c3d04794af3a9f9ce6"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": "Attempt record has no source hash map; cannot reconstruct source identity from later freeze.",
+      "source_versions": [],
+      "started_at": "2026-11-14T05:42:11.074614+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": null,
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:36:59.139975+00:00",
+      "exit_code": 1,
+      "id": "red-v1",
+      "log": {
+        "bytes": 98,
+        "path": "evidence-management/hardware-protocol-p0/red-v1.log",
+        "root": "W",
+        "sha256": "a638fde482278dbb4e0085e3a8dffd741f866654f77984dfc6e25d536fdae37a"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 495,
+        "path": "evidence-management/hardware-protocol-p0/red-v1.json",
+        "root": "W",
+        "sha256": "290a34f6e608105b07760aabad3d53d4021e5b437c1d1e287024fd2d1a28723e"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": "Attempt record has no source hash map; cannot reconstruct source identity from later freeze.",
+      "source_versions": [],
+      "started_at": "2026-11-14T05:36:59.122138+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "errors": 71
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:37:13.250601+00:00",
+      "exit_code": 1,
+      "id": "red-v2",
+      "log": {
+        "bytes": 49288,
+        "path": "evidence-management/hardware-protocol-p0/red-v2.log",
+        "root": "W",
+        "sha256": "9fa595dae79eb26e2c057cd7f4c49c8a6154d71b5ae6dfade32dffd22ad44eb5"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 413,
+        "path": "evidence-management/hardware-protocol-p0/red-v2.json",
+        "root": "W",
+        "sha256": "ff9998f02866cea0ca02b2367d1fc844c98e3eeec013f4c1cab6eb840d83f15e"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": "Attempt record has no source hash map; cannot reconstruct source identity from later freeze.",
+      "source_versions": [],
+      "started_at": "2026-11-14T05:37:11.688546+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-q"
+      ],
+      "counts_from_log": {
+        "failed": 1,
+        "skipped": 71
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:37:27.165192+00:00",
+      "exit_code": 1,
+      "id": "red-v3",
+      "log": {
+        "bytes": 955,
+        "path": "evidence-management/hardware-protocol-p0/red-v3.log",
+        "root": "W",
+        "sha256": "c810c9aaba5a2797b3f013ec96d2d7fc4b434e83b1a5cda3e8c0e0fe5ae5ce06"
+      },
+      "producer": "tool author",
+      "record": {
+        "bytes": 498,
+        "path": "evidence-management/hardware-protocol-p0/red-v3.json",
+        "root": "W",
+        "sha256": "0610b122899932d906714b9f048545b380be1b38535a86cb7b4161a0dd636492"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": "Attempt record has no source hash map; cannot reconstruct source identity from later freeze.",
+      "source_versions": [],
+      "started_at": "2026-11-14T05:37:26.216895+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--noconftest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/author-suite-v1-tmp"
+      ],
+      "counts_from_log": null,
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:45:15.443458+00:00",
+      "exit_code": 1,
+      "id": "author-suite-v1",
+      "log": {
+        "bytes": 97,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v1.log",
+        "root": "W",
+        "sha256": "51f5550d86043279227c92b72199d4ee1f66d30623405f70c98442058ffe76c7"
+      },
+      "producer": "independent reviewer",
+      "record": {
+        "bytes": 1936,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v1.json",
+        "root": "W",
+        "sha256": "d0322a7b27ec624505f59ed4610b1ba1d259f5a6d715151b26b1d334e7ef4b00"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 4914,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+            "root": "W",
+            "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+          },
+          "recorded_source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+        }
+      ],
+      "started_at": "2026-11-14T05:45:15.426379+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--noconftest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/author-suite-v2-tmp"
+      ],
+      "counts_from_log": {
+        "passed": 85
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:45:34.654015+00:00",
+      "exit_code": 0,
+      "id": "author-suite-v2",
+      "log": {
+        "bytes": 179,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v2.log",
+        "root": "W",
+        "sha256": "9d22250e40dd01c1ea20f5552c26f2f99989bc5498202d7a53374abe0752b462"
+      },
+      "producer": "independent reviewer",
+      "record": {
+        "bytes": 1772,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v2.json",
+        "root": "W",
+        "sha256": "c1bec3a4c9be3d7dc321ac3661bccec217b9e420541017f03e88451d0a59d0ed"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 4914,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+            "root": "W",
+            "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+          },
+          "recorded_source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+        }
+      ],
+      "started_at": "2026-11-14T05:45:33.342051+00:00",
+      "status": "PASSED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+        "--noconftest",
+        "-o",
+        "addopts=",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/author-suite-v3-tmp"
+      ],
+      "counts_from_log": {
+        "passed": 89
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:47:50.874472+00:00",
+      "exit_code": 0,
+      "id": "author-suite-v3",
+      "log": {
+        "bytes": 179,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v3.log",
+        "root": "W",
+        "sha256": "365e69adc5dd53fdcff0d0e7ad51b592246546508f1593de62a21a43d2fdd8db"
+      },
+      "producer": "independent reviewer",
+      "record": {
+        "bytes": 1798,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/author-suite-v3.json",
+        "root": "W",
+        "sha256": "5cf3e09838d6ff5bc547ae25fc1289e7694fbada2e4bd76c98896e91eb886cd6"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": {
+            "bytes": 31365,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/bac_hardware_protocol_v1.py.txt",
+            "root": "W",
+            "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+          },
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 23656,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_bac_hardware_protocol_v1.py.txt",
+            "root": "W",
+            "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+          },
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 4914,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+            "root": "W",
+            "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+          },
+          "recorded_source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+        }
+      ],
+      "started_at": "2026-11-14T05:47:49.608286+00:00",
+      "status": "PASSED"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+        "--noconftest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v1-tmp"
+      ],
+      "counts_from_log": null,
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:45:15.458500+00:00",
+      "exit_code": 1,
+      "id": "independent-suite-v1",
+      "log": {
+        "bytes": 97,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v1.log",
+        "root": "W",
+        "sha256": "51f5550d86043279227c92b72199d4ee1f66d30623405f70c98442058ffe76c7"
+      },
+      "producer": "independent reviewer",
+      "record": {
+        "bytes": 2015,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v1.json",
+        "root": "W",
+        "sha256": "bbdc93f64e281154528bead8693dcd06f49b1d52529a4c058b987b3fd711e247"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 4914,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+            "root": "W",
+            "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+          },
+          "recorded_source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+        }
+      ],
+      "started_at": "2026-11-14T05:45:15.444009+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+        "--noconftest",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v2-tmp"
+      ],
+      "counts_from_log": null,
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:45:34.835952+00:00",
+      "exit_code": 4,
+      "id": "independent-suite-v2",
+      "log": {
+        "bytes": 241,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v2.log",
+        "root": "W",
+        "sha256": "07dee8d3097dbe85b18c8bf6d28c1accd293bfc679bbf386e80796a56522bddc"
+      },
+      "producer": "independent reviewer",
+      "record": {
+        "bytes": 1851,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v2.json",
+        "root": "W",
+        "sha256": "b316093314449a3dcd6b835426c6f93bb9b825d3bdcdfe789ad5b4043c172f95"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 4914,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+            "root": "W",
+            "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+          },
+          "recorded_source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+        }
+      ],
+      "started_at": "2026-11-14T05:45:34.654766+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+        "--noconftest",
+        "-o",
+        "addopts=",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v3-tmp"
+      ],
+      "counts_from_log": {
+        "failed": 4,
+        "passed": 18
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:45:45.994864+00:00",
+      "exit_code": 1,
+      "id": "independent-suite-v3",
+      "log": {
+        "bytes": 5900,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v3.log",
+        "root": "W",
+        "sha256": "bebe15718598b475524ccecf4d2c70c60a046f588d455a7188cfec2aa65502b5"
+      },
+      "producer": "independent reviewer",
+      "record": {
+        "bytes": 1877,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v3.json",
+        "root": "W",
+        "sha256": "bdb9939ae9bb21004ccf44beab67d07c3baf6dc0525c5fac290cdf2b16b64243"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+        },
+        {
+          "immutable_snapshot": null,
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+          "retention": "HISTORICAL BYTES NOT YET LOCATED; AUTHOR FOLLOW-UP PENDING",
+          "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 4914,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+            "root": "W",
+            "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+          },
+          "recorded_source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+        }
+      ],
+      "started_at": "2026-11-14T05:45:45.413149+00:00",
+      "status": "FAILED"
+    },
+    {
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+        "--noconftest",
+        "-o",
+        "addopts=",
+        "-p",
+        "no:cacheprovider",
+        "-q",
+        "--basetemp",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v4-tmp"
+      ],
+      "counts_from_log": {
+        "passed": 22
+      },
+      "elapsed_seconds": null,
+      "elapsed_unavailable_reason": "Record timestamps retained; no separately measured elapsed value supplied, none invented.",
+      "ended_at": "2026-11-14T05:47:51.393493+00:00",
+      "exit_code": 0,
+      "id": "independent-suite-v4",
+      "log": {
+        "bytes": 99,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v4.log",
+        "root": "W",
+        "sha256": "ec3622cd28ed58d936296959047810aafa476cb0738b1aa83ec2cccffc39214a"
+      },
+      "producer": "independent reviewer",
+      "record": {
+        "bytes": 1877,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/independent-suite-v4.json",
+        "root": "W",
+        "sha256": "99e56c4799e2581f7f81fde71aec366162f66a50b24490eac1be12893220c79d"
+      },
+      "scope": "Synthetic transport/schema tests only, no APPcandidate or hardware qualification.",
+      "source_binding_unavailable_reason": null,
+      "source_versions": [
+        {
+          "immutable_snapshot": {
+            "bytes": 31365,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/bac_hardware_protocol_v1.py.txt",
+            "root": "W",
+            "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+          },
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 23656,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_bac_hardware_protocol_v1.py.txt",
+            "root": "W",
+            "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+          },
+          "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+        },
+        {
+          "immutable_snapshot": {
+            "bytes": 4914,
+            "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+            "root": "W",
+            "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+          },
+          "recorded_source": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+          "retention": "CURRENT EXACT SNAPSHOT",
+          "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+        }
+      ],
+      "started_at": "2026-11-14T05:47:50.875282+00:00",
+      "status": "PASSED"
+    }
+  ],
+  "component_id": "hardware-protocol-p0-common-transport-v1",
+  "freeze": {
+    "bytes": 3093,
+    "path": "evidence-management/hardware-protocol-p0/freeze-v2.json",
+    "root": "W",
+    "sha256": "32c8f8fd80b6b9407c87aac6da4d8e74e7da1ac4aaad557bce79d360e62c5bd7"
+  },
+  "historical_missing_source_versions": [
+    {
+      "recorded_source": "bac_hardware_protocol_v1.py",
+      "sha256": "c16e86a959f7ff53d51a43b6eec62b71e3fabad4e1047523cfebb538a2d992a4"
+    },
+    {
+      "recorded_source": "test_bac_hardware_protocol_v1.py",
+      "sha256": "d061d6676f54a105db0ed612832fca006fcefb336e0929380997e4a19720c705"
+    },
+    {
+      "recorded_source": "bac_hardware_protocol_v1.py",
+      "sha256": "f1bf74ff0a16399d18316462284554a80dc38aa07fd5293235ec0f5980c7fecd"
+    },
+    {
+      "recorded_source": "test_bac_hardware_protocol_v1.py",
+      "sha256": "096aa309be3d34b2454acb68462e6ab4b34eccac8a9b68713b31aba5581b9772"
+    },
+    {
+      "recorded_source": "bac_hardware_protocol_v1.py",
+      "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+    },
+    {
+      "recorded_source": "test_bac_hardware_protocol_v1.py",
+      "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+    },
+    {
+      "recorded_source": "test_bac_hardware_protocol_v1.py",
+      "sha256": "7b5b5db2569e4201fa66a4353b661f7996329315806f0d1b62baf92b1c3f0198"
+    },
+    {
+      "recorded_source": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053"
+    },
+    {
+      "recorded_source": "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+      "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9"
+    }
+  ],
+  "interface_scope": "Common transport structural interface only; no tool consumer integrated and no semantic hardware/application acceptance.",
+  "package_accounting_change": false,
+  "remaining": [
+    "Resolve historical source retention or explicitly accepted unavailability without replacing old versions with current bytes",
+    "P1/P2/P3/P4/P5 and owner-supplied child/CUDA contracts/validators",
+    "Measured server admission and real hardware execution"
+  ],
+  "review_history": "Original v1 review reports three material findings; fix RED/GREEN, v2 review PASS and both independent execution sequences preserved.",
+  "root_adoption": {
+    "bytes": 2955,
+    "path": "evidence-management/hardware-protocol-p0/root-adoption-v1.json",
+    "root": "W",
+    "sha256": "bb765dec2408877248d94ff0193cef7cb5404574c1a01948064c99689ab09b42"
+  },
+  "schema": "bac-separate-tool-component-receipt-v1",
+  "source_snapshots": [
+    {
+      "immutable_snapshot": {
+        "bytes": 31365,
+        "path": "evidence-management/wip21-preparation/p0-source-snapshots/bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+      },
+      "original": {
+        "bytes": 31365,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "81b7e420987d1b8b0452c798445d7eb14f6157fd16e72961bf03f0479f1f9ea7"
+      },
+      "scope": "Inert exact current tool source only; no inspection/import/execution."
+    },
+    {
+      "immutable_snapshot": {
+        "bytes": 23656,
+        "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+      },
+      "original": {
+        "bytes": 23656,
+        "path": "test_bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "ee821e2347a6091acc658ca73b4ac01b652368cf227a8df33930290eab7a195b"
+      },
+      "scope": "Inert exact current tool source only; no inspection/import/execution."
+    },
+    {
+      "immutable_snapshot": {
+        "bytes": 4914,
+        "path": "evidence-management/wip21-preparation/p0-source-snapshots/test_independent_p0.py.txt",
+        "root": "W",
+        "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+      },
+      "original": {
+        "bytes": 4914,
+        "path": "evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py",
+        "root": "W",
+        "sha256": "dc17ff2ac3ef7f21716eb78cc561c9c08fc771fe20c1b34f54d5aa467e718bf2"
+      },
+      "scope": "Inert exact current tool source only; no inspection/import/execution."
+    }
+  ],
+  "status": "ADOPTED TOOL RESULTS; DRAFT HISTORICAL SOURCE RETENTION INCOMPLETE",
+  "terminal_tool_accounting": {
+    "author_suite_passed": 89,
+    "author_terminal_attempt": "author-suite-v3",
+    "independent_suite_passed": 22,
+    "independent_terminal_attempt": "independent-suite-v4",
+    "scope": "Separate suites, no unique-total sum or APP/hardware/package credit."
+  }
+}

@@ -1,0 +1,4201 @@
+{
+  "candidate_manifest": {
+    "bytes": 206037,
+    "path": "wave35/r116-candidate.json",
+    "root": "W",
+    "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+  },
+  "directories": [
+    {
+      "path": "wave35-r116-activation/activation",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-core-collection/core-collection",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-core-healthy/core-healthy",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-fixture-prerequisites/fixture-prerequisites",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-producer-rest-a/producer-rest-a",
+      "type": "directory"
+    },
+    {
+      "path": "wave35-r116-producer-rest-b/producer-rest-b",
+      "type": "directory"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 246,
+      "path": "wave35-r116-activation/activation/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 642,
+      "path": "wave35-r116-activation/activation-custody.json",
+      "root": "Q",
+      "sha256": "caebef128f62b09d834e1c50d55dfbb2e693f510283abb619f620fa6c4bdc084"
+    },
+    {
+      "bytes": 10143,
+      "path": "wave35-r116-activation/activation-result.json",
+      "root": "Q",
+      "sha256": "43738124637294d56225525b3a20b91599a3f2e6dd05d2b9c9cef76257a24c9b"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r116-activation/activation.log",
+      "root": "Q",
+      "sha256": "a9829a22145760efeed09f745d9bad9644447a4bf494d4fa077fb4e616204f59"
+    },
+    {
+      "bytes": 678,
+      "path": "wave35-r116-activation-dispatch.json",
+      "root": "Q",
+      "sha256": "34a3329d4ef8cc7d777993417068fb33da357289c3c570123629f372462dc1ab"
+    },
+    {
+      "bytes": 9805,
+      "path": "wave35-r116-activation-dispatch.log",
+      "root": "Q",
+      "sha256": "ba99ab5dc139862b51ece0e62f074926baf9ccfe06bb1fa5456794fb88b9ef13"
+    },
+    {
+      "bytes": 10164,
+      "path": "wave35-r116-activation-spec.json",
+      "root": "Q",
+      "sha256": "c0c17d7803ed75068f684d938bdc7071341d524d1b742c803df2df560163d89a"
+    },
+    {
+      "bytes": 1096,
+      "path": "wave35-r116-activation-verification.json",
+      "root": "Q",
+      "sha256": "fb979df282e6dbc35a5a0b7fce86c6fe188c90f0778aa3d6da2d44f1e6542b83"
+    },
+    {
+      "bytes": 5224,
+      "path": "wave35-r116-capture.log",
+      "root": "Q",
+      "sha256": "1d4e68fbb73a3cab73165fe2d7748d862466a1fdcc50a843e1f11be4e65e39ea"
+    },
+    {
+      "bytes": 728,
+      "path": "wave35-r116-changed-core-test-style/black-result.json",
+      "root": "Q",
+      "sha256": "553dd38beecb1037283ad43bd788f280a57bdebea44e30e14dee85f5c8d87902"
+    },
+    {
+      "bytes": 55,
+      "path": "wave35-r116-changed-core-test-style/black.log",
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "bytes": 724,
+      "path": "wave35-r116-changed-core-test-style/ruff-result.json",
+      "root": "Q",
+      "sha256": "a6a0fc29670c19bca2a4ebbd30e4bd4da1fefb277840fb42c324614aa4306bcf"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r116-changed-core-test-style/ruff.log",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 1360,
+      "path": "wave35-r116-changed-core-test-style-runner.log",
+      "root": "Q",
+      "sha256": "d4cf486832d31dad98ca8ef6c50b488c4f711a412e9a54baa34b10af9ee737bc"
+    },
+    {
+      "bytes": 639,
+      "path": "wave35-r116-changed-core-test-style-spec.json",
+      "root": "Q",
+      "sha256": "3c6847c377e930eb78e362cf83b36b4a938a6b328d0fb9f8491ec0fc3d9ac5ba"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-cuda-touch-runner.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 3755,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/cold-import-custody.json",
+      "root": "Q",
+      "sha256": "55d56887e248d214e456adc96b4593535b4f86aea5e17f3373f5f90bab45c06f"
+    },
+    {
+      "bytes": 72720,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/cold-import-identity.json",
+      "root": "Q",
+      "sha256": "eb413c10751b1bb58956f04c04ba85f933e0afb40361c88ed2bafb8b3e8e1c60"
+    },
+    {
+      "bytes": 23479,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/cold-import-observation.json",
+      "root": "Q",
+      "sha256": "08ce3b10ce9b2ce03b4c400f2f231a2f6c417bbbb9e5be085c535fc39c56ab2f"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/cold-import-stderr.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/cold-import-stdout.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2242,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/cold-import-worker.json",
+      "root": "Q",
+      "sha256": "b55691fc77b1b9c702e40a836ac176cd613894d252a4a8bf95a94a32076a7468"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 657,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core-custody.json",
+      "root": "Q",
+      "sha256": "d42cb0e25abc2261db5521632ba9461b14dcf01979501a0ce56cc0c1403e6315"
+    },
+    {
+      "bytes": 1012,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core-result.json",
+      "root": "Q",
+      "sha256": "6d6c01228ef558633e64370a514c7b678dd27e2dd7a8ec259ad97106a740e853"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_core/run/cuda_core_cold_import_core.log",
+      "root": "Q",
+      "sha256": "37b56509729ad9d1ee013a9f714be0140d9364af6ad46d9ccdb030af1cd46546"
+    },
+    {
+      "bytes": 3755,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/cold-import-custody.json",
+      "root": "Q",
+      "sha256": "d83cf4e7e82c1f71423dd722699341d5d48a2c14acfc9f30a5e62034c2cac7d8"
+    },
+    {
+      "bytes": 74178,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/cold-import-identity.json",
+      "root": "Q",
+      "sha256": "a04d65296e1a7ec189db779080de9338dbaaa427e6b8af5cfdf659e40821de2d"
+    },
+    {
+      "bytes": 23478,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/cold-import-observation.json",
+      "root": "Q",
+      "sha256": "22c368374c7bf488ec4562034347d6cb126b685d5f3a9ed8943602e6b8a8e2ff"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/cold-import-stderr.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/cold-import-stdout.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2242,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/cold-import-worker.json",
+      "root": "Q",
+      "sha256": "abaef0f3a3a4f5404d9e35d729f05bb26b21c8cf5691a2c7f0fe772119c0505a"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 657,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat-custody.json",
+      "root": "Q",
+      "sha256": "e057e21516475197442d95db94945a4224dc12398b5e987d17b89fa57998cb82"
+    },
+    {
+      "bytes": 1012,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat-result.json",
+      "root": "Q",
+      "sha256": "59f93103deb64a4cb4d2f86257241a3f734397dedcd4e85ead16f743f06400ea"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_flat/run/cuda_core_cold_import_flat.log",
+      "root": "Q",
+      "sha256": "a27882289690964b9c0e184f6d7b8f2680192bc5d95ab7906ffe43d80266b76b"
+    },
+    {
+      "bytes": 3738,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/cold-import-custody.json",
+      "root": "Q",
+      "sha256": "b80f3223a888afea35db57111562ace4c79f8994f5f83e4d8fe142ab2430348f"
+    },
+    {
+      "bytes": 74213,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/cold-import-identity.json",
+      "root": "Q",
+      "sha256": "a81def958cf6e6916c27248b8f38c45552108e3a2d3233d16463dde01b3e5ef0"
+    },
+    {
+      "bytes": 23464,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/cold-import-observation.json",
+      "root": "Q",
+      "sha256": "907f90e975982bcfdaef2a911189f1bd9aa46e4033e3854e89fa5ac2ad236d4b"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/cold-import-stderr.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/cold-import-stdout.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2238,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/cold-import-worker.json",
+      "root": "Q",
+      "sha256": "40378aa216e38257bde3407cf20ade8f2c5e446af4f36508f52ce807e9bb0ca0"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 656,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per-custody.json",
+      "root": "Q",
+      "sha256": "aa397e42c61ca9a698f20a96ab810871bf3813a8eb56ae9e719296421962e025"
+    },
+    {
+      "bytes": 1008,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per-result.json",
+      "root": "Q",
+      "sha256": "0f2c9b0a874780510543a4a9179949170cc526172300251aee4f4c6c374f96a9"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_import_per/run/cuda_core_cold_import_per.log",
+      "root": "Q",
+      "sha256": "4bde902fce31ad637001043aa4a2c34c67d84061c9756eb5c57eadd2881caf46"
+    },
+    {
+      "bytes": 3929,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/cold-import-custody.json",
+      "root": "Q",
+      "sha256": "f75a8af209da69ca74fd614cb8fd3b633529ea25065702a879020be8cf816ae4"
+    },
+    {
+      "bytes": 45817,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/cold-import-fault-witness.json",
+      "root": "Q",
+      "sha256": "dc4d117816568b412aa62f3f80e1a1d46701d9eb92520f30deaac3e340376037"
+    },
+    {
+      "bytes": 23610,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/cold-import-observation.json",
+      "root": "Q",
+      "sha256": "cbc4ad014968b78c07e95bed4a455247740afea3178559b2ca9ce9a48e7fc687"
+    },
+    {
+      "bytes": 263,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/cold-import-stderr.log",
+      "root": "Q",
+      "sha256": "f8a95c6193a4c4d21573eb307787524d4c2a266fe057948de5a7297d78af0354"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/cold-import-stdout.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2233,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/cold-import-worker.json",
+      "root": "Q",
+      "sha256": "6d578d2d41463eddd3931ee728b7bc3b9fc7ee44e2e631c3dfb6a78508871d3e"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch-custody.json",
+      "root": "Q",
+      "sha256": "f15945324d6462ea410fb001d2bfb6b5580eebed6384ea754b1258c57aed35f9"
+    },
+    {
+      "bytes": 1033,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch-result.json",
+      "root": "Q",
+      "sha256": "1163770b02f1d63c94f452030b3ff24381ac20e828acd1ff2b928e6b16a70470"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_cuda_touch/run/cuda_core_cold_preflight_cuda_touch.log",
+      "root": "Q",
+      "sha256": "8b9f553dbd562bd5381e75a5c9da2596f78320976ad287b0519689a9d4f3851a"
+    },
+    {
+      "bytes": 3912,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-custody.json",
+      "root": "Q",
+      "sha256": "48474b720874e88e4816d8956e5bcf12131a3e4ef2a75d1bd7978e293bb9ae93"
+    },
+    {
+      "bytes": 46366,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-fault-witness.json",
+      "root": "Q",
+      "sha256": "f55b56c6f65640d441a7dd2fe4b9d9e4f50f4d517d7625f8c9e5d20e249ce66e"
+    },
+    {
+      "bytes": 23598,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-observation.json",
+      "root": "Q",
+      "sha256": "91b5e3107493e9e70d29d386423c1ae579d859b55204938c8b23b1c6195fd440"
+    },
+    {
+      "bytes": 306,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-stderr.log",
+      "root": "Q",
+      "sha256": "8f0423852aa5ff7a4a630076728892fa583795d74a4e6b8cb9bdd9a95dd7d20b"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-stdout.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2229,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-worker.json",
+      "root": "Q",
+      "sha256": "fb0762fcbd66b4c83ee2d86c8880627111d4db84435fbe5dc8fdeab6a120fe32"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded-custody.json",
+      "root": "Q",
+      "sha256": "33a38fdeaef5647cea7b69af88094d8e81b76f8c0127dddf0005071e6da7717e"
+    },
+    {
+      "bytes": 1029,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded-result.json",
+      "root": "Q",
+      "sha256": "8ea551abf44bcb0381f2321444f260274e63ad63e287aadd194a6cea023ddaa5"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded.log",
+      "root": "Q",
+      "sha256": "ebcfb7cd8b649aa786446715f33c7bd15b59fc08bc9c573ffa5d7fbd103ca850"
+    },
+    {
+      "bytes": 2973,
+      "path": "wave35-r116-cold-import-attempt-2-spec.json",
+      "root": "Q",
+      "sha256": "096653144a482a6eba057200a7359aaf4eac8b93645413ba66674d4d39faf247"
+    },
+    {
+      "bytes": 2925,
+      "path": "wave35-r116-cold-import-spec.json",
+      "root": "Q",
+      "sha256": "96cbed103365c021b0f20a1492be6ac9bd09944b2236a826c2a6a09452541e29"
+    },
+    {
+      "bytes": 1839,
+      "path": "wave35-r116-cold-launch-prerequisite-diagnostic.json",
+      "root": "Q",
+      "sha256": "eb9068d51618d3b260ee27dbe29922bc5df4b1b0904343cc91c700e54a5e399b"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-preloaded-runner.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2866,
+      "path": "wave35-r116-cold-static-preflight.json",
+      "root": "Q",
+      "sha256": "415b5ac22630d5fd92791cbf4b738d025cd46b9c3c1bffeb3d09e205e2b6efb0"
+    },
+    {
+      "bytes": 582,
+      "path": "wave35-r116-collection-spec.json",
+      "root": "Q",
+      "sha256": "85420b3a00852a10327fa49048c6f89f0718ae21891a9954f581041a8d25a178"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-core-collection/core-collection/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r116-core-collection/core-collection-custody.json",
+      "root": "Q",
+      "sha256": "58ae284aeec202e61c91c876a2d24b093f6a4b8bb29f1299c9f8caad636ee9c6"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r116-core-collection/core-collection-result.json",
+      "root": "Q",
+      "sha256": "b400023d1970d711660838a1ba0eec3b13b3c313184ad8b1bf2b416e71399d3b"
+    },
+    {
+      "bytes": 8466,
+      "path": "wave35-r116-core-collection/core-collection.log",
+      "root": "Q",
+      "sha256": "753179ef92588888a988d2f53ebde9dfb7622bc622b0fa058b694e6f108ccc40"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r116-core-collection-custody.json",
+      "root": "Q",
+      "sha256": "58ae284aeec202e61c91c876a2d24b093f6a4b8bb29f1299c9f8caad636ee9c6"
+    },
+    {
+      "bytes": 774,
+      "path": "wave35-r116-core-collection-runner.log",
+      "root": "Q",
+      "sha256": "04a305d6621cbb006a8509703aef60909270612c9daa6db7aab030272ae8271e"
+    },
+    {
+      "bytes": 592,
+      "path": "wave35-r116-core-collection-spec.json",
+      "root": "Q",
+      "sha256": "c66779820fe466a8f8cfbcf3e152b620bca708c4b739c4f786ff7395f1550fd5"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-core-healthy/core-healthy/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 644,
+      "path": "wave35-r116-core-healthy/core-healthy-custody.json",
+      "root": "Q",
+      "sha256": "caf7dc6701aedfbeab217c0efe503354acce3a637ee08e83f86838fd9096f5ef"
+    },
+    {
+      "bytes": 10238,
+      "path": "wave35-r116-core-healthy/core-healthy-result.json",
+      "root": "Q",
+      "sha256": "9a5d868706992512bdd78332c9866378a07f067d57fc7438af62210c6c698523"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r116-core-healthy/core-healthy.log",
+      "root": "Q",
+      "sha256": "fbb049533dfb49b455f37b2ce5b3b5635419c92e2f416ed336e858ea4affee28"
+    },
+    {
+      "bytes": 682,
+      "path": "wave35-r116-core-healthy-dispatch.json",
+      "root": "Q",
+      "sha256": "e0899215374bee85c2436f287cfdaf7af3f55747a8df83fe73acdf6a8e09e9f9"
+    },
+    {
+      "bytes": 9876,
+      "path": "wave35-r116-core-healthy-dispatch.log",
+      "root": "Q",
+      "sha256": "6678e4fa4928e6a043ada803ad087e9c5ccc62eb2118c525e6ec301f8808a9b5"
+    },
+    {
+      "bytes": 10281,
+      "path": "wave35-r116-core-healthy-spec.json",
+      "root": "Q",
+      "sha256": "6bbd63037a28f8835f81f46187051584b93bef3ef4c54982b3394deaca60ab60"
+    },
+    {
+      "bytes": 1100,
+      "path": "wave35-r116-core-healthy-verification.json",
+      "root": "Q",
+      "sha256": "9b382349b308dbb56cebb652a6647775e635f4eb1d1f0b17870488927c93aec9"
+    },
+    {
+      "bytes": 24359,
+      "path": "wave35-r116-core-node-selection.json",
+      "root": "Q",
+      "sha256": "46d3a212ba757448cea4ea51c79552b44212da6e4a1f6cb4dbf964a326dcd8d4"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1558,
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/replay-spawn-custody-cuda_core_bootstrap_failure.json",
+      "root": "Q",
+      "sha256": "af56d069de9d5c9cf6b4e34de0682e5b8caa5c92ba23f070b00424fe0f44fc22"
+    },
+    {
+      "bytes": 966,
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/spawn-identity-cuda_core_bootstrap_failure.json",
+      "root": "Q",
+      "sha256": "6ac325db00f1eed9298ceb73392da89d8aafd393cc537bb5dc71e25e3906c19d"
+    },
+    {
+      "bytes": 265,
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/spawn-observation-cuda_core_bootstrap_failure.json",
+      "root": "Q",
+      "sha256": "2d7f7aa552d768f555d1f9b2fc3a193b5b49d1481d13462247742231352691b2"
+    },
+    {
+      "bytes": 658,
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json",
+      "root": "Q",
+      "sha256": "66ad09e82ccb7d3568a64c6378859930af7d49a1d3bdc18f72b76fd4f19316ee"
+    },
+    {
+      "bytes": 938,
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+      "root": "Q",
+      "sha256": "dcdb13555fb2dd68773368c3e1b8d4c72f51ebf1cffac1947e5642125422b33b"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure.log",
+      "root": "Q",
+      "sha256": "87adf6d8a89ff2409a667c57e6df8752e2ffd522b458aed37f81898134e73064"
+    },
+    {
+      "bytes": 713,
+      "path": "wave35-r116-cuda-core-bootstrap-failure-dispatch.json",
+      "root": "Q",
+      "sha256": "0a0f2808d8cb5da944a8658fa21441138040833874a7656b96815284f60a31cf"
+    },
+    {
+      "bytes": 864,
+      "path": "wave35-r116-cuda-core-bootstrap-failure-dispatch.log",
+      "root": "Q",
+      "sha256": "a946a65b03839107af3daf8a9165897e87733e9bb8638824c2474e22942ce4aa"
+    },
+    {
+      "bytes": 678,
+      "path": "wave35-r116-cuda-core-bootstrap-failure-spec.json",
+      "root": "Q",
+      "sha256": "8b34a300e81a592a53494741f4a58d8e0ef7d5070a979845baadc7f3438a6634"
+    },
+    {
+      "bytes": 3284,
+      "path": "wave35-r116-cuda-core-bootstrap-failure-verification.json",
+      "root": "Q",
+      "sha256": "f8eeac535882fc7c5af5465b687a6abb9bfa9954a4a5b2875907442f21256d1a"
+    },
+    {
+      "bytes": 2099,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-admission.json",
+      "root": "Q",
+      "sha256": "50bc2d47a84986dc90b5b407671dce5060f1c651f6a82d098989d29edd5e2110"
+    },
+    {
+      "bytes": 2389,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-invocation.json",
+      "root": "Q",
+      "sha256": "a1a72f77ca1ab4cf8be88a8665a9d55d2fea451e364425c0aa9db64831710f68"
+    },
+    {
+      "bytes": 2895,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-local.json",
+      "root": "Q",
+      "sha256": "f9801d1402fbe5c3639d46c0c0e759af401d7da02f0d824839edfe3b4575e553"
+    },
+    {
+      "bytes": 526,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-admission.json",
+      "root": "Q",
+      "sha256": "54672101f51f6b02e91ff85f7272d8c2c692ce2ba4f2184a0c06394af31db594"
+    },
+    {
+      "bytes": 528,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-invocation.json",
+      "root": "Q",
+      "sha256": "82e87b0c9cf24bbe934d5b86cbe2a116c3932e1eaad9ef6d9c0d12c09f4bfc12"
+    },
+    {
+      "bytes": 518,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-local.json",
+      "root": "Q",
+      "sha256": "c3303877576558d5694749c72039ca6ce25b23a6d3768b6d8726066ee2df899c"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2805,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/replay-spawn-custody-cuda_core_inherited_pid.json",
+      "root": "Q",
+      "sha256": "8394e33f18482d4405ade7f30162dcbc8b29282fe3d617ceaf241ae3bd54eed3"
+    },
+    {
+      "bytes": 962,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/spawn-identity-cuda_core_inherited_pid.json",
+      "root": "Q",
+      "sha256": "087122b3e5fbd1dcc1395db328d04724a4b1c7146724cb608d1f20815a6895e8"
+    },
+    {
+      "bytes": 267,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid/spawn-observation-cuda_core_inherited_pid.json",
+      "root": "Q",
+      "sha256": "a937febd9b9cb2d41575fed6b1dc38e8b7d52fafcc49b461b2a8363a14f39d00"
+    },
+    {
+      "bytes": 654,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json",
+      "root": "Q",
+      "sha256": "3f0543dff6b4179d29a3d3533e3a27babb2572528d6cba690d335f0753414c33"
+    },
+    {
+      "bytes": 918,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+      "root": "Q",
+      "sha256": "0ba2447d1f8ec758bcaa47da7f59bd58144676b258f4b694d5d3678c6ce89627"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-inherited-pid/cuda-core-inherited-pid.log",
+      "root": "Q",
+      "sha256": "7528bd99499e85ce0bb21c5196fe15ca96abd9c97d8e5a2050870aa2305e248d"
+    },
+    {
+      "bytes": 704,
+      "path": "wave35-r116-cuda-core-inherited-pid-dispatch.json",
+      "root": "Q",
+      "sha256": "2c8a5e94b6aeabbf350e12333c0df490485d1d452ed91a8928400fb6ec14a7d6"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r116-cuda-core-inherited-pid-dispatch.log",
+      "root": "Q",
+      "sha256": "cb49e2a8b54d17d5947a64dd9cce83336e9673f7e08a864f76b8f0c144df53e1"
+    },
+    {
+      "bytes": 662,
+      "path": "wave35-r116-cuda-core-inherited-pid-spec.json",
+      "root": "Q",
+      "sha256": "f137fd2604da3bd1fc98b6ac539810e4eb8ae10f794d89b8be7bf87611e51a28"
+    },
+    {
+      "bytes": 4612,
+      "path": "wave35-r116-cuda-core-inherited-pid-verification.json",
+      "root": "Q",
+      "sha256": "f8e775d824f77f4b0966d11631bf3ff06e2a3441095b6706a633837d2a3620e2"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1579,
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/replay-spawn-custody-cuda_core_invocation_child_failure.json",
+      "root": "Q",
+      "sha256": "38636fe8624555c587f865a78095c580f1c3538798aca47b8ecf80e28d7b09f9"
+    },
+    {
+      "bytes": 973,
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/spawn-identity-cuda_core_invocation_child_failure.json",
+      "root": "Q",
+      "sha256": "1dde0665f64d0e991ae36bb2627de7236d3264a84d41b73305917256b40b2ba7"
+    },
+    {
+      "bytes": 272,
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/spawn-observation-cuda_core_invocation_child_failure.json",
+      "root": "Q",
+      "sha256": "3e916884b681da0d4b8172e73cb4cf100c96a98457fc57ce55d219708b646f7f"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-custody.json",
+      "root": "Q",
+      "sha256": "3fb186a457a6ad5e4dff6cf8f16d61368f6db9ec6f91c77c7418e8b3a4c8a011"
+    },
+    {
+      "bytes": 966,
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-result.json",
+      "root": "Q",
+      "sha256": "3aad0d03b500220ac1d4a0b71daaa773bf5d8f482676220b82ba42fa52f1264e"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure.log",
+      "root": "Q",
+      "sha256": "b666d592eae6abc67a9f20ad9cf0622eb0fd37620ebea6ab55c9f0f8e47ae4b0"
+    },
+    {
+      "bytes": 726,
+      "path": "wave35-r116-cuda-core-invocation-child-failure-dispatch.json",
+      "root": "Q",
+      "sha256": "7f456884ea44ea2597f6cf815321586e69d2e015ef2b957796edea35bcdb2a28"
+    },
+    {
+      "bytes": 892,
+      "path": "wave35-r116-cuda-core-invocation-child-failure-dispatch.log",
+      "root": "Q",
+      "sha256": "1ffc4af93b3a726e76a99eeaad2e85d1f0934290683df882f4fb3e12040f73b9"
+    },
+    {
+      "bytes": 699,
+      "path": "wave35-r116-cuda-core-invocation-child-failure-spec.json",
+      "root": "Q",
+      "sha256": "6d70f9e743b7a4c318b494d2d1e523d4c76f3fedcbfe8c10b7510f052e4a3614"
+    },
+    {
+      "bytes": 3326,
+      "path": "wave35-r116-cuda-core-invocation-child-failure-verification.json",
+      "root": "Q",
+      "sha256": "78832a359ea2c4fa41e7112d4a3b4a0665c1f198849d932401be16d1991ca26b"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/replay-spawn-custody-cuda_core_invocation_parent_failure.json",
+      "root": "Q",
+      "sha256": "be6842f544b7855ae1f251f65693eb388a4bcc1e73399438442ae99a4e265cfd"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/spawn-identity-cuda_core_invocation_parent_failure.json",
+      "root": "Q",
+      "sha256": "ab4831cf60a3ef8e4e42fb14a4d380dc317e0b9fa7b41b20ad2ce0a9e36f85cf"
+    },
+    {
+      "bytes": 273,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/spawn-observation-cuda_core_invocation_parent_failure.json",
+      "root": "Q",
+      "sha256": "00d5a2a14d544dd9505727a2e13137734faf4be989c7ccfce2fc4769a83d77fd"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-custody.json",
+      "root": "Q",
+      "sha256": "1f660f867834880c8b96b2323d19e6e31b9d3fe8ac2a1c3aec2277f0e847d44c"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-result.json",
+      "root": "Q",
+      "sha256": "2d516c500bcccf04e5e5e0bd6919eab2ef48119b2edb64d4bf91c3802e1ef0ff"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure.log",
+      "root": "Q",
+      "sha256": "13c2b92fdc153e1dbad52bb697d520ca05970e20e8c839771b9aab280ffe3f6e"
+    },
+    {
+      "bytes": 728,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-dispatch.json",
+      "root": "Q",
+      "sha256": "5e9557eeb6a2565f9ee84e0c10100fae1ad70c8e8b2040ae05e8e20c34dac7ca"
+    },
+    {
+      "bytes": 896,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-dispatch.log",
+      "root": "Q",
+      "sha256": "42be72ccbf1c547dce683960b370792a58411fbb651b93f6e9a5b483891e3866"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-spec.json",
+      "root": "Q",
+      "sha256": "c8ccaa5ce0f41ca31ee95de5c87138d6eebaa6e95926c299f42df8667c69da14"
+    },
+    {
+      "bytes": 3332,
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-verification.json",
+      "root": "Q",
+      "sha256": "5fa781547dbc6e09a1a4ae8085e8078059be5b297fa6b8ce8844e2d9b091e323"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 709,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/invocation-phase-cuda_core_invocation_phase_failure.json",
+      "root": "Q",
+      "sha256": "6c4e31a3cd1aeb21ea53933a335f065f010db991362cb33a999175ccd70e0dde"
+    },
+    {
+      "bytes": 1676,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/replay-spawn-custody-cuda_core_invocation_phase_failure.json",
+      "root": "Q",
+      "sha256": "2ee93dcc2495c0785db3bfb9adc14ae8719f5db93cc060f42d1780a3706cb379"
+    },
+    {
+      "bytes": 973,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/spawn-identity-cuda_core_invocation_phase_failure.json",
+      "root": "Q",
+      "sha256": "0514b1d5266413acfb7d0f80d5fb6a96c3ec7dcb48c01ea9a60176d3c8e3c079"
+    },
+    {
+      "bytes": 367,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/spawn-observation-cuda_core_invocation_phase_failure.json",
+      "root": "Q",
+      "sha256": "90bfe3b002b7623434b575318db494c397bea7de80f76b239859df58108e118a"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-custody.json",
+      "root": "Q",
+      "sha256": "3ced5704c4c5fc5005dad25aa804b564ced51d18174ff788a7a52834e6a1504c"
+    },
+    {
+      "bytes": 966,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-result.json",
+      "root": "Q",
+      "sha256": "780101bc8d0c7609f634555d96fd9674ad5f7543a1f8a81cd21a80a3d02f5def"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure.log",
+      "root": "Q",
+      "sha256": "c29f7ad8afb83940e01bcf9ff77e74c7d57508bfc63ec89b7d4a46525fa191ec"
+    },
+    {
+      "bytes": 726,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-dispatch.json",
+      "root": "Q",
+      "sha256": "24f8d9c72f1f8ca618d41afdb4ca2a766b2eaab290a49f66966af154a62d3c33"
+    },
+    {
+      "bytes": 892,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-dispatch.log",
+      "root": "Q",
+      "sha256": "bc08d5b3ef2f297cbb0e8271470adff4b5e2f1c8faebe3b5d5799a0df9ca6a5a"
+    },
+    {
+      "bytes": 699,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-spec.json",
+      "root": "Q",
+      "sha256": "8ef3393f396ffeadaf7928dc71b9347cabf0372d5ebc253f87f77ee7b89a3cc7"
+    },
+    {
+      "bytes": 3428,
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-verification.json",
+      "root": "Q",
+      "sha256": "bb3fe1553bf5021ede747ec5435d9bc49f0a7ce1146e0d92fa29cb6ed6288980"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 713,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/invocation-phase-cuda_core_invocation_phase_reference.json",
+      "root": "Q",
+      "sha256": "711bc6228d31a899d9377d2ae956b598f9621f25133f3e49a59b4d64269f0540"
+    },
+    {
+      "bytes": 1682,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/replay-spawn-custody-cuda_core_invocation_phase_reference.json",
+      "root": "Q",
+      "sha256": "f0ae7f0187580799b38cdeac185e1b0566a796d476464e024c6cc655e400cbcc"
+    },
+    {
+      "bytes": 975,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/spawn-identity-cuda_core_invocation_phase_reference.json",
+      "root": "Q",
+      "sha256": "65daca93c42188704c0690d1df888c1942157cd6558214aa52f515eedcf51d6a"
+    },
+    {
+      "bytes": 369,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/spawn-observation-cuda_core_invocation_phase_reference.json",
+      "root": "Q",
+      "sha256": "cafa67e7f258818a6d82c25ef88de9fcc5cbc78310c8599b42fe96ed7a99b1c8"
+    },
+    {
+      "bytes": 667,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-custody.json",
+      "root": "Q",
+      "sha256": "094ee1ff76df2d29a4b17d5e5144f61fc940c6f09e28e539f17b8005ea4363e2"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-result.json",
+      "root": "Q",
+      "sha256": "e24c12d22304685563e7c6084e7b8b0a7c4437737e09eced1a98194a6049f8e1"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference.log",
+      "root": "Q",
+      "sha256": "8a0359aab0e6a957841ca8d5adea9f5f21287ab0e5bb2295c090cca6a3326cb3"
+    },
+    {
+      "bytes": 730,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-dispatch.json",
+      "root": "Q",
+      "sha256": "1b246e37e1d17175186d8e51f85a87b8dea63d8449cf72dd444f938515c40ef0"
+    },
+    {
+      "bytes": 900,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-dispatch.log",
+      "root": "Q",
+      "sha256": "ece55f8f9c64c74f43f3c179a7b4435e60995536d5860fab4fad1afcb5c51f4c"
+    },
+    {
+      "bytes": 705,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-spec.json",
+      "root": "Q",
+      "sha256": "035363e039f6f66c35811a30c16bb856fd5988777d2e3ee36dcec2290cc2e985"
+    },
+    {
+      "bytes": 3440,
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-verification.json",
+      "root": "Q",
+      "sha256": "f123a10ae3eda151728d9aee48066157dbc0e2ebd538fa2c553dc387a3be0946"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1588,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/replay-spawn-custody-cuda_core_invocation_reported_failure.json",
+      "root": "Q",
+      "sha256": "349d430195fa10381ef6b49f9d4101d18dfa3ce1b8b29ae23801de46195b6e24"
+    },
+    {
+      "bytes": 976,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/spawn-identity-cuda_core_invocation_reported_failure.json",
+      "root": "Q",
+      "sha256": "6b49a4019d844bb80d504483b3f2f87a324fee5cd08552c2d050adff0ee81332"
+    },
+    {
+      "bytes": 275,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/spawn-observation-cuda_core_invocation_reported_failure.json",
+      "root": "Q",
+      "sha256": "3231fa76658dbeabae2c4e9c2a2d7094dbea71debf4d5f1b9370f830139f7657"
+    },
+    {
+      "bytes": 668,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-custody.json",
+      "root": "Q",
+      "sha256": "8eab0e3e757f107428cef81cd8ad804e6907818a942ad8f9031206913835a044"
+    },
+    {
+      "bytes": 978,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-result.json",
+      "root": "Q",
+      "sha256": "06f13c1d4a9b1efee1fa960d2b0cc6ea6fba06acc3bab06057a95cac30ec8b80"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure.log",
+      "root": "Q",
+      "sha256": "27b426015b310530bde34810197ea2aba648928dd4eee5f2004b8e3c895e94dd"
+    },
+    {
+      "bytes": 732,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-dispatch.json",
+      "root": "Q",
+      "sha256": "2de363efba0122021b1e7cce40d4c0feb5f2d73ecc4fd9691fff01c941a359bb"
+    },
+    {
+      "bytes": 904,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-dispatch.log",
+      "root": "Q",
+      "sha256": "0350ee180c156b7bd984d5bcf188be9d918f28f492ba8917b9aa5c227f4ae3db"
+    },
+    {
+      "bytes": 708,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-spec.json",
+      "root": "Q",
+      "sha256": "c33612c4de4e2480323e7bdc17cac05082e88cc70c786443e1f5ed4e74338110"
+    },
+    {
+      "bytes": 3344,
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-verification.json",
+      "root": "Q",
+      "sha256": "d206de03018f8ef89e22769a8e80aa9b1a2374dfb2418f1c121b6ea8902594c4"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1570,
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error/replay-spawn-custody-cuda_core_invocation_same_error.json",
+      "root": "Q",
+      "sha256": "42ffe196d4fe01896aaf667d097c96b3d5b1b3e11ad93c5dc6bedb58ea5a4d15"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error/spawn-identity-cuda_core_invocation_same_error.json",
+      "root": "Q",
+      "sha256": "a30d293926822b218059fb6f14d78e534e256372cdd3f516698309d41a648c63"
+    },
+    {
+      "bytes": 269,
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error/spawn-observation-cuda_core_invocation_same_error.json",
+      "root": "Q",
+      "sha256": "80cc02b2a355f47775c473d42799db08d2621a35a13f81cf84c28450a5da6818"
+    },
+    {
+      "bytes": 663,
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error-custody.json",
+      "root": "Q",
+      "sha256": "d895d2264e86222e64d258c9f3711de5966640d1dca7224d7c6bdb8b245c4a10"
+    },
+    {
+      "bytes": 955,
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error-result.json",
+      "root": "Q",
+      "sha256": "98ea7dfa7aeaeb669ef9606c2f6a6bae7a44a59263639d037855a3ac8fb644ba"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-invocation-same-error/cuda-core-invocation-same-error.log",
+      "root": "Q",
+      "sha256": "05c9171cf6d21df4189eac0aa8e68fa6c37ff30f4a91b8e8af96895ca1852b26"
+    },
+    {
+      "bytes": 720,
+      "path": "wave35-r116-cuda-core-invocation-same-error-dispatch.json",
+      "root": "Q",
+      "sha256": "80629e4845ac5a374e00f68027a4a4535d7314e6b0c13ef8e4c4e6a7b8edb1fe"
+    },
+    {
+      "bytes": 881,
+      "path": "wave35-r116-cuda-core-invocation-same-error-dispatch.log",
+      "root": "Q",
+      "sha256": "4befe11c130545149398e8641b0678609796d9cd6b8d6ce19623f9da2506100e"
+    },
+    {
+      "bytes": 690,
+      "path": "wave35-r116-cuda-core-invocation-same-error-spec.json",
+      "root": "Q",
+      "sha256": "536675709c9f14e2572fb3d5de9068bf6c3e6f169d4fd3d90b92200c758c30d6"
+    },
+    {
+      "bytes": 3309,
+      "path": "wave35-r116-cuda-core-invocation-same-error-verification.json",
+      "root": "Q",
+      "sha256": "af71e9d18f4a05f080c9967e0cf855fbce2c6cecebebc02c23d4fc13b921f3f6"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1606,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/replay-spawn-custody-cuda_core_local_completion_duplicate_parent.json",
+      "root": "Q",
+      "sha256": "9a6705b8e1721f2d5880dfe4c6653e5023a0caae1016f88ef510e8dbe4a63d19"
+    },
+    {
+      "bytes": 982,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/spawn-identity-cuda_core_local_completion_duplicate_parent.json",
+      "root": "Q",
+      "sha256": "f6afc05ac513d88b9a9d9892ba2863583c007f450dbb537a035c9e69fd2cdb2c"
+    },
+    {
+      "bytes": 281,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/spawn-observation-cuda_core_local_completion_duplicate_parent.json",
+      "root": "Q",
+      "sha256": "c76db192e72468b9acae5fdd7ccf8157a1c24a860bc4a2c387102833a5d8b1bf"
+    },
+    {
+      "bytes": 674,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-custody.json",
+      "root": "Q",
+      "sha256": "bdc608f63990521061d19b8078236be31ba81b1c6890c4d3caa041f9733bff86"
+    },
+    {
+      "bytes": 1002,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+      "root": "Q",
+      "sha256": "a0e1fe16d841fc79b0b30890729cd7093d2f02ff1ca64c76660f212a772eb9a1"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent.log",
+      "root": "Q",
+      "sha256": "1e280fdea68e8b1671e6438d216f5cf357f13323cd74b02d46a9bac0866cfcee"
+    },
+    {
+      "bytes": 744,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-dispatch.json",
+      "root": "Q",
+      "sha256": "11667df4270ec1faaefdc570550fd7f55deca339e2687daa6e31f151b306ba89"
+    },
+    {
+      "bytes": 928,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-dispatch.log",
+      "root": "Q",
+      "sha256": "145b94ab650fa15ea45875a674089f7c48dc2e216833489f0789c6bf9f4098cd"
+    },
+    {
+      "bytes": 726,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-spec.json",
+      "root": "Q",
+      "sha256": "b1031901996da9761fb399ff8235f617819fb192db0fbd254db890f4fd57b7e6"
+    },
+    {
+      "bytes": 3380,
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-verification.json",
+      "root": "Q",
+      "sha256": "a7a26f6bfe8f3d57327aec97c2d24148226329d1a640960fec8705928b627282"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1597,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/replay-spawn-custody-cuda_core_local_completion_multiple_body.json",
+      "root": "Q",
+      "sha256": "a7fa88a95e5d5629a5e45c69fe35f139c78361eaa7f63b4a6dc58633d454b81a"
+    },
+    {
+      "bytes": 979,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/spawn-identity-cuda_core_local_completion_multiple_body.json",
+      "root": "Q",
+      "sha256": "83996e97224373915eb21ea7d0322f180cba4d0841acf6b4ef148a93dc91419f"
+    },
+    {
+      "bytes": 278,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/spawn-observation-cuda_core_local_completion_multiple_body.json",
+      "root": "Q",
+      "sha256": "b04927b226deaea5e82fe8fcf2e70ef9f928f4b669f6f8a06cb691a87baef80a"
+    },
+    {
+      "bytes": 671,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json",
+      "root": "Q",
+      "sha256": "1d6e71da4750b7c31b6e454b91bcfd7d7f0c39830e576c77669bdd0f893227b5"
+    },
+    {
+      "bytes": 990,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+      "root": "Q",
+      "sha256": "5acd2f8b76a8ae460fbfbae77c65e9131438cb96388f0f09fcbacf1ca4b2cf61"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body.log",
+      "root": "Q",
+      "sha256": "2e4b13b92859f779c8ecd03b671fe8545bad01b38239a38120da32af1824f47c"
+    },
+    {
+      "bytes": 738,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-dispatch.json",
+      "root": "Q",
+      "sha256": "8fecfab70de853fd008a1e466e896147e73e47453f495e3434eadb978d6124de"
+    },
+    {
+      "bytes": 916,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-dispatch.log",
+      "root": "Q",
+      "sha256": "2691c0fb059365961e2e17b45430e5cf1e4f312d7c22cef9e80b98ee4a792502"
+    },
+    {
+      "bytes": 717,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-spec.json",
+      "root": "Q",
+      "sha256": "ab07921785ec04048ee6ed199487489d97bcd574ebdb3a1e32cb401db4285700"
+    },
+    {
+      "bytes": 3362,
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-verification.json",
+      "root": "Q",
+      "sha256": "b38cce01907f1b896cf7aaca536dd18e027838cfe56a978fe24026889bada3b1"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1576,
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single/replay-spawn-custody-cuda_core_local_completion_single.json",
+      "root": "Q",
+      "sha256": "46152e70bb7414d61c4378a483ac29bc12579c26603e0bcf966fb7d080b7ed69"
+    },
+    {
+      "bytes": 972,
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single/spawn-identity-cuda_core_local_completion_single.json",
+      "root": "Q",
+      "sha256": "2b81900fa9d086cd25dba24a2c6637f192a532cc6a9ada0b6607f71a80bab63e"
+    },
+    {
+      "bytes": 271,
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single/spawn-observation-cuda_core_local_completion_single.json",
+      "root": "Q",
+      "sha256": "c577eba726e7ed40112beed56cd46a2a7e9ab4382ea45ef0aee61c3c5fd091bb"
+    },
+    {
+      "bytes": 663,
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single-custody.json",
+      "root": "Q",
+      "sha256": "67cd2f4f61380aa302a6b292f84b622698f308723fde28f7b8b87c010d0caa60"
+    },
+    {
+      "bytes": 961,
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+      "root": "Q",
+      "sha256": "bd070755512a9789a73d976a8364cb5bcab88821991e20454e780fb7fc1769e8"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-local-completion-single/cuda-core-local-completion-single.log",
+      "root": "Q",
+      "sha256": "7d97cee6d4ae27f27296d58241ee357e8d939c83cee8c46d39da5083b957e0f8"
+    },
+    {
+      "bytes": 723,
+      "path": "wave35-r116-cuda-core-local-completion-single-dispatch.json",
+      "root": "Q",
+      "sha256": "f12bc851fd073465c75e0e11c12d1ec9a7ebe1b3f32945a9a7750a7853a11afd"
+    },
+    {
+      "bytes": 887,
+      "path": "wave35-r116-cuda-core-local-completion-single-dispatch.log",
+      "root": "Q",
+      "sha256": "cc0c9ed977c2df4e5867e677ed270f60cf081c72d505e323b92c95df6b088008"
+    },
+    {
+      "bytes": 696,
+      "path": "wave35-r116-cuda-core-local-completion-single-spec.json",
+      "root": "Q",
+      "sha256": "59098bc4277a8519fc7d6331b1c13c9b7252dcaa78f377d14bb207cadbb9eeeb"
+    },
+    {
+      "bytes": 3319,
+      "path": "wave35-r116-cuda-core-local-completion-single-verification.json",
+      "root": "Q",
+      "sha256": "30e20ffea5ef8556baa25f245a31dc272ee180ef918bf90610e4cfe0ebd81f06"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion/replay-spawn-custody-cuda_core_operation_body_completion.json",
+      "root": "Q",
+      "sha256": "bf6091f88d153c72b6f41fbd348465b8bf9fb8da3bb86d1b3b8393ebb5f31a27"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion/spawn-identity-cuda_core_operation_body_completion.json",
+      "root": "Q",
+      "sha256": "e4618c77a5d3f4b4cc5daff7a162d985dd6b11cc88c3feeaf8d23f82ec60c1c7"
+    },
+    {
+      "bytes": 273,
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion/spawn-observation-cuda_core_operation_body_completion.json",
+      "root": "Q",
+      "sha256": "76d204758c1fe7d56b0dc2928bcd02f4d6f6291de0f78d0c4504c09cae8d6d81"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion-custody.json",
+      "root": "Q",
+      "sha256": "62645de30c5ead279ad172c2eb02fceb0803589ed1d93affcec888037ef4543c"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+      "root": "Q",
+      "sha256": "861c525bb6a367b470c209e76e5306046613622eeecb19c3b4aca2eb7d27e352"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-operation-body-completion/cuda-core-operation-body-completion.log",
+      "root": "Q",
+      "sha256": "92cbcce0f1189fc05dfa76091bded8eac9a9059c1251cb1fd391348208fc98bd"
+    },
+    {
+      "bytes": 728,
+      "path": "wave35-r116-cuda-core-operation-body-completion-dispatch.json",
+      "root": "Q",
+      "sha256": "f961ca69aa02c0c4219370d5a053c5d04af665541be1268522349825c4bb2499"
+    },
+    {
+      "bytes": 896,
+      "path": "wave35-r116-cuda-core-operation-body-completion-dispatch.log",
+      "root": "Q",
+      "sha256": "daf3ddf582f9dfa3d6dc20c44e7c49e31b3715d31e2e200f4a4f49260ab99560"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r116-cuda-core-operation-body-completion-spec.json",
+      "root": "Q",
+      "sha256": "22c780b84f8737429aa9cf975d0441e5f168ff9f7824f135f7fc9e828f0d2fb4"
+    },
+    {
+      "bytes": 3332,
+      "path": "wave35-r116-cuda-core-operation-body-completion-verification.json",
+      "root": "Q",
+      "sha256": "ab5cd84c3ba5f6535105d85db233507fd1e6b0965b3eae69c6bdb2f964e3a229"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/replay-spawn-custody-cuda_core_poison_ready_healthy_only.json",
+      "root": "Q",
+      "sha256": "00a85bc34120ba494526fc0af59b2bbee3b11e973055b839f779fd9253795933"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/spawn-identity-cuda_core_poison_ready_healthy_only.json",
+      "root": "Q",
+      "sha256": "71a40b82b61e02771f441bf972a5bb0d3843f65b9044d3673b03b9ae12c7795f"
+    },
+    {
+      "bytes": 273,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/spawn-observation-cuda_core_poison_ready_healthy_only.json",
+      "root": "Q",
+      "sha256": "6ee153346c70a77566d0c78bc3ddeddd2b1479308300060d6e82ebd1ee8350c1"
+    },
+    {
+      "bytes": 667,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-custody.json",
+      "root": "Q",
+      "sha256": "602e72b50682ce74dba72b6dd0b6e1abdb9de704fc421ad412d96b30667cec96"
+    },
+    {
+      "bytes": 971,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+      "root": "Q",
+      "sha256": "f5a2d88dd5813cb5bec423107affdda31aa2f0c71e1610950c31c93b24fab30d"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only.log",
+      "root": "Q",
+      "sha256": "a75579e663393baaf6ddef1191d65f26d13165d825950f97ba2499500b6fab80"
+    },
+    {
+      "bytes": 729,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-dispatch.json",
+      "root": "Q",
+      "sha256": "3ac7a340b6dba0c3d665e53b75071767b08f5fd19a86b854c6133729d4bcc4e8"
+    },
+    {
+      "bytes": 897,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-dispatch.log",
+      "root": "Q",
+      "sha256": "36400784368d8fd55a59797b37c6598d05d756d776f83255f8c4b26ff8098b77"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-spec.json",
+      "root": "Q",
+      "sha256": "80faf50c349c1fa49871e8a6ae649b9cbddc43d04125b8141bbea34d0d121763"
+    },
+    {
+      "bytes": 3333,
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-verification.json",
+      "root": "Q",
+      "sha256": "7f110f9a40accf634fa8892024434d35252f5aa2ee8e29fa2ce066b183b048d0"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1573,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/replay-spawn-custody-cuda_core_poison_ready_qualified.json",
+      "root": "Q",
+      "sha256": "76014c514e31915d5a89220b9e299ca25af87e88353bbd601c7050b5b6be85db"
+    },
+    {
+      "bytes": 971,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/spawn-identity-cuda_core_poison_ready_qualified.json",
+      "root": "Q",
+      "sha256": "9acd14f58c875dbc13e015b1d62b1efe0c64ddd6f2083a8bb678aa061f6f9e87"
+    },
+    {
+      "bytes": 270,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/spawn-observation-cuda_core_poison_ready_qualified.json",
+      "root": "Q",
+      "sha256": "26bdf018a390084869790394e6e7de884fa8f1a75293ca351976830c6489a042"
+    },
+    {
+      "bytes": 663,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-custody.json",
+      "root": "Q",
+      "sha256": "a54144c83f35d0a87ae6371c9789417a84099649b4ecd56eb31faf4e530feb10"
+    },
+    {
+      "bytes": 958,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+      "root": "Q",
+      "sha256": "77155abd2c63551cc6dd339d540290fab80fd16a1b36d9ae5bfe80c1e3d7a42a"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified.log",
+      "root": "Q",
+      "sha256": "f44679868b9f8b46f30f6606dd2d3e821273cb446f162459e1706cd7fb439696"
+    },
+    {
+      "bytes": 722,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-dispatch.json",
+      "root": "Q",
+      "sha256": "19fcf3054fde240a46ca2560f73d3fc54f53f63885482f8fa352d76b2b6af7a2"
+    },
+    {
+      "bytes": 884,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-dispatch.log",
+      "root": "Q",
+      "sha256": "c44e23305083a3b364c96004f0ebbe1021febaca7f8b3f2faab9bac8a86c238b"
+    },
+    {
+      "bytes": 693,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-spec.json",
+      "root": "Q",
+      "sha256": "41daa077f6a5ec005682fdce1aaf41e33792cb22bc471d63a765b10f206dcee7"
+    },
+    {
+      "bytes": 3314,
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-verification.json",
+      "root": "Q",
+      "sha256": "10bce369666f88f780e33e44b05d5e28e7806d9169a2fb7fc22fc634be39b1dc"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1567,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/replay-spawn-custody-cuda_core_poison_unknown_ready.json",
+      "root": "Q",
+      "sha256": "b0a93e76998568df487b0d7a16ff7f861af7e8fe22f9b6e176c44c73d55e160f"
+    },
+    {
+      "bytes": 969,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/spawn-identity-cuda_core_poison_unknown_ready.json",
+      "root": "Q",
+      "sha256": "c7de9008cc7df57b85c1e1ebafc0ba199dc233c8a9514d75503a03de7d4fde1f"
+    },
+    {
+      "bytes": 268,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/spawn-observation-cuda_core_poison_unknown_ready.json",
+      "root": "Q",
+      "sha256": "42fee3be1ab38dd894602a232e018b3ae5b47cc90a986bd95585ce9b1a9acd56"
+    },
+    {
+      "bytes": 661,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-custody.json",
+      "root": "Q",
+      "sha256": "8b3ce5db066cfd984f5132ce9f85681944ce76fa70b4ddc29b7f58d330cb258d"
+    },
+    {
+      "bytes": 950,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+      "root": "Q",
+      "sha256": "e9790c47165fbdf9959e77c67e14455fcd4aa65ebc4bb49a46f667d006d53ae6"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready.log",
+      "root": "Q",
+      "sha256": "bfe6194151d0ef788befcf4fe6719c41712f687474f062bf480bc637166ff940"
+    },
+    {
+      "bytes": 718,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-dispatch.json",
+      "root": "Q",
+      "sha256": "234274fa185071bcc0d249a24e359c84633453844ccbf5f57265178e674e09f5"
+    },
+    {
+      "bytes": 876,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-dispatch.log",
+      "root": "Q",
+      "sha256": "d4b86cebb908a4039682bbb7c6badc303d032b077e26e9d29d66fef081ffb5d6"
+    },
+    {
+      "bytes": 687,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-spec.json",
+      "root": "Q",
+      "sha256": "9e3bbb293f44150693fa024044217a353aaf523c868272459b7d9916651d023a"
+    },
+    {
+      "bytes": 3302,
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-verification.json",
+      "root": "Q",
+      "sha256": "1ba6f21dba9482d90e847d617e106ed64770fb2facb5b6ec13b88adeb1c128c9"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 1570,
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/replay-spawn-custody-cuda_core_runtime_query_failure.json",
+      "root": "Q",
+      "sha256": "6467bc6c53418d8f971ec58c0021533bd33b0cbc8f5a147dcf072b56e716c54c"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/spawn-identity-cuda_core_runtime_query_failure.json",
+      "root": "Q",
+      "sha256": "07334dbf24898bf42d55d16500494560a029ab222764cbcce47cabbeac5f1a96"
+    },
+    {
+      "bytes": 269,
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/spawn-observation-cuda_core_runtime_query_failure.json",
+      "root": "Q",
+      "sha256": "f2183403699665a5981ccb3af63c20ff17986ae598c5ad82698c2d32155d1765"
+    },
+    {
+      "bytes": 662,
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-custody.json",
+      "root": "Q",
+      "sha256": "11d7f521db65d85da0b9af8e62723b22a491504cf6e8c8e2b6d95e518818303e"
+    },
+    {
+      "bytes": 954,
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+      "root": "Q",
+      "sha256": "e2ff60ee46aa4b868e2ab9af103ff71345a91781981c48da358bbd2ccbb42d9f"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure.log",
+      "root": "Q",
+      "sha256": "b3050540ca25d1e20cf4cde4cc9aa4990d0dd217333edd6c6b4b7e503414e972"
+    },
+    {
+      "bytes": 720,
+      "path": "wave35-r116-cuda-core-runtime-query-failure-dispatch.json",
+      "root": "Q",
+      "sha256": "6c0a42f039c3ee414522fb98f2a46cc9fc84b5c73d010e644b785f7262510ecf"
+    },
+    {
+      "bytes": 880,
+      "path": "wave35-r116-cuda-core-runtime-query-failure-dispatch.log",
+      "root": "Q",
+      "sha256": "b0a3a53e91b65f1ea61b6f7ccf404601dc6deb042311e5bb05429cfad118c02f"
+    },
+    {
+      "bytes": 690,
+      "path": "wave35-r116-cuda-core-runtime-query-failure-spec.json",
+      "root": "Q",
+      "sha256": "4d00abc20e60ffe8d87e1a91a0066abcf3858752b94d423e4f3030c8787c4bc5"
+    },
+    {
+      "bytes": 3308,
+      "path": "wave35-r116-cuda-core-runtime-query-failure-verification.json",
+      "root": "Q",
+      "sha256": "28a7f75a931ea676cd510d660f44bad2fa4e2bd9ec605622e4469a6380e70471"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2830,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "bad4a939f189eacafad023be53539a91de14c394730e85421d41f65bcc85020e"
+    },
+    {
+      "bytes": 725,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "553c4ccad4259680c287e98db042adffb7d6ace32c3e5722f5b6b24a5cacf9cd"
+    },
+    {
+      "bytes": 1766,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "6e09b3f6e305082c95744dff2594f9cc3b7b40ac0503501647aadcbd8ca58d1d"
+    },
+    {
+      "bytes": 961,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "1eff0f702d4c11a0cbe1abb3542ab1fa0808e0eeb3390aba0aee398b485d255f"
+    },
+    {
+      "bytes": 380,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "f95c280e3c6e002704c9fd9dcee56db597089e1804fe13b2826abe40f4f1a498"
+    },
+    {
+      "bytes": 191,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "3df3392d844ee3b48207abd2001e09b71ac8a47cdba6d04cc12bf4dedb01c2e8"
+    },
+    {
+      "bytes": 670,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-custody.json",
+      "root": "Q",
+      "sha256": "5eea52aac32cabf58c7d08fb15546e7129f4781aaf384febfc7637df3b407a35"
+    },
+    {
+      "bytes": 977,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-result.json",
+      "root": "Q",
+      "sha256": "9a629cee61b539104c361eb5b131d1ddffaff19bca190a35b3a52fc6eae64932"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same.log",
+      "root": "Q",
+      "sha256": "69230427b838ba3c68fdb73469f05c3106b72888a8d4b4329f2c28729da4219b"
+    },
+    {
+      "bytes": 736,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-dispatch.json",
+      "root": "Q",
+      "sha256": "3ce2405c43c7e9da8c87df3c151aa010c1da9ec8123051886c0bdc1228794e1b"
+    },
+    {
+      "bytes": 903,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-dispatch.log",
+      "root": "Q",
+      "sha256": "e8542db92c56e7df27b1598918e534f24e9ede4cb7de6a917affd6fb873ad16d"
+    },
+    {
+      "bytes": 705,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-spec.json",
+      "root": "Q",
+      "sha256": "83341b97618aea899dd6acf9b2611174ac96b1b1e0ffbf627536070090d83b61"
+    },
+    {
+      "bytes": 4711,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-verification.json",
+      "root": "Q",
+      "sha256": "feadb2c203d84bebd0b9d56cd87236e70ebd86178c089ac7fc9471941cb12741"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2848,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "c1245763e4fe0e1e15f26010bf4f66989912aa01263c112a75863926e0b40187"
+    },
+    {
+      "bytes": 739,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "746e8694ea882b7ea0233be1304e1cb07f37095425df6e1f0c4a4af209aab96b"
+    },
+    {
+      "bytes": 1768,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "24f3933dda59ace8a1b2347a930ca486ef7380dfd610572c06c2d80dd8952b9c"
+    },
+    {
+      "bytes": 965,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "3500b4e90b7830b010fe271879a4189a0024eaa5c6751af200ed9c3329a313ef"
+    },
+    {
+      "bytes": 382,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "015d055f07ad25cc29ac40fa90462a35b3f884accfdaac90e10956c9c67ba38e"
+    },
+    {
+      "bytes": 182,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "f5efb986916015954dedf01888f385952a73ebaab8df02abcc5f0c2682e0a7b1"
+    },
+    {
+      "bytes": 672,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-custody.json",
+      "root": "Q",
+      "sha256": "262e794970c5fcca3d837b543fdbdf309a041ad37f682c85ce5dae2ae01b084f"
+    },
+    {
+      "bytes": 985,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-result.json",
+      "root": "Q",
+      "sha256": "0112d28095cdb0c55f1351b7944a247f8affd60e284d9db377cd1ca194c09f6b"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single.log",
+      "root": "Q",
+      "sha256": "9a68be809adfb10d6eb09ad9cc138bf97a51d7d18ca698d23a0d82a7190727eb"
+    },
+    {
+      "bytes": 740,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-dispatch.json",
+      "root": "Q",
+      "sha256": "c275336c9cdc803440cab51d22b70199256e5e7b62045a5b096396b8e10998bf"
+    },
+    {
+      "bytes": 911,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-dispatch.log",
+      "root": "Q",
+      "sha256": "2922382a00d47f6ca6ee63056f5a61a3c52796416381c1676a90cb4e01ea2932"
+    },
+    {
+      "bytes": 711,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-spec.json",
+      "root": "Q",
+      "sha256": "b6f65aa03657bec64b3f976b5fcd7ee088e0903b94b7f64a78f3fcec7ed31332"
+    },
+    {
+      "bytes": 4735,
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-verification.json",
+      "root": "Q",
+      "sha256": "69f6434adccd22c11cd64cffaf3ddef05189192ca90b9a7208c45918e6471cec"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 3423,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "fef7b0390221dd4dc003286f9ceecb7302932e5ae8e6222698bddf7040b3aaa9"
+    },
+    {
+      "bytes": 1090,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "3848cf3ceaee1a2a1f05e7b0d852fd4d81c3cbb34c6d87657c62a9c0ba390dc8"
+    },
+    {
+      "bytes": 1767,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "731d4b26c0781e710d85ed126c3974ae9c741748e4b53b50ff4810a709b5692b"
+    },
+    {
+      "bytes": 963,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "a85366b711bb2798992e94e36fe8b116f394f2fb0d07f2efd0000e0d3cb00d15"
+    },
+    {
+      "bytes": 381,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "4c48e531012f1325bc62889536073679f2d3d7ccce3bd35200ce01dcf6fe069b"
+    },
+    {
+      "bytes": 203,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "2ad23c429737d45cd7e2a53f8aa27be4367963f69d87f99ab55704aae9418b86"
+    },
+    {
+      "bytes": 671,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-custody.json",
+      "root": "Q",
+      "sha256": "f8b9a56c3fae5ed9981dcc7d8a0110948c4423fe924b13c7c0619b356dc8708e"
+    },
+    {
+      "bytes": 981,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-result.json",
+      "root": "Q",
+      "sha256": "1753ee148a56311b6f8aae1fffade6017dc3820fdf7ae7fe2cc1e254b8063045"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct.log",
+      "root": "Q",
+      "sha256": "0ce5c1e866078d0834d8a46a9164ab579dfc5254797d11a8051e30f578d1b8ff"
+    },
+    {
+      "bytes": 739,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-dispatch.json",
+      "root": "Q",
+      "sha256": "1b7a44f41c58c6a561c6cca586d77eb07f8f5b5ac1b4c1192f9cc2acfd098a31"
+    },
+    {
+      "bytes": 907,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-dispatch.log",
+      "root": "Q",
+      "sha256": "f1583f6ee00c84a1122e21242751c718742ddc938b93d1111a16fb1c47dfb634"
+    },
+    {
+      "bytes": 708,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-spec.json",
+      "root": "Q",
+      "sha256": "b74cc1579a97ded74ebd64d257f98cf8ec9fd47211fdb739a270584686e840dd"
+    },
+    {
+      "bytes": 5363,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-verification.json",
+      "root": "Q",
+      "sha256": "e58432b43604376c388ce9510e3bb20cde6e6f76454b3ebea69c067a7ae529ce"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2827,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "ac38390fd60203962a747cb82968c1dfad75f5a656e3ab873e7a1c349e454ea4"
+    },
+    {
+      "bytes": 722,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "8c664054314dd45a8f1318bdd78926d3512f266d755741af56c8530967859069"
+    },
+    {
+      "bytes": 1763,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "bcdad383949d465395389ac41da2f631f006886774f0c3c1c3ab8b4d344955db"
+    },
+    {
+      "bytes": 955,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "834e6405127d5e676b0b1a2662e9cdada399180af90a46e5e6acf719af3e993c"
+    },
+    {
+      "bytes": 377,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "8b44a66fe568da1a818f07564b520990be76dac12458f3d71523bc1508229a42"
+    },
+    {
+      "bytes": 188,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "da0ef991723c2662b7b00e64eeb031662f1aa5c07ba85ab7d701e6b61b2521a5"
+    },
+    {
+      "bytes": 667,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-custody.json",
+      "root": "Q",
+      "sha256": "7e00851ddd93c10b22cd832b3b7500f037b686fb3c61753d338a4827f532181b"
+    },
+    {
+      "bytes": 965,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-result.json",
+      "root": "Q",
+      "sha256": "f97430d791741b7f95973e151859df4d3aaf08021257ddb4c442118f23f3ec07"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same.log",
+      "root": "Q",
+      "sha256": "95ba39125dc0770585f61be4b59ee54e58a83cbaee9a4911df9c92776fc10638"
+    },
+    {
+      "bytes": 730,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-dispatch.json",
+      "root": "Q",
+      "sha256": "fba3529c6c492223a4c4bd7825d798d8dd522d45b04e54a6ce1e4fe1f04a3221"
+    },
+    {
+      "bytes": 891,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-dispatch.log",
+      "root": "Q",
+      "sha256": "c562d8e9b30a25e31f0ef410bb879acf958aceb1c466dd770f569d54bfabb589"
+    },
+    {
+      "bytes": 696,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-spec.json",
+      "root": "Q",
+      "sha256": "63798b1b5ae37e375f92d252aed8ed74f2b51a5696b70451476d2f45a5b7d970"
+    },
+    {
+      "bytes": 4700,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-verification.json",
+      "root": "Q",
+      "sha256": "97a0908864d2d48baa6d9f33ebd6969ebe7b3262e059cca18dbee50461fc4956"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2845,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "ddcc1873d497b1b69ef283380db03c6501028b71d50e121a9bd71ad8f17001e1"
+    },
+    {
+      "bytes": 736,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "afaa03aea7603e5b4988f41c0258df407f4fcfd2f06d1f297bf8e72df1c12834"
+    },
+    {
+      "bytes": 1765,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "d964e68b3c9c1633f8b0e48a26015de88bfe3035cb5a72d54bbe866876e16263"
+    },
+    {
+      "bytes": 959,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "f9d36f17ee635a62807b2e09bb26e2bda1b0f8efeee0ed70fcc9e6beb51d25a1"
+    },
+    {
+      "bytes": 379,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "43c346a643e0d1c7343bbc638004854d126d7a2369792a3c6876a0e74fa0582d"
+    },
+    {
+      "bytes": 179,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "ef995ccd730a73588f7bc280468355e2b7c47e9183fd89e0e66e31c77a609ff3"
+    },
+    {
+      "bytes": 669,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-custody.json",
+      "root": "Q",
+      "sha256": "0438fb899a8c3143581dbf75a56bac547c34d4e7459093d73320eb2adaa775a1"
+    },
+    {
+      "bytes": 973,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-result.json",
+      "root": "Q",
+      "sha256": "1ee124248270f72d9a2602c56abe3779b8bb1cbb6983b1db67476da45617fa80"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single.log",
+      "root": "Q",
+      "sha256": "1ea3e769600dd2a629bab1b68a37ad0269b6232aed5ba354b0b0645ca2b1708f"
+    },
+    {
+      "bytes": 734,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-dispatch.json",
+      "root": "Q",
+      "sha256": "6a5a0aa284907e641b585ef18919fcc980e711707a8cedf5ff7486777a3328ff"
+    },
+    {
+      "bytes": 899,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-dispatch.log",
+      "root": "Q",
+      "sha256": "05f88aa7909f30a9a482520a1c130eda2104dad6652e9d5e3d6747200c3d7188"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-spec.json",
+      "root": "Q",
+      "sha256": "f4272933e5d23db0e7bee4e8c9bb03bbbb25d2f04b4159c84c9f789359f4769a"
+    },
+    {
+      "bytes": 4724,
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-verification.json",
+      "root": "Q",
+      "sha256": "47a8711cc4b44e81dacfd76e261aa6a632b960f87f929f2d024447c4591adf30"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2826,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "d85faa4d57bbb7f4ab7a1a1ab5c3424d58338bff96632a906e09c9e76aa1129f"
+    },
+    {
+      "bytes": 723,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "c8d9c2a0c0f4b13896cc7d942b8ac8f8b60e4a4081a5c153093ba9bf281dad49"
+    },
+    {
+      "bytes": 1765,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "b1a1b0fb0bcbb4a73bc67e23fdaac3e807e4058d0ed3c12462dae2d0d557336a"
+    },
+    {
+      "bytes": 959,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "0831adf9e49f3b9c135d0056d7f263447bee5fd339b58d60d0cb089cea6e8259"
+    },
+    {
+      "bytes": 379,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "5f4586ae514201b474f8063b6852fde1b1173cf4fafd64a8a3d3256f1aa668eb"
+    },
+    {
+      "bytes": 190,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "bf66f501205ffe98f95d6fd4df92eb7c7d04ff9b0f0acbc50f324caabff49100"
+    },
+    {
+      "bytes": 669,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-custody.json",
+      "root": "Q",
+      "sha256": "c2fd85e3d64afef3bd900452bda9c80c591db546d2c27e443b4c2a7e3dd3bf65"
+    },
+    {
+      "bytes": 973,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-result.json",
+      "root": "Q",
+      "sha256": "52c95a749d361490e8c1aa6323e4d08923cc7d3ce452fe83c1b76b513f3b6850"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same.log",
+      "root": "Q",
+      "sha256": "bf2121e550e77fcb9761e96ce959118aba29f808ed36bb2f8bf1fa99b8bf8c72"
+    },
+    {
+      "bytes": 734,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-dispatch.json",
+      "root": "Q",
+      "sha256": "4fc2d51c2557dc363b2bc9531c90958ed95d29b9252de3587d50faa838720631"
+    },
+    {
+      "bytes": 899,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-dispatch.log",
+      "root": "Q",
+      "sha256": "6758262037b1477b306f14db0ca3817f3bcff4e02b76b1e898ae3a1985db2bbd"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-spec.json",
+      "root": "Q",
+      "sha256": "97a6cef16ddfbe6dd3d963cb6e597d938647a2c574bb4b5e7d6eda270d53b926"
+    },
+    {
+      "bytes": 4704,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-verification.json",
+      "root": "Q",
+      "sha256": "4f352e8a04d9020b9e0de4eb1f91ee4d5e22f6d458cfc02c26ebae587c23df6b"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2844,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "d657141d317765162e0f804b54e06c5c8e33d154c3c214168edcd64831d67d9b"
+    },
+    {
+      "bytes": 737,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "86e9e081ff762036c9a3cd94e9f35fc9d9ade37f987872cfa0c55dc270c517aa"
+    },
+    {
+      "bytes": 1767,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "6c24c2673244a3ae9ae903b028898a3b944e6a0a90c4a9a5d6297f5eb120a1db"
+    },
+    {
+      "bytes": 963,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "0815db932be95a7b51a7fa13bd74ad71cddc493a9084ab445a6bc97eac8b1da9"
+    },
+    {
+      "bytes": 381,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "c22d5f1d7624e58f913f4c26d0ef0d3910c6537b761664c6c2a2b75ef3a25794"
+    },
+    {
+      "bytes": 181,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "467dbb388ec31b6f32d902f980c680e3ae8419b3f0867a383e0669423e457a92"
+    },
+    {
+      "bytes": 671,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-custody.json",
+      "root": "Q",
+      "sha256": "3f6f6e7e1418c147712374222795b5e883a1aeeaed0c5c574a7e581cf33eb3ff"
+    },
+    {
+      "bytes": 981,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-result.json",
+      "root": "Q",
+      "sha256": "f891bdb572051eb791235ba1a58f58227158ce21f51d71dd2508468fed7f91c4"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single.log",
+      "root": "Q",
+      "sha256": "0b158c1dee539611b5e830f2947a9e9a04e6f0cee0ca2edb58bca257aa3c47d1"
+    },
+    {
+      "bytes": 738,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-dispatch.json",
+      "root": "Q",
+      "sha256": "0eed7ab12f54700853dffab2e04c9ff0b2e7953f2fe970958e93d9ddeb5d243b"
+    },
+    {
+      "bytes": 907,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-dispatch.log",
+      "root": "Q",
+      "sha256": "b89b68e0a1942dca26b9642ca51b15c6a64f6f4355bf5ab7715c4b3f6ece23d0"
+    },
+    {
+      "bytes": 708,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-spec.json",
+      "root": "Q",
+      "sha256": "0ba82c6a158b6ba9f6b205fab22b7982ff11460533a24ea680bdd862e00022a2"
+    },
+    {
+      "bytes": 4728,
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-verification.json",
+      "root": "Q",
+      "sha256": "865d9b5fa4dcc1dff067a2b05dea5e149febce9006489556044954255517e84c"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 3417,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "5cc59bd72e51df3e353613485ada9ea46e7e8da62dfef4c67523f3ddb49162b9"
+    },
+    {
+      "bytes": 1086,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "44e5133f217b73d8301708f7462d6b62a0a33093bd7a3629c5e612de8e516d48"
+    },
+    {
+      "bytes": 1766,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "d5386e18ea043f914a60bed8901d3c4327b4f062ecbd8bbbc5cff4eaae77ca2e"
+    },
+    {
+      "bytes": 961,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "771cc5ca58d65c2cbc2ee00e3d8e15ce899a9934691f1333c354f63775f3ed8c"
+    },
+    {
+      "bytes": 380,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "c13fab8dfa1b4a839c2c41a9f14ab9cd6304d3af385b437b2ca9213a54555455"
+    },
+    {
+      "bytes": 202,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "9a81ad044b429cdc8ea2a0b074f6126bc9162b3d80b1229a5d60c9585c3029f7"
+    },
+    {
+      "bytes": 670,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-custody.json",
+      "root": "Q",
+      "sha256": "66cdc52cd6da81004401e43fad1d65dfea47770406f3c516f1571254211d4520"
+    },
+    {
+      "bytes": 977,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-result.json",
+      "root": "Q",
+      "sha256": "267f6bd3311c68eadc0802d9bbda69a7c25203c9e73712270f50b31e08b635db"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct.log",
+      "root": "Q",
+      "sha256": "6f3cfd6056ca5f1c10d9a89c3468deb600138d084b43c97e7c205c64a039994e"
+    },
+    {
+      "bytes": 737,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-dispatch.json",
+      "root": "Q",
+      "sha256": "517e42e7cb63a8ba5493799dac65046ff458c37a1885439d2c345536393dfc0b"
+    },
+    {
+      "bytes": 903,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-dispatch.log",
+      "root": "Q",
+      "sha256": "50e588a05ccf0cf0adb6814b414610bd92619f6e45f9673cf0964c0f4bc2da74"
+    },
+    {
+      "bytes": 705,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-spec.json",
+      "root": "Q",
+      "sha256": "014c12ac29f429f5d9562985d7edc134ba88c64a185478eba0aa13c46ecc785f"
+    },
+    {
+      "bytes": 5354,
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-verification.json",
+      "root": "Q",
+      "sha256": "f8f11f9f208f1314e868edb302c81b42974bce2873881543dfcf5bbe8a871efd"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2823,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "2278f5c75c9e9f12593f43093f566fb188986f7458e18da4e1ab21ef29d6fdb6"
+    },
+    {
+      "bytes": 720,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "c131eb0e1be8c65c837f6295910dc76c29b23bc7b50f16509fd886a025c71224"
+    },
+    {
+      "bytes": 1762,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "fce77149758504a111442cfac547a14d34f9af52fcabb0b3dc779c9e323a8351"
+    },
+    {
+      "bytes": 953,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "07c769a207adab038c393b48b52ef3fc22404913d2585b4ac8b5fc7924a8f1bb"
+    },
+    {
+      "bytes": 376,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "9bb2fbb36b4f2ab6c537b864693fe7c1d9f427a296ce262cf1b4b5d416a871dc"
+    },
+    {
+      "bytes": 187,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "be9ea225e1e0e3fc7d61f8fa6aea967bf1f306fe109d2ce0ff690b996489e3e5"
+    },
+    {
+      "bytes": 667,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-custody.json",
+      "root": "Q",
+      "sha256": "a717f41207ddc85772c5bf5198c0449f11997a96fb0700f074150f9574357e53"
+    },
+    {
+      "bytes": 962,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-result.json",
+      "root": "Q",
+      "sha256": "39c072e75dbb0e2d4459ca48e06295c19e9e538192c14125c29aadad105d4d5f"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same.log",
+      "root": "Q",
+      "sha256": "0ce5c1e866078d0834d8a46a9164ab579dfc5254797d11a8051e30f578d1b8ff"
+    },
+    {
+      "bytes": 728,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-dispatch.json",
+      "root": "Q",
+      "sha256": "8ab2cb9ed3fe0495a3d22c6fd965bb6985119db9e16f688fb767ee5d5c4f8907"
+    },
+    {
+      "bytes": 888,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-dispatch.log",
+      "root": "Q",
+      "sha256": "6f9e794bcdf6d75db605a61eadde4404bb806c95e921fabe055482286664fd81"
+    },
+    {
+      "bytes": 693,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-spec.json",
+      "root": "Q",
+      "sha256": "5ab3d47bf6415847e713ab88cea56199dc6cadb197d2c38dd7060e859b02ecc3"
+    },
+    {
+      "bytes": 4694,
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-verification.json",
+      "root": "Q",
+      "sha256": "af441d5db632906b5019b8babbcda0605ffa6e38288212b3d61c942404569eb1"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 2841,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/replay-spawn-custody-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "48cacbe742796beaff494c7a64d92aa4be7f7634806a4064c1a4d18a18d8a17e"
+    },
+    {
+      "bytes": 734,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/spawn-after-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "3da7a315d6826ff70c6748ffe5289c409ac477225688d95461e3a62ceb4a8522"
+    },
+    {
+      "bytes": 1764,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/spawn-identity-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "2df5a574fc96b7fc176710540d9ffc439877471bb8125f3d4d3353416a20fe8c"
+    },
+    {
+      "bytes": 957,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/spawn-observation-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "d9e0b9e4e295d33ea449b2cf59b0867604d9bfdb7372189ff74198f47b7000f4"
+    },
+    {
+      "bytes": 378,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/spawn-parent-before-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "a2e6f5785f400bae81b126a58e1dd932a3ab26f1a4d0f6fdf50b6936f882a7af"
+    },
+    {
+      "bytes": 178,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/spawn-preflight-cuda_producer_poison.json",
+      "root": "Q",
+      "sha256": "e0304babc32864969b3c9c7b737b0f289d4c5cab95d96fe0e88fd62bba6c9eba"
+    },
+    {
+      "bytes": 668,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-custody.json",
+      "root": "Q",
+      "sha256": "3dc8e3d3f2e83591cb8aed1087661e57226fd87760d51017fa19b82173a57ad4"
+    },
+    {
+      "bytes": 969,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-result.json",
+      "root": "Q",
+      "sha256": "d4c56e2a90761928093406f721bd5b4238e06bc112272d732772417ea0430c73"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single.log",
+      "root": "Q",
+      "sha256": "8f0543c6a278869f421aeca7aaa313068d7bef3229dc5c96c07f07ede5cb2af4"
+    },
+    {
+      "bytes": 732,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-dispatch.json",
+      "root": "Q",
+      "sha256": "fafb505dbe4e9d58db775a9149a1043738e931a5f8e4b3e642dcc8861aea9673"
+    },
+    {
+      "bytes": 895,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-dispatch.log",
+      "root": "Q",
+      "sha256": "a3dab1dcecbd0580809b56a4b66077245a0eb7a44da0938ea6157a4703938a77"
+    },
+    {
+      "bytes": 699,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-spec.json",
+      "root": "Q",
+      "sha256": "64f682c2ef1e8c74d38bc9ab5576799397196ed2b99d695139d8bb5c86e205e9"
+    },
+    {
+      "bytes": 4717,
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-verification.json",
+      "root": "Q",
+      "sha256": "a2e44370bedb59fa9b74d52231a44c7bb438a8e4e1025a2d6d2c6ea9f2bb4828"
+    },
+    {
+      "bytes": 789,
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-dispatch.json",
+      "root": "Q",
+      "sha256": "01d88bcbb87c3cd6e357d4a8efbd1ff23504d367f5f21aa1620bdaffc0a616a9"
+    },
+    {
+      "bytes": 926,
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-dispatch.log",
+      "root": "Q",
+      "sha256": "735183a9e4f574320d02c68c8ea1a44f011289022e4b83ee1667971e5b412f38"
+    },
+    {
+      "bytes": 765,
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-spec.json",
+      "root": "Q",
+      "sha256": "cfd9b23368597a254bd9667e4da665a9c1607a58aab932ff4f48645f3838d585"
+    },
+    {
+      "bytes": 5635,
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-verification.json",
+      "root": "Q",
+      "sha256": "6dafcb21335c54ec3db44121572758c4e85228f0129f45eb25b2b1ae908c10d6"
+    },
+    {
+      "bytes": 755,
+      "path": "wave35-r116-cuda_core_cold_import_core-spec.json",
+      "root": "Q",
+      "sha256": "cd9ed84da369c217434362bf2055122065637044084ccd70c374ab410b3c7ade"
+    },
+    {
+      "bytes": 789,
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-dispatch.json",
+      "root": "Q",
+      "sha256": "3d5a6b6a3c270457ae2171fece3b2f2c0fabb2f12b608262c0edc676f508569c"
+    },
+    {
+      "bytes": 926,
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-dispatch.log",
+      "root": "Q",
+      "sha256": "4ffef822529a94b099150b0b40770eca8509a8f4d4cbed2412dcbe0660743e72"
+    },
+    {
+      "bytes": 765,
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-spec.json",
+      "root": "Q",
+      "sha256": "05152a78db84d511d17c164da52922b7fb949a039f3e53e534fd46bbab71a56a"
+    },
+    {
+      "bytes": 5635,
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-verification.json",
+      "root": "Q",
+      "sha256": "370826d3ffdddebcea1eaabab1e2b14f43463ac1f7ea9ada54ef0149aa10f5c3"
+    },
+    {
+      "bytes": 755,
+      "path": "wave35-r116-cuda_core_cold_import_flat-spec.json",
+      "root": "Q",
+      "sha256": "390b81e542dfae1e5e675da7b6ed5df6a01af5d0cd9abf57df456b83992509a0"
+    },
+    {
+      "bytes": 787,
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-dispatch.json",
+      "root": "Q",
+      "sha256": "667632a8e5c028cd729cd1a84b40286d325a1cba2279a73083233dbdfa36a477"
+    },
+    {
+      "bytes": 922,
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-dispatch.log",
+      "root": "Q",
+      "sha256": "520242f6b18e81ae1a868208f469e937fed9d2bbec143dff2bb9ddb56d39af47"
+    },
+    {
+      "bytes": 762,
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-spec.json",
+      "root": "Q",
+      "sha256": "66191a1dddfa1fc3fd2ec826af649cccf4e1005c500b2cc7432a860429d0ae74"
+    },
+    {
+      "bytes": 5615,
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-verification.json",
+      "root": "Q",
+      "sha256": "61f8fb42d9f1521a2c035a54cea275061fd243f03d7fed026e80269c293d8f53"
+    },
+    {
+      "bytes": 752,
+      "path": "wave35-r116-cuda_core_cold_import_per-spec.json",
+      "root": "Q",
+      "sha256": "db98a893a01047d297a1b7c93e711fb5b3d896fa074ad015b432c4b2c10f6c4e"
+    },
+    {
+      "bytes": 807,
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-dispatch.json",
+      "root": "Q",
+      "sha256": "aa91a4bbfe3ce728cab673f140d55562c567d0c1d65d54a21a7650214983da84"
+    },
+    {
+      "bytes": 947,
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-dispatch.log",
+      "root": "Q",
+      "sha256": "80bcdc0128c5ffe422a68db3af1a4738196b0486556b87f758dfc6e351239fe8"
+    },
+    {
+      "bytes": 777,
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-spec.json",
+      "root": "Q",
+      "sha256": "fb8968f6ea2561159bcebcc96b1364e952aa5084f1782bc26a5fefae1e113d68"
+    },
+    {
+      "bytes": 5836,
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-verification.json",
+      "root": "Q",
+      "sha256": "826b40ef81ff608bf540111b432273369ae6e0165c0bc4d79a65e3379bc81c46"
+    },
+    {
+      "bytes": 767,
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-spec.json",
+      "root": "Q",
+      "sha256": "7ad0dc867393ab0ce35a14b364138fcc979141045118d89a8b202beb0e3a5326"
+    },
+    {
+      "bytes": 805,
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-dispatch.json",
+      "root": "Q",
+      "sha256": "48b5104d5c5fffa868943ed0088afb1623119150b49dcdd218a53ec4e8fc5b58"
+    },
+    {
+      "bytes": 943,
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-dispatch.log",
+      "root": "Q",
+      "sha256": "fcdcc0e121aa736c01cba3a8675b6148170ae46a9d219b838735301dab61ca7b"
+    },
+    {
+      "bytes": 774,
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-spec.json",
+      "root": "Q",
+      "sha256": "e1a330021e47f5aa3b9a428b5d1377ea617ec3fe727d7036cfccb42db368e041"
+    },
+    {
+      "bytes": 5816,
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-verification.json",
+      "root": "Q",
+      "sha256": "2069bcbb738502bb74a7698c75adc638dfda1b4dfb96f23595ca3ebb87b9a8c9"
+    },
+    {
+      "bytes": 764,
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-spec.json",
+      "root": "Q",
+      "sha256": "21d997c6764500bba3b25035695bc8561d55b4c1e65030fedef5902522512b65"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-fixture-prerequisites/fixture-prerequisites/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 653,
+      "path": "wave35-r116-fixture-prerequisites/fixture-prerequisites-custody.json",
+      "root": "Q",
+      "sha256": "9e46ee5d8ede2ef88f14eb896e80f83d659b7f8f2c9be1e8e6097734fc0e5576"
+    },
+    {
+      "bytes": 2734,
+      "path": "wave35-r116-fixture-prerequisites/fixture-prerequisites-result.json",
+      "root": "Q",
+      "sha256": "e6f3a1f83336b1115c7d32d5b023df61dc145aad74e70f827192ecb4bacc55bc"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r116-fixture-prerequisites/fixture-prerequisites.log",
+      "root": "Q",
+      "sha256": "6862fb1578a9ef06bd8453914a0e7129b5c3e33464269b3df0a2d4796cb5d090"
+    },
+    {
+      "bytes": 700,
+      "path": "wave35-r116-fixture-prerequisites-dispatch.json",
+      "root": "Q",
+      "sha256": "2c537959b13a86b5cbe75a8e5d39511e92e9b5f13158f66ef81c6acfbc999b54"
+    },
+    {
+      "bytes": 2608,
+      "path": "wave35-r116-fixture-prerequisites-dispatch.log",
+      "root": "Q",
+      "sha256": "c8db2838f081ccc832b817f12e91d95897ff44753a98f8b46475267be5b742df"
+    },
+    {
+      "bytes": 2532,
+      "path": "wave35-r116-fixture-prerequisites-spec.json",
+      "root": "Q",
+      "sha256": "1a015d8b482aa326dc54450d40f130bb6fa7bffd789743cd90daf2288e098379"
+    },
+    {
+      "bytes": 1118,
+      "path": "wave35-r116-fixture-prerequisites-verification.json",
+      "root": "Q",
+      "sha256": "d19a9ba9ed568d8a2871194dda8075e6a1b0b2e0254c8aaebab1d77b8509032a"
+    },
+    {
+      "bytes": 6573,
+      "path": "wave35-r116-invocation-phase-pair-custody.json",
+      "root": "Q",
+      "sha256": "4930d76cd12364caec73444c816e123a3cf9ac08f02b70dfd63c551463f8333a"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r116-owned-spec.json",
+      "root": "Q",
+      "sha256": "c8e828264688c84cca67e31754462970ed5bf5929be94874ec83ccf9ff91aad1"
+    },
+    {
+      "bytes": 301498,
+      "path": "wave35-r116-owner-runtime-preparation.json",
+      "root": "Q",
+      "sha256": "7b6b64d58c5a6b4343e81d442f37a6a5c153399f04df0e002eafb7de3464a744"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-producer-rest-a/producer-rest-a/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 648,
+      "path": "wave35-r116-producer-rest-a/producer-rest-a-custody.json",
+      "root": "Q",
+      "sha256": "521a83a3db12f6da8118033f934f61c0ac8be7079f463f29fb25c8f20f6588b3"
+    },
+    {
+      "bytes": 55543,
+      "path": "wave35-r116-producer-rest-a/producer-rest-a-result.json",
+      "root": "Q",
+      "sha256": "a53f3c9c27b6cab4a05d0fcc8b29f3a320550513d1e681da95b402680780c19c"
+    },
+    {
+      "bytes": 1061,
+      "path": "wave35-r116-producer-rest-a/producer-rest-a.log",
+      "root": "Q",
+      "sha256": "954e812507a61f614e431c3a4515f689e8d0a5abf5617176b4338a672145acfa"
+    },
+    {
+      "bytes": 688,
+      "path": "wave35-r116-producer-rest-a-dispatch.json",
+      "root": "Q",
+      "sha256": "fbf6ad607ccd960c20343ad88b2024375b2879dafe5b48eab9e7eb1acb93f19b"
+    },
+    {
+      "bytes": 53841,
+      "path": "wave35-r116-producer-rest-a-dispatch.log",
+      "root": "Q",
+      "sha256": "4e76c4517ff23c8cb78ff1a74a3606833e95cfdc4031ba9b690ee3d4ee962bff"
+    },
+    {
+      "bytes": 56923,
+      "path": "wave35-r116-producer-rest-a-spec.json",
+      "root": "Q",
+      "sha256": "ca0aa5d0b0c3359c0be8e903c3de5b251ba57f579c52f38e0a0321584aa07cb4"
+    },
+    {
+      "bytes": 1139,
+      "path": "wave35-r116-producer-rest-a-verification.json",
+      "root": "Q",
+      "sha256": "c06bc234f0d7e89c83dc83d06fb165828ff2edb2fec82faf094798e0777a3205"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-producer-rest-b/producer-rest-b/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 647,
+      "path": "wave35-r116-producer-rest-b/producer-rest-b-custody.json",
+      "root": "Q",
+      "sha256": "7d7238f572993da54eb03c41b242f9a1e19f72b39190d6ba496f297f685bc1c7"
+    },
+    {
+      "bytes": 57924,
+      "path": "wave35-r116-producer-rest-b/producer-rest-b-result.json",
+      "root": "Q",
+      "sha256": "ab60a5a5757c56d4f33701953de74841717575ffae9d196dcba3e3ef9cf20e5a"
+    },
+    {
+      "bytes": 1061,
+      "path": "wave35-r116-producer-rest-b/producer-rest-b.log",
+      "root": "Q",
+      "sha256": "25a64be716662174fb09166b53ead6e0c3628d787bf33ae07927ce11e6b10edb"
+    },
+    {
+      "bytes": 688,
+      "path": "wave35-r116-producer-rest-b-dispatch.json",
+      "root": "Q",
+      "sha256": "bdb61969c5186f9f1b10646c251ca7a28c4b415a05b8d31a7a46baccccf72e6c"
+    },
+    {
+      "bytes": 56222,
+      "path": "wave35-r116-producer-rest-b-dispatch.log",
+      "root": "Q",
+      "sha256": "5b8501be955fcff380c9a6594ff5b86be5609d7842e92d69642156d5e906e2e7"
+    },
+    {
+      "bytes": 59305,
+      "path": "wave35-r116-producer-rest-b-spec.json",
+      "root": "Q",
+      "sha256": "10861cb8df88de5727af59482b0008272c4a0795bf1791b8b839a938c74a1583"
+    },
+    {
+      "bytes": 1138,
+      "path": "wave35-r116-producer-rest-b-verification.json",
+      "root": "Q",
+      "sha256": "992a5ac8cb50c7e86dd3a93dfaa89fa49bc68446a0bdc9529feb13696daa156e"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-activation",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-activation-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-activation-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-activation-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-activation-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-capture.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-changed-core-test-style",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-changed-core-test-style-runner.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-changed-core-test-style-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cold-cuda-touch-runner.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cold-import",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cold-import-attempt-2",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cold-import-attempt-2-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cold-import-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cold-launch-prerequisite-diagnostic.json",
+      "round": 116,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cold-preloaded-runner.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cold-static-preflight.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-collection-spec.json",
+      "round": 116,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-core-collection",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-collection-custody.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-collection-runner.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-collection-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-core-healthy",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-healthy-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-healthy-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-healthy-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-healthy-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-core-node-selection.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-bootstrap-failure",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-bootstrap-failure-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-bootstrap-failure-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-bootstrap-failure-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-bootstrap-failure-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-inherited-pid",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-inherited-pid-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-inherited-pid-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-inherited-pid-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-inherited-pid-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-invocation-child-failure",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-child-failure-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-child-failure-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-child-failure-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-child-failure-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-invocation-parent-failure",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-parent-failure-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-invocation-phase-failure",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-failure-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-invocation-phase-reference",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-phase-reference-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-invocation-reported-failure",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-reported-failure-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-invocation-same-error",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-same-error-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-same-error-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-same-error-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-invocation-same-error-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-duplicate-parent-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-multiple-body-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-local-completion-single",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-single-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-single-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-single-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-local-completion-single-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-operation-body-completion",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-operation-body-completion-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-operation-body-completion-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-operation-body-completion-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-operation-body-completion-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-healthy-only-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-poison-ready-qualified",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-ready-qualified-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-poison-unknown-ready",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-poison-unknown-ready-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-core-runtime-query-failure",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-runtime-query-failure-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-runtime-query-failure-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-runtime-query-failure-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-core-runtime-query-failure-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_same-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_admitted_single-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_distinct-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_same-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-flat_local_single-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_same-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_admitted_single-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_distinct-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-per_local_same",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_same-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-cuda-producer-poison-per_local_single",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda-producer-poison-per_local_single-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_core-attempt-2-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_core-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_flat-attempt-2-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_flat-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_per-attempt-2-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_import_per-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-fixture-prerequisites",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-fixture-prerequisites-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-fixture-prerequisites-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-fixture-prerequisites-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-fixture-prerequisites-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-invocation-phase-pair-custody.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-owned-spec.json",
+      "round": 116,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-owner-runtime-preparation.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-producer-rest-a",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-a-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-a-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-a-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-a-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r116-producer-rest-b",
+      "round": 116,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-b-dispatch.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-b-dispatch.log",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-b-spec.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r116-producer-rest-b-verification.json",
+      "round": 116,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "root_disposition": {
+    "bytes": 44251,
+    "path": "wave35/r116-root-checks.json",
+    "root": "W",
+    "sha256": "720f6d798151aa52371865904cb2dc317374b4d7f4fe5b28611a051237b078f8"
+  },
+  "round": 116,
+  "schema": "bac-closed-round-inventory-v1",
+  "status": "ROOT-CLOSED FULL R116 NAMESPACE"
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "bac-cold-launch-prerequisite-diagnostic-v1",
+  "command": [
+    "python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-spec.json"
+  ],
+  "start": "2026-11-14T05:31:50.337337+00:00",
+  "end": "2026-11-14T05:31:50.389831+00:00",
+  "seconds": 0.05249347699282225,
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py\", line 4, in <module>\n    spec=json.loads(Path(sys.argv[1]).read_text());root=Path(spec['root']);q=Path(spec['output']);q.mkdir(exist_ok=True);mp=Path(spec['manifest']);m=json.loads(mp.read_text());py=str(root/'.venv/bin/python');env=dict(os.environ,OMP_NUM_THREADS='1',MKL_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',CUDA_VISIBLE_DEVICES='',PYTHONPATH=str(q.parent)+':'+str(root/'src'),BAC_QUAL_ROOT=str(root),BAC_QUAL_SHA=m['base_commit'],BAC_QUAL_TREE=m['candidate_tree'],BAC_QUAL_MANIFEST=str(mp))\n                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py\", line 1311, in mkdir\n    os.mkdir(self, mode)\nFileNotFoundError: [Errno 2] No such file or directory: '/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import/cuda_core_cold_preflight_preloaded/run'\n",
+  "spec_sha256": "21d997c6764500bba3b25035695bc8561d55b4c1e65030fedef5902522512b65",
+  "application_runtime": "NOT REACHED",
+  "original_attempt": "Both prior outer runner logs exist empty; no job directories, results or active runtime observed. Prior stderr/exit unavailable; not reconstructed."
+}

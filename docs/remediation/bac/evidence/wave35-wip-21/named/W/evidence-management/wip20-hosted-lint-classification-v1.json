@@ -1,0 +1,34 @@
+{
+  "head_sha": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "run_id": 43558954100,
+  "job_id": 132338093773,
+  "source": "wip20-lint-log-native.json",
+  "ruff": "PASS",
+  "black": "PASS",
+  "mypy": "FAIL",
+  "error_count": 15,
+  "errors_by_file": {
+    "src/townlet/oracle/driver.py": 6,
+    "src/townlet/population/vectorized.py": 9
+  },
+  "source_files_checked": 198,
+  "defaults": "SKIPPED",
+  "errors": [
+    "2026-11-14T04:56:02.0580969Z src/townlet/oracle/driver.py:98: error: Missing named argument \"world_roster\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-14T04:56:02.0583167Z src/townlet/oracle/driver.py:98: error: Missing named argument \"training_seed\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-14T04:56:02.0584062Z src/townlet/oracle/driver.py:98: error: Missing named argument \"lane_world_ids\" for \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-14T04:56:02.0585028Z src/townlet/oracle/driver.py:115: error: Missing named argument \"reservation\" for \"reset\" of \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-14T04:56:02.0586827Z src/townlet/oracle/driver.py:128: error: Missing named argument \"vector_step\" for \"step\" of \"VectorizedHamletEnv\"  [call-arg]",
+    "2026-11-14T04:56:02.0589202Z src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type \"Tensor\", variable has type \"WorldRecord\")  [assignment]",
+    "2026-11-14T04:56:02.2227513Z src/townlet/population/vectorized.py:698: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2228975Z src/townlet/population/vectorized.py:698: error: Missing named argument \"lineage\" for \"prepare_serialized\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2230361Z src/townlet/population/vectorized.py:699: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2232157Z src/townlet/population/vectorized.py:699: error: Missing named argument \"lineage\" for \"prepare_archived_import\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2233845Z src/townlet/population/vectorized.py:701: error: Missing named argument \"lineage\" for \"prepare_serialized\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2235181Z src/townlet/population/vectorized.py:702: error: Missing named argument \"lineage\" for \"load_prepared\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2236457Z src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"ReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2237665Z src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"SequentialReplayBuffer\"  [call-arg]",
+    "2026-11-14T04:56:02.2238922Z src/townlet/population/vectorized.py:800: error: Missing named argument \"lineage\" for \"sample_batch\" of \"PrioritizedReplayBuffer\"  [call-arg]"
+  ],
+  "scope": "Actual hosted exact-head lint observations; no inference of Tests outcome or global success."
+}

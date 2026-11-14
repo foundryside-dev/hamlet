@@ -1,0 +1,11 @@
+{
+  "before_sha256": "0eb5b5fb713ec1f04e6aea33f44c3cabd65bcac4e5919dec11f3102953df7136",
+  "after_sha256": "3c880faedb3a664e883e7eb99ed6906e6e134e8c2d016f15eede5943a7ae30fe",
+  "scope": "W35-R0-CUDA-CORE",
+  "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+  "old_projection": 2500,
+  "new_projection": 3010,
+  "actual_lines": 2883,
+  "authority": "Accepted V2 APP bound core1195+test3010=4205/2; root grant r115-cold-import-app-tests-grant.json. Independent final APP review337bfa4f PASS.",
+  "source_change": "Five cold controls plus subprocess import; unchanged original89 and production."
+}

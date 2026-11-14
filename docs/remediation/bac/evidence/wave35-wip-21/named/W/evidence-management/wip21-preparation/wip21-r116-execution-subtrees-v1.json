@@ -1,0 +1,23 @@
+{
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "command": [
+    "git",
+    "ls-tree",
+    "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+    "src",
+    "tests",
+    "configs",
+    "scripts",
+    ".defaults-ratchet"
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "1d02337c196103d7606ed8ec291c4b3cb47a835f"
+  },
+  "no_source_or_index_mutation": true,
+  "schema": "bac-immutable-candidate-execution-subtrees-v1",
+  "status": "READ-ONLY IMMUTABLE GIT METADATA OBSERVED"
+}

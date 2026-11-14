@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-q"
+  ],
+  "cwd": "/tmp",
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "start": "2026-11-14T05:41:04.952031+00:00",
+  "end": "2026-11-14T05:41:06.401988+00:00",
+  "exit": 1,
+  "hashes": {
+    "bac_hardware_protocol_v1.py": "c16e86a959f7ff53d51a43b6eec62b71e3fabad4e1047523cfebb538a2d992a4",
+    "test_bac_hardware_protocol_v1.py": "7b5b5db2569e4201fa66a4353b661f7996329315806f0d1b62baf92b1c3f0198"
+  }
+}

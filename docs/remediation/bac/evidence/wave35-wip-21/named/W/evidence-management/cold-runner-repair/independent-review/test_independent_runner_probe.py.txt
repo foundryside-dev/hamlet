@@ -1,0 +1,149 @@
+"""Independent bounded synthetic review; no application execution or real git."""
+import concurrent.futures
+import datetime
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+import pytest
+
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+E = Path(__file__).resolve().parent
+
+
+def load(name):
+    spec = importlib.util.spec_from_file_location(name, Q / (name + '.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+runner_tests = load('test_run_bac_cold_checks_locked')
+cold_tests = load('test_verify_bac_cold_import_identity')
+
+
+@pytest.fixture
+def packet(tmp_path):
+    return runner_tests.packet.__wrapped__(tmp_path)
+
+
+@pytest.mark.parametrize('target', ['output', 'parent', 'root', 'manifest', 'spec'])
+def test_symlink_paths_refuse(packet, target):
+    p = packet
+    real = p['path'].parent / ('real-' + target)
+    if target in ('output', 'parent'):
+        real.mkdir()
+        (real / 'preserved').write_bytes(b'untouched')
+        link = p['output'] if target == 'output' else p['output'].parent
+        link.parent.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(real, target_is_directory=True)
+    elif target == 'root':
+        real.symlink_to(p['root'], target_is_directory=True)
+        p['spec']['root'] = str(real)
+    elif target == 'manifest':
+        real.symlink_to(p['manifest'])
+        p['spec']['manifest'] = str(real)
+    else:
+        real.write_text('{}')
+        p['path'].symlink_to(real)
+    completed = runner_tests.launch(p)
+    assert completed.returncode != 0
+    assert not p['guards'].exists()
+    assert not (p['output'] / 'cold-role.log').exists()
+    if target in ('output', 'parent'):
+        assert (real / 'preserved').read_bytes() == b'untouched'
+
+
+@pytest.mark.parametrize('target', ['source', 'manifest'])
+def test_child_drift_is_retained_but_runner_fails(packet, target):
+    path = packet[target]
+    script = 'from pathlib import Path\np=Path(' + repr(str(path)) + ')\np.write_bytes(p.read_bytes()+b" ")\nprint("child finished")'
+    packet['spec']['jobs'][0]['args'] = ['-c', script]
+    completed = runner_tests.launch(packet)
+    assert completed.returncode != 0
+    result = json.loads((packet['output'] / 'cold-role-result.json').read_bytes())
+    assert result['exit_code'] == 0
+    assert (packet['output'] / 'cold-role.log').read_text() == 'child finished\n'
+    assert ('manifest drift' if target == 'manifest' else 'source mismatch') in completed.stderr
+
+
+@pytest.mark.parametrize('guard', ['HEAD', 'index', 'diff'])
+def test_failed_pre_guard_never_launches(packet, guard):
+    binary = Path(packet['env']['PATH'].split(os.pathsep)[0]) / 'git'
+    code = binary.read_text()
+    if guard == 'HEAD':
+        code = code.replace("'a' * 40", "'c' * 40")
+    elif guard == 'index':
+        code = code.replace("'b' * 40", "'c' * 40")
+    else:
+        code += "\nif args == ('diff', '--quiet'):\n    sys.exit(1)\n"
+    binary.write_text(code)
+    completed = runner_tests.launch(packet)
+    assert completed.returncode != 0
+    assert not (packet['output'] / 'cold-role.log').exists()
+
+
+def test_simultaneous_attempt_collision_has_one_winner(packet):
+    packet['path'].write_text(json.dumps(packet['spec']))
+    def start():
+        return subprocess.run([sys.executable, '-B', str(runner_tests.RUNNER), str(packet['path'])],
+                              env=packet['env'], capture_output=True, text=True)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda _: start(), range(2)))
+    assert sorted(r.returncode == 0 for r in results) == [False, True]
+    assert (packet['output'] / 'cold-role.log').read_text() == 'child reached\n'
+    assert len(packet['guards'].read_text().splitlines()) == 6
+
+
+@pytest.mark.parametrize('mutation', ['historical_runner', 'extra_tool', 'runner_ref', 'result_pin'])
+def test_independent_seal_rejection(tmp_path, monkeypatch, mutation):
+    v = load('verify_bac_cold_import_identity')
+    f = cold_tests.Fixture(tmp_path, 2)
+    if mutation == 'historical_runner':
+        f.seal['tools'].pop('run_bac_cold_checks_locked.py')
+        f.seal['tools']['run_bac_packet_checks_locked.py'] = cold_tests.ref(Q / 'run_bac_packet_checks_locked.py')
+    elif mutation == 'extra_tool':
+        f.seal['tools']['unapproved.py'] = cold_tests.ref(Q / 'run_bac_cold_checks_locked.py')
+    elif mutation == 'runner_ref':
+        f.seal['tools']['run_bac_cold_checks_locked.py'] = cold_tests.ref(Q / 'run_bac_packet_checks_locked.py')
+    else:
+        f.result['harness_sha256'] = '180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791'
+        f.sync()
+    f.spec['tool_seal_ref'] = cold_tests.write(f.paths['seal'], f.seal)
+    cold_tests.write(f.paths['spec'], f.spec)
+    with pytest.raises(ValueError):
+        f.invoke(v, monkeypatch)
+    assert not (f.job / 'cold-import-custody.json').exists()
+
+
+if __name__ == '__main__':
+    paths = [Q / name for name in ('verify_bac_cold_import_identity.py', 'test_verify_bac_cold_import_identity.py',
+        'run_bac_cold_checks_locked.py', 'test_run_bac_cold_checks_locked.py',
+        'run_bac_packet_checks_locked.py', 'verify_bac_replay_spawn_identity.py', 'bac_cold_worker_identity.py')]
+    paths.append(Path(__file__).resolve())
+    def hashes():
+        return {str(p): dict(sha256=hashlib.sha256(p.read_bytes()).hexdigest(), bytes=p.stat().st_size,
+                            lines=len(p.read_bytes().splitlines())) for p in paths}
+    before = hashes()
+    argv = [sys.executable, '-B', '-m', 'pytest', '-c', '/dev/null', '--rootdir', str(Q), '--noconftest',
+            '-p', 'no:cacheprovider', str(Q / 'test_verify_bac_cold_import_identity.py'),
+            str(Q / 'test_run_bac_cold_checks_locked.py'), str(Path(__file__).resolve()), '-q',
+            '--basetemp', str(E / 'fixtures')]
+    env = dict(os.environ, PYTEST_DISABLE_PLUGIN_AUTOLOAD='1', PYTHONDONTWRITEBYTECODE='1')
+    start = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    result = subprocess.run(argv, env=env, capture_output=True, text=True)
+    end = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    (E / 'suite.stdout.log').write_text(result.stdout)
+    (E / 'suite.stderr.log').write_text(result.stderr)
+    record = dict(argv=argv, environment={k: env[k] for k in ('PYTEST_DISABLE_PLUGIN_AUTOLOAD', 'PYTHONDONTWRITEBYTECODE')},
+                  start_utc=start, end_utc=end, exit_code=result.returncode, before=before, after=hashes())
+    with (E / 'suite-run.json').open('x') as stream:
+        json.dump(record, stream, indent=2)
+    print(result.stdout)
+    print(result.stderr)
+    assert record['before'] == record['after'], 'reviewed file drift'
+    sys.exit(result.returncode)

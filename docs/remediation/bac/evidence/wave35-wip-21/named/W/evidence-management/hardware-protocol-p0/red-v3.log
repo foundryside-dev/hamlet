@@ -1,0 +1,15 @@
+Fsssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [100%]
+=================================== FAILURES ===================================
+______________________ test_protocol_interface_available _______________________
+
+    def test_protocol_interface_available():
+>       assert MODULE.is_file(), "P0 closed protocol implementation is missing"
+E       AssertionError: P0 closed protocol implementation is missing
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py').is_file
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_protocol_interface_available
+1 failed, 71 skipped in 0.53s

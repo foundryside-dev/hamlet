@@ -1,0 +1,73 @@
+{
+  "schema": "cuda-core-cold-worker-v2",
+  "role": "cuda_core_cold_import_per",
+  "node": "test_fresh_process_canonical_import_order[per]",
+  "pid": 175199,
+  "ppid": 175123,
+  "start_ticks": 11420124,
+  "root": "/workspace/hamlet",
+  "cwd": "/workspace/hamlet",
+  "launch_python": "/workspace/hamlet/.venv/bin/python",
+  "binary": "/usr/bin/python3.13",
+  "binary_sha256": "889c603f0d17cb54060951bcf4c4f9b8c9ebd9e52b392c70209bbb9755d797d9",
+  "orig_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_fresh_process_canonical_import_order[per]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-p",
+    "bac_cold_worker_identity",
+    "-q",
+    "-s"
+  ],
+  "proc_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_fresh_process_canonical_import_order[per]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-p",
+    "bac_cold_worker_identity",
+    "-q",
+    "-s"
+  ],
+  "command_sha256": "96026d238a58f0051f91ddc0665afa7d708a8f18bf9ae5ad7b4257704e378988",
+  "manifest_ref": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json",
+    "bytes": 206037,
+    "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+  },
+  "test_ref": {
+    "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+    "bytes": 134020,
+    "sha256": "b1f05946a4f2c0e145c44226323dc7b599f36a1364c854d26f090fa45b1a4409"
+  },
+  "plugin_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_cold_worker_identity.py",
+    "bytes": 5130,
+    "sha256": "eadc46dd32ec17e74f59d53293d4e5a774eefa3af489146335bd5c2be3a4379a"
+  },
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "python_threads": [
+    {
+      "name": "MainThread",
+      "ident": 140506962913152,
+      "native_id": 175199
+    }
+  ],
+  "os_threads": 1
+}

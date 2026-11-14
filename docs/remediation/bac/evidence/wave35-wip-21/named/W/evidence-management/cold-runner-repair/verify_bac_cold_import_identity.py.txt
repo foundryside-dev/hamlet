@@ -1,0 +1,605 @@
+"""Closed CPU cold-import custody validator. Reads source as data; never imports it."""
+import ast
+import fcntl
+import hashlib
+import io
+import json
+import math
+from pathlib import Path
+import re
+import subprocess
+import sys
+import tokenize
+
+TEST = 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py'
+CORE = 'townlet.exploration.rng_custody'
+FLAT = 'townlet.training.replay_buffer'
+PER = 'townlet.training.prioritized_replay_buffer'
+OLD_SHA = '6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173'
+HARNESS_SHA = '180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791'
+TOOLS = ('verify_bac_replay_spawn_identity.py', 'verify_bac_cold_import_identity.py',
+         'bac_cold_worker_identity.py', 'test_verify_bac_cold_import_identity.py')
+ROWS = (
+    ('cuda_core_cold_preflight_preloaded', 'test_cold_import_probe_faults[preloaded]', 'preflight_preloaded', 'core'),
+    ('cuda_core_cold_preflight_cuda_touch', 'test_cold_import_probe_faults[cuda_touch]', 'preflight_cuda_touch', 'core'),
+    ('cuda_core_cold_import_core', 'test_fresh_process_canonical_import_order[core]', 'qualify', 'core'),
+    ('cuda_core_cold_import_flat', 'test_fresh_process_canonical_import_order[flat]', 'qualify', 'flat'),
+    ('cuda_core_cold_import_per', 'test_fresh_process_canonical_import_order[per]', 'qualify', 'per'),
+)
+JOBS = [dict(zip(('role', 'node', 'mode', 'entry'), row)) for row in ROWS]
+ENV = dict.fromkeys('OMP_NUM_THREADS MKL_NUM_THREADS OPENBLAS_NUM_THREADS NUMEXPR_NUM_THREADS VECLIB_MAXIMUM_THREADS BLIS_NUM_THREADS'.split(), '1')
+D = (
+    ('REPLAY_BUFFER_PUSH_CUDA', 'flat', 'push', 'tensor'),
+    ('REPLAY_BUFFER_PUSH_RECORDED_CUDA', 'flat', 'push_recorded', 'tensor'),
+    ('REPLAY_BUFFER_READINESS_CUDA', 'flat', 'readiness', 'request'),
+    ('REPLAY_BUFFER_SERIALIZE_CUDA', 'flat', 'serialize', 'none'),
+    ('REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA', 'flat', 'validate_serialized', 'mapping'),
+    ('REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA', 'flat', 'load_for_mode', 'mapping'),
+    ('REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA', 'flat', 'historical_archives', 'none'),
+    ('REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA', 'flat', 'install_historical_archive', 'archive'),
+    ('PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA', 'per', 'push', 'tensor'),
+    ('PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA', 'per', 'push_recorded', 'tensor'),
+    ('PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA', 'per', 'declare_unconstrained_action_dim', 'integer'),
+    ('PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA', 'per', 'readiness', 'request'),
+    ('PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA', 'per', 'serialize', 'none'),
+    ('PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA', 'per', 'validate_serialized', 'mapping'),
+    ('PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA', 'per', 'historical_archives', 'none'),
+    ('PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA', 'per', 'install_historical_archive', 'archive'),
+    ('PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA', 'per', 'update_priorities', 'indices'),
+    ('PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA', 'per', 'update_unit_priorities', 'indices'),
+)
+CACHE = [D[3][0], D[12][0]]
+UNRESOLVED = [row[0] for row in D if row[0] not in CACHE]
+COMMON = ('schema profile role mode entry nonce pid ppid worker_ref root cwd launch_python binary binary_sha256 python_version '
+          'orig_argv proc_argv command_sha256 script_sha256 manifest_ref test_ref base_commit candidate_tree')
+POSITIVE = ('runtime checkpoints source_modules threads_before threads_after environment eager_policy_calls custody_producer_imports '
+            'manifest_contracts missing_exports gates unresolved rng_before rng_after cleanup')
+FAULT = 'phase modules source_modules cuda_calls site_function site_line caller_function caller_line threads environment'
+SCOPE = 'CPU cold-import/canonical-gate protocol only; no GPU hardware, producer leaf, post-poison, B6/R0 or whole-programme qualification.'
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def same(actual, expected):
+    if type(actual) is not type(expected):
+        return False
+    if type(expected) is dict:
+        return actual.keys() == expected.keys() and all(same(actual[k], v) for k, v in expected.items())
+    if type(expected) is list:
+        return len(actual) == len(expected) and all(same(a, b) for a, b in zip(actual, expected))
+    return actual == expected
+
+
+def equal(actual, expected, label):
+    require(same(actual, expected), label + ' mismatch')
+
+
+def exact(obj, fields, label):
+    require(type(obj) is dict and set(obj) == set(fields.split()), label + ' schema mismatch')
+
+
+def integer(value, minimum, label):
+    require(type(value) is int and value >= minimum, label + ' must be exact integer')
+
+
+def string(value, label):
+    require(type(value) is str and bool(value), label + ' must be nonempty string')
+
+
+def sha(value):
+    require(type(value) is str and re.fullmatch('[0-9a-f]{64}', value) is not None, 'invalid SHA256')
+
+
+def duration(value):
+    require(type(value) is float and math.isfinite(value) and 0 < value <= 100, 'invalid duration')
+
+
+def pairs(items):
+    obj = {}
+    for key, value in items:
+        require(key not in obj, 'duplicate JSON key: ' + key)
+        obj[key] = value
+    return obj
+
+
+def finite(value):
+    if type(value) is float:
+        require(math.isfinite(value), 'nonfinite JSON number')
+    elif type(value) is dict:
+        for child in value.values():
+            finite(child)
+    elif type(value) is list:
+        for child in value:
+            finite(child)
+
+
+def read_json(path):
+    def constant(value):
+        raise ValueError('nonfinite JSON constant: ' + value)
+    value = json.loads(Path(path).read_bytes(), object_pairs_hook=pairs, parse_constant=constant)
+    finite(value)
+    require(type(value) is dict, 'JSON object required')
+    return value
+
+
+def canonical(value):
+    string(value, 'path')
+    path = Path(value)
+    require(path.is_absolute() and str(path) == value and path.resolve() == path, 'noncanonical path')
+    for ancestor in (path, *path.parents):
+        require(not ancestor.is_symlink(), 'symlink path refused')
+    return path
+
+
+def reference(path):
+    path = canonical(str(path))
+    require(path.is_file(), 'reference is not a regular file')
+    data = path.read_bytes()
+    return dict(path=str(path), bytes=len(data), sha256=digest(data))
+
+
+def check_ref(value, path=None):
+    exact(value, 'path bytes sha256', 'reference')
+    integer(value['bytes'], 0, 'reference size')
+    sha(value['sha256'])
+    actual = canonical(value['path'])
+    if path is not None:
+        equal(str(actual), str(path), 'reference path')
+    equal(value, reference(actual), 'reference bytes')
+    return actual
+
+
+def command(root, node):
+    return [str(root / '.venv/bin/python'), '-m', 'pytest', TEST + '::' + node,
+            '--no-cov', '-p', 'no:cacheprovider', '-p', 'no:benchmark', '-p',
+            'bac_source_identity', '-p', 'bac_cold_worker_identity', '-q', '-s']
+
+
+def command_hash(argv):
+    return digest(json.dumps(argv, ensure_ascii=True, separators=(',', ':')).encode('utf-8'))
+
+
+def extract_probe(source):
+    try:
+        tree = ast.parse(source)
+        writes = [n for n in ast.walk(tree) if isinstance(n, ast.Name) and n.id == '_COLD_IMPORT_PROBE'
+                  and isinstance(n.ctx, (ast.Store, ast.Del))]
+        candidates = [n for n in tree.body if isinstance(n, ast.Assign) and len(n.targets) == 1
+                      and isinstance(n.targets[0], ast.Name) and n.targets[0].id == '_COLD_IMPORT_PROBE']
+        require(len(writes) == len(candidates) == 1, 'probe assignment/rebinding')
+        for binding in ast.walk(tree):
+            if isinstance(binding, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.ExceptHandler,
+                                    ast.MatchAs, ast.MatchStar)):
+                require(binding.name != '_COLD_IMPORT_PROBE', 'probe named rebinding')
+            elif isinstance(binding, ast.MatchMapping):
+                require(binding.rest != '_COLD_IMPORT_PROBE', 'probe mapping rebinding')
+            elif isinstance(binding, ast.arg):
+                require(binding.arg != '_COLD_IMPORT_PROBE', 'probe argument rebinding')
+            elif isinstance(binding, ast.alias):
+                require((binding.asname or binding.name.split('.')[0]) != '_COLD_IMPORT_PROBE', 'probe import rebinding')
+            elif isinstance(binding, ast.Subscript) and isinstance(binding.ctx, (ast.Store, ast.Del)):
+                require(not isinstance(binding.slice, ast.Constant) or binding.slice.value != '_COLD_IMPORT_PROBE',
+                        'probe namespace rebinding')
+            elif isinstance(binding, ast.Attribute) and isinstance(binding.ctx, (ast.Store, ast.Del)):
+                require(binding.attr != '_COLD_IMPORT_PROBE', 'probe attribute rebinding')
+        node = candidates[0]
+        require(isinstance(node.value, ast.Constant) and type(node.value.value) is str and node.value.value.isascii(), 'probe literal type')
+        segment = ast.get_source_segment(source, node.value)
+        tokens = [t for t in tokenize.generate_tokens(io.StringIO(segment).readline)
+                  if t.type not in (tokenize.NL, tokenize.NEWLINE, tokenize.ENDMARKER)]
+        require(len(tokens) == 1 and tokens[0].type == tokenize.STRING, 'probe adjacent/dynamic literals')
+        return node.value.value
+    except (SyntaxError, tokenize.TokenError) as error:
+        raise ValueError('invalid probe source') from error
+
+
+def fault_sites(probe):
+    tree = ast.parse(probe)
+    parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+    def function(node):
+        while node in parents:
+            node = parents[node]
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                return node.name
+        return '<module>'
+    boundaries = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == '_cold_boundary']
+    require(len(boundaries) == 1, 'unique cold boundary required')
+    assertions = [n for n in ast.walk(boundaries[0]) if isinstance(n, ast.Assert) and
+                  isinstance(n.msg, ast.Constant) and n.msg.value == 'cold import precondition violated']
+    raises = [n for n in ast.walk(tree) if isinstance(n, ast.Raise) and isinstance(n.exc, ast.Call)
+              and isinstance(n.exc.func, ast.Name) and n.exc.func.id == 'RuntimeError'
+              and len(n.exc.args) == 1 and isinstance(n.exc.args[0], ast.Constant)
+              and n.exc.args[0].value == 'cold import CUDA sentinel touched']
+    require(len(assertions) == len(raises) == 1, 'unique fault site required')
+    found = {}
+    for mode, site in (('preflight_preloaded', assertions[0]), ('preflight_cuda_touch', raises[0])):
+        branches = [n for n in ast.walk(tree) if isinstance(n, ast.If) and any(
+            isinstance(v, ast.Constant) and v.value == mode for v in ast.walk(n.test))]
+        calls = []
+        for branch in branches:
+            for stmt in branch.body:
+                for n in ast.walk(stmt):
+                    if mode == 'preflight_preloaded':
+                        match = isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == '_cold_boundary'
+                    else:
+                        match = isinstance(n, ast.Attribute) and ast.unparse(n) == 'torch.cuda.is_initialized'
+                    if match:
+                        calls.append(n)
+        require(len(calls) == 1, 'unique designated fault caller required')
+        found[mode] = dict(site_function=function(site), site_line=site.lineno,
+                           caller_function=function(calls[0]), caller_line=calls[0].lineno)
+    return found
+
+
+def check_repository(root, manifest):
+    # Same established guard protocol; no old spawn subject/profile is called.
+    require(subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip() == manifest['base_commit'], 'HEAD mismatch')
+    with (root / '.superpowers/bac-qualification-index.lock').open('a') as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            tree = subprocess.check_output(['git', 'write-tree'], cwd=root, text=True).strip()
+            require(tree == manifest['candidate_tree'], 'index tree mismatch')
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+    require(subprocess.run(['git', 'diff', '--quiet'], cwd=root, check=False).returncode == 0, 'unstaged changes')
+    registry = subprocess.check_output(['git', 'worktree', 'list', '--porcelain'], cwd=root, text=True)
+    equal(registry, manifest['worktree_registry'], 'worktree registry')
+
+
+def check_inventory(root, manifest):
+    allowed = {}
+    for category in ('source_files', 'configs', 'artifacts'):
+        inventory = manifest[category]
+        require(type(inventory) is dict, 'invalid inventory')
+        for relative, expected in inventory.items():
+            string(relative, 'inventory path')
+            path = Path(relative)
+            require(not path.is_absolute() and '..' not in path.parts and str(path) == relative, 'unsafe inventory path')
+            target = canonical(str(root / path))
+            require(target.is_relative_to(root), 'inventory escape')
+            sha(expected)
+            equal(reference(target)['sha256'], expected, 'inventory hash')
+            if category == 'source_files' and relative.startswith('src/townlet/') and relative.endswith('.py'):
+                module = relative[4:-3].replace('/', '.')
+                if module.endswith('.__init__'):
+                    module = module[:-9]
+                require(module not in allowed, 'duplicate module origin')
+                allowed[module] = dict(path=str(target), sha256=expected)
+    return allowed
+
+
+def check_threads(value, pid):
+    exact(value, 'python os torch_intraop torch_interop', 'child threads')
+    for key in ('os', 'torch_intraop', 'torch_interop'):
+        equal(value[key], 1, key)
+    require(type(value['python']) is list and len(value['python']) == 1, 'child Python threads')
+    thread = value['python'][0]
+    exact(thread, 'name ident native_id', 'thread')
+    equal(thread['name'], 'MainThread', 'thread name')
+    integer(thread['ident'], 1, 'thread ident')
+    equal(thread['native_id'], pid, 'sole native thread PID')
+
+
+def check_state(value, members):
+    exact(value, 'generation revision currency ambient_revision poisoned ready gates operations members', 'state')
+    for key in ('generation', 'revision', 'currency', 'ambient_revision'):
+        integer(value[key], 0, key)
+    for key in ('poisoned', 'ready'):
+        equal(value[key], False, key)
+    equal(value['gates'], 0, 'state gates')
+    equal(value['operations'], 0, 'state operations')
+    equal(value['members'], members, 'state members')
+
+
+def state_pair(record):
+    check_state(record['state_before'], 2)
+    check_state(record['state_after'], 2)
+    equal(record['state_before'], record['state_after'], 'state invariance')
+
+
+def inventory_names(names, allowed):
+    require(type(names) is list and all(type(n) is str for n in names), 'module inventory type')
+    equal(names, sorted(set(names)), 'sorted unique module inventory')
+    require(all(n in allowed for n in names), 'unknown application origin')
+
+
+def check_origins(origins, names, allowed):
+    require(type(origins) is dict and set(origins) == set(names), 'source module union')
+    equal(origins, {n: allowed[n] for n in names}, 'canonical source origins')
+
+
+def check_positive(child, allowed, runtime):
+    equal(child['runtime'], {k: runtime[k] for k in ('torch_version', 'torch_path', 'numpy_version', 'numpy_path')}, 'runtime')
+    checkpoints = child['checkpoints']
+    exact(checkpoints, 'before_torch after_torch before_selected after_selected after_producers final', 'checkpoints')
+    union = set()
+    for name, modules in checkpoints.items():
+        inventory_names(modules, allowed)
+        union.update(modules)
+        if name in ('before_torch', 'after_torch', 'before_selected'):
+            equal(modules, [], 'cold preimport')
+        else:
+            required = {'townlet', CORE, {'core': CORE, 'flat': FLAT, 'per': PER}[child['entry']]}
+            if name in ('after_producers', 'final'):
+                required.update((FLAT, PER))
+            require(required <= set(modules), 'required entry origins missing')
+            if name == 'after_selected' and child['entry'] == 'core':
+                require(not {FLAT, PER}.intersection(modules), 'eager producer import')
+    check_origins(child['source_modules'], union, allowed)
+    for field in ('threads_before', 'threads_after'):
+        check_threads(child[field], child['pid'])
+    equal(child['environment'], ENV, 'child thread environment')
+    equal(child['eager_policy_calls'], [], 'eager policy calls')
+    equal(child['custody_producer_imports'], [], 'custody producer imports')
+    descriptors = child['manifest_contracts']
+    require(type(descriptors) is list and len(descriptors) == 18, 'exact eighteen contracts required')
+    seen_contracts, seen_descriptors = set(), set()
+    for record, (name, owner, route, input_kind) in zip(descriptors, D):
+        exact(record, 'name contract_id descriptor_id owner_kind route input_kind rationale healthy post_poison', 'descriptor')
+        for field, value in (('name', name), ('owner_kind', owner), ('route', route), ('input_kind', input_kind),
+                             ('healthy', True), ('post_poison', False)):
+            equal(record[field], value, 'descriptor ' + field)
+        string(record['rationale'], 'descriptor rationale')
+        for field, seen in (('contract_id', seen_contracts), ('descriptor_id', seen_descriptors)):
+            integer(record[field], 1, field)
+            require(record[field] not in seen, 'duplicate descriptor identity')
+            seen.add(record[field])
+    missing = child['missing_exports']
+    require(type(missing) is list and len(missing) == 2, 'two missing exports required')
+    for record, name in zip(missing, CACHE):
+        exact(record, 'contract exception_class export_restored body_calls cuda_calls cache_before cache_after state_before state_after', 'missing export')
+        for field, value in (('contract', name), ('exception_class', 'ImportError'), ('export_restored', True),
+                             ('body_calls', 0), ('cuda_calls', 0), ('cache_before', []), ('cache_after', [])):
+            equal(record[field], value, 'missing export ' + field)
+        state_pair(record)
+    gates = child['gates']
+    require(type(gates) is list and len(gates) == 4, 'four canonical gates required')
+    for i, record in enumerate(gates):
+        j = i % 2
+        descriptor = descriptors[3 if j == 0 else 12]
+        exact(record, 'pass contract owner_id participant_id descriptor_id policy_id cache_tuple_id owner_class input_class route rationale '
+                      'healthy post_poison exact_binding completion_failed cache_before cache_after resolver_before resolver_after state_before state_after', 'gate')
+        expected = dict(contract=CACHE[j], owner_class=FLAT + '.ReplayBuffer' if j == 0 else PER + '.PrioritizedReplayBuffer',
+                        input_class='builtins.NoneType', route='serialize', rationale=descriptor['rationale'], healthy=True,
+                        post_poison=False, exact_binding=True, completion_failed=False, descriptor_id=descriptor['descriptor_id'],
+                        cache_before=[] if i == 0 else CACHE[:1] if i == 1 else CACHE, cache_after=CACHE[:1] if i == 0 else CACHE,
+                        resolver_before=(2,3,4,4)[i], resolver_after=(3,4,4,4)[i])
+        expected['pass'] = 'first' if i < 2 else 'repeat'
+        for field, value in expected.items():
+            equal(record[field], value, 'gate ' + field)
+        for field in ('owner_id', 'participant_id', 'descriptor_id', 'policy_id', 'cache_tuple_id'):
+            integer(record[field], 1, field)
+            if i >= 2:
+                equal(record[field], gates[j][field], 'repeat identity ' + field)
+        state_pair(record)
+    for field in ('owner_id', 'participant_id', 'policy_id', 'cache_tuple_id'):
+        require(gates[0][field] != gates[1][field], 'distinct canonical bindings required')
+    equal(child['unresolved'], UNRESOLVED, 'unresolved contracts')
+    for field in ('rng_before', 'rng_after'):
+        exact(child[field], 'python numpy torch', 'RNG')
+        for value in child[field].values():
+            sha(value)
+    equal(child['rng_before'], child['rng_after'], 'RNG invariance')
+    cleanup = child['cleanup']
+    exact(cleanup, 'unregistered state cache unresolved cuda_calls sentinel_identity', 'cleanup')
+    check_state(cleanup['state'], 0)
+    for field, value in (('unregistered', ['flat', 'per']), ('cache', CACHE), ('unresolved', UNRESOLVED),
+                         ('cuda_calls', 0), ('sentinel_identity', True)):
+        equal(cleanup[field], value, 'cleanup ' + field)
+
+
+def check_fault(child, allowed, probe, stderr):
+    preload = child['mode'] == 'preflight_preloaded'
+    equal(child['phase'], 'before_preentry_assert' if preload else 'before_sentinel_raise', 'fault phase')
+    equal(child['cuda_calls'], 0 if preload else 1, 'fault CUDA count')
+    inventory_names(child['modules'], allowed)
+    if preload:
+        require({'townlet', CORE} <= set(child['modules']), 'preload witness missing custody')
+        require(not {FLAT, PER}.intersection(child['modules']), 'preload imported producer')
+    else:
+        equal(child['modules'], [], 'CUDA fault must be cold')
+    check_origins(child['source_modules'], child['modules'], allowed)
+    check_threads(child['threads'], child['pid'])
+    equal(child['environment'], ENV, 'fault environment')
+    sites = fault_sites(probe)[child['mode']]
+    for key, value in sites.items():
+        equal(child[key], value, 'fault ' + key)
+    text = stderr.read_text(encoding='utf-8')
+    lines = text.splitlines()
+    require(text.count('Traceback (most recent call last):') == 1, 'one complete traceback required')
+    exception = ('AssertionError: cold import precondition violated' if preload else
+                 'RuntimeError: cold import CUDA sentinel touched')
+    require(bool(lines) and lines[-1] == exception, 'terminal fault exception mismatch')
+    header = lines.index('Traceback (most recent call last):')
+    require(header == 0, 'unexpected traceback preamble')
+    frames = []
+    for line in lines[1:-1]:
+        match = re.fullmatch(r'  File "<string>", line ([1-9][0-9]*), in (.+)', line)
+        if match:
+            frames.append((int(match[1]), match[2]))
+        else:
+            require(line.startswith('    ') and bool(frames), 'unexpected traceback chain content')
+    require(len(frames) >= 2, 'fault caller frame missing')
+    equal(frames[-2:], [(sites['caller_line'], sites['caller_function']), (sites['site_line'], sites['site_function'])], 'fault terminal frames')
+
+
+def check_worker(worker, job, root, runtime, manifest, manifest_ref, test_ref, plugin_ref):
+    exact(worker, 'schema role node pid ppid start_ticks root cwd launch_python binary binary_sha256 orig_argv proc_argv command_sha256 '
+                  'manifest_ref test_ref plugin_ref base_commit candidate_tree python_threads os_threads', 'worker')
+    for key in ('pid', 'ppid', 'start_ticks', 'os_threads'):
+        integer(worker[key], 1, 'worker ' + key)
+    require(worker['pid'] != worker['ppid'], 'worker self parent')
+    expected = dict(schema='cuda-core-cold-worker-v2', role=job['role'], node=job['node'], root=str(root), cwd=str(root),
+                    launch_python=runtime['launch_python'], binary=runtime['binary'], binary_sha256=runtime['binary_sha256'],
+                    orig_argv=command(root, job['node']), proc_argv=command(root, job['node']),
+                    command_sha256=command_hash(command(root, job['node'])), manifest_ref=manifest_ref, test_ref=test_ref,
+                    plugin_ref=plugin_ref, base_commit=manifest['base_commit'], candidate_tree=manifest['candidate_tree'])
+    for key, value in expected.items():
+        equal(worker[key], value, 'worker ' + key)
+    threads = worker['python_threads']
+    require(type(threads) is list and bool(threads), 'worker Python thread list')
+    for thread in threads:
+        exact(thread, 'name ident native_id', 'worker thread')
+        string(thread['name'], 'worker thread name')
+        integer(thread['ident'], 1, 'worker ident')
+        integer(thread['native_id'], 1, 'worker native id')
+    equal(threads, sorted(threads, key=lambda t: (t['name'], t['ident'], t['native_id'])), 'worker sorted threads')
+    require(len({t['ident'] for t in threads}) == len(threads) == len({t['native_id'] for t in threads}), 'duplicate worker thread')
+    require(worker['os_threads'] >= len(threads), 'worker OS/Python count')
+    main = [t for t in threads if t['name'] == 'MainThread']
+    require(len(main) == 1 and main[0]['native_id'] == worker['pid'], 'worker main PID linkage')
+
+
+def validated(spec_path, role):
+    require(type(role) is str and role in {r[0] for r in ROWS}, 'unknown cold role')
+    job = next(j for j in JOBS if j['role'] == role)
+    spec_path = canonical(str(spec_path))
+    spec_ref = reference(spec_path)
+    spec = read_json(spec_path)
+    exact(spec, 'schema root_run_specs manifest_ref tool_seal_ref root output jobs', 'cold spec')
+    equal(spec['schema'], 'bac-cold-import-spec-v2', 'cold schema')
+    equal(spec['jobs'], JOBS, 'closed ordered jobs')
+    root, output = canonical(spec['root']), canonical(spec['output'])
+    role_dirs = [path for path in output.iterdir() if path.is_dir() or path.is_symlink()]
+    require(all(path.name in {r[0] for r in ROWS} and not path.is_symlink() for path in role_dirs), 'unexpected role directory')
+    run = canonical(str(output / role / 'run'))
+    directory = canonical(str(run / role))
+    require(directory.is_dir(), 'missing job directory')
+    frozen = [spec_ref]
+    for path in directory.glob('cold-import-*'):
+        frozen.append(reference(path))
+    for path in (run / (role + '-result.json'), run / (role + '.log')):
+        frozen.append(reference(path))
+    manifest_path = check_ref(spec['manifest_ref'])
+    manifest = read_json(manifest_path)
+    for key in ('base_commit', 'candidate_tree'):
+        require(type(manifest[key]) is str and re.fullmatch('[0-9a-f]{40}', manifest[key]), 'invalid candidate identity')
+    allowed = check_inventory(root, manifest)
+    test_ref = reference(root / TEST)
+    equal(test_ref['sha256'], manifest['source_files'][TEST], 'test source')
+    probe = extract_probe((root / TEST).read_text(encoding='utf-8'))
+    fault_sites(probe)
+    seal_path = check_ref(spec['tool_seal_ref'])
+    seal = read_json(seal_path)
+    exact(seal, 'schema tools runtime', 'tool seal')
+    equal(seal['schema'], 'bac-cold-import-tool-seal-v2', 'tool seal schema')
+    exact(seal['tools'], ' '.join(TOOLS), 'tool inventory')
+    for name, ref in seal['tools'].items():
+        check_ref(ref, Path(__file__).resolve().parent / name)
+    equal(seal['tools'][TOOLS[0]]['sha256'], OLD_SHA, 'old strict verifier')
+    frozen.extend([spec['manifest_ref'], spec['tool_seal_ref'], *seal['tools'].values(), *spec['root_run_specs'].values()])
+    runtime = seal['runtime']
+    exact(runtime, 'launch_python binary binary_sha256 python_version torch_path torch_version numpy_path numpy_version', 'sealed runtime')
+    equal(runtime['launch_python'], str(root / '.venv/bin/python'), 'venv launch spelling')
+    for key in ('python_version', 'torch_version', 'numpy_version'):
+        string(runtime[key], key)
+    binary_ref = reference(canonical(runtime['binary']))
+    equal(binary_ref['sha256'], runtime['binary_sha256'], 'interpreter binary')
+    frozen.append(binary_ref)
+    launch_path = Path(runtime['launch_python'])
+    canonical(str(launch_path.parent))
+    require(launch_path.is_file() and launch_path.resolve() == Path(runtime['binary']), 'launch interpreter binary mismatch')
+    for key in ('torch_path', 'numpy_path'):
+        require(canonical(runtime[key]).is_file(), 'runtime origin absent')
+    exact(spec['root_run_specs'], ' '.join(r[0] for r in ROWS), 'root run specs')
+    run_specs = {}
+    for item in JOBS:
+        path = check_ref(spec['root_run_specs'][item['role']])
+        require(str(path) not in {str(p) for p in run_specs.values()}, 'duplicate run spec')
+        harness_spec = read_json(path)
+        equal(harness_spec, dict(root=str(root), manifest=str(manifest_path), output=str(output / item['role'] / 'run'),
+                                workers=1, jobs=[dict(name=item['role'], args=command(root, item['node'])[1:])]), 'one-job harness spec')
+        run_specs[item['role']] = path
+    positive = job['mode'] == 'qualify'
+    subject_name = 'cold-import-identity.json' if positive else 'cold-import-fault-witness.json'
+    names = {'cold-import-worker.json', subject_name, 'cold-import-observation.json', 'cold-import-stdout.log', 'cold-import-stderr.log'}
+    equal({p.name for p in directory.glob('cold-import-*')}, names, 'exclusive cold file inventory')
+    require(all((directory / name).is_file() and not (directory / name).is_symlink() for name in names), 'invalid cold file')
+    result_path = run / (role + '-result.json')
+    result = read_json(result_path)
+    exact(result, 'name exit_code seconds command log sha256 candidate_tree base_commit manifest_sha256 harness_sha256', 'root result')
+    equal(result['exit_code'], 0, 'root result exit')
+    require(type(result['seconds']) in (int, float) and math.isfinite(result['seconds']) and result['seconds'] > 0, 'root duration')
+    log = run / (role + '.log')
+    expected = dict(name=role, command=command(root, job['node']), log=str(log), sha256=reference(log)['sha256'],
+                    candidate_tree=manifest['candidate_tree'], base_commit=manifest['base_commit'],
+                    manifest_sha256=spec['manifest_ref']['sha256'], harness_sha256=HARNESS_SHA)
+    for key, value in expected.items():
+        equal(result[key], value, 'root result ' + key)
+    worker_path = directory / 'cold-import-worker.json'
+    worker_ref = reference(worker_path)
+    worker = read_json(worker_path)
+    check_worker(worker, job, root, runtime, manifest, spec['manifest_ref'], test_ref, seal['tools']['bac_cold_worker_identity.py'])
+    markers = re.findall(r'^BAC_COLD_WORKER_SHA256=(.*)$', log.read_text(encoding='utf-8'), flags=re.MULTILINE)
+    equal(markers, [worker_ref['sha256']], 'worker log marker')
+    subject_path = directory / subject_name
+    child = read_json(subject_path)
+    exact(child, COMMON + ' ' + (POSITIVE if positive else FAULT), 'child')
+    for key in ('pid', 'ppid'):
+        integer(child[key], 1, key)
+    require(child['pid'] not in (worker['pid'], worker['ppid']), 'child PID collision')
+    nonce = child['nonce']
+    require(type(nonce) is str and re.fullmatch('[0-9a-f]{32}', nonce), 'invalid nonce')
+    argv = [runtime['launch_python'], '-I', '-c', probe, job['mode'], job['entry'], str(root), str(directory), nonce]
+    expected = dict(schema='cuda-core-cold-import-identity-v2' if positive else 'cuda-core-cold-import-fault-witness-v2',
+                    profile='linux-exec-cold-import-v2', role=role, mode=job['mode'], entry=job['entry'], ppid=worker['pid'],
+                    worker_ref=worker_ref, root=str(root), cwd=str(root), orig_argv=argv, proc_argv=argv,
+                    command_sha256=command_hash(argv), script_sha256=digest(probe.encode('utf-8')), manifest_ref=spec['manifest_ref'],
+                    test_ref=test_ref, base_commit=manifest['base_commit'], candidate_tree=manifest['candidate_tree'])
+    expected.update({key: runtime[key] for key in ('launch_python', 'binary', 'binary_sha256', 'python_version')})
+    for key, value in expected.items():
+        equal(child[key], value, 'child ' + key)
+    observation_path = directory / 'cold-import-observation.json'
+    observed = read_json(observation_path)
+    exact(observed, 'schema role mode entry nonce parent_pid child_pid worker_start_ticks worker_ref launch_argv command_sha256 '
+                    'script_sha256 subject_ref stdout_ref stderr_ref exitcode timed_out termination reaped seconds', 'observation')
+    expected = dict(schema='cuda-core-cold-import-observation-v2', role=role, mode=job['mode'], entry=job['entry'], nonce=nonce,
+                    parent_pid=worker['pid'], child_pid=child['pid'], worker_start_ticks=worker['start_ticks'], worker_ref=worker_ref,
+                    launch_argv=argv, command_sha256=child['command_sha256'], script_sha256=child['script_sha256'],
+                    subject_ref=reference(subject_path), stdout_ref=reference(directory / 'cold-import-stdout.log'),
+                    stderr_ref=reference(directory / 'cold-import-stderr.log'), exitcode=0 if positive else 1,
+                    timed_out=False, termination='none', reaped=True)
+    for key, value in expected.items():
+        equal(observed[key], value, 'observation ' + key)
+    duration(observed['seconds'])
+    if positive:
+        check_positive(child, allowed, runtime)
+    else:
+        check_fault(child, allowed, probe, directory / 'cold-import-stderr.log')
+    check_repository(root, manifest)
+    check_inventory(root, manifest)
+    for sealed_ref in frozen:
+        check_ref(sealed_ref)
+    equal({p.name for p in directory.glob('cold-import-*')}, names, 'final cold inventory')
+    require(launch_path.resolve() == Path(runtime['binary']), 'launch interpreter drift')
+    receipt = dict(schema='cuda-core-cold-import-custody-v2', status='COLD IMPORT POSITIVE VERIFIED' if positive else
+                   'COLD IMPORT EXPECTED REJECTION VERIFIED', role=role, mode=job['mode'], entry=job['entry'],
+                   spec_ref=reference(spec_path), root_run_spec_ref=reference(run_specs[role]), root_run_result_ref=reference(result_path),
+                   root_run_log_ref=reference(log), tool_seal_ref=spec['tool_seal_ref'], worker_ref=worker_ref,
+                   subject_ref=reference(subject_path), observation_ref=reference(observation_path), stdout_ref=observed['stdout_ref'],
+                   stderr_ref=observed['stderr_ref'], base_commit=manifest['base_commit'], candidate_tree=manifest['candidate_tree'],
+                   manifest_ref=spec['manifest_ref'], parent_pid=worker['pid'], child_pid=child['pid'],
+                   script_sha256=child['script_sha256'], command_sha256=child['command_sha256'], scope=SCOPE)
+    return receipt, directory / 'cold-import-custody.json'
+
+
+def verify(spec_path, role):
+    try:
+        receipt, destination = validated(spec_path, role)
+        with destination.open('x', encoding='utf-8') as stream:
+            stream.write(json.dumps(receipt, indent=2) + '\n')
+        return receipt
+    except (KeyError, IndexError, TypeError, OSError, SyntaxError) as error:
+        raise ValueError('invalid cold-import evidence: ' + str(error)) from error
+
+
+if __name__ == '__main__':
+    require(len(sys.argv) == 3, 'COLD_SPEC ROLE required')
+    print(json.dumps(verify(sys.argv[1], sys.argv[2]), indent=2))

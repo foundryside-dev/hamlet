@@ -1,0 +1,3561 @@
+{
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 723,
+              "path": "wave35-r115-changed-test-style/black-result.json",
+              "sha256": "6f4abc71eb56767b8161cd1aa8ea5d8a3d893892f1b3645f86baa2793c4c7227",
+              "type": "file"
+            },
+            {
+              "bytes": 55,
+              "path": "wave35-r115-changed-test-style/black.log",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+              "type": "file"
+            },
+            {
+              "bytes": 719,
+              "path": "wave35-r115-changed-test-style/ruff-result.json",
+              "sha256": "41ffe0e1bf722f73f1afe0f8dec2be08ce5b989b62251e17ce39a01f42a6c3b6",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r115-changed-test-style/ruff.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 0.4701058864593506,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-changed-test-style--black",
+          "log_paths": [
+            {
+              "bytes": 55,
+              "path": "wave35-r115-changed-test-style/black.log",
+              "root": "Q",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+            }
+          ],
+          "path": "wave35-r115-changed-test-style",
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 723,
+            "path": "wave35-r115-changed-test-style/black-result.json",
+            "root": "Q",
+            "sha256": "6f4abc71eb56767b8161cd1aa8ea5d8a3d893892f1b3645f86baa2793c4c7227"
+          },
+          "record_id": "black",
+          "result": {
+            "bytes": 723,
+            "path": "wave35-r115-changed-test-style/black-result.json",
+            "root": "Q",
+            "sha256": "6f4abc71eb56767b8161cd1aa8ea5d8a3d893892f1b3645f86baa2793c4c7227"
+          },
+          "spec": {
+            "bytes": 634,
+            "path": "wave35-r115-changed-test-style-spec.json",
+            "root": "Q",
+            "sha256": "335912e50fb87865f62804e3d13c29bd25a02d0124926c7c478474cb72f15198"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier_unavailable_reason": "Original static result has no dedicated verifier receipt; root disposition retained. No runtime qualification."
+        }
+      ],
+      "check": "wave35-r115-changed-test-style--black",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r115-changed-test-style--black"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 723,
+              "path": "wave35-r115-changed-test-style/black-result.json",
+              "sha256": "6f4abc71eb56767b8161cd1aa8ea5d8a3d893892f1b3645f86baa2793c4c7227",
+              "type": "file"
+            },
+            {
+              "bytes": 55,
+              "path": "wave35-r115-changed-test-style/black.log",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+              "type": "file"
+            },
+            {
+              "bytes": 719,
+              "path": "wave35-r115-changed-test-style/ruff-result.json",
+              "sha256": "41ffe0e1bf722f73f1afe0f8dec2be08ce5b989b62251e17ce39a01f42a6c3b6",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r115-changed-test-style/ruff.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 0.05388307571411133,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-changed-test-style--ruff",
+          "log_paths": [
+            {
+              "bytes": 19,
+              "path": "wave35-r115-changed-test-style/ruff.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            }
+          ],
+          "path": "wave35-r115-changed-test-style",
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 719,
+            "path": "wave35-r115-changed-test-style/ruff-result.json",
+            "root": "Q",
+            "sha256": "41ffe0e1bf722f73f1afe0f8dec2be08ce5b989b62251e17ce39a01f42a6c3b6"
+          },
+          "record_id": "ruff",
+          "result": {
+            "bytes": 719,
+            "path": "wave35-r115-changed-test-style/ruff-result.json",
+            "root": "Q",
+            "sha256": "41ffe0e1bf722f73f1afe0f8dec2be08ce5b989b62251e17ce39a01f42a6c3b6"
+          },
+          "spec": {
+            "bytes": 634,
+            "path": "wave35-r115-changed-test-style-spec.json",
+            "root": "Q",
+            "sha256": "335912e50fb87865f62804e3d13c29bd25a02d0124926c7c478474cb72f15198"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier_unavailable_reason": "Original static result has no dedicated verifier receipt; root disposition retained. No runtime qualification."
+        }
+      ],
+      "check": "wave35-r115-changed-test-style--ruff",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r115-changed-test-style--ruff"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r115-collection-spec.json",
+              "sha256": "4032fe37e043588d6c6150445904db6a069c97bda29119a6c58c1b2675952b36",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": null,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-collection-spec.json--unrun",
+          "path": "wave35-r115-collection-spec.json",
+          "planned_jobs": [
+            {
+              "args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "--collect-only",
+                "-q"
+              ],
+              "name": "collection"
+            }
+          ],
+          "process_custody": [],
+          "record_id": "unrun-template",
+          "spec": {
+            "bytes": 582,
+            "path": "wave35-r115-collection-spec.json",
+            "root": "Q",
+            "sha256": "4032fe37e043588d6c6150445904db6a069c97bda29119a6c58c1b2675952b36"
+          },
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Generated curriculum template not selected for this tests-only slice; no execution."
+        }
+      ],
+      "check": "wave35-r115-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r115-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r115-owned-spec.json",
+              "sha256": "2b3ad2ae3a67bc82db1053093827505089876541b7f91e3d5990ab3e680d4a17",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": null,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-owned-spec.json--unrun",
+          "path": "wave35-r115-owned-spec.json",
+          "planned_jobs": [
+            {
+              "args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "-q",
+                "-n",
+                "2",
+                "--dist",
+                "worksteal",
+                "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r115-owned"
+              ],
+              "name": "owned"
+            }
+          ],
+          "process_custody": [],
+          "record_id": "unrun-template",
+          "spec": {
+            "bytes": 707,
+            "path": "wave35-r115-owned-spec.json",
+            "root": "Q",
+            "sha256": "2b3ad2ae3a67bc82db1053093827505089876541b7f91e3d5990ab3e680d4a17"
+          },
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Generated curriculum template not selected for this tests-only slice; no execution."
+        }
+      ],
+      "check": "wave35-r115-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r115-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "path": "wave35-r115-peer-collection/peer-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r115-peer-collection/peer-collection/identity-controller.json",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e",
+              "type": "file"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r115-peer-collection/peer-collection-custody.json",
+              "sha256": "518c3f38a66886ddfaef3dc5f9cdb831a4786b3cbe951bf556bb596b3b3706b0",
+              "type": "file"
+            },
+            {
+              "bytes": 844,
+              "path": "wave35-r115-peer-collection/peer-collection-result.json",
+              "sha256": "50bf6afd5daf4b590d7415444c53da56e976b03961350709e58db7e8fd76b196",
+              "type": "file"
+            },
+            {
+              "bytes": 5965,
+              "path": "wave35-r115-peer-collection/peer-collection.log",
+              "sha256": "7727f4068ca87a302f775bfbe116d7184edfb735757f6683b346edebba8d7511",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.068060636520386,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-peer-collection--peer-collection",
+          "log_paths": [
+            {
+              "bytes": 5965,
+              "path": "wave35-r115-peer-collection/peer-collection.log",
+              "root": "Q",
+              "sha256": "7727f4068ca87a302f775bfbe116d7184edfb735757f6683b346edebba8d7511"
+            }
+          ],
+          "path": "wave35-r115-peer-collection",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r115-peer-collection/peer-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r115-peer-collection/peer-collection-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "518c3f38a66886ddfaef3dc5f9cdb831a4786b3cbe951bf556bb596b3b3706b0"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 844,
+            "path": "wave35-r115-peer-collection/peer-collection-result.json",
+            "root": "Q",
+            "sha256": "50bf6afd5daf4b590d7415444c53da56e976b03961350709e58db7e8fd76b196"
+          },
+          "record_id": "peer-collection",
+          "result": {
+            "bytes": 844,
+            "path": "wave35-r115-peer-collection/peer-collection-result.json",
+            "root": "Q",
+            "sha256": "50bf6afd5daf4b590d7415444c53da56e976b03961350709e58db7e8fd76b196"
+          },
+          "spec": {
+            "bytes": 592,
+            "path": "wave35-r115-peer-collection-spec.json",
+            "root": "Q",
+            "sha256": "cb3cc55966657753210f7d0fb56b6d8edd0bf3e94c7c69f960794393f17b25ef"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 646,
+            "path": "wave35-r115-peer-collection/peer-collection-custody.json",
+            "root": "Q",
+            "sha256": "518c3f38a66886ddfaef3dc5f9cdb831a4786b3cbe951bf556bb596b3b3706b0"
+          }
+        }
+      ],
+      "check": "wave35-r115-peer-collection--peer-collection",
+      "check_kind": "collection",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r115-peer-collection--peer-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r115-peer-focused"
+          ],
+          "counts": {
+            "passed": 3,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "path": "wave35-r115-peer-focused/peer-focused",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r115-peer-focused/peer-focused/identity-controller.json",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e",
+              "type": "file"
+            },
+            {
+              "bytes": 643,
+              "path": "wave35-r115-peer-focused/peer-focused-custody.json",
+              "sha256": "1c0fc039918ad00d8b3a22a6e4b938a5093527cc6bc0cde8c696a95bc97c4e36",
+              "type": "file"
+            },
+            {
+              "bytes": 965,
+              "path": "wave35-r115-peer-focused/peer-focused-result.json",
+              "sha256": "d26822f78336e94bf508ed96a84fb748b2fba7eb5027a453a23ec2a1ce14fcd7",
+              "type": "file"
+            },
+            {
+              "bytes": 773,
+              "path": "wave35-r115-peer-focused/peer-focused.log",
+              "sha256": "f3dccfa09088aa3fc10608f138668408bf9eb55491be7462167af4e80cdbab48",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.584706783294678,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-peer-focused--peer-focused",
+          "log_paths": [
+            {
+              "bytes": 773,
+              "path": "wave35-r115-peer-focused/peer-focused.log",
+              "root": "Q",
+              "sha256": "f3dccfa09088aa3fc10608f138668408bf9eb55491be7462167af4e80cdbab48"
+            }
+          ],
+          "path": "wave35-r115-peer-focused",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r115-peer-focused/peer-focused/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+            },
+            {
+              "bytes": 643,
+              "path": "wave35-r115-peer-focused/peer-focused-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "1c0fc039918ad00d8b3a22a6e4b938a5093527cc6bc0cde8c696a95bc97c4e36"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 965,
+            "path": "wave35-r115-peer-focused/peer-focused-result.json",
+            "root": "Q",
+            "sha256": "d26822f78336e94bf508ed96a84fb748b2fba7eb5027a453a23ec2a1ce14fcd7"
+          },
+          "record_id": "peer-focused",
+          "result": {
+            "bytes": 965,
+            "path": "wave35-r115-peer-focused/peer-focused-result.json",
+            "root": "Q",
+            "sha256": "d26822f78336e94bf508ed96a84fb748b2fba7eb5027a453a23ec2a1ce14fcd7"
+          },
+          "spec": {
+            "bytes": 716,
+            "path": "wave35-r115-peer-focused-spec.json",
+            "root": "Q",
+            "sha256": "616f6019a2499d1aa0836307052629311cef579bfac2bd7e267900c05eb0b4cd"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 643,
+            "path": "wave35-r115-peer-focused/peer-focused-custody.json",
+            "root": "Q",
+            "sha256": "1c0fc039918ad00d8b3a22a6e4b938a5093527cc6bc0cde8c696a95bc97c4e36"
+          }
+        }
+      ],
+      "check": "wave35-r115-peer-focused--peer-focused",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-peer-focused--peer-focused"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-peer-focused--peer-focused"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-peer-focused--peer-focused"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-peer-focused--peer-focused"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r115-peer-focused--peer-focused"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "python",
+            "-B",
+            "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+            "/workspace/bac-review-2026-11-01/qualification/wave35-r115-replay-poison-spec.json"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 1828,
+              "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+              "sha256": "7e87636e79c08d0a39c0c932e052c10d2f8bf3cfd7db761b26f797a3b1a801f0",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+          "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+          "process_custody": [],
+          "record": {
+            "bytes": 1828,
+            "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+            "root": "Q",
+            "sha256": "7e87636e79c08d0a39c0c932e052c10d2f8bf3cfd7db761b26f797a3b1a801f0"
+          },
+          "record_id": "recorded-attempt",
+          "result": {
+            "bytes": 1828,
+            "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+            "root": "Q",
+            "sha256": "7e87636e79c08d0a39c0c932e052c10d2f8bf3cfd7db761b26f797a3b1a801f0"
+          },
+          "started_at": null,
+          "status": "FAILED",
+          "verifier_unavailable_reason": "Retained nonruntime recorded action; no independent runtime qualification claimed."
+        }
+      ],
+      "check": "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+      "check_kind": "diagnostic",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        },
+        {
+          "bytes": 38090,
+          "path": "docs/remediation/bac/evidence/wave35-wip-20/named/Q/verify_bac_replay_spawn_identity.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        }
+      ],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            [
+              "python",
+              "-B",
+              "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+              "/workspace/bac-review-2026-11-01/qualification/wave35-r115-replay-poison-protocol-spec.json",
+              "0"
+            ],
+            [
+              "python",
+              "-B",
+              "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+              "/workspace/bac-review-2026-11-01/qualification/wave35-r115-replay-poison-protocol-spec.json"
+            ]
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 3319,
+              "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+              "sha256": "8708ccd01db446a038d21976450dcc4e90a3677381e23b65852a8f50b7c027cb",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": null,
+          "exit_code_unavailable_reason": "Aggregate record preserves two zero command exits but records no distinct aggregate process exit; none invented.",
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+          "observed_check_exit_codes": [
+            0,
+            0
+          ],
+          "observed_status": "PASS",
+          "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+          "process_custody": [],
+          "record": {
+            "bytes": 3319,
+            "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+            "root": "Q",
+            "sha256": "8708ccd01db446a038d21976450dcc4e90a3677381e23b65852a8f50b7c027cb"
+          },
+          "record_id": "aggregate-verification",
+          "started_at": null,
+          "status": "DIAGNOSTIC",
+          "verifier": {
+            "bytes": 3319,
+            "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+            "root": "Q",
+            "sha256": "8708ccd01db446a038d21976450dcc4e90a3677381e23b65852a8f50b7c027cb"
+          }
+        }
+      ],
+      "check": "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+      "check_kind": "diagnostic",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        },
+        {
+          "bytes": 38090,
+          "path": "docs/remediation/bac/evidence/wave35-wip-20/named/Q/verify_bac_replay_spawn_identity.py.txt",
+          "required_by": [
+            "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        }
+      ],
+      "status": "DIAGNOSTIC",
+      "terminal_attempt": "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_flat_recorded_rows_and_both_sample_apis",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_per_recorded_rows_and_both_sample_apis[global]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_per_recorded_rows_and_both_sample_apis[owned-generator]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_recurrent_direct_episode_and_sample",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_per_live_active_prefix_matches_serialized_rows",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_recurrent_qualified_readiness_and_sample[uniform]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_healthy_recurrent_qualified_readiness_and_sample[owned-generator-priority]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[recurrent]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_explicit_lineage_refuses_unrelated_reentry_and_allows_authentic_nesting",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_same_owner_clear_waits_until_real_sample_finishes",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_is_stale_after_same_owner_clear",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_is_one_use",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_per_prepared_restore_is_bound_to_issuing_owner",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_flat_prepared_restore_refuses_intervening_peer_operation",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_validated_replay_cannot_bless_stale_destination_width[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_validated_replay_cannot_bless_stale_destination_width[per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[flat-nonfinite]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[flat-illegal-successor]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-nonfinite]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-illegal-successor]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-priorities]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_mutated_validation_material_cannot_gain_prepared_authority[per-ids]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_public_material_constructor",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_replay_has_no_writable_payload_storage",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[fabricated-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[fabricated-per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[copied-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[copied-per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_prepared_handle_substitution_refuses_and_fresh_handle_publishes_once[reinitialized-per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_same_held_outer_lineage_prepares_and_installs_replay[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_same_held_outer_lineage_prepares_and_installs_replay[per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_held_outer_preparation_refuses_intervening_work[sibling-sample-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_held_outer_preparation_refuses_intervening_work[sibling-sample-per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_held_outer_preparation_refuses_intervening_work[owner-mutation-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_held_outer_preparation_refuses_intervening_work[owner-mutation-per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_reinitialized_authentic_handle_cannot_substitute_other_issued_material[per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[tensor-copy-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[tensor-copy-per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_replay_staging_fault_preserves_full_live_state_and_healthy_use[archive-copy-per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_per_generator_staging_fault_preserves_full_live_state_and_healthy_use",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_partial_replay_publication_quarantines_sample_prepare_install_and_clear[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_partial_replay_publication_quarantines_sample_prepare_install_and_clear[per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_installed_replay_owns_bytes_independent_of_input_and_retained_candidate[per]",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_owned_per_sampling_advances_only_its_transport_generator",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_recurrent_priority_sampling_advances_only_its_transport_generator",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_configured_per_uses_global_numpy_not_its_owned_generator",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_global_sample_primitives_advance_their_selected_ambient_stream",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r115-replay-healthy"
+          ],
+          "counts": {
+            "passed": 53,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "path": "wave35-r115-replay-healthy/replay-healthy",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r115-replay-healthy/replay-healthy/identity-controller.json",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e",
+              "type": "file"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r115-replay-healthy/replay-healthy-custody.json",
+              "sha256": "512d6e13f4f0e10b6dbc1c6a890e7e15b4204684b55e1816e1def9cc5518cf59",
+              "type": "file"
+            },
+            {
+              "bytes": 8387,
+              "path": "wave35-r115-replay-healthy/replay-healthy-result.json",
+              "sha256": "3911bf91ba437c5523f407c019a73da1b5aa867379a549ea5dc4b39a88a428d6",
+              "type": "file"
+            },
+            {
+              "bytes": 854,
+              "path": "wave35-r115-replay-healthy/replay-healthy.log",
+              "sha256": "3a47e188e5f6b1606d825c1fc4be118279a8646dc3ae378aa3082e73d7cf008d",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 6.374727964401245,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-replay-healthy--replay-healthy",
+          "log_paths": [
+            {
+              "bytes": 854,
+              "path": "wave35-r115-replay-healthy/replay-healthy.log",
+              "root": "Q",
+              "sha256": "3a47e188e5f6b1606d825c1fc4be118279a8646dc3ae378aa3082e73d7cf008d"
+            }
+          ],
+          "path": "wave35-r115-replay-healthy",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r115-replay-healthy/replay-healthy/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r115-replay-healthy/replay-healthy-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "512d6e13f4f0e10b6dbc1c6a890e7e15b4204684b55e1816e1def9cc5518cf59"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 8387,
+            "path": "wave35-r115-replay-healthy/replay-healthy-result.json",
+            "root": "Q",
+            "sha256": "3911bf91ba437c5523f407c019a73da1b5aa867379a549ea5dc4b39a88a428d6"
+          },
+          "record_id": "replay-healthy",
+          "result": {
+            "bytes": 8387,
+            "path": "wave35-r115-replay-healthy/replay-healthy-result.json",
+            "root": "Q",
+            "sha256": "3911bf91ba437c5523f407c019a73da1b5aa867379a549ea5dc4b39a88a428d6"
+          },
+          "spec": {
+            "bytes": 8344,
+            "path": "wave35-r115-replay-healthy-spec.json",
+            "root": "Q",
+            "sha256": "8664debe61a801c094958f043632f1ca32b83e023ce4e2620acceecad769097b"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 646,
+            "path": "wave35-r115-replay-healthy/replay-healthy-custody.json",
+            "root": "Q",
+            "sha256": "512d6e13f4f0e10b6dbc1c6a890e7e15b4204684b55e1816e1def9cc5518cf59"
+          }
+        }
+      ],
+      "check": "wave35-r115-replay-healthy--replay-healthy",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": true,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-replay-healthy--replay-healthy"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-replay-healthy--replay-healthy"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-replay-healthy--replay-healthy"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-replay-healthy--replay-healthy"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r115-replay-healthy--replay-healthy"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r115-replay-poison"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "path": "wave35-r115-replay-poison/replay-poison",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r115-replay-poison/replay-poison/identity-controller.json",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e",
+              "type": "file"
+            },
+            {
+              "bytes": 1073,
+              "path": "wave35-r115-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+              "sha256": "c5673ced731c8e6a4d1997d6829507766beea0e1420e4233f8663226316940dc",
+              "type": "file"
+            },
+            {
+              "bytes": 228,
+              "path": "wave35-r115-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+              "sha256": "0a69c253de9ce8c1d73500926561488b9ac23a2b991369ee9a4ddb4d2b3dad15",
+              "type": "file"
+            },
+            {
+              "bytes": 644,
+              "path": "wave35-r115-replay-poison/replay-poison-custody.json",
+              "sha256": "fed911b42433ae24521b08ed46b5b530fb7856dbc744e0a8c088103e71b6c95c",
+              "type": "file"
+            },
+            {
+              "bytes": 972,
+              "path": "wave35-r115-replay-poison/replay-poison-result.json",
+              "sha256": "db37ed9de197e0c84f23704583db1c54c2faf85f6ae12c28b09569297245dd7f",
+              "type": "file"
+            },
+            {
+              "bytes": 772,
+              "path": "wave35-r115-replay-poison/replay-poison.log",
+              "sha256": "d5f2122e32d0aa3a9421d1a0b6d70e97ba88a5ef306b1da308c88d46e1a0ac46",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.625677585601807,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-replay-poison--replay-poison",
+          "log_paths": [
+            {
+              "bytes": 772,
+              "path": "wave35-r115-replay-poison/replay-poison.log",
+              "root": "Q",
+              "sha256": "d5f2122e32d0aa3a9421d1a0b6d70e97ba88a5ef306b1da308c88d46e1a0ac46"
+            }
+          ],
+          "path": "wave35-r115-replay-poison",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r115-replay-poison/replay-poison/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+            },
+            {
+              "bytes": 644,
+              "path": "wave35-r115-replay-poison/replay-poison-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "fed911b42433ae24521b08ed46b5b530fb7856dbc744e0a8c088103e71b6c95c"
+            },
+            {
+              "bytes": 1073,
+              "path": "wave35-r115-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+              "role": "child",
+              "root": "Q",
+              "sha256": "c5673ced731c8e6a4d1997d6829507766beea0e1420e4233f8663226316940dc"
+            }
+          ],
+          "process_topology": "single_process",
+          "qualification_disposition": "Application assertion1PASS and generic custodyPASS; strict role argvFAILED. Not qualifying; same one node rerun under exact protocol separately.",
+          "record": {
+            "bytes": 972,
+            "path": "wave35-r115-replay-poison/replay-poison-result.json",
+            "root": "Q",
+            "sha256": "db37ed9de197e0c84f23704583db1c54c2faf85f6ae12c28b09569297245dd7f"
+          },
+          "record_id": "replay-poison",
+          "result": {
+            "bytes": 972,
+            "path": "wave35-r115-replay-poison/replay-poison-result.json",
+            "root": "Q",
+            "sha256": "db37ed9de197e0c84f23704583db1c54c2faf85f6ae12c28b09569297245dd7f"
+          },
+          "spec": {
+            "bytes": 722,
+            "path": "wave35-r115-replay-poison-spec.json",
+            "root": "Q",
+            "sha256": "82bd8add3c6cf225f811ca47d6c62669da4da01b64a0e3bb2955b7063a88e20b"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 644,
+            "path": "wave35-r115-replay-poison/replay-poison-custody.json",
+            "root": "Q",
+            "sha256": "fed911b42433ae24521b08ed46b5b530fb7856dbc744e0a8c088103e71b6c95c"
+          }
+        },
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r115-candidate.json",
+            "root": "W",
+            "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+          },
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "path": "wave35-r115-replay-poison-protocol/replay-poison",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison/identity-controller.json",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e",
+              "type": "file"
+            },
+            {
+              "bytes": 1529,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison/replay-spawn-custody-replay_poison.json",
+              "sha256": "66a813516e081ac4483cb01451d0165287965ae8ec5dbc7383cc3076f7ef201d",
+              "type": "file"
+            },
+            {
+              "bytes": 1073,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-identity-replay_poison.json",
+              "sha256": "a12e9e0aab52ad2e39b15d9b66037f9696529d492720c441b023d76b92a65cb0",
+              "type": "file"
+            },
+            {
+              "bytes": 228,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-observation-replay_poison.json",
+              "sha256": "53af758c911bef0b0ef00f8df3df9d76756edd30ad5d7e00b2f431de6e105415",
+              "type": "file"
+            },
+            {
+              "bytes": 644,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison-custody.json",
+              "sha256": "4130a1ddd50e798c3d9681f6c14b89b51067ed026a249af07b740431d9c6e539",
+              "type": "file"
+            },
+            {
+              "bytes": 912,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison-result.json",
+              "sha256": "7cbd2878bd6be21c2a34f8e241ad2c3a394d4811062ed721662f9f4ce459956c",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison.log",
+              "sha256": "3503d82d09071b0443aa0cb706670d66a38b83c0fb7a8d9f958e9854a0c316d5",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 7.457125902175903,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r115-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r115-replay-poison-protocol--replay-poison",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison.log",
+              "root": "Q",
+              "sha256": "3503d82d09071b0443aa0cb706670d66a38b83c0fb7a8d9f958e9854a0c316d5"
+            }
+          ],
+          "path": "wave35-r115-replay-poison-protocol",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+            },
+            {
+              "bytes": 644,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "4130a1ddd50e798c3d9681f6c14b89b51067ed026a249af07b740431d9c6e539"
+            },
+            {
+              "bytes": 1073,
+              "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-identity-replay_poison.json",
+              "role": "child",
+              "root": "Q",
+              "sha256": "a12e9e0aab52ad2e39b15d9b66037f9696529d492720c441b023d76b92a65cb0"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 912,
+            "path": "wave35-r115-replay-poison-protocol/replay-poison-result.json",
+            "root": "Q",
+            "sha256": "7cbd2878bd6be21c2a34f8e241ad2c3a394d4811062ed721662f9f4ce459956c"
+          },
+          "record_id": "replay-poison",
+          "result": {
+            "bytes": 912,
+            "path": "wave35-r115-replay-poison-protocol/replay-poison-result.json",
+            "root": "Q",
+            "sha256": "7cbd2878bd6be21c2a34f8e241ad2c3a394d4811062ed721662f9f4ce459956c"
+          },
+          "spec": {
+            "bytes": 666,
+            "path": "wave35-r115-replay-poison-protocol-spec.json",
+            "root": "Q",
+            "sha256": "7b42e4c15fa2704c845f558c7b6d24d64ddc44df714d90d322213317aee590b9"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 644,
+            "path": "wave35-r115-replay-poison-protocol/replay-poison-custody.json",
+            "root": "Q",
+            "sha256": "4130a1ddd50e798c3d9681f6c14b89b51067ed026a249af07b740431d9c6e539"
+          }
+        }
+      ],
+      "check": "wave35-r115-replay-poison-protocol--replay-poison",
+      "check_kind": "runtime",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r115-replay-poison-protocol--replay-poison",
+          "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+          "id": "spawn-identity-replay_poison",
+          "linkage_limitation": "Original child witness lacks literal attempt_id; exact spec/result/parent PID/source linkage is retained without rewriting the witness.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1073,
+            "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-identity-replay_poison.json",
+            "root": "Q",
+            "sha256": "a12e9e0aab52ad2e39b15d9b66037f9696529d492720c441b023d76b92a65cb0"
+          }
+        }
+      ],
+      "prior_attempt_check_id": "wave35-r115-replay-poison--replay-poison",
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": true,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        },
+        {
+          "bytes": 38090,
+          "path": "docs/remediation/bac/evidence/wave35-wip-20/named/Q/verify_bac_replay_spawn_identity.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        },
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        },
+        {
+          "bytes": 38090,
+          "path": "docs/remediation/bac/evidence/wave35-wip-20/named/Q/verify_bac_replay_spawn_identity.py.txt",
+          "required_by": [
+            "wave35-r115-replay-poison-protocol--replay-poison"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r115-replay-poison-protocol--replay-poison"
+    }
+  ],
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_manifest": {
+    "bytes": 205968,
+    "path": "wave35/r115-candidate.json",
+    "root": "W",
+    "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+  },
+  "candidate_tree": "88cc2e604e9fdbd6be612e57108f9411c5a1b474",
+  "component_id": "wave35-r115-peer-wait-history-v1",
+  "dependencies": [
+    {
+      "bytes": 2043,
+      "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "bytes": 6277,
+      "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "bytes": 2917,
+      "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 3032,
+      "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 38090,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20/named/Q/verify_bac_replay_spawn_identity.py.txt",
+      "required_by": [
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+    },
+    {
+      "bytes": 5224,
+      "path": "wave35-r115-capture.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "af4999a732be8729dd246af726e3374b8e8a50b720425ec3f4f4f13a41a0444f"
+    },
+    {
+      "bytes": 723,
+      "path": "wave35-r115-changed-test-style/black-result.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "6f4abc71eb56767b8161cd1aa8ea5d8a3d893892f1b3645f86baa2793c4c7227"
+    },
+    {
+      "bytes": 55,
+      "path": "wave35-r115-changed-test-style/black.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "bytes": 719,
+      "path": "wave35-r115-changed-test-style/ruff-result.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "41ffe0e1bf722f73f1afe0f8dec2be08ce5b989b62251e17ce39a01f42a6c3b6"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r115-changed-test-style/ruff.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 1350,
+      "path": "wave35-r115-changed-test-style-runner.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "27b5167bc4fee48975d52691e324f8816d4b5b66500d5b1c79d21265a5f705cd"
+    },
+    {
+      "bytes": 634,
+      "path": "wave35-r115-changed-test-style-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "335912e50fb87865f62804e3d13c29bd25a02d0124926c7c478474cb72f15198"
+    },
+    {
+      "bytes": 582,
+      "path": "wave35-r115-collection-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "4032fe37e043588d6c6150445904db6a069c97bda29119a6c58c1b2675952b36"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r115-owned-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "2b3ad2ae3a67bc82db1053093827505089876541b7f91e3d5990ab3e680d4a17"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-peer-collection/peer-collection/identity-controller.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r115-peer-collection/peer-collection-custody.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "518c3f38a66886ddfaef3dc5f9cdb831a4786b3cbe951bf556bb596b3b3706b0"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r115-peer-collection/peer-collection-result.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "50bf6afd5daf4b590d7415444c53da56e976b03961350709e58db7e8fd76b196"
+    },
+    {
+      "bytes": 5965,
+      "path": "wave35-r115-peer-collection/peer-collection.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "7727f4068ca87a302f775bfbe116d7184edfb735757f6683b346edebba8d7511"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r115-peer-collection-custody.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "518c3f38a66886ddfaef3dc5f9cdb831a4786b3cbe951bf556bb596b3b3706b0"
+    },
+    {
+      "bytes": 774,
+      "path": "wave35-r115-peer-collection-runner.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "74faf6a569e9a29595f9fc2124c47f4ffc1705a5a4e693a708ba39bdc7f5a9fb"
+    },
+    {
+      "bytes": 592,
+      "path": "wave35-r115-peer-collection-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "cb3cc55966657753210f7d0fb56b6d8edd0bf3e94c7c69f960794393f17b25ef"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-peer-focused/peer-focused/identity-controller.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 643,
+      "path": "wave35-r115-peer-focused/peer-focused-custody.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "1c0fc039918ad00d8b3a22a6e4b938a5093527cc6bc0cde8c696a95bc97c4e36"
+    },
+    {
+      "bytes": 965,
+      "path": "wave35-r115-peer-focused/peer-focused-result.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d26822f78336e94bf508ed96a84fb748b2fba7eb5027a453a23ec2a1ce14fcd7"
+    },
+    {
+      "bytes": 773,
+      "path": "wave35-r115-peer-focused/peer-focused.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "f3dccfa09088aa3fc10608f138668408bf9eb55491be7462167af4e80cdbab48"
+    },
+    {
+      "bytes": 643,
+      "path": "wave35-r115-peer-focused-custody.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "1c0fc039918ad00d8b3a22a6e4b938a5093527cc6bc0cde8c696a95bc97c4e36"
+    },
+    {
+      "bytes": 895,
+      "path": "wave35-r115-peer-focused-runner.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "98aeef130376248c1d46627e8b9a432daa10901fbb4483682a1857757a8f8a0d"
+    },
+    {
+      "bytes": 716,
+      "path": "wave35-r115-peer-focused-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "616f6019a2499d1aa0836307052629311cef579bfac2bd7e267900c05eb0b4cd"
+    },
+    {
+      "bytes": 1828,
+      "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "7e87636e79c08d0a39c0c932e052c10d2f8bf3cfd7db761b26f797a3b1a801f0"
+    },
+    {
+      "bytes": 3319,
+      "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "8708ccd01db446a038d21976450dcc4e90a3677381e23b65852a8f50b7c027cb"
+    },
+    {
+      "bytes": 16170,
+      "path": "wave35-r115-peer-owner-selection.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "a3f6a88740fc3a71154f215f60806c302e945cc62f78a053bd2a2885542e9413"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-replay-healthy/replay-healthy/identity-controller.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r115-replay-healthy/replay-healthy-custody.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "512d6e13f4f0e10b6dbc1c6a890e7e15b4204684b55e1816e1def9cc5518cf59"
+    },
+    {
+      "bytes": 8387,
+      "path": "wave35-r115-replay-healthy/replay-healthy-result.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "3911bf91ba437c5523f407c019a73da1b5aa867379a549ea5dc4b39a88a428d6"
+    },
+    {
+      "bytes": 854,
+      "path": "wave35-r115-replay-healthy/replay-healthy.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "3a47e188e5f6b1606d825c1fc4be118279a8646dc3ae378aa3082e73d7cf008d"
+    },
+    {
+      "bytes": 8109,
+      "path": "wave35-r115-replay-healthy-runner.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "e13a5bdc1a72920bab44cf76df2d2e40c4933ef7cad8cfc505a466362c79d2df"
+    },
+    {
+      "bytes": 8344,
+      "path": "wave35-r115-replay-healthy-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "8664debe61a801c094958f043632f1ca32b83e023ce4e2620acceecad769097b"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-replay-poison/replay-poison/identity-controller.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 1073,
+      "path": "wave35-r115-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "c5673ced731c8e6a4d1997d6829507766beea0e1420e4233f8663226316940dc"
+    },
+    {
+      "bytes": 228,
+      "path": "wave35-r115-replay-poison/replay-poison/spawn-observation-replay_poison.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "0a69c253de9ce8c1d73500926561488b9ac23a2b991369ee9a4ddb4d2b3dad15"
+    },
+    {
+      "bytes": 644,
+      "path": "wave35-r115-replay-poison/replay-poison-custody.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "fed911b42433ae24521b08ed46b5b530fb7856dbc744e0a8c088103e71b6c95c"
+    },
+    {
+      "bytes": 972,
+      "path": "wave35-r115-replay-poison/replay-poison-result.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "db37ed9de197e0c84f23704583db1c54c2faf85f6ae12c28b09569297245dd7f"
+    },
+    {
+      "bytes": 772,
+      "path": "wave35-r115-replay-poison/replay-poison.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d5f2122e32d0aa3a9421d1a0b6d70e97ba88a5ef306b1da308c88d46e1a0ac46"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/identity-controller.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d17308e3016c8f33a03e9a6d4cdc13294c3808660e0a4323a20efd96c2b5365e"
+    },
+    {
+      "bytes": 1529,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/replay-spawn-custody-replay_poison.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "66a813516e081ac4483cb01451d0165287965ae8ec5dbc7383cc3076f7ef201d"
+    },
+    {
+      "bytes": 1073,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-identity-replay_poison.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "a12e9e0aab52ad2e39b15d9b66037f9696529d492720c441b023d76b92a65cb0"
+    },
+    {
+      "bytes": 228,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison/spawn-observation-replay_poison.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "53af758c911bef0b0ef00f8df3df9d76756edd30ad5d7e00b2f431de6e105415"
+    },
+    {
+      "bytes": 644,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison-custody.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "4130a1ddd50e798c3d9681f6c14b89b51067ed026a249af07b740431d9c6e539"
+    },
+    {
+      "bytes": 912,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison-result.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "7cbd2878bd6be21c2a34f8e241ad2c3a394d4811062ed721662f9f4ce459956c"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r115-replay-poison-protocol/replay-poison.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "3503d82d09071b0443aa0cb706670d66a38b83c0fb7a8d9f958e9854a0c316d5"
+    },
+    {
+      "bytes": 838,
+      "path": "wave35-r115-replay-poison-protocol-runner.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "2adaba36cc6a85e73ff2e44d1b78c71362af59613d5559f702dac94bdea6c567"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r115-replay-poison-protocol-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "7b42e4c15fa2704c845f558c7b6d24d64ddc44df714d90d322213317aee590b9"
+    },
+    {
+      "bytes": 902,
+      "path": "wave35-r115-replay-poison-runner.log",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "8f210191b1222ccb83e1f1b8cf6ecab7453ecd8f1a010ef7b86367b645418034"
+    },
+    {
+      "bytes": 722,
+      "path": "wave35-r115-replay-poison-spec.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "82bd8add3c6cf225f811ca47d6c62669da4da01b64a0e3bb2955b7063a88e20b"
+    },
+    {
+      "bytes": 205968,
+      "path": "wave35/r115-candidate.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "2c7948648d17c5527ebe73e3a839724ac21908ce5d8da9c788ee9e1e938db692"
+    },
+    {
+      "bytes": 16596,
+      "path": "wave35/r115-root-checks.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "fe1e238784b6a51b04a7dc9db9e904c069bdbb9592c094130861063933d3e824"
+    },
+    {
+      "bytes": 3226,
+      "path": "wave35/r115-fixture-resource-preflight.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "5fefa25eb9d5bb02df692a4fa8b7c1cd5b6106814175686df3e781cadf10d479"
+    },
+    {
+      "bytes": 6239,
+      "path": "evidence-management/r115-preparation/r115-full-base-candidate.patch",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "b05c3f3c928111490c90df262ecd167f9633b6651ac6ab111aff85618cc27dc1"
+    },
+    {
+      "bytes": 10977,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-PLAN-REVIEW.md",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "ad226cbd95ddb0e36a19631e79fef25512f633989da4cff92714b50d2bc94d42"
+    },
+    {
+      "bytes": 6435,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION.md",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "b4f70bb5695255003fd61620d49018c372cab9cd3ca85b67923394c692c8023d"
+    },
+    {
+      "bytes": 7758,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION-REVIEW.md",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "85507bec29dd5c944ce59511676f5b2c0834416ab7bf5a3cefff811a28a1ec51"
+    },
+    {
+      "bytes": 1933,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-FORMAT-ADDENDUM.md",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "e94a9aec6b30eed13bd51d78f0e8f4b425315d9bb2f37b1362f48d8e533d9c74"
+    },
+    {
+      "bytes": 6263,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR.patch",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "ad211f6db426be0b73cf979d957e5d9ddf52dad8aae708b28c01092e6b736277"
+    },
+    {
+      "bytes": 1382890,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "authenticated_published_helper_catalog",
+      "root": "R",
+      "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd"
+    },
+    {
+      "bytes": 1691458,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "authenticated_published_helper_catalog",
+      "root": "R",
+      "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+    },
+    {
+      "bytes": 14111,
+      "path": "evidence-management/r115-preparation/r115-inventory-v1.json",
+      "required_by": [
+        "wave35-r115-changed-test-style--black",
+        "wave35-r115-changed-test-style--ruff",
+        "wave35-r115-collection-spec.json--unrun",
+        "wave35-r115-owned-spec.json--unrun",
+        "wave35-r115-peer-collection--peer-collection",
+        "wave35-r115-peer-focused--peer-focused",
+        "wave35-r115-peer-owner-custody-attempt-1-failure.json--recorded-attempt",
+        "wave35-r115-peer-owner-custody-verification-v2.json--aggregate-verification",
+        "wave35-r115-replay-healthy--replay-healthy",
+        "wave35-r115-replay-poison-protocol--replay-poison"
+      ],
+      "role": "closed_descendant_inventory",
+      "root": "W",
+      "sha256": "05a826703eb28de8dceecdb7c9d121130622ff8623996800427ea76eb5c729b3"
+    }
+  ],
+  "excluded_work": [
+    "R114 cold-tool grant and R115 cold-app grant are later independent work; not selected.",
+    "No new cold tool bodies or subsequent source/result namespace included."
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "08ec12297cad10b4369cd370e2c4fb161ad47d60"
+  },
+  "helper_aliases": [
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 2043,
+        "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+        "root": "R",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 6277,
+        "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+        "root": "R",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 2917,
+        "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+        "root": "R",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 3032,
+        "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+        "root": "R",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 38090,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/named/Q/verify_bac_replay_spawn_identity.py.txt",
+        "root": "R",
+        "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "support",
+      "path": "wave35-r115-capture.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-changed-test-style",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-changed-test-style-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-changed-test-style-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-collection-spec.json",
+      "round": 115,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-owned-spec.json",
+      "round": 115,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-collection",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-collection-custody.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-collection-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-collection-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-focused",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-focused-custody.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-focused-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-focused-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-owner-custody-attempt-1-failure.json",
+      "round": 115,
+      "status": "FAILED"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-peer-owner-custody-verification-v2.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-peer-owner-selection.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-replay-healthy",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-healthy-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-healthy-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-replay-poison",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r115-replay-poison-protocol",
+      "round": 115,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-protocol-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-protocol-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-runner.log",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r115-replay-poison-spec.json",
+      "round": 115,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_start": 115,
+  "inventory": {
+    "bytes": 14111,
+    "path": "evidence-management/r115-preparation/r115-inventory-v1.json",
+    "root": "W",
+    "sha256": "05a826703eb28de8dceecdb7c9d121130622ff8623996800427ea76eb5c729b3"
+  },
+  "overlap_accounting": {
+    "count_rule": "53healthy+1terminalisolated=54; focused3, initial poison1, collection and prior rounds add zero unique coverage.",
+    "focused_passed_overlap": 3,
+    "healthy": 53,
+    "initial_poison_passed_overlap": 1,
+    "initial_poison_strict_custody": "FAILED",
+    "runtime_unique_failed": 0,
+    "runtime_unique_passed": 54,
+    "terminal_isolated_poison": 1,
+    "terminal_poison_generic_and_strict": "PASS"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "predecessor_catalog": {
+    "manifest": {
+      "bytes": 1382890,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+      "root": "R",
+      "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd"
+    },
+    "selection_plan": {
+      "bytes": 1691458,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+      "root": "R",
+      "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+    }
+  },
+  "remaining": [
+    "Cold-import proof",
+    "B6/parent/recurrent/runner integration",
+    "Actual CUDA/access/topology",
+    "Global15mypy,coverage>=70/full/default/slow/learning/final design+implementation reviews/exact finalCI"
+  ],
+  "reviews": [],
+  "root_disposition": {
+    "bytes": 16596,
+    "path": "wave35/r115-root-checks.json",
+    "root": "W",
+    "sha256": "fe1e238784b6a51b04a7dc9db9e904c069bdbb9592c094130861063933d3e824"
+  },
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Closed R115 peer-wait tests-only history; actual candidate identity retained. No WIP21 terminal or selector seal, current-live-source equivalence, package-count change, B/programme/CUDA acceptance.",
+  "series": "wave35",
+  "source_delta": {
+    "bytes": 6239,
+    "path": "evidence-management/r115-preparation/r115-full-base-candidate.patch",
+    "root": "W",
+    "sha256": "b05c3f3c928111490c90df262ecd167f9633b6651ac6ab111aff85618cc27dc1"
+  },
+  "source_retention": "Opaque Git base-to-candidate patch only; no application body inspected or execution/source copy created. Concurrent later cold-proof test edits excluded.",
+  "status": "CLOSED BOUNDED54PASS; PRIOR STRICT ARGVFAIL RETAINED",
+  "supporting_reviews": [
+    {
+      "bytes": 10977,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-PLAN-REVIEW.md",
+      "root": "W",
+      "sha256": "ad226cbd95ddb0e36a19631e79fef25512f633989da4cff92714b50d2bc94d42"
+    },
+    {
+      "bytes": 6435,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION.md",
+      "root": "W",
+      "sha256": "b4f70bb5695255003fd61620d49018c372cab9cd3ca85b67923394c692c8023d"
+    },
+    {
+      "bytes": 7758,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "85507bec29dd5c944ce59511676f5b2c0834416ab7bf5a3cefff811a28a1ec51"
+    },
+    {
+      "bytes": 1933,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-FORMAT-ADDENDUM.md",
+      "root": "W",
+      "sha256": "e94a9aec6b30eed13bd51d78f0e8f4b425315d9bb2f37b1362f48d8e533d9c74"
+    }
+  ],
+  "terminal_historical_round": 115
+}

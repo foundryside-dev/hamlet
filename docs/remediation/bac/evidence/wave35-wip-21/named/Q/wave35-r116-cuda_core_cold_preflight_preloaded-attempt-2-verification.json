@@ -1,0 +1,30 @@
+[
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:41:13.635733+00:00",
+    "end": "2026-11-14T05:41:13.834934+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"job\": \"cuda_core_cold_preflight_preloaded\",\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"exit_code\": 0,\n  \"counts\": {\n    \"passed\": 1,\n    \"skipped\": 0,\n    \"xfailed\": 0,\n    \"xpassed\": 0,\n    \"warnings\": 0\n  },\n  \"wall_seconds\": 7.806808695997461,\n  \"source_guards\": 819,\n  \"process_identities\": 1,\n  \"config_digests\": 573,\n  \"protected_artifacts\": 13,\n  \"worktree_registry_records\": 14,\n  \"worktrees_available\": 1,\n  \"source_index_import_threads_fixture_custody\": \"PASS\",\n  \"scope\": \"Only this named executable evidence; no package release or whole-BAC completion implied\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_cold_import_identity.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2-spec.json",
+      "cuda_core_cold_preflight_preloaded"
+    ],
+    "start": "2026-11-14T05:41:13.835016+00:00",
+    "end": "2026-11-14T05:41:14.683972+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"schema\": \"cuda-core-cold-import-custody-v2\",\n  \"status\": \"COLD IMPORT EXPECTED REJECTION VERIFIED\",\n  \"role\": \"cuda_core_cold_preflight_preloaded\",\n  \"mode\": \"preflight_preloaded\",\n  \"entry\": \"core\",\n  \"spec_ref\": {\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2-spec.json\",\n    \"bytes\": 2973,\n    \"sha256\": \"096653144a482a6eba057200a7359aaf4eac8b93645413ba66674d4d39faf247\"\n  },\n  \"root_run_spec_ref\": {\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-spec.json\",\n    \"bytes\": 774,\n    \"sha256\": \"e1a330021e47f5aa3b9a428b5d1377ea617ec3fe727d7036cfccb42db368e041\"\n  },\n  \"root_run_result_ref\": {\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded-result.json\",\n    \"bytes\": 1029,\n    \"sha256\": \"8ea551abf44bcb0381f2321444f260274e63ad63e287aadd194a6cea023ddaa5\"\n  },\n  \"root_run_log_ref\": {\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded.log\",\n    \"bytes\": 650,\n    \"sha256\": \"ebcfb7cd8b649aa786446715f33c7bd15b59fc08bc9c573ffa5d7fbd103ca850\"\n  },\n  \"tool_seal_ref\": {\n    \"path\": \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/root-tool-seal-v3.json\",\n    \"bytes\": 2109,\n    \"sha256\": \"cf2c3dc9db1aec4e46fc1a384c4aad074ca62d804843619d71a7af1b60f18ee0\"\n  },\n  \"worker_ref\": {\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-worker.json\",\n    \"bytes\": 2229,\n    \"sha256\": \"fb0762fcbd66b4c83ee2d86c8880627111d4db84435fbe5dc8fdeab6a120fe32\"\n  },\n  \"subject_ref\": {\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-fault-witness.json\",\n    \"bytes\": 46366,\n    \"sha256\": \"f55b56c6f65640d441a7dd2fe4b9d9e4f50f4d517d7625f8c9e5d20e249ce66e\"\n  },\n  \"observation_ref\": {\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-observation.json\",\n    \"bytes\": 23598,\n    \"sha256\": \"91b5e3107493e9e70d29d386423c1ae579d859b55204938c8b23b1c6195fd440\"\n  },\n  \"stdout_ref\": {\n    \"bytes\": 0,\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-stdout.log\",\n    \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n  },\n  \"stderr_ref\": {\n    \"bytes\": 306,\n    \"path\": \"/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-stderr.log\",\n    \"sha256\": \"8f0423852aa5ff7a4a630076728892fa583795d74a4e6b8cb9bdd9a95dd7d20b\"\n  },\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"manifest_ref\": {\n    \"path\": \"/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json\",\n    \"bytes\": 206037,\n    \"sha256\": \"d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f\"\n  },\n  \"parent_pid\": 174876,\n  \"child_pid\": 174923,\n  \"script_sha256\": \"449a01b27740c7744f9e44e4f86beaf7acf56f0fa646609e43e0588d30093705\",\n  \"command_sha256\": \"d495b4d8b678e09efaacc87d47e5d1496fe84ad4b5a82a809b9f6508dffc3061\",\n  \"scope\": \"CPU cold-import/canonical-gate protocol only; no GPU hardware, producer leaf, post-poison, B6/R0 or whole-programme qualification.\"\n}\n",
+    "stderr": ""
+  }
+]

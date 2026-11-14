@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-reference-spec.json"
+  ],
+  "start": "2026-11-14T05:43:44.480570+00:00",
+  "end": "2026-11-14T05:43:51.224576+00:00",
+  "seconds": 6.744011684000725,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-invocation-phase-reference-dispatch.log",
+  "sha256": "ece55f8f9c64c74f43f3c179a7b4435e60995536d5860fab4fad1afcb5c51f4c",
+  "spec_sha256": "035363e039f6f66c35811a30c16bb856fd5988777d2e3ee36dcec2290cc2e985"
+}

@@ -1,0 +1,124 @@
+"""Independent inert structural/reference adversarial probes; no app imports."""
+import copy
+import hashlib
+import importlib.util
+import os
+from pathlib import Path
+
+import pytest
+
+SOURCE = Path('/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py')
+
+
+@pytest.fixture
+def protocol():
+    spec = importlib.util.spec_from_file_location('independent_protocol', SOURCE)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.fixture
+def ref(tmp_path):
+    target = tmp_path / 'inert'
+    target.write_bytes(b'independent inert fixture')
+    return {'path': str(target), 'bytes': target.stat().st_size,
+            'sha256': hashlib.sha256(target.read_bytes()).hexdigest()}
+
+
+@pytest.fixture
+def result(ref):
+    return {'schema': 'bac-hardware-v1', 'kind': 'job-result', 'attempt_id': 'attempt', 'job_id': 'job',
+            'spec': ref, 'disposition': 'successful', 'exit_code': 0, 'signal': 0, 'reason': '',
+            'start': '2026-11-14T01:00:00.000000Z',
+            'end': {'state': 'measured', 'value': '2026-11-14T01:00:01.000000Z', 'reason': ''},
+            'elapsed_ns': {'state': 'measured', 'value': 1000000000, 'reason': ''},
+            'command': ref, 'log': ref, 'collected_ids': ['inert::case'],
+            'outcomes': [{'case_id': 'inert::case', 'setup': 'passed', 'call': 'passed', 'teardown': 'passed', 'evidence': [ref]}],
+            'process_records': [ref], 'obligation_records': [ref], 'source_witnesses': [ref], 'inventory': [ref]}
+
+
+def test_independent_complete_result(protocol, result):
+    protocol.validate_record('job-result', result)
+
+
+@pytest.mark.parametrize('mutation', [
+    lambda x: x.update(exit_code=True),
+    lambda x: x.update(signal=False),
+    lambda x: x.update(schema='bac-hardware-v0'),
+    lambda x: x.update(extra=1),
+    lambda x: x['outcomes'].append(copy.deepcopy(x['outcomes'][0])),
+    lambda x: x['collected_ids'].append('inert::case'),
+    lambda x: x['outcomes'][0].update(call='skipped'),
+    lambda x: x['end'].update(value='2026-11-14T00:59:59.000000Z'),
+    lambda x: x['elapsed_ns'].update(value=float('nan')),
+    lambda x: x['spec'].update(bytes=True),
+    lambda x: x['spec'].update(sha256='0' * 64),
+    lambda x: x['spec'].update(path='/tmp/../escape'),
+])
+def test_adversarial_result_mutations_refuse(protocol, result, mutation):
+    mutation(result)
+    with pytest.raises(ValueError):
+        protocol.validate_record('job-result', result)
+
+
+@pytest.mark.parametrize('mode', ['leaf', 'parent', 'fifo', 'directory'])
+def test_unsafe_reference_forms(protocol, ref, tmp_path, mode):
+    target = tmp_path / 'unsafe'
+    if mode == 'leaf':
+        target.symlink_to(ref['path'])
+    elif mode == 'parent':
+        target.symlink_to(tmp_path, target_is_directory=True)
+        target /= 'inert'
+    elif mode == 'fifo':
+        os.mkfifo(target)
+    else:
+        target.mkdir()
+    with pytest.raises(ValueError):
+        protocol.file_reference(target)
+
+
+def test_reference_parent_replacement_during_hash_rejected(protocol, tmp_path, monkeypatch):
+    parent = tmp_path / 'parent'
+    parent.mkdir()
+    target = parent / 'artifact'
+    target.write_bytes(b'original')
+    old_read = protocol.os.read
+    changed = False
+
+    def replacing_read(fd, size):
+        nonlocal changed
+        data = old_read(fd, size)
+        if not changed:
+            changed = True
+            parent.rename(tmp_path / 'retained-original-parent')
+            parent.mkdir()
+            target.write_bytes(b'replacement')
+        return data
+
+    monkeypatch.setattr(protocol.os, 'read', replacing_read)
+    with pytest.raises(ValueError):
+        protocol.file_reference(target)
+
+
+@pytest.mark.parametrize('disposition', ['unrun', 'refused'])
+def test_never_run_result_cannot_claim_successful_execution(protocol, result, disposition):
+    result.update(disposition=disposition, reason='not executed')
+    with pytest.raises(ValueError):
+        protocol.validate_record('job-result', result)
+
+
+def test_source_freeze_end_cannot_precede_start(protocol, ref):
+    value = {'schema': 'bac-hardware-v1', 'kind': 'source-freeze', 'authorized_root': '/inert/source',
+             'grant': ref, 'start': '2026-11-14T02:00:00.000000Z',
+             'end': {'state': 'measured', 'value': '2026-11-14T01:00:00.000000Z', 'reason': ''},
+             'no_writer_barrier': True, 'includes_untracked': True, 'index_lock': '/inert/index.lock', 'retention': 'inert'}
+    with pytest.raises(ValueError):
+        protocol.validate_record('source-freeze', value)
+
+
+def test_missing_case_validator_never_satisfies(protocol, ref):
+    value = {'id': 'obligation', 'disposition': 'satisfied', 'reason': '', 'contract': ref,
+             'validator': ref, 'evidence': [ref], 'validator_receipt': []}
+    with pytest.raises(ValueError):
+        protocol.validate_record('obligation-disposition', value)

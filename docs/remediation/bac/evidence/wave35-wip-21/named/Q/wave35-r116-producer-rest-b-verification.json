@@ -1,0 +1,16 @@
+[
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-producer-rest-b-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:44:31.448482+00:00",
+    "end": "2026-11-14T05:44:31.631158+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"job\": \"producer-rest-b\",\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"exit_code\": 0,\n  \"counts\": {\n    \"passed\": 408,\n    \"skipped\": 0,\n    \"xfailed\": 0,\n    \"xpassed\": 0,\n    \"warnings\": 0\n  },\n  \"wall_seconds\": 8.08449387550354,\n  \"source_guards\": 819,\n  \"process_identities\": 1,\n  \"config_digests\": 573,\n  \"protected_artifacts\": 13,\n  \"worktree_registry_records\": 14,\n  \"worktrees_available\": 1,\n  \"source_index_import_threads_fixture_custody\": \"PASS\",\n  \"scope\": \"Only this named executable evidence; no package release or whole-BAC completion implied\"\n}\n",
+    "stderr": ""
+  }
+]

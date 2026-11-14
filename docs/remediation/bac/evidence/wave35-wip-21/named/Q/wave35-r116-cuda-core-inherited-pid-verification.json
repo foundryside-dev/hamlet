@@ -1,0 +1,30 @@
+[
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:44:32.835155+00:00",
+    "end": "2026-11-14T05:44:32.990854+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"job\": \"cuda-core-inherited-pid\",\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"exit_code\": 0,\n  \"counts\": {\n    \"passed\": 1,\n    \"skipped\": 0,\n    \"xfailed\": 0,\n    \"xpassed\": 0,\n    \"warnings\": 0\n  },\n  \"wall_seconds\": 8.251288652420044,\n  \"source_guards\": 819,\n  \"process_identities\": 1,\n  \"config_digests\": 573,\n  \"protected_artifacts\": 13,\n  \"worktree_registry_records\": 14,\n  \"worktrees_available\": 1,\n  \"source_index_import_threads_fixture_custody\": \"PASS\",\n  \"scope\": \"Only this named executable evidence; no package release or whole-BAC completion implied\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:44:32.990928+00:00",
+    "end": "2026-11-14T05:44:33.430672+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED\",\n  \"job\": \"cuda-core-inherited-pid\",\n  \"case\": \"cuda_core_inherited_pid\",\n  \"expected_message\": \"cuda core inherited pid gates fail closed\",\n  \"parent_job_exit_code\": 0,\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"manifest_sha256\": \"d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f\",\n  \"spec_sha256\": \"f137fd2604da3bd1fc98b6ac539810e4eb8ae10f794d89b8be7bf87611e51a28\",\n  \"result_sha256\": \"0ba2447d1f8ec758bcaa47da7f59bd58144676b258f4b694d5d3678c6ce89627\",\n  \"controller_sha256\": \"0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3\",\n  \"child_receipt_sha256\": \"087122b3e5fbd1dcc1395db328d04724a4b1c7146724cb608d1f20815a6895e8\",\n  \"parent_observation_sha256\": \"a937febd9b9cb2d41575fed6b1dc38e8b7d52fafcc49b461b2a8363a14f39d00\",\n  \"verifier_sha256\": \"6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173\",\n  \"harness_sha256\": \"180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791\",\n  \"child_pid\": 176934,\n  \"parent_pid\": 176859,\n  \"child_ppid\": 176859,\n  \"torch\": \"2.11.0+cu130\",\n  \"threads\": 1,\n  \"interop_threads\": 5,\n  \"debug\": true,\n  \"source_guards\": 819,\n  \"configs\": 573,\n  \"artifacts\": 13,\n  \"absolute_time_unavailable_reason\": \"Producer records do not supply absolute UTC timestamps; none inferred.\",\n  \"scope\": \"This CPU CUDA-core control only; no CUDA hardware, B6, replay migration or whole-package qualification.\",\n  \"fork_guards\": [\n    {\n      \"trial\": \"admission\",\n      \"pid\": 177112,\n      \"ppid\": 176934,\n      \"profile\": \"linux-fork-inherited-guard-only-v1\",\n      \"identity_sha256\": \"50bc2d47a84986dc90b5b407671dce5060f1c651f6a82d098989d29edd5e2110\",\n      \"observation_sha256\": \"54672101f51f6b02e91ff85f7272d8c2c692ce2ba4f2184a0c06394af31db594\"\n    },\n    {\n      \"trial\": \"local\",\n      \"pid\": 177113,\n      \"ppid\": 176934,\n      \"profile\": \"linux-fork-inherited-guard-only-v1\",\n      \"identity_sha256\": \"f9801d1402fbe5c3639d46c0c0e759af401d7da02f0d824839edfe3b4575e553\",\n      \"observation_sha256\": \"c3303877576558d5694749c72039ca6ce25b23a6d3768b6d8726066ee2df899c\"\n    },\n    {\n      \"trial\": \"invocation\",\n      \"pid\": 177114,\n      \"ppid\": 176934,\n      \"profile\": \"linux-fork-inherited-guard-only-v1\",\n      \"identity_sha256\": \"a1a72f77ca1ab4cf8be88a8665a9d55d2fea451e364425c0aa9db64831710f68\",\n      \"observation_sha256\": \"82e87b0c9cf24bbe934d5b86cbe2a116c3932e1eaad9ef6d9c0d12c09f4bfc12\"\n    }\n  ],\n  \"fork_guard_limitations\": \"Linux inherited guard-only records: actual OS single-thread profile, no Torch profile or CUDA work. Zero-effect counters require independent production source review of guard ordering, all lock routes and state coverage.\"\n}\n",
+    "stderr": ""
+  }
+]

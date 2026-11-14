@@ -1,0 +1,102 @@
+{
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json",
+  "tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "files": 5,
+  "lines": 1564,
+  "reviewed_scopes": {
+    "T21": {
+      "files": 5,
+      "lines": 1564
+    },
+    "W34-CURRENT-CURRICULUM-CONSUMER-REPAIR": {
+      "files": 5,
+      "lines": 1478
+    },
+    "W35-T18e-REAL-COMPOSER-PRIMITIVE": {
+      "files": 3,
+      "lines": 4682
+    },
+    "W35-N1-NATIVE-LEARNING-RESET": {
+      "files": 5,
+      "lines": 2800
+    },
+    "W35-N1-OWNER-CONSUMER-ALIGNMENT": {
+      "files": 5,
+      "lines": 3228
+    },
+    "W35-N2-NONMODEL-LEARNING-RESET": {
+      "files": 5,
+      "lines": 1267
+    },
+    "W35-C-INITIAL-PARTICIPATION-ENV": {
+      "files": 5,
+      "lines": 4840
+    },
+    "W35-C-INITIAL-PARTICIPATION-POP": {
+      "files": 5,
+      "lines": 4951
+    },
+    "W35-R0-CPU-ADAM-RNG-PROFILE": {
+      "files": 5,
+      "lines": 2531
+    },
+    "W35-WORLD-LIFECYCLE-CURRENT-MIGRATION": {
+      "files": 5,
+      "lines": 4588
+    },
+    "W35-R0-CORE-PUBLIC-CONTRACT": {
+      "files": 1,
+      "lines": 240
+    },
+    "W35-NATIVE-RESTORE-CONFIGURATION": {
+      "files": 5,
+      "lines": 3427
+    },
+    "W35-NATIVE-V4-EXISTING-RESET-METADATA": {
+      "files": 5,
+      "lines": 2961
+    },
+    "W35-NATIVE-V4-EXISTING-SERVICE": {
+      "files": 5,
+      "lines": 3050
+    },
+    "W35-NATIVE-V4-EXISTING-UNIT-LOCAL": {
+      "files": 5,
+      "lines": 4834
+    },
+    "W35-R0-CUDA-CORE": {
+      "files": 2,
+      "lines": 4078
+    },
+    "W35-R0-CUDA-FLAT-PER-A": {
+      "files": 3,
+      "lines": 3007
+    },
+    "W35-R0-CUDA-ARCHIVE-CLONE-STABILITY": {
+      "files": 3,
+      "lines": 4114
+    },
+    "W35-R0-CUDA-FLAT-PER-B-ACTIVATION": {
+      "files": 5,
+      "lines": 4799
+    },
+    "T18e-peer-wait-observer-repair": {
+      "files": 3,
+      "lines": 3232
+    }
+  },
+  "source_guards": 819,
+  "config_changes": {},
+  "resources": {
+    "cpu": "400000 100000",
+    "affinity": 5,
+    "memory_current": "1133346816",
+    "memory_limit": "17179869184",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+    "workspace_free": 24661065728,
+    "TMPDIR": "/workspace/bac-review-2026-11-01/qualification/scratch/tmp-wave08-r3",
+    "threads": 1,
+    "CUDA": "unavailable/unqualified",
+    "processes": "    PID    PPID %CPU   RSS COMMAND\n      1       0  0.0   880 tail\n      2       1  0.0  1788 cloud-agent-log\n      3       2  0.0   264 caas-prefix-tra\n    125       1  0.1 35744 dockerd\n    176     125  0.4 21328 containerd\n    474       0  0.3 39160 codex\n   3862       1  0.0     0 git\n   5366       1  0.0     0 git\n  30837       1  0.0     0 git\n  52402       1  0.0     0 git\n  74707       1  0.0     0 bash\n  74708       1  0.0     0 bash\n  74716       1  0.0     0 bash\n  74717       1  0.0     0 bash\n  74725       1  0.0     0 bash\n  74726       1  0.0     0 bash\n  74734       1  0.0     0 bash\n  74735       1  0.0     0 bash\n  74743       1  0.0     0 bash\n  74744       1  0.0     0 bash\n  74752       1  0.0     0 bash\n  74753       1  0.0     0 bash\n  74761       1  0.0     0 bash\n  74762       1  0.0     0 bash\n  74770       1  0.0     0 bash\n  74771       1  0.0     0 bash\n  74779       1  0.0     0 bash\n  74780       1  0.0     0 bash\n  74788       1  0.0     0 bash\n  74789       1  0.0     0 bash\n  74797       1  0.0     0 bash\n  74798       1  0.0     0 bash\n  74806       1  0.0     0 bash\n  74807       1  0.0     0 bash\n  74815       1  0.0     0 bash\n  74816       1  0.0     0 bash\n  74824       1  0.0     0 bash\n  74825       1  0.0     0 bash\n  74833       1  0.0     0 bash\n  74834       1  0.0     0 bash\n  74842       1  0.0     0 bash\n  74843       1  0.0     0 bash\n  74851       1  0.0     0 bash\n  74852       1  0.0     0 bash\n  74861       1  0.0     0 bash\n  74862       1  0.0     0 bash\n  74870       1  0.0     0 bash\n  74871       1  0.0     0 bash\n  74879       1  0.0     0 bash\n  74880       1  0.0     0 bash\n  74888       1  0.0     0 bash\n  74889       1  0.0     0 bash\n  74897       1  0.0     0 bash\n  74898       1  0.0     0 bash\n  74906       1  0.0     0 bash\n  74908       1  0.0     0 bash\n  74915       1  0.0     0 bash\n  74916       1  0.0     0 bash\n  74924       1  0.0     0 bash\n  74925       1  0.0     0 bash\n  74933       1  0.0     0 bash\n  74934       1  0.0     0 bash\n  74942       1  0.0     0 bash\n  74943       1  0.0     0 bash\n  74951       1  0.0     0 bash\n  74953       1  0.0     0 bash\n  74960       1  0.0     0 bash\n  74961       1  0.0     0 bash\n  74969       1  0.0     0 bash\n  74970       1  0.0     0 bash\n  78388       1  0.0     0 git\n 113463       1  0.0     0 git\n 126763       1  0.0     0 git\n 136877       1  0.0     0 codex\n 136878       1  0.0     0 bash\n 146142       1  0.0     0 git\n 170116       1  0.0     0 git\n 170563       1  0.0     0 git\n 173379     474  4.8 15196 codex-linux-san\n 173381  173379  0.0   928 bwrap\n 173382  173381  0.0 14612 codex\n 173383  173382  0.0  1848 bash\n 173386  173383 38.8 19124 python\n 173454  173386  0.0  2484 ps\n"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-qualified-spec.json"
+  ],
+  "start": "2026-11-14T05:43:23.154900+00:00",
+  "end": "2026-11-14T05:43:30.631878+00:00",
+  "seconds": 7.476982661013608,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-qualified-dispatch.log",
+  "sha256": "c44e23305083a3b364c96004f0ebbe1021febaca7f8b3f2faab9bac8a86c238b",
+  "spec_sha256": "41daa077f6a5ec005682fdce1aaf41e33792cb22bc471d63a765b10f206dcee7"
+}

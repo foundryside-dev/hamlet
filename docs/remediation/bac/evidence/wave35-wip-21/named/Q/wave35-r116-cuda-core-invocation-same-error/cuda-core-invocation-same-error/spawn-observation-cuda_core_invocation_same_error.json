@@ -1,0 +1,1 @@
+{"exitcode": 0, "manifest_sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f", "message": "cuda core invocation_same_error fail closed", "parent_pid": 177039, "process_pid": 177189, "qualified": true, "queued_pid": 177189, "queued_ppid": 177039}

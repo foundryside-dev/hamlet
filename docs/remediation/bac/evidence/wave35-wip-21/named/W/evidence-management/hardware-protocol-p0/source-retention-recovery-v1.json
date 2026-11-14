@@ -1,0 +1,64 @@
+{
+  "at": "2026-11-14T05:54:30.142534+00:00",
+  "method": "Invert recorded exact edit buffers in memory; write only after match against previously recorded independent SHA256. No source execution, reruns, or original reference rewrites.",
+  "sources": [
+    {
+      "original_name": "bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/bac_hardware_protocol_v1.py.aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053.txt",
+      "bytes": 29909,
+      "sha256": "aaa0a2b7efc22aba0bc9fe6f581a4788c1617b44b406e580485db1ff2dd6b053",
+      "recovery_basis": "Inverse recorded review-fix edit buffer; exact freeze-v1/green-transport/red-review hash"
+    },
+    {
+      "original_name": "bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/bac_hardware_protocol_v1.py.f1bf74ff0a16399d18316462284554a80dc38aa07fd5293235ec0f5980c7fecd.txt",
+      "bytes": 27355,
+      "sha256": "f1bf74ff0a16399d18316462284554a80dc38aa07fd5293235ec0f5980c7fecd",
+      "recovery_basis": "Inverse recorded transport edit buffer; exact green-invariants-v1 hash"
+    },
+    {
+      "original_name": "bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/bac_hardware_protocol_v1.py.c16e86a959f7ff53d51a43b6eec62b71e3fabad4e1047523cfebb538a2d992a4.txt",
+      "bytes": 26125,
+      "sha256": "c16e86a959f7ff53d51a43b6eec62b71e3fabad4e1047523cfebb538a2d992a4",
+      "recovery_basis": "Inverse recorded invariants edit buffer; exact green-attempt-v1 and red-invariants-v1 hash"
+    },
+    {
+      "original_name": "test_bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/test_bac_hardware_protocol_v1.py.4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9.txt",
+      "bytes": 22158,
+      "sha256": "4375fc1c24e62438695eff860faf6f0197adfffefbb550b3fcbbbd98199a85d9",
+      "recovery_basis": "Inverse recorded review-fix test edit buffer; exact freeze-v1/green-transport-v1 hash"
+    },
+    {
+      "original_name": "test_bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/test_bac_hardware_protocol_v1.py.096aa309be3d34b2454acb68462e6ab4b34eccac8a9b68713b31aba5581b9772.txt",
+      "bytes": 20486,
+      "sha256": "096aa309be3d34b2454acb68462e6ab4b34eccac8a9b68713b31aba5581b9772",
+      "recovery_basis": "Inverse recorded transport fixture edit buffer; exact green-invariants-v1 hash"
+    },
+    {
+      "original_name": "test_bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/test_bac_hardware_protocol_v1.py.7b5b5db2569e4201fa66a4353b661f7996329315806f0d1b62baf92b1c3f0198.txt",
+      "bytes": 20461,
+      "sha256": "7b5b5db2569e4201fa66a4353b661f7996329315806f0d1b62baf92b1c3f0198",
+      "recovery_basis": "Inverse recorded candidate-path test correction; exact red-invariants-v1 hash"
+    },
+    {
+      "original_name": "test_bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/test_bac_hardware_protocol_v1.py.d061d6676f54a105db0ed612832fca006fcefb336e0929380997e4a19720c705.txt",
+      "bytes": 17194,
+      "sha256": "d061d6676f54a105db0ed612832fca006fcefb336e0929380997e4a19720c705",
+      "recovery_basis": "Inverse recorded invariant acceptance test additions; exact red-v3 and green-attempt-v1 hash"
+    },
+    {
+      "original_name": "test_bac_hardware_protocol_v1.py",
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/source-retention/test_bac_hardware_protocol_v1.py.4f0977389eebfe29ddea774d494f5e3e5a9bc68f85fd380f80341f5378a0a9b0.txt",
+      "bytes": 17032,
+      "sha256": "4f0977389eebfe29ddea774d494f5e3e5a9bc68f85fd380f80341f5378a0a9b0",
+      "recovery_basis": "Inverse recorded availability-fixture correction; exact before-v1 test hash"
+    }
+  ],
+  "unavailable_recorded_source_hashes": [],
+  "limitation": "Some early run metadata omitted per-attempt source hashes. This recovery proves all recorded source hashes and sequence-associated bytes, but does not retroactively supply missing original per-attempt custody records."
+}

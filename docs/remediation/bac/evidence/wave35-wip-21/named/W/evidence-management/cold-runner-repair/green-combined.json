@@ -1,0 +1,45 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-c",
+    "/dev/null",
+    "--rootdir",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--noconftest",
+    "-p",
+    "no:cacheprovider",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_cold_checks_locked.py",
+    "-q",
+    "--basetemp",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/green-fixtures"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "environment": {
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "start": "2026-11-14T05:36:05.755417+00:00",
+  "end": "2026-11-14T05:36:21.579440+00:00",
+  "seconds": 15.824031159994774,
+  "exit_code": 0,
+  "stdout": "........................................................................ [ 35%]\n........................................................................ [ 71%]\n.........................................................                [100%]\n201 passed in 15.52s\n",
+  "stderr": "",
+  "source_before": {
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "verify_bac_cold_import_identity.py": "1d7a07d9300fd05c71c2962446f7e7535a2abc1afa9abf2e763f161fbfda2486",
+    "test_verify_bac_cold_import_identity.py": "be960dce1ac0edfacb5819f0bef80641c97cb02e6199701916abc0a618897254",
+    "run_bac_cold_checks_locked.py": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+    "test_run_bac_cold_checks_locked.py": "b6dbafbf5d644bb5a020141404cda05e0b6d927f820b506a7f853b371d29b41e"
+  },
+  "source_after": {
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "verify_bac_cold_import_identity.py": "1d7a07d9300fd05c71c2962446f7e7535a2abc1afa9abf2e763f161fbfda2486",
+    "test_verify_bac_cold_import_identity.py": "be960dce1ac0edfacb5819f0bef80641c97cb02e6199701916abc0a618897254",
+    "run_bac_cold_checks_locked.py": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+    "test_run_bac_cold_checks_locked.py": "b6dbafbf5d644bb5a020141404cda05e0b6d927f820b506a7f853b371d29b41e"
+  }
+}

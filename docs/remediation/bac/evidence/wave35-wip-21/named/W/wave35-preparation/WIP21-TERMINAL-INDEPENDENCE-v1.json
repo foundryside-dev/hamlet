@@ -1,0 +1,43 @@
+{
+  "schema": "bac-independent-terminal-review-attestation-v1",
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_wip21_review",
+  "metadata_producer": "/root/bac_astra_wip20_evidence",
+  "independent": true,
+  "independence_evidence": "Reviewer did not author, execute, seal or mutate the subject, contract or actual qualification attempts. Earlier independent document review was separate; this terminal review followed the root freeze and checked actual evidence. No implementation body reads or application/tool runtime.",
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip21-preparation/root-qualification-subject-v1.json",
+    "bytes": 46473,
+    "sha256": "1629521f876922d3ac4b1e93f66a64512e560afa3ce6338d0eee5cfc0e9cf9b8"
+  },
+  "contract": {
+    "root": "W",
+    "path": "evidence-management/wip21-preparation/root-checkpoint-contract-v1.json",
+    "bytes": 6579,
+    "sha256": "f6ac675845e798321913e8b21b833cb4d118643e4b696c5bb0668dce728e7146"
+  },
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r116-candidate.json",
+    "bytes": 206037,
+    "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+  },
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "terminal_review_input": {
+    "root": "W",
+    "path": "evidence-management/wip21-preparation/wip21-r114-r116-preterminal-receipt-input-v3.json",
+    "bytes": 3160325,
+    "sha256": "8b8648558242deaa695734bd2c38a2188e97ad7d4457629d6f3bd559e3b5b6f0"
+  },
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/WIP21-TERMINAL-INDEPENDENT-REVIEW-v1.md",
+    "bytes": 8166,
+    "sha256": "e06e851df5e9fc21cb9529292b3de016b4b4cbd1c0e41648e003afc466b6ae37"
+  },
+  "spec": "PASS",
+  "quality": "PASS",
+  "scope": "Frozen finite WIP21 R114-R116 terminal evidence only; no B/B6/package/BAC/hardware/CI acceptance or publication approval.",
+  "material_findings": []
+}

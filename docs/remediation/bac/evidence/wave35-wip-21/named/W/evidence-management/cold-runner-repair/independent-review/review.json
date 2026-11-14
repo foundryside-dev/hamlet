@@ -1,0 +1,49 @@
+{
+  "schema": "bac-cold-runner-independent-review-v1",
+  "reviewer": "bac_astra_cold_runner_review",
+  "review_utc": "2026-11-14T05:39:46.404784+00:00",
+  "spec": "PASS",
+  "quality": "PASS",
+  "p1_findings": [],
+  "p2_findings": [],
+  "body_budget": {
+    "files": 5,
+    "lines": 1735,
+    "max_files": 5,
+    "max_lines": 5000
+  },
+  "source_bodies": [
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_cold_import_identity.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_cold_checks_locked.py",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/independent-review/test_independent_runner_probe.py"
+  ],
+  "run": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/independent-review/suite-run.json",
+    "bytes": 4722,
+    "sha256": "130d168cc799554bdac3337440c7d686fb0d443303427d731a1fac97c2f913f5"
+  },
+  "stdout": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/independent-review/suite.stdout.log",
+    "bytes": 261,
+    "sha256": "e8819aa5a6ca5f263eab19081d972fb28711cefadb30ce858fcd310164ca6ff6"
+  },
+  "stderr": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/independent-review/suite.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "result": "216 passed in 17.15s; exit 0",
+  "test_accounting": {
+    "existing_and_author_repair": 201,
+    "independent": 15,
+    "combined_unique": 216
+  },
+  "source_hashes_stable": true,
+  "preserved_failures": [
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/red-runner.json",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-launch-prerequisite-diagnostic.json"
+  ],
+  "scope": "Dedicated runner repair and validator runner/seal linkage only; synthetic inert fixtures and stub git. No application import/runtime, hardware/server, real git, branch/worktree/checkout, source edits, commit or publication."
+}

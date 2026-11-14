@@ -1,6 +1,14 @@
-# Shared and flat/PER replay custody — current R113 source, historical R81/R84 evidence
+# Shared and flat/PER replay custody — current qualification and historical source evidence
 
-## Current R113 source and bounded activation
+## Current qualification update — R115–R116
+
+R115's reviewed test-only peer-observer repair qualifies 54 unique affected-replay cases (53 healthy plus one isolated poison child); focused three PASS overlap. R116 qualifies five actual strict fresh-process cold-import controls plus core 89, activation 67 and producer 840, for 1,001 unique PASS with 31 child processes included and the actual phase pair verified. These exact-candidate selections are separate and are not summed. R116 execution tree is `1aab4391343752e90c7a06b45e7dcc07aeb3ac6f`, candidate-manifest SHA256 `d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f`. Root records `wave35/r115-root-checks.json` (`fe1e238784b6a51b04a7dc9db9e904c069bdbb9592c094130861063933d3e824`) and `wave35/r116-root-checks.json` (`720f6d798151aa52371865904cb2dc317374b4d7f4fe5b28611a051237b078f8`) bind the evidence. The historical R113 1,203 PASS / 2 FAIL result and earlier launch/style/custody failures remain unchanged. See [status](STATUS.md) and the [evidence index](EVIDENCE-INDEX.md) for exact attempts, reviews and remote observations.
+
+Full B, B6 post-poison GPU capability, actual parent outcome ownership/lock handoff, recurrent and ordinary-runner integration, real one-/two-GPU qualification, global typing, full/default suites, coverage ≥70%, slow/learning checks, fresh final reviews and exact-final-remote CI remain open. The offered 16-worker CUDA server has no established access or GPU topology. P0 common transport adoption supplies no hardware or application qualification. Programme accounting remains 28 qualified / 38 remaining / 66 total.
+
+## Historical R113 source and bounded activation
+
+This source capsule and its pending lists retain the R113 evidence boundary. The later qualification above closes the peer-observer and cold-import gaps without rewriting R113 results or broadening the source contract.
 
 The R109–R113 work activates 18 healthy source-issued flat/PER local CUDA contracts (flat8/PER10) with immutable descriptors and a lazily resolved canonical-class policy cache. Own-invocation completion/fork controls and numeric public-producer controls are CPU/protocol evidence; they do not establish actual GPU behavior or whole B acceptance. Terminal execution tree is `b5298dec04379db31bf9107a26ead7764f53d73c`, candidate-manifest SHA256 `0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa`.
 

@@ -1,0 +1,28 @@
+{
+  "schema": "bac-root-tool-packet-grant-v1",
+  "at": "2026-11-14T05:34:16.376539+00:00",
+  "packet": "CUDA-TOOL-P0",
+  "owner": "/root/bac_hardware_protocol_p0",
+  "plan": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-RUNNER-TOOLING-UPGRADE-PLAN.md",
+    "sha256": "9e41f9c959862994b6e877162a374e58f337e8e026f288249967905e7d977b05"
+  },
+  "authorized": [
+    "Implement protocol and synthetic tests only",
+    "Write exact schema metadata and preserve red/green evidence"
+  ],
+  "files": [
+    "bac_hardware_protocol_v1.py",
+    "test_bac_hardware_protocol_v1.py"
+  ],
+  "maximum_total_lines": 1400,
+  "maximum_bodies": 2,
+  "restrictions": [
+    "No application source or runtime",
+    "No server access or hardware claims",
+    "No branch/worktree/checkout/source execution copies or git init",
+    "No changes to existing tools or R116 candidate",
+    "Independent Astra review before consumer integration"
+  ],
+  "dependency_note": "Synthetic common protocol work is independent of final application candidate; actual hardware qualification remains candidate-bound and access-dependent."
+}

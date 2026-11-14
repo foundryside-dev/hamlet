@@ -1,0 +1,43 @@
+{
+  "schema": "bac-wip21-operational-notes-v1",
+  "at": "2026-11-14T06:10:18.553640+00:00",
+  "actual_root_operations": [
+    {
+      "path": "docs/remediation/bac/evidence/wave35-wip-21/root-plan-attempt-1.json",
+      "bytes": 1373,
+      "sha256": "b9781a9c3e6abba7e0ea1164d94d771d6fb6d06666edc6ad8bae6b22ea9f0fc5"
+    },
+    {
+      "path": "docs/remediation/bac/evidence/wave35-wip-21/root-plan-attempt-1.log",
+      "bytes": 134,
+      "sha256": "d141c3b3cf1758a89dc4cfcf75581b1d624db076c055884f1f44c51565eee46f"
+    },
+    {
+      "path": "docs/remediation/bac/evidence/wave35-wip-21/root-assembly-attempt-1.json",
+      "bytes": 1377,
+      "sha256": "0d86e604aa6816449f9ca847091b1e05e998339411692ceea62ad83876e97a32"
+    },
+    {
+      "path": "docs/remediation/bac/evidence/wave35-wip-21/root-assembly-attempt-1.log",
+      "bytes": 83,
+      "sha256": "c38ebb6b10078ffd8772fb60085e4bdcbe4d2a5c05f7d96f5c87121174883967"
+    },
+    {
+      "path": "docs/remediation/bac/evidence/wave35-wip-21/root-preassembly-verification-v1.json",
+      "bytes": 249,
+      "sha256": "5a1398951edc1940754762ea89df404375917d53be23b226e39357978d5c01ce"
+    },
+    {
+      "path": "docs/remediation/bac/evidence/wave35-wip-21/root-qualification-freeze-v1.json",
+      "bytes": 691,
+      "sha256": "2bcdd7e03a4eddb512a25c0a55accfe067765f6bd7420f3f3c415a3fb9994d1d"
+    }
+  ],
+  "selection_and_assembly": "Both first attempts passed with frozen neutral helper; root rehashed all1270 selected aliases and644 destination objects.",
+  "retained_root_document_failure": "Initial post-document check wrongly required two reviewed guarded documents unchanged; exact approved delta and817otherguards verified in selected root application record.",
+  "counts": "R11554 and R1161001 are separate candidates; P0 author89 and independent22 are synthetic-only and not added to APP counts.",
+  "known_CI": "WIP20 ConfigPASS/LintFAIL15/TestsFAIL; Tests causeunclassified dueconnectorTransportclosed andCLIForbidden. No WIP21 result yet.",
+  "new_work_outside_finite_subject": "P1/P2 hardware consumers and linked P0 transport additions are ongoing, not included/qualified by this checkpoint. Actualhardware UNRUN.",
+  "private_backup_excluded": true,
+  "publication_authority": "User authorized pushing work to existing remote branch. No PR/merge/branch/worktree creation."
+}

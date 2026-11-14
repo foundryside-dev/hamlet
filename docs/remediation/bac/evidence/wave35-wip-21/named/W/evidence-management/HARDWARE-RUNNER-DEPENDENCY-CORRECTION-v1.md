@@ -1,0 +1,7 @@
+# Hardware tooling dependency correction
+
+The ordering in `HARDWARE-RUNNER-READINESS-ADDENDUM-R115-v1.md` is corrected: **P0 protocol and synthetic tooling qualification do not depend on R116 closure or a final application candidate** when they neither read/change application source nor execute the application. The earlier numbered sequence incorrectly implied that dependency. Preserve the original addendum as the historical readiness observation.
+
+Root has authorized P0 in parallel to `/root/bac_hardware_protocol_p0`: only `bac_hardware_protocol_v1.py` and `test_bac_hardware_protocol_v1.py`, at most two bodies/1,400 total lines, with exact schema metadata and retained RED/GREEN evidence. The durable grant is `hardware-protocol-p0/root-grant-v1.json`, SHA-256 `bc596c62c9b7557f014b98ebf7445d5291cf77bd45f510fd283c68347cd4ff19`. Independent review precedes consumer integration. This supersedes the earlier blanket statement that hardware packet work was awaiting assignment; it claims neither P0 completion nor authority for P1–P5.
+
+The actual dependencies are: P0 sealed protocol before its consumers; their bounded interfaces and qualified tool bytes before server use; measured authorized server admission and a frozen application candidate before candidate-bound CPU/CUDA qualification. R116 and application prerequisite work may progress independently of P0. Source-freeze intervals still exclude application writes during actual qualified attempts. No runtime, source edit or server action was performed to write this correction.

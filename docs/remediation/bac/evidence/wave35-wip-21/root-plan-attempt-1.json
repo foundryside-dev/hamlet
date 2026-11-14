@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/bac_checkpoint_contract.py",
+    "plan",
+    "--root",
+    "/workspace/hamlet",
+    "--work",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades",
+    "--qualification",
+    "/workspace/bac-review-2026-11-01/qualification",
+    "--contract",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-preparation/root-checkpoint-contract-v1.json",
+    "--chain",
+    "/workspace/hamlet/docs/remediation/bac/evidence/checkpoint-chain.json",
+    "--receipt",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-preparation/root-terminal-receipt-v1.json",
+    "--output",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-preparation/root-selection-plan-v1.json"
+  ],
+  "start": "2026-11-14T06:06:05.521022+00:00",
+  "end": "2026-11-14T06:06:06.653948+00:00",
+  "seconds": 1.1329483820009045,
+  "exit_code": 0,
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-preparation/root-plan-attempt-1.log",
+  "log_sha256": "d141c3b3cf1758a89dc4cfcf75581b1d624db076c055884f1f44c51565eee46f"
+}

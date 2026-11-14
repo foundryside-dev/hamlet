@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-14T04:55:19.663492+00:00",
+  "commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "publication_tree": "78a03477193aad645e95a5584ed02324dbcaade3",
+  "parent": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "branch": "project-recovery-bac-2026-11-01",
+  "push": {
+    "exit_code": 0,
+    "range": "0597715b..fe9cc615"
+  },
+  "ls_remote": {
+    "exit_code": 0,
+    "sha": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+    "ref": "refs/heads/project-recovery-bac-2026-11-01"
+  },
+  "working_tree_clean_at_checkpoint": true,
+  "github_api_workflow_head_and_tree_match": true,
+  "ci_observation": "wip20-ci-observation-1-native.json",
+  "ci_state": "Config Validation, Lint, Tests all IN_PROGRESS at first exact-head observation. No green CI claim.",
+  "manifest_sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd",
+  "execution_candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "scope": "Durable WIP checkpoint only; ongoing BAC work continues, no PR or merge."
+}

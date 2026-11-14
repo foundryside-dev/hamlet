@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-flat_admitted_single",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "cuda-producer-poison-flat_admitted_single",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[flat_admitted_single]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

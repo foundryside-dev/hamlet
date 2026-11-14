@@ -1,0 +1,81 @@
+.................FFFF.                                                   [100%]
+=================================== FAILURES ===================================
+____________ test_reference_parent_replacement_during_hash_rejected ____________
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/independent-suite-v3-tmp/test_reference_parent_replacem0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f0c533acc30>
+
+    def test_reference_parent_replacement_during_hash_rejected(protocol, tmp_path, monkeypatch):
+        parent = tmp_path / 'parent'
+        parent.mkdir()
+        target = parent / 'artifact'
+        target.write_bytes(b'original')
+        old_read = protocol.os.read
+        changed = False
+    
+        def replacing_read(fd, size):
+            nonlocal changed
+            data = old_read(fd, size)
+            if not changed:
+                changed = True
+                parent.rename(tmp_path / 'retained-original-parent')
+                parent.mkdir()
+                target.write_bytes(b'replacement')
+            return data
+    
+        monkeypatch.setattr(protocol.os, 'read', replacing_read)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:100: Failed
+________ test_never_run_result_cannot_claim_successful_execution[unrun] ________
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+result = {'attempt_id': 'attempt', 'collected_ids': ['inert::case'], 'command': {'bytes': 25, 'path': '/workspace/hamlet/.super..._c0/inert', 'sha256': '5b58ea09679dff15cf38347427f38af2cf0034752986f570b6d6ca03b1920120'}, 'disposition': 'unrun', ...}
+disposition = 'unrun'
+
+    @pytest.mark.parametrize('disposition', ['unrun', 'refused'])
+    def test_never_run_result_cannot_claim_successful_execution(protocol, result, disposition):
+        result.update(disposition=disposition, reason='not executed')
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:107: Failed
+_______ test_never_run_result_cannot_claim_successful_execution[refused] _______
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+result = {'attempt_id': 'attempt', 'collected_ids': ['inert::case'], 'command': {'bytes': 25, 'path': '/workspace/hamlet/.super...1/inert', 'sha256': '5b58ea09679dff15cf38347427f38af2cf0034752986f570b6d6ca03b1920120'}, 'disposition': 'refused', ...}
+disposition = 'refused'
+
+    @pytest.mark.parametrize('disposition', ['unrun', 'refused'])
+    def test_never_run_result_cannot_claim_successful_execution(protocol, result, disposition):
+        result.update(disposition=disposition, reason='not executed')
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:107: Failed
+_________________ test_source_freeze_end_cannot_precede_start __________________
+
+protocol = <module 'independent_protocol' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+ref = {'bytes': 25, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hard...p/test_source_freeze_end_cannot_0/inert', 'sha256': '5b58ea09679dff15cf38347427f38af2cf0034752986f570b6d6ca03b1920120'}
+
+    def test_source_freeze_end_cannot_precede_start(protocol, ref):
+        value = {'schema': 'bac-hardware-v1', 'kind': 'source-freeze', 'authorized_root': '/inert/source',
+                 'grant': ref, 'start': '2026-11-14T02:00:00.000000Z',
+                 'end': {'state': 'measured', 'value': '2026-11-14T01:00:00.000000Z', 'reason': ''},
+                 'no_writer_barrier': True, 'includes_untracked': True, 'index_lock': '/inert/index.lock', 'retention': 'inert'}
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py:116: Failed
+=========================== short test summary info ============================
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_reference_parent_replacement_during_hash_rejected
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_never_run_result_cannot_claim_successful_execution[unrun]
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_never_run_result_cannot_claim_successful_execution[refused]
+FAILED ../workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-protocol-p0/independent-review/test_independent_p0.py::test_source_freeze_end_cannot_precede_start
+4 failed, 18 passed in 0.25s

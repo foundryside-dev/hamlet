@@ -1,0 +1,154 @@
+{
+  "schema": "bac-cold-import-historical-source-recovery-v1",
+  "at": "2026-11-14T05:22:17.620154+00:00",
+  "status": "RECOVERED EXACT HISTORICAL SOURCE BYTES",
+  "scope": "Inert .py.txt preservation only. No tests or application code executed; no source/tool/freeze/report changed.",
+  "method": "One bounded in-memory reversal of exact write/edit/append buffers still present in the original implementer conversation. Every preserved body independently matches its preexisting attempt-record SHA256; unmatched candidates are not written. No guess or rerun substitutes for historical evidence.",
+  "recovered": [
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/bac_cold_worker_identity.py",
+      "recorded_sha256": "b21b997472cf5930f0903196895b0ba040a450031713fe7e946edcdf55bd5c0c",
+      "attempts": [
+        "attempt-04-synthetic",
+        "attempt-05-matrix-red",
+        "attempt-06-matrix",
+        "attempt-07-binding-red",
+        "attempt-08-final-boundaries-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/bac_cold_worker_identity-b21b997472cf5930f0903196895b0ba040a450031713fe7e946edcdf55bd5c0c.py.txt",
+      "bytes": 5092,
+      "lines": 105,
+      "recovery_method": "Exact reverse of the one recorded attempt08\u219209 plugin condition edit; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "recorded_sha256": "04e70d5601111792f6f6244553cb4d31ccf79fe607ca01a8b590071564fa4a69",
+      "attempts": [
+        "attempt-06-matrix"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/test_verify_bac_cold_import_identity-04e70d5601111792f6f6244553cb4d31ccf79fe607ca01a8b590071564fa4a69.py.txt",
+      "bytes": 33427,
+      "lines": 590,
+      "recovery_method": "Additionally remove exact recorded attempt06\u219207 appended tests; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "recorded_sha256": "10fdad6ae0aaf2b1c84f76ad84744f37e74d611d37bc6e8ecf1595a10fa1d313",
+      "attempts": [
+        "attempt-02-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/test_verify_bac_cold_import_identity-10fdad6ae0aaf2b1c84f76ad84744f37e74d611d37bc6e8ecf1595a10fa1d313.py.txt",
+      "bytes": 22276,
+      "lines": 354,
+      "recovery_method": "Additionally remove exact recorded attempt02\u219203 appended plugin test; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "recorded_sha256": "1e3c9272c28af735f6f64e8ad9f53ebbdce02c27741a73749893c72fbfd8e1c0",
+      "attempts": [
+        "attempt-08-final-boundaries-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/test_verify_bac_cold_import_identity-1e3c9272c28af735f6f64e8ad9f53ebbdce02c27741a73749893c72fbfd8e1c0.py.txt",
+      "bytes": 38421,
+      "lines": 702,
+      "recovery_method": "Existing frozen final bytes are identical to recorded attempt08 test bytes."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "recorded_sha256": "718b4e373a66611b371f07a6d494c38ac2f90ed20bad62726d93e41e8762370b",
+      "attempts": [
+        "attempt-07-binding-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/test_verify_bac_cold_import_identity-718b4e373a66611b371f07a6d494c38ac2f90ed20bad62726d93e41e8762370b.py.txt",
+      "bytes": 36991,
+      "lines": 666,
+      "recovery_method": "Exact reverse of recorded attempt07\u219208 append and spec_only test edits; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "recorded_sha256": "a58d34d66008b0eb949cbeedf20882f8371c2bd0f2f379d08a866f385882b891",
+      "attempts": [
+        "attempt-01-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/test_verify_bac_cold_import_identity-a58d34d66008b0eb949cbeedf20882f8371c2bd0f2f379d08a866f385882b891.py.txt",
+      "bytes": 22099,
+      "lines": 349,
+      "recovery_method": "Additionally remove exact recorded attempt01\u219202 appended direct RED test; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "recorded_sha256": "c92f0c282166a777fa79fc27c748a1607d7810f99a121cc6cf97c52f3db58140",
+      "attempts": [
+        "attempt-03-plugin-red",
+        "attempt-04-synthetic"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/test_verify_bac_cold_import_identity-c92f0c282166a777fa79fc27c748a1607d7810f99a121cc6cf97c52f3db58140.py.txt",
+      "bytes": 24236,
+      "lines": 393,
+      "recovery_method": "Additionally remove exact recorded attempt04\u219205 appended matrix tests; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "recorded_sha256": "fbe890bd0a227f1b23ee9de5ea215e021539a8d5437fb10a47ee179c50a1c0dd",
+      "attempts": [
+        "attempt-05-matrix-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/test_verify_bac_cold_import_identity-fbe890bd0a227f1b23ee9de5ea215e021539a8d5437fb10a47ee179c50a1c0dd.py.txt",
+      "bytes": 33210,
+      "lines": 584,
+      "recovery_method": "Additionally reverse exact recorded attempt05\u219206 fixture corrections; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_cold_import_identity.py",
+      "recorded_sha256": "136c0e80645fa06f2e9fb6d29e7074b6a129d86c240080ff3a392a8be6e330a2",
+      "attempts": [
+        "attempt-08-final-boundaries-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/verify_bac_cold_import_identity-136c0e80645fa06f2e9fb6d29e7074b6a129d86c240080ff3a392a8be6e330a2.py.txt",
+      "bytes": 35093,
+      "lines": 603,
+      "recovery_method": "Exact reverse of recorded attempt08\u219209 role-directory insertion; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_cold_import_identity.py",
+      "recorded_sha256": "2567f96809e7063a6e0d0116a1511606efe89ff5ee825439541ebc2fcca1fdce",
+      "attempts": [
+        "attempt-03-plugin-red",
+        "attempt-04-synthetic",
+        "attempt-05-matrix-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/verify_bac_cold_import_identity-2567f96809e7063a6e0d0116a1511606efe89ff5ee825439541ebc2fcca1fdce.py.txt",
+      "bytes": 32942,
+      "lines": 571,
+      "recovery_method": "Additionally reverse exact recorded attempt05\u219206 reference/interpreter/drift insertions; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_cold_import_identity.py",
+      "recorded_sha256": "6afdd2a9b0d1bdf6fbef02cf7af4fa40e306c735f3f960b8874065aef7c4482e",
+      "attempts": [
+        "attempt-06-matrix",
+        "attempt-07-binding-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/verify_bac_cold_import_identity-6afdd2a9b0d1bdf6fbef02cf7af4fa40e306c735f3f960b8874065aef7c4482e.py.txt",
+      "bytes": 33875,
+      "lines": 588,
+      "recovery_method": "Additionally remove exact recorded attempt07\u219208 AST-binding insertion; SHA256-gated."
+    },
+    {
+      "source_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "recorded_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+      "attempts": [
+        "attempt-04-synthetic",
+        "attempt-05-matrix-red",
+        "attempt-06-matrix",
+        "attempt-07-binding-red",
+        "attempt-08-final-boundaries-red"
+      ],
+      "snapshot_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/historical-source-snapshots-v1/verify_bac_replay_spawn_identity-6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173.py.txt",
+      "bytes": 38090,
+      "lines": 752,
+      "recovery_method": "Existing admitted verifier bytes remain identical to historical recorded SHA256."
+    }
+  ],
+  "unavailable": []
+}

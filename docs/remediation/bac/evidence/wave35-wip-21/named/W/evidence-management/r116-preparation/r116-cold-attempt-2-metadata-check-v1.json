@@ -1,0 +1,25 @@
+{
+  "actual_job_exit_codes": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "actual_roles": 5,
+  "closed_output_files": 50,
+  "component": {
+    "bytes": 264168,
+    "path": "evidence-management/r116-preparation/r116-cold-attempt-2-component-v1.json",
+    "root": "W",
+    "sha256": "ef3bf2a032e01d4a4c2dc7663c0e7b906e96c7d0e5b7484852155dfdced5c695"
+  },
+  "dependency_references": 128,
+  "generic_receipts": 5,
+  "metadata_inspection_note": "One read attempt assumed positive identity filename for a negative role and failed without writes; corrected to actual strict receipt subject_ref. No execution result inferred.",
+  "owner_runtime_directories_inventoried": false,
+  "runtime_or_selector_execution": false,
+  "source_body_reads": 0,
+  "status": "PASS FOR CLOSED FIVE-ROLE SUBCOMPONENT; R116 OPEN",
+  "strict_receipts": 5
+}

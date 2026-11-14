@@ -1,0 +1,237 @@
+{
+  "candidate_manifest": {
+    "bytes": 205968,
+    "path": "wave35/r114-candidate.json",
+    "root": "W",
+    "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+  },
+  "files": [
+    {
+      "bytes": 698,
+      "path": "wave35-r114-black-format-repair.diff",
+      "root": "Q",
+      "sha256": "a9de8492d5232402bc784bcef2b9b601bc05a238e1b7115ce84519b073107913"
+    },
+    {
+      "bytes": 960,
+      "path": "wave35-r114-black-format-repair.json",
+      "root": "Q",
+      "sha256": "7da5df0adda6247cf59cca3fb637ad139870824fe18c580f77d317033d186980"
+    },
+    {
+      "bytes": 1086,
+      "path": "wave35-r114-capture-attempt-1-failure.json",
+      "root": "Q",
+      "sha256": "ef690da2cf6d0cf080802997d2a007c9c0f396f8d248827d32ee26d553e756ac"
+    },
+    {
+      "bytes": 5224,
+      "path": "wave35-r114-capture-attempt-2.log",
+      "root": "Q",
+      "sha256": "c57fc1518455c063db6630f7f136a3e1e55bd0d4d5e5070770989459e1922637"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r114-capture.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 723,
+      "path": "wave35-r114-changed-test-style/black-result.json",
+      "root": "Q",
+      "sha256": "8065ea0c78917efdd8ede8da471c80bff3ea1bf5f7a1cb7863e39d491c7fb4c3"
+    },
+    {
+      "bytes": 129,
+      "path": "wave35-r114-changed-test-style/black.log",
+      "root": "Q",
+      "sha256": "1e5e7fc67ed9b0c983f85d655f73a2b9c9512cc84d4d408a87d69b58a2bbc2d0"
+    },
+    {
+      "bytes": 719,
+      "path": "wave35-r114-changed-test-style/ruff-result.json",
+      "root": "Q",
+      "sha256": "344cb0474eabf87da031466f11f65f36305bfd825cc58dfb99d0cc82d9a8cd34"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r114-changed-test-style/ruff.log",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 1350,
+      "path": "wave35-r114-changed-test-style-runner.log",
+      "root": "Q",
+      "sha256": "7520f550fda51b31812c8422ddf872256b5331097269f19cece390908449bb2e"
+    },
+    {
+      "bytes": 634,
+      "path": "wave35-r114-changed-test-style-spec.json",
+      "root": "Q",
+      "sha256": "49cb2039ceb9729923435dff9caa6cc0cd2599c1294606e157ef1050d341af64"
+    },
+    {
+      "bytes": 582,
+      "path": "wave35-r114-collection-spec.json",
+      "root": "Q",
+      "sha256": "153426d7657b20b9d3ef69341c13c0971068b1b723acb1819587767e2bbcc18a"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r114-owned-spec.json",
+      "root": "Q",
+      "sha256": "3e5a90f9201824f45ff37878ddc121aa4308926daea35a30c73319410638ecca"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r114-peer-collection/peer-collection/identity-controller.json",
+      "root": "Q",
+      "sha256": "b3e1eae93008117f221c1d44b860d1f7998ad45610e60d1c9760db582db4d211"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r114-peer-collection/peer-collection-custody.json",
+      "root": "Q",
+      "sha256": "64f78560df52711e7d0ca7c662246dfe9c249e167b7fbb5b579b263b92364c72"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r114-peer-collection/peer-collection-result.json",
+      "root": "Q",
+      "sha256": "04148fd72da7b30ca059f9dde2a7d0dbd9078fb6bc267625f29bab4d06a3caf9"
+    },
+    {
+      "bytes": 5965,
+      "path": "wave35-r114-peer-collection/peer-collection.log",
+      "root": "Q",
+      "sha256": "d2e390af909c078046694fd4d4169e050e72c11ed38a18b0fa96c7aa31d4d2b8"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r114-peer-collection-custody.json",
+      "root": "Q",
+      "sha256": "64f78560df52711e7d0ca7c662246dfe9c249e167b7fbb5b579b263b92364c72"
+    },
+    {
+      "bytes": 774,
+      "path": "wave35-r114-peer-collection-runner.log",
+      "root": "Q",
+      "sha256": "0401ca4ea101c7468161fc7f7c262970fe024cea8756ff1c06335f5e2577783d"
+    },
+    {
+      "bytes": 592,
+      "path": "wave35-r114-peer-collection-spec.json",
+      "root": "Q",
+      "sha256": "98a3d75ffe479566815f544b9cbce8fcba60ce6395b2eca33e497f8981e9d07a"
+    },
+    {
+      "bytes": 716,
+      "path": "wave35-r114-peer-focused-spec.json",
+      "root": "Q",
+      "sha256": "402e16aa388ca65b46229d988ef3514cac42f65afafa0fbde5d198b5b3be9cb0"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "support",
+      "path": "wave35-r114-black-format-repair.diff",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-black-format-repair.json",
+      "round": 114,
+      "status": "PASSED"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-capture-attempt-1-failure.json",
+      "round": 114,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-capture-attempt-2.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-capture.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-changed-test-style",
+      "round": 114,
+      "status": "MIXED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-changed-test-style-runner.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-changed-test-style-spec.json",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-collection-spec.json",
+      "round": 114,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-owned-spec.json",
+      "round": 114,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-peer-collection",
+      "round": 114,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-peer-collection-custody.json",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-peer-collection-runner.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-peer-collection-spec.json",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-peer-focused-spec.json",
+      "round": 114,
+      "status": "UNRUN"
+    }
+  ],
+  "root_disposition": {
+    "bytes": 582,
+    "path": "wave35/r114-root-checks.json",
+    "root": "W",
+    "sha256": "de304d84801ec8562e37656b87a027ebca0153056c7746f026e36faee557d656"
+  },
+  "round": 114,
+  "schema": "bac-closed-round-inventory-v1",
+  "status": "CLOSED HISTORICAL NAMESPACE; NOT TERMINAL"
+}

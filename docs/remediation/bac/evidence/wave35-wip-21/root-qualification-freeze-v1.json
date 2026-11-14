@@ -1,0 +1,11 @@
+{
+  "schema": "bac-root-qualification-freeze-v1",
+  "at": "2026-11-14T06:01:24.898788+00:00",
+  "status": "FROZEN",
+  "source_proposal_sha256": "f1f172e9dc15923035587f34807b888b6b894084b552cdce7dd0a0665afb77eb",
+  "subject_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip21-preparation/root-qualification-subject-v1.json",
+  "subject_sha256": "1629521f876922d3ac4b1e93f66a64512e560afa3ce6338d0eee5cfc0e9cf9b8",
+  "verified_reference_occurrences": 1778,
+  "review_input_sha256": "8b8648558242deaa695734bd2c38a2188e97ad7d4457629d6f3bd559e3b5b6f0",
+  "scope": "WIP21/R114\u2013116 finite publication candidate, not whole BAC acceptance."
+}

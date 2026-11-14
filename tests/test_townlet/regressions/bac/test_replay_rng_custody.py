@@ -29,7 +29,7 @@ import test_world_rng_bootstrap as bootstrap
 import torch
 
 from townlet.config.bac_options import ReplayOptions
-from townlet.exploration.rng_custody import RNGOperation, process_rng_domain
+from townlet.exploration.rng_custody import RNGDeviceInvocation, RNGOperation, process_rng_domain
 from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
 from townlet.training.replay_buffer import ReplayBuffer
 from townlet.training.replay_contract import PreparedReplay, ReplayCustody, ReplayRequest
@@ -286,18 +286,22 @@ def _peer() -> tuple[_DomainPeer, Any]:
 
 @pytest.mark.parametrize("kind", ["flat", "per", "recurrent"])
 def test_direct_ambient_sample_waits_for_registered_peer(kind: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Prospective API RED: observe the real replay domain operation before acquisition.
+    """Observe attempted entry and authentic acquisition on each real replay route.
 
     The original Stage A source at SHA 70cb5aa0 demonstrated actual bypass.
-    This stronger node requires the new replay participant and explicit lineage.
+    Flat/PER admission precedes invocation issuance; recurrent uses public operation.
     """
     owner = _direct_owner(kind)
     peer, participant = _peer()
     replay_participant = owner.rng_participant
     domain = process_rng_domain()
     original_operation = domain.operation
+    original_device_operation = owner._device_operation
+    original_invocation = domain.device_invocation
     reached, acquired, done = threading.Event(), threading.Event(), threading.Event()
     observed: list[tuple[object, str, object]] = []
+    invocations: list[tuple[object, str, object, tuple[int, ...], RNGDeviceInvocation]] = []
+    yielded_operations: list[RNGOperation] = []
     outcome: list[object] = []
     worker: threading.Thread
 
@@ -309,10 +313,47 @@ def test_direct_ambient_sample_waits_for_registered_peer(kind: str, monkeypatch:
             reached.set()
         with original_operation(participant=participant, operation_kind=operation_kind, lineage=lineage) as lease:
             if selected:
+                yielded_operations.append(lease)
                 acquired.set()
             yield lease
 
-    monkeypatch.setattr(type(domain), "operation", observed_operation)
+    @contextmanager
+    def observed_device_operation(
+        operation_kind: str,
+        lineage: RNGOperation | None,
+        route: str,
+        args: tuple[object, ...],
+        kwargs: Mapping[str, object],
+        *,
+        mutation: bool,
+    ) -> Any:
+        selected = threading.current_thread() is worker
+        if selected:
+            reached.set()
+        with original_device_operation(operation_kind, lineage, route, args, kwargs, mutation=mutation) as lease:
+            if selected:
+                yielded_operations.append(lease)
+                acquired.set()
+            yield lease
+
+    def observed_invocation(
+        _domain: object,
+        *,
+        participant: Any,
+        operation_kind: str,
+        lineage: RNGOperation | None,
+        cuda_devices: tuple[int, ...],
+    ) -> RNGDeviceInvocation:
+        invocation = original_invocation(participant=participant, operation_kind=operation_kind, lineage=lineage, cuda_devices=cuda_devices)
+        if threading.current_thread() is worker:
+            invocations.append((participant, operation_kind, lineage, cuda_devices, invocation))
+        return invocation
+
+    if kind == "recurrent":
+        monkeypatch.setattr(type(domain), "operation", observed_operation)
+    else:
+        monkeypatch.setattr(owner, "_device_operation", observed_device_operation)
+        monkeypatch.setattr(type(domain), "device_invocation", observed_invocation)
 
     def draw() -> None:
         try:
@@ -341,6 +382,10 @@ def test_direct_ambient_sample_waits_for_registered_peer(kind: str, monkeypatch:
             assert reached.wait(3), "direct replay did not enter its genuine domain operation"
             assert not acquired.is_set(), "replay acquired the domain while the peer held it"
             assert not done.wait(0.5), "direct replay sampling bypassed the held process domain"
+            assert not acquired.is_set(), "replay acquired the domain during the peer-held wait"
+            assert yielded_operations == [], "replay received an operation while the peer held the domain"
+            if kind != "recurrent":
+                assert invocations == [], "replay issued an invocation before peer release"
             _assert_live_rows_unchanged(owner, live_before)
             if kind == "flat":
                 assert torch.equal(ambient_before, torch.get_rng_state())
@@ -354,7 +399,20 @@ def test_direct_ambient_sample_waits_for_registered_peer(kind: str, monkeypatch:
         if worker.is_alive():
             raise AssertionError("direct sampler survived bounded cleanup") from sys.exc_info()[1]
     assert acquired.is_set(), "replay did not acquire after peer release"
-    assert observed == [(replay_participant, "sample", None)]
+    assert done.is_set(), "direct replay did not complete after peer release"
+    assert len(yielded_operations) == 1 and type(yielded_operations[0]) is RNGOperation
+    if kind == "recurrent":
+        assert observed == [(replay_participant, "sample", None)]
+        assert invocations == []
+    else:
+        assert observed == []
+        assert len(invocations) == 1
+        actual_participant, operation_kind, lineage, devices, invocation = invocations[0]
+        assert actual_participant is replay_participant
+        assert operation_kind == "sample"
+        assert lineage is None
+        assert devices == ()
+        assert type(invocation) is RNGDeviceInvocation
     assert len(outcome) == 1 and not isinstance(outcome[0], BaseException)
     _assert_same_transport(live_before, owner.serialize())
     if kind == "flat":

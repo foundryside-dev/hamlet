@@ -1,0 +1,17 @@
+{
+  "schema": "bac-component-root-adoption-v1",
+  "at": "2026-11-14T05:46:20.800665+00:00",
+  "status": "BOUNDED COMPONENT ADOPTED",
+  "component": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r116-preparation/r116-cold-attempt-2-component-v2.json",
+    "bytes": 278080,
+    "sha256": "f5bab0c2239307d25dedfd4a41d77f7c689360a70b0e3620f32f0b458bc6a497"
+  },
+  "verified_reference_occurrences": 341,
+  "mismatches": 0,
+  "root_execution_basis": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-root-checks.json",
+    "sha256": "720f6d798151aa52371865904cb2dc317374b4d7f4fe5b28611a051237b078f8"
+  },
+  "scope": "Five cold actual runs and immutable launch/tool-repair history; no terminal checkpoint, B6/GPU or whole-BAC acceptance."
+}

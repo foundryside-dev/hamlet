@@ -1,0 +1,51 @@
+{
+  "family": "bac-hardware-v1",
+  "packet": "P0",
+  "status": "frozen for independent Astra review; not consumer integration or execution acceptance",
+  "public_interfaces": {
+    "validate_spec(spec: dict) -> None": "validate exact spec and recursively validate/hash referenced files; raises ValueError on rejection",
+    "validate_record(kind: str, value: dict) -> None": "validate one registered exact record shape and local invariants, including referenced file bytes; raises ValueError",
+    "file_reference(path: Path) -> dict": "read/hash existing regular file without following symlinks; return exact path,bytes,sha256; no writes"
+  },
+  "qualification_boundary": "P0 validates transport shape and immutable byte references only. It does not parse referenced JSON, verify external receipts, execute pinned validators, establish causal hardware work, or certify admission. No consumer may equate validate_record returning None with qualification.",
+  "mandatory_job_obligations": [
+    "process-custody",
+    "source-freeze",
+    "required-cases"
+  ],
+  "role_constraints": {
+    "controller": "exactly one per job",
+    "worker": "count equals explicit xdist_workers; replacements retain separate identity and declared replacement_limit",
+    "spawn-child/work-child": "must carry strict-child-core or strict-child-producer owned contract; inter_op=5 and debug=True; one-thread baseline",
+    "fork-guard": "fork-three-trials contract; guard-only, Torch/CUDA forbidden; inherited-module witness and unavailable thread/debug runtime probes with reasons; declared strict inherited configuration inter_op=5/debug=True",
+    "discovery": "separate admitted discovery process; discovery must never be performed by later uninitialized case identity recorder",
+    "observer": "uninitialized observer cannot perform Torch work or initialize CUDA",
+    "all": "exact role IDs and process cardinalities supplied by sealed jobs; PID/PPID/start identity/host/boot bind actual emitters; P3 verifies real observations"
+  },
+  "obligation_owners": {
+    "common": "P3/P4 custody, source freeze and required cases",
+    "strict-child-core/strict-child-producer/rng-custody/fork-three-trials/phase-pair": "P5 plus required bounded owner instrumentation slices; historical exact typed/correlated constraints remain mandatory",
+    "cuda-fresh-initialization/cuda-nondefault-rng/cuda-unindexed-switch/cuda-cross-device/cuda-async-completion/cuda-injected-failures": "six accepted groups; exact executable IDs and payload schemas supplied by existing owners, not invented here",
+    "b-route-leaf/b-ten-poison-children/parent-currentness/outer-completion/recurrent-activation/post-poison-b6": "current B/parent/recurrent owner supplies exact inventory and accepted receipts before scheduling"
+  },
+  "downstream_requirements": {
+    "P1": "Parse and validate candidate/environment/source-freeze/request records; reconcile exact authorized paths/imports/input inventory; probe separate actual process; derive nested quotas/affinity/cpuset/CPU capacity and memory/scratch with reserves; prove Torch CUDA build/driver/visibility/UUID/MIG mapping and allocation; refuse unavailable required facts. Validate references alone never admits.",
+    "P2": "Bind admission/spec/job budgets; sum concurrent controllers/workers/children, account replacement overlap; immutable exclusive attempt/output/scratch creation and all symlink/path races; exact env/argv/seeds; stable multi-device physical-parent/RNG/timing leases; required timing host isolation; preserve failed/interrupted/unrun output. No false successful orchestration exit.",
+    "P3": "Emit actual process start/end, source/import hashes and PID/PPID/start/host/boot; compare exact role-specific config, required children and replacements; guard no-Torch and fresh no-init; root no-writer barrier from capture through last witness; no parent-fabricated observations.",
+    "P4": "Parse and cross-bind every referenced record, digest and exact argv/env/seed/spec/candidate/dependency/exit/device assignment; exact collection/outcome sets and no skip/xfail; verify end/seal and source freeze; exclusively create receipts and independently verify each pinned case validator receipt. An unimplemented, untrusted, missing or failed validator yields unsatisfied/unrun, never satisfied.",
+    "P5": "Resolve separately bounded strict child/producer/fork/phase interfaces and real-work witness schemas before implementation; preserve all strict PID/PPID/Process/queue, RNG, quarantine/error/order, no-Torch three-fork-trial and phase pair obligations. Parse payload using exact pinned accepted case-contract + actual validator; generic envelope/reference pass is never pass-through acceptance."
+  },
+  "required_interface_gaps": [
+    "Exact owner-supplied producer/helper paths and full child/fork/phase schemas remain owed in bounded P5 slices.",
+    "Exact executable real-CUDA IDs, storage/output/device/event/RNG/completion witnesses and CPU-only no-init member of group 1 remain owner work; missing controls stay UNRUN.",
+    "Current canonical B routes, ten poison children and parent/currentness/B6 receipts remain owner-supplied.",
+    "Case-contract, witness_schema, validator, payload and validator_receipt references must be parsed/authenticated by consuming verifier; P0 deliberately performs no case dispatch."
+  ],
+  "rulings": [
+    "Root approved finite closed common transport plus required pinned case contracts, without inventing executable IDs or qualifying payloads.",
+    "Only the authorized synthetic test file is executed. Default application suite would violate explicit no application import/runtime scope.",
+    "Filesystem paths in normalized records are absolute canonical paths; file_reference accepts a Path whose spelling may already have been normalized by pathlib. Raw record path strings are checked before Path construction.",
+    "No source staging/checkout/worktree/git-init/remote/installation/GPU activity. Existing tools are immutable and read only for digest comparison."
+  ],
+  "evidence_classification": "All test data and files are inert synthetic; no mocked evidence is real CUDA; neither hardware availability nor BAC application qualification is claimed."
+}

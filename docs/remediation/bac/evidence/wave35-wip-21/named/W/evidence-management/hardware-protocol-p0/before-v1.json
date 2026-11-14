@@ -1,0 +1,13 @@
+{
+  "utc": "2026-11-14T05:36:59.121590+00:00",
+  "existing_tools": {
+    "run_bac_packet_checks_locked.py": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+    "capture_wave14_round.py": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+    "bac_source_identity.py": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d",
+    "verify_bac_run.py": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d",
+    "verify_bac_replay_spawn_identity.py": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+    "verify_bac_failed_run.py": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+  },
+  "protocol_before": "absent",
+  "test_sha256": "4f0977389eebfe29ddea774d494f5e3e5a9bc68f85fd380f80341f5378a0a9b0"
+}

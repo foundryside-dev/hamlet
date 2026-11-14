@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-spec.json"
+  ],
+  "start": "2026-11-14T05:40:55.136656+00:00",
+  "end": "2026-11-14T05:41:03.330527+00:00",
+  "seconds": 8.193877162004355,
+  "exit_code": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-dispatch.log",
+  "sha256": "80bcdc0128c5ffe422a68db3af1a4738196b0486556b87f758dfc6e351239fe8",
+  "spec_sha256": "fb8968f6ea2561159bcebcc96b1364e952aa5084f1782bc26a5fefae1e113d68",
+  "cold_spec_sha256": "096653144a482a6eba057200a7359aaf4eac8b93645413ba66674d4d39faf247"
+}

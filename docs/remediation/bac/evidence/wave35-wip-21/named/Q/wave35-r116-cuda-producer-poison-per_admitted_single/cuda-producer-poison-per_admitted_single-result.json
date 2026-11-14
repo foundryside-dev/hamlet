@@ -1,0 +1,25 @@
+{
+  "name": "cuda-producer-poison-per_admitted_single",
+  "exit_code": 0,
+  "seconds": 7.796786546707153,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_admitted_single]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single.log",
+  "sha256": "0b158c1dee539611b5e830f2947a9e9a04e6f0cee0ca2edb58bca257aa3c47d1",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "manifest_sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

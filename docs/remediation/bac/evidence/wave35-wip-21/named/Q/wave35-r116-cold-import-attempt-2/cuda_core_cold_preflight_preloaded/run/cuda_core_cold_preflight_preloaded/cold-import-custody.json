@@ -1,0 +1,69 @@
+{
+  "schema": "cuda-core-cold-import-custody-v2",
+  "status": "COLD IMPORT EXPECTED REJECTION VERIFIED",
+  "role": "cuda_core_cold_preflight_preloaded",
+  "mode": "preflight_preloaded",
+  "entry": "core",
+  "spec_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2-spec.json",
+    "bytes": 2973,
+    "sha256": "096653144a482a6eba057200a7359aaf4eac8b93645413ba66674d4d39faf247"
+  },
+  "root_run_spec_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-spec.json",
+    "bytes": 774,
+    "sha256": "e1a330021e47f5aa3b9a428b5d1377ea617ec3fe727d7036cfccb42db368e041"
+  },
+  "root_run_result_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded-result.json",
+    "bytes": 1029,
+    "sha256": "8ea551abf44bcb0381f2321444f260274e63ad63e287aadd194a6cea023ddaa5"
+  },
+  "root_run_log_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded.log",
+    "bytes": 650,
+    "sha256": "ebcfb7cd8b649aa786446715f33c7bd15b59fc08bc9c573ffa5d7fbd103ca850"
+  },
+  "tool_seal_ref": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/root-tool-seal-v3.json",
+    "bytes": 2109,
+    "sha256": "cf2c3dc9db1aec4e46fc1a384c4aad074ca62d804843619d71a7af1b60f18ee0"
+  },
+  "worker_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-worker.json",
+    "bytes": 2229,
+    "sha256": "fb0762fcbd66b4c83ee2d86c8880627111d4db84435fbe5dc8fdeab6a120fe32"
+  },
+  "subject_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-fault-witness.json",
+    "bytes": 46366,
+    "sha256": "f55b56c6f65640d441a7dd2fe4b9d9e4f50f4d517d7625f8c9e5d20e249ce66e"
+  },
+  "observation_ref": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-observation.json",
+    "bytes": 23598,
+    "sha256": "91b5e3107493e9e70d29d386423c1ae579d859b55204938c8b23b1c6195fd440"
+  },
+  "stdout_ref": {
+    "bytes": 0,
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr_ref": {
+    "bytes": 306,
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2/cuda_core_cold_preflight_preloaded/run/cuda_core_cold_preflight_preloaded/cold-import-stderr.log",
+    "sha256": "8f0423852aa5ff7a4a630076728892fa583795d74a4e6b8cb9bdd9a95dd7d20b"
+  },
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "manifest_ref": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json",
+    "bytes": 206037,
+    "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+  },
+  "parent_pid": 174876,
+  "child_pid": 174923,
+  "script_sha256": "449a01b27740c7744f9e44e4f86beaf7acf56f0fa646609e43e0588d30093705",
+  "command_sha256": "d495b4d8b678e09efaacc87d47e5d1496fe84ad4b5a82a809b9f6508dffc3061",
+  "scope": "CPU cold-import/canonical-gate protocol only; no GPU hardware, producer leaf, post-poison, B6/R0 or whole-programme qualification."
+}

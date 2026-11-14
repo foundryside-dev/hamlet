@@ -1,0 +1,45 @@
+{
+  "at": "2026-11-14T05:06:18.770059+00:00",
+  "command": [
+    "python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r115-replay-poison-spec.json"
+  ],
+  "exit_code": 1,
+  "failure": "ValueError: sealed replay command mismatch",
+  "cause": "Root constructed child argv with basetemp and omitted no:benchmark instead of reusing fixed accepted role argv.",
+  "spec_sha256": "82bd8add3c6cf225f811ca47d6c62669da4da01b64a0e3bb2955b7063a88e20b",
+  "actual_args": [
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r115-replay-poison"
+  ],
+  "approved_args": [
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "assertion_result": "1 PASS; generic parent custody passed, strict child qualification FAILED",
+  "generic_custody_files": [
+    "wave35-r115-replay-healthy/replay-healthy-custody.json",
+    "wave35-r115-replay-poison/replay-poison-custody.json"
+  ],
+  "repair": "Preserve original attempted execution and failed strict check. Reexecute only the isolated child using exact unchanged existing accepted argv and a fresh output/spec; no helper/source change or scope weakening.",
+  "scope": "Failure is exact invocation custody; not an application assertion failure. Prior healthy53 need no rerun."
+}

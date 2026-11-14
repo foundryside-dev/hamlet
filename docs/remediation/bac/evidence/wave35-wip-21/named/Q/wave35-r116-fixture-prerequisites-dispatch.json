@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-fixture-prerequisites-spec.json"
+  ],
+  "start": "2026-11-14T05:42:18.444023+00:00",
+  "end": "2026-11-14T05:42:23.501557+00:00",
+  "seconds": 5.057554832004826,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-fixture-prerequisites-dispatch.log",
+  "sha256": "c8db2838f081ccc832b817f12e91d95897ff44753a98f8b46475267be5b742df",
+  "spec_sha256": "1a015d8b482aa326dc54450d40f130bb6fa7bffd789743cd90daf2288e098379"
+}

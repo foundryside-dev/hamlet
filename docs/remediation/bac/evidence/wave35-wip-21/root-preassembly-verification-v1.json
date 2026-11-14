@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-14T06:07:52.356918+00:00",
+  "status": "PASS",
+  "plan_sha256": "ccc0333a3ea4f91b4c64c5b83765e5bbfe61ac8a2d9e27a7f510d0b494765550",
+  "input_aliases_verified": 1270,
+  "objects_verified": 644,
+  "private_backup_selected": false
+}

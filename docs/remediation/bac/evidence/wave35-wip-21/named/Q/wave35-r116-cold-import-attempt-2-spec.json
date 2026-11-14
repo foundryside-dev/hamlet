@@ -1,0 +1,74 @@
+{
+  "schema": "bac-cold-import-spec-v2",
+  "root_run_specs": {
+    "cuda_core_cold_preflight_preloaded": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-attempt-2-spec.json",
+      "bytes": 774,
+      "sha256": "e1a330021e47f5aa3b9a428b5d1377ea617ec3fe727d7036cfccb42db368e041"
+    },
+    "cuda_core_cold_preflight_cuda_touch": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_cuda_touch-attempt-2-spec.json",
+      "bytes": 777,
+      "sha256": "fb8968f6ea2561159bcebcc96b1364e952aa5084f1782bc26a5fefae1e113d68"
+    },
+    "cuda_core_cold_import_core": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_core-attempt-2-spec.json",
+      "bytes": 765,
+      "sha256": "cfd9b23368597a254bd9667e4da665a9c1607a58aab932ff4f48645f3838d585"
+    },
+    "cuda_core_cold_import_flat": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_flat-attempt-2-spec.json",
+      "bytes": 765,
+      "sha256": "05152a78db84d511d17c164da52922b7fb949a039f3e53e534fd46bbab71a56a"
+    },
+    "cuda_core_cold_import_per": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_import_per-attempt-2-spec.json",
+      "bytes": 762,
+      "sha256": "66191a1dddfa1fc3fd2ec826af649cccf4e1005c500b2cc7432a860429d0ae74"
+    }
+  },
+  "manifest_ref": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json",
+    "bytes": 206037,
+    "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+  },
+  "tool_seal_ref": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/root-tool-seal-v3.json",
+    "bytes": 2109,
+    "sha256": "cf2c3dc9db1aec4e46fc1a384c4aad074ca62d804843619d71a7af1b60f18ee0"
+  },
+  "root": "/workspace/hamlet",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import-attempt-2",
+  "jobs": [
+    {
+      "role": "cuda_core_cold_preflight_preloaded",
+      "node": "test_cold_import_probe_faults[preloaded]",
+      "mode": "preflight_preloaded",
+      "entry": "core"
+    },
+    {
+      "role": "cuda_core_cold_preflight_cuda_touch",
+      "node": "test_cold_import_probe_faults[cuda_touch]",
+      "mode": "preflight_cuda_touch",
+      "entry": "core"
+    },
+    {
+      "role": "cuda_core_cold_import_core",
+      "node": "test_fresh_process_canonical_import_order[core]",
+      "mode": "qualify",
+      "entry": "core"
+    },
+    {
+      "role": "cuda_core_cold_import_flat",
+      "node": "test_fresh_process_canonical_import_order[flat]",
+      "mode": "qualify",
+      "entry": "flat"
+    },
+    {
+      "role": "cuda_core_cold_import_per",
+      "node": "test_fresh_process_canonical_import_order[per]",
+      "mode": "qualify",
+      "entry": "per"
+    }
+  ]
+}

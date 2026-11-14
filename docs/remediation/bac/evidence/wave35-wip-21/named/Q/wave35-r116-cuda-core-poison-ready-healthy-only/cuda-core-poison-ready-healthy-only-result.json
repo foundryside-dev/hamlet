@@ -1,0 +1,25 @@
+{
+  "name": "cuda-core-poison-ready-healthy-only",
+  "exit_code": 0,
+  "seconds": 6.3591179847717285,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[poison_ready_healthy_only]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only.log",
+  "sha256": "a75579e663393baaf6ddef1191d65f26d13165d825950f97ba2499500b6fab80",
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "manifest_sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-duplicate-parent-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:44:32.750545+00:00",
+    "end": "2026-11-14T05:44:32.939092+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"job\": \"cuda-core-local-completion-duplicate-parent\",\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"exit_code\": 0,\n  \"counts\": {\n    \"passed\": 1,\n    \"skipped\": 0,\n    \"xfailed\": 0,\n    \"xpassed\": 0,\n    \"warnings\": 0\n  },\n  \"wall_seconds\": 6.502006530761719,\n  \"source_guards\": 819,\n  \"process_identities\": 1,\n  \"config_digests\": 573,\n  \"protected_artifacts\": 13,\n  \"worktree_registry_records\": 14,\n  \"worktrees_available\": 1,\n  \"source_index_import_threads_fixture_custody\": \"PASS\",\n  \"scope\": \"Only this named executable evidence; no package release or whole-BAC completion implied\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-local-completion-duplicate-parent-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:44:32.939175+00:00",
+    "end": "2026-11-14T05:44:33.353699+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED\",\n  \"job\": \"cuda-core-local-completion-duplicate-parent\",\n  \"case\": \"cuda_core_local_completion_duplicate_parent\",\n  \"expected_message\": \"cuda core local_completion_duplicate_parent fail closed\",\n  \"parent_job_exit_code\": 0,\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"manifest_sha256\": \"d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f\",\n  \"spec_sha256\": \"b1031901996da9761fb399ff8235f617819fb192db0fbd254db890f4fd57b7e6\",\n  \"result_sha256\": \"a0e1fe16d841fc79b0b30890729cd7093d2f02ff1ca64c76660f212a772eb9a1\",\n  \"controller_sha256\": \"0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3\",\n  \"child_receipt_sha256\": \"f6afc05ac513d88b9a9d9892ba2863583c007f450dbb537a035c9e69fd2cdb2c\",\n  \"parent_observation_sha256\": \"c76db192e72468b9acae5fdd7ccf8157a1c24a860bc4a2c387102833a5d8b1bf\",\n  \"verifier_sha256\": \"6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173\",\n  \"harness_sha256\": \"180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791\",\n  \"child_pid\": 176909,\n  \"parent_pid\": 176810,\n  \"child_ppid\": 176810,\n  \"torch\": \"2.11.0+cu130\",\n  \"threads\": 1,\n  \"interop_threads\": 5,\n  \"debug\": true,\n  \"source_guards\": 819,\n  \"configs\": 573,\n  \"artifacts\": 13,\n  \"absolute_time_unavailable_reason\": \"Producer records do not supply absolute UTC timestamps; none inferred.\",\n  \"scope\": \"This CPU CUDA-core control only; no CUDA hardware, B6, replay migration or whole-package qualification.\"\n}\n",
+    "stderr": ""
+  }
+]

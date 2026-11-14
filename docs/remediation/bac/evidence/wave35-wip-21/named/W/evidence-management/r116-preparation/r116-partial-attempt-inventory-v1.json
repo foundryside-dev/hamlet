@@ -1,0 +1,801 @@
+{
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_manifest": {
+    "bytes": 206037,
+    "path": "wave35/r116-candidate.json",
+    "root": "W",
+    "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+  },
+  "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "historical_tool_recovery": {
+    "references": [
+      {
+        "bytes": 1238,
+        "path": "evidence-management/cold-import-tool-qualification/root-historical-recovery-adoption-v1.json",
+        "root": "W",
+        "sha256": "0ded5133d51e9cc6cf5cc30d2e769729a9d76e64a67e2bb3099cba7a65625112"
+      },
+      {
+        "bytes": 9667,
+        "path": "evidence-management/cold-import-tool-qualification/historical-source-recovery-v1.json",
+        "root": "W",
+        "sha256": "4c0502a54f6e7dc3c17aaa881b83daf7b1afa1bc266d6d83dab90434a0fafeef"
+      },
+      {
+        "bytes": 2327,
+        "path": "evidence-management/cold-import-tool-qualification/historical-provenance-supplement-v1.md",
+        "root": "W",
+        "sha256": "9f8596b4778cc79eba43f35ecf33a4955c3ce2d69980df7fb734ee004ae23049"
+      },
+      {
+        "bytes": 3561,
+        "path": "evidence-management/cold-import-tool-qualification/root-adoption-v1.json",
+        "root": "W",
+        "sha256": "4f5af41fb4ca0fa4d59033fbc8095ff1457eb18c4fd979b19e12f396882f6ae4"
+      }
+    ],
+    "root_verified_snapshots": 12,
+    "scope": "Post-attempt recovered exact historical bytes verified by root; no new execution or original contemporaneous source-retention claim. Original adoption preserved."
+  },
+  "input_references": [
+    {
+      "bytes": 206037,
+      "path": "wave35/r116-candidate.json",
+      "root": "W",
+      "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+    },
+    {
+      "bytes": 3226,
+      "path": "wave35/r116-fixture-resource-preflight.json",
+      "root": "W",
+      "sha256": "df0663611d32d0092e1444b67d6a593b3d33518a0a227146a303bcfc2e6edd95"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r116-core-collection/core-collection/identity-controller.json",
+      "root": "Q",
+      "sha256": "0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r116-core-collection/core-collection-custody.json",
+      "root": "Q",
+      "sha256": "58ae284aeec202e61c91c876a2d24b093f6a4b8bb29f1299c9f8caad636ee9c6"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r116-core-collection/core-collection-result.json",
+      "root": "Q",
+      "sha256": "b400023d1970d711660838a1ba0eec3b13b3c313184ad8b1bf2b416e71399d3b"
+    },
+    {
+      "bytes": 8466,
+      "path": "wave35-r116-core-collection/core-collection.log",
+      "root": "Q",
+      "sha256": "753179ef92588888a988d2f53ebde9dfb7622bc622b0fa058b694e6f108ccc40"
+    },
+    {
+      "bytes": 728,
+      "path": "wave35-r116-changed-core-test-style/black-result.json",
+      "root": "Q",
+      "sha256": "553dd38beecb1037283ad43bd788f280a57bdebea44e30e14dee85f5c8d87902"
+    },
+    {
+      "bytes": 55,
+      "path": "wave35-r116-changed-core-test-style/black.log",
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "bytes": 724,
+      "path": "wave35-r116-changed-core-test-style/ruff-result.json",
+      "root": "Q",
+      "sha256": "a6a0fc29670c19bca2a4ebbd30e4bd4da1fefb277840fb42c324614aa4306bcf"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r116-changed-core-test-style/ruff.log",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-preloaded-runner.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 764,
+      "path": "wave35-r116-cuda_core_cold_preflight_preloaded-spec.json",
+      "root": "Q",
+      "sha256": "21d997c6764500bba3b25035695bc8561d55b4c1e65030fedef5902522512b65"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/r116-preparation/wave35-r116-cold-preloaded-runner.log.observed-empty-v1.txt",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r116-cold-cuda-touch-runner.log",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 767,
+      "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-spec.json",
+      "root": "Q",
+      "sha256": "7ad0dc867393ab0ce35a14b364138fcc979141045118d89a8b202beb0e3a5326"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/r116-preparation/wave35-r116-cold-cuda-touch-runner.log.observed-empty-v1.txt",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1839,
+      "path": "wave35-r116-cold-launch-prerequisite-diagnostic.json",
+      "root": "Q",
+      "sha256": "eb9068d51618d3b260ee27dbe29922bc5df4b1b0904343cc91c700e54a5e399b"
+    },
+    {
+      "bytes": 301498,
+      "path": "wave35-r116-owner-runtime-preparation.json",
+      "root": "Q",
+      "sha256": "7b6b64d58c5a6b4343e81d442f37a6a5c153399f04df0e002eafb7de3464a744"
+    },
+    {
+      "bytes": 2866,
+      "path": "wave35-r116-cold-static-preflight.json",
+      "root": "Q",
+      "sha256": "415b5ac22630d5fd92791cbf4b738d025cd46b9c3c1bffeb3d09e205e2b6efb0"
+    },
+    {
+      "bytes": 2925,
+      "path": "wave35-r116-cold-import-spec.json",
+      "root": "Q",
+      "sha256": "96cbed103365c021b0f20a1492be6ac9bd09944b2236a826c2a6a09452541e29"
+    },
+    {
+      "bytes": 24359,
+      "path": "wave35-r116-core-node-selection.json",
+      "root": "Q",
+      "sha256": "46d3a212ba757448cea4ea51c79552b44212da6e4a1f6cb4dbf964a326dcd8d4"
+    },
+    {
+      "bytes": 582,
+      "path": "wave35-r116-collection-spec.json",
+      "root": "Q",
+      "sha256": "85420b3a00852a10327fa49048c6f89f0718ae21891a9954f581041a8d25a178"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r116-owned-spec.json",
+      "root": "Q",
+      "sha256": "c8e828264688c84cca67e31754462970ed5bf5929be94874ec83ccf9ff91aad1"
+    },
+    {
+      "bytes": 1238,
+      "path": "evidence-management/cold-import-tool-qualification/root-historical-recovery-adoption-v1.json",
+      "root": "W",
+      "sha256": "0ded5133d51e9cc6cf5cc30d2e769729a9d76e64a67e2bb3099cba7a65625112"
+    },
+    {
+      "bytes": 9667,
+      "path": "evidence-management/cold-import-tool-qualification/historical-source-recovery-v1.json",
+      "root": "W",
+      "sha256": "4c0502a54f6e7dc3c17aaa881b83daf7b1afa1bc266d6d83dab90434a0fafeef"
+    },
+    {
+      "bytes": 2327,
+      "path": "evidence-management/cold-import-tool-qualification/historical-provenance-supplement-v1.md",
+      "root": "W",
+      "sha256": "9f8596b4778cc79eba43f35ecf33a4955c3ce2d69980df7fb734ee004ae23049"
+    },
+    {
+      "bytes": 3561,
+      "path": "evidence-management/cold-import-tool-qualification/root-adoption-v1.json",
+      "root": "W",
+      "sha256": "4f5af41fb4ca0fa4d59033fbc8095ff1457eb18c4fd979b19e12f396882f6ae4"
+    }
+  ],
+  "observed_at": "2026-11-14T05:36:37.804863+00:00",
+  "observed_completed_checks": [
+    {
+      "application_pass_count": 0,
+      "candidate_manifest": {
+        "bytes": 206037,
+        "path": "wave35/r116-candidate.json",
+        "root": "W",
+        "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+      },
+      "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+      "check_kind": "collection",
+      "classification": "OBSERVED_EXECUTED_PASS",
+      "collected": 94,
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "bac_source_identity",
+        "--collect-only",
+        "-q"
+      ],
+      "custody": {
+        "bytes": 646,
+        "path": "wave35-r116-core-collection/core-collection-custody.json",
+        "root": "Q",
+        "sha256": "58ae284aeec202e61c91c876a2d24b093f6a4b8bb29f1299c9f8caad636ee9c6"
+      },
+      "duration_seconds": 8.136756658554077,
+      "ended_at": null,
+      "exit_code": 0,
+      "id": "wave35-r116-core-collection--core-collection",
+      "log": {
+        "bytes": 8466,
+        "path": "wave35-r116-core-collection/core-collection.log",
+        "root": "Q",
+        "sha256": "753179ef92588888a988d2f53ebde9dfb7622bc622b0fa058b694e6f108ccc40"
+      },
+      "qualifying_application": false,
+      "record": {
+        "bytes": 844,
+        "path": "wave35-r116-core-collection/core-collection-result.json",
+        "root": "Q",
+        "sha256": "b400023d1970d711660838a1ba0eec3b13b3c313184ad8b1bf2b416e71399d3b"
+      },
+      "started_at": null,
+      "time_unavailable_reason": "Original per-job record has no absolute UTC start/end; none inferred."
+    },
+    {
+      "candidate_manifest": {
+        "bytes": 206037,
+        "path": "wave35/r116-candidate.json",
+        "root": "W",
+        "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+      },
+      "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+      "check_kind": "static",
+      "classification": "OBSERVED_EXECUTED_PASS",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+      ],
+      "duration_seconds": 1.6270887851715088,
+      "ended_at": null,
+      "exit_code": 0,
+      "id": "wave35-r116-changed-core-test-style--black",
+      "log": {
+        "bytes": 55,
+        "path": "wave35-r116-changed-core-test-style/black.log",
+        "root": "Q",
+        "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+      },
+      "qualifying_application": false,
+      "record": {
+        "bytes": 728,
+        "path": "wave35-r116-changed-core-test-style/black-result.json",
+        "root": "Q",
+        "sha256": "553dd38beecb1037283ad43bd788f280a57bdebea44e30e14dee85f5c8d87902"
+      },
+      "started_at": null,
+      "time_unavailable_reason": "Original per-job record has no absolute UTC start/end; none inferred."
+    },
+    {
+      "candidate_manifest": {
+        "bytes": 206037,
+        "path": "wave35/r116-candidate.json",
+        "root": "W",
+        "sha256": "d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f"
+      },
+      "candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+      "check_kind": "static",
+      "classification": "OBSERVED_EXECUTED_PASS",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+      ],
+      "duration_seconds": 0.06865763664245605,
+      "ended_at": null,
+      "exit_code": 0,
+      "id": "wave35-r116-changed-core-test-style--ruff",
+      "log": {
+        "bytes": 19,
+        "path": "wave35-r116-changed-core-test-style/ruff.log",
+        "root": "Q",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+      },
+      "qualifying_application": false,
+      "record": {
+        "bytes": 724,
+        "path": "wave35-r116-changed-core-test-style/ruff-result.json",
+        "root": "Q",
+        "sha256": "a6a0fc29670c19bca2a4ebbd30e4bd4da1fefb277840fb42c324614aa4306bcf"
+      },
+      "started_at": null,
+      "time_unavailable_reason": "Original per-job record has no absolute UTC start/end; none inferred."
+    }
+  ],
+  "original_unknown_launches": [
+    {
+      "classification": "UNKNOWN_ORIGINAL_LAUNCH_OUTCOME",
+      "counts": null,
+      "duration_seconds": null,
+      "ended_at": null,
+      "exit_code": null,
+      "id": "original-cold-launch-preloaded",
+      "observed_result_files": [],
+      "outer_log": {
+        "bytes": 0,
+        "path": "wave35-r116-cold-preloaded-runner.log",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "preserved_empty_log": {
+        "bytes": 0,
+        "path": "evidence-management/r116-preparation/wave35-r116-cold-preloaded-runner.log.observed-empty-v1.txt",
+        "root": "W",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "qualifying_application": false,
+      "spec": {
+        "bytes": 764,
+        "path": "wave35-r116-cuda_core_cold_preflight_preloaded-spec.json",
+        "root": "Q",
+        "sha256": "21d997c6764500bba3b25035695bc8561d55b4c1e65030fedef5902522512b65"
+      },
+      "started_at": null,
+      "stderr": null,
+      "unavailable_reason": "Root reports original stderr/exit unavailable; only empty outer log and prepared spec retained. No runtime/result evidence establishes whether original application execution began. Do not infer original outcome from later reproduction."
+    },
+    {
+      "classification": "UNKNOWN_ORIGINAL_LAUNCH_OUTCOME",
+      "counts": null,
+      "duration_seconds": null,
+      "ended_at": null,
+      "exit_code": null,
+      "id": "original-cold-launch-cuda_touch",
+      "observed_result_files": [],
+      "outer_log": {
+        "bytes": 0,
+        "path": "wave35-r116-cold-cuda-touch-runner.log",
+        "root": "Q",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "preserved_empty_log": {
+        "bytes": 0,
+        "path": "evidence-management/r116-preparation/wave35-r116-cold-cuda-touch-runner.log.observed-empty-v1.txt",
+        "root": "W",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "qualifying_application": false,
+      "spec": {
+        "bytes": 767,
+        "path": "wave35-r116-cuda_core_cold_preflight_cuda_touch-spec.json",
+        "root": "Q",
+        "sha256": "7ad0dc867393ab0ce35a14b364138fcc979141045118d89a8b202beb0e3a5326"
+      },
+      "started_at": null,
+      "stderr": null,
+      "unavailable_reason": "Root reports original stderr/exit unavailable; only empty outer log and prepared spec retained. No runtime/result evidence establishes whether original application execution began. Do not infer original outcome from later reproduction."
+    }
+  ],
+  "owner_runtime_preparation": {
+    "counts_scope": "Planned996 owners plus separate5cold nodes are not executed/passed counts.",
+    "dependency": "Both cold negatives and three cold positives strictly verified before these owner runs; fixture prerequisite14 before producer remainder.",
+    "jobs": [
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 14,
+        "job": "fixture-prerequisites",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 73,
+        "job": "core-healthy",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 67,
+        "job": "activation",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 408,
+        "job": "producer-rest-a",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 408,
+        "job": "producer-rest-b",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-bootstrap-failure",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-runtime-query-failure",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-local-completion-single",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-local-completion-multiple-body",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-poison-unknown-ready",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-poison-ready-qualified",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-poison-ready-healthy-only",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-operation-body-completion",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-local-completion-duplicate-parent",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-inherited-pid",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-invocation-same-error",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-invocation-child-failure",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-invocation-parent-failure",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-invocation-reported-failure",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-invocation-phase-reference",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-core-invocation-phase-failure",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-flat_local_single",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-flat_local_distinct",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-flat_local_same",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-flat_admitted_single",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-flat_admitted_same",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-per_local_single",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-per_local_distinct",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-per_local_same",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-per_admitted_single",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      },
+      {
+        "counts": null,
+        "duration_seconds": null,
+        "ended_at": null,
+        "exit_code": null,
+        "expected_node_count": 1,
+        "job": "cuda-producer-poison-per_admitted_same",
+        "reason": "UNRUN; awaiting strict cold negative and positive prerequisites",
+        "started_at": null,
+        "status": "UNRUN"
+      }
+    ],
+    "planned_existing_unique_nodes": 996,
+    "planned_strict_children": 26,
+    "reference": {
+      "bytes": 301498,
+      "path": "wave35-r116-owner-runtime-preparation.json",
+      "root": "Q",
+      "sha256": "7b6b64d58c5a6b4343e81d442f37a6a5c153399f04df0e002eafb7de3464a744"
+    },
+    "status": "UNRUN AT THIS PREPARATION OBSERVATION"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "remaining": [
+    "Root completes/reviews runner repair and supplies actual later attempts",
+    "Actual cold negative/positive disposition and strict verification",
+    "Owner runtime execution after prerequisite gates",
+    "Root closure before any final R116 component or checkpoint selection"
+  ],
+  "repair_in_progress": "Root-assigned cold runner repair owns nested role-output path/PYTHONPATH fix; this inventory claims no repair or repaired runtime result. Original tool seals/history remain separate immutable evidence.",
+  "reproduced_setup_failure": {
+    "application_runtime": "NOT REACHED",
+    "cause": "FileNotFoundError creating nested run path with historical runner mkdir; exact stderr retained in record.",
+    "classification": "OBSERVED_EXECUTED_SETUP_FAILURE_BEFORE_APPLICATION",
+    "command": [
+      "python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda_core_cold_preflight_preloaded-spec.json"
+    ],
+    "counts": null,
+    "duration_seconds": 0.05249347699282225,
+    "ended_at": "2026-11-14T05:31:50.389831+00:00",
+    "exit_code": 1,
+    "id": "reproduced-cold-launch-prerequisite-failure",
+    "qualifying_application": false,
+    "record": {
+      "bytes": 1839,
+      "path": "wave35-r116-cold-launch-prerequisite-diagnostic.json",
+      "root": "Q",
+      "sha256": "eb9068d51618d3b260ee27dbe29922bc5df4b1b0904343cc91c700e54a5e399b"
+    },
+    "scope": "This later reproduction establishes its own failure only; original two unknown launch outcomes remain unknown.",
+    "started_at": "2026-11-14T05:31:50.337337+00:00"
+  },
+  "schema": "bac-partial-round-attempt-inventory-v1",
+  "scope": "No application bodies inspected; no application/tool runtime, source/Git changes or new checkout. Metadata snapshot only; unavailable facts remain null, original empty logs preserved.",
+  "static_preflight": {
+    "reference": {
+      "bytes": 2866,
+      "path": "wave35-r116-cold-static-preflight.json",
+      "root": "Q",
+      "sha256": "415b5ac22630d5fd92791cbf4b738d025cd46b9c3c1bffeb3d09e205e2b6efb0"
+    },
+    "scope": "Existing literal/AST/argv metadata preflight only, not application execution."
+  },
+  "status": "PARTIAL R116 ONLY; EXECUTION NAMESPACE OPEN; NO COMPONENT OR TERMINAL SEAL"
+}

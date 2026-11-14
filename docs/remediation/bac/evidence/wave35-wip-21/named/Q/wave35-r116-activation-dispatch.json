@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-activation-spec.json"
+  ],
+  "start": "2026-11-14T05:42:18.445875+00:00",
+  "end": "2026-11-14T05:42:24.406238+00:00",
+  "seconds": 5.960370967004565,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-activation-dispatch.log",
+  "sha256": "ba99ab5dc139862b51ece0e62f074926baf9ccfe06bb1fa5456794fb88b9ef13",
+  "spec_sha256": "c0c17d7803ed75068f684d938bdc7071341d524d1b742c803df2df560163d89a"
+}

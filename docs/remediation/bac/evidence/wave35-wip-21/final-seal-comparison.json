@@ -1,0 +1,55 @@
+{
+  "schema": "bac-root-terminal-receipt-comparison-v1",
+  "at": "2026-11-14T06:05:48.380595+00:00",
+  "status": "PASS; ONLY FINAL SEAL/REVIEW FIELDS CHANGED",
+  "input": {
+    "root": "W",
+    "path": "evidence-management/wip21-preparation/wip21-r114-r116-preterminal-receipt-input-v3.json",
+    "bytes": 3160325,
+    "sha256": "8b8648558242deaa695734bd2c38a2188e97ad7d4457629d6f3bd559e3b5b6f0"
+  },
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip21-preparation/root-qualification-subject-v1.json",
+    "bytes": 46473,
+    "sha256": "1629521f876922d3ac4b1e93f66a64512e560afa3ce6338d0eee5cfc0e9cf9b8"
+  },
+  "receipt": {
+    "root": "W",
+    "path": "evidence-management/wip21-preparation/root-terminal-receipt-v1.json",
+    "bytes": 3161900,
+    "sha256": "e3b04cbebd7a6b4e5d064e49491a465c5c85aa6b598ce91ea9955d613cbd34be"
+  },
+  "changed_keys": [
+    "review_subject",
+    "status",
+    "review_subject_pending_reason",
+    "remaining_root_inputs",
+    "reviews"
+  ],
+  "unchanged_core_fields": [
+    "candidate_manifest",
+    "candidate_tree",
+    "attempt_index",
+    "interval_entries",
+    "component_receipts",
+    "supporting_components",
+    "documents",
+    "dependencies",
+    "execution_subtrees",
+    "overlap_accounting",
+    "package_accounting"
+  ],
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/WIP21-TERMINAL-INDEPENDENT-REVIEW-v1.md",
+    "bytes": 8166,
+    "sha256": "e06e851df5e9fc21cb9529292b3de016b4b4cbd1c0e41648e003afc466b6ae37"
+  },
+  "attestation": {
+    "root": "W",
+    "path": "wave35-preparation/WIP21-TERMINAL-INDEPENDENCE-v1.json",
+    "bytes": 1907,
+    "sha256": "0591b93a5f36089e009a86d959023e60e6fb73d579740e42e398699d302799e5"
+  }
+}

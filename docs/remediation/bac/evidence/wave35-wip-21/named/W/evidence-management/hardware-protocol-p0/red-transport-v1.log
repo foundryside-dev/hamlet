@@ -1,0 +1,29 @@
+.F...................................................................... [ 84%]
+.............                                                            [100%]
+=================================== FAILURES ===================================
+________________ test_closed_schema_complete_synthetic_records _________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_closed_schema_complete_synthetic_records(protocol, records):
+        for kind, value in records.items():
+>           protocol.validate_record(kind, value)
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:126: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:414: in validate_record
+    _require(type(kind) is str and kind in TYPES, "unknown record kind")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'unknown record kind'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: unknown record kind
+
+/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:127: ValueError
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_closed_schema_complete_synthetic_records
+1 failed, 84 passed in 1.09s

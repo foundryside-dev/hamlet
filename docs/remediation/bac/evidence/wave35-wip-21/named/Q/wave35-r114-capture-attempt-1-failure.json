@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-14T05:00:18.978765+00:00",
+  "exit_code": 1,
+  "command": [
+    "python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+    "r114",
+    "wave35",
+    "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+    "wave35/r113-candidate.json"
+  ],
+  "stderr": "AssertionError: CURRENT-RNG-CUSTODY-CORE-CONTRACT.md actual240 exceeded projected232",
+  "stdout_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r114-capture.log",
+  "candidate_created": false,
+  "cause": "Stale capture document line bound after independently reviewed WIP20 documentation publication.",
+  "repair": "Update only exact document projection232\u2192240; no source/test/doc edit.",
+  "metadata_before_sha256": "f349bd712c9ad2deab07b282100ad48af083fcb3625084f01b0f62390debceaa",
+  "metadata_after_sha256": "0eb5b5fb713ec1f04e6aea33f44c3cabd65bcac4e5919dec11f3102953df7136",
+  "index_tree_after_staging": "1616bc02203956a271839a1330a8eba9d27a56c7",
+  "scope": "Retained failed capture prerequisite; not a failed app assertion or executed qualification."
+}

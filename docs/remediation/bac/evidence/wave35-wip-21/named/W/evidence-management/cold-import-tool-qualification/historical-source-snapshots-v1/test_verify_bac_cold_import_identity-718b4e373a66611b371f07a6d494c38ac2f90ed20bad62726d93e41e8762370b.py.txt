@@ -1,0 +1,666 @@
+"""Authored inert synthetic data; never import or execute application/probe bytes."""
+import copy
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+
+Q = Path(__file__).parent
+TEST = 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py'
+CORE = 'townlet.exploration.rng_custody'
+FLAT = 'townlet.training.replay_buffer'
+PER = 'townlet.training.prioritized_replay_buffer'
+ROWS = [
+    ('cuda_core_cold_preflight_preloaded', 'test_cold_import_probe_faults[preloaded]', 'preflight_preloaded', 'core'),
+    ('cuda_core_cold_preflight_cuda_touch', 'test_cold_import_probe_faults[cuda_touch]', 'preflight_cuda_touch', 'core'),
+    ('cuda_core_cold_import_core', 'test_fresh_process_canonical_import_order[core]', 'qualify', 'core'),
+    ('cuda_core_cold_import_flat', 'test_fresh_process_canonical_import_order[flat]', 'qualify', 'flat'),
+    ('cuda_core_cold_import_per', 'test_fresh_process_canonical_import_order[per]', 'qualify', 'per'),
+]
+THREAD_NAMES = 'OMP_NUM_THREADS MKL_NUM_THREADS OPENBLAS_NUM_THREADS NUMEXPR_NUM_THREADS VECLIB_MAXIMUM_THREADS BLIS_NUM_THREADS'.split()
+# These bytes are only parsed as data. They are deliberately not an application probe.
+PROBE = '''def _cold_boundary():
+    assert False, "cold import precondition violated"
+class NoCUDA:
+    def __getattr__(self, name):
+        raise RuntimeError("cold import CUDA sentinel touched")
+def run():
+    if mode == "preflight_preloaded":
+        _cold_boundary()
+    if mode == "preflight_cuda_touch":
+        torch.cuda.is_initialized
+'''
+D_ROWS = [
+    ('REPLAY_BUFFER_PUSH_CUDA', 'flat', 'push', 'tensor'),
+    ('REPLAY_BUFFER_PUSH_RECORDED_CUDA', 'flat', 'push_recorded', 'tensor'),
+    ('REPLAY_BUFFER_READINESS_CUDA', 'flat', 'readiness', 'request'),
+    ('REPLAY_BUFFER_SERIALIZE_CUDA', 'flat', 'serialize', 'none'),
+    ('REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA', 'flat', 'validate_serialized', 'mapping'),
+    ('REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA', 'flat', 'load_for_mode', 'mapping'),
+    ('REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA', 'flat', 'historical_archives', 'none'),
+    ('REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA', 'flat', 'install_historical_archive', 'archive'),
+    ('PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA', 'per', 'push', 'tensor'),
+    ('PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA', 'per', 'push_recorded', 'tensor'),
+    ('PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA', 'per', 'declare_unconstrained_action_dim', 'integer'),
+    ('PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA', 'per', 'readiness', 'request'),
+    ('PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA', 'per', 'serialize', 'none'),
+    ('PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA', 'per', 'validate_serialized', 'mapping'),
+    ('PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA', 'per', 'historical_archives', 'none'),
+    ('PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA', 'per', 'install_historical_archive', 'archive'),
+    ('PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA', 'per', 'update_priorities', 'indices'),
+    ('PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA', 'per', 'update_unit_priorities', 'indices'),
+]
+CACHE = [D_ROWS[3][0], D_ROWS[12][0]]
+UNRESOLVED = [r[0] for r in D_ROWS if r[0] not in CACHE]
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def ref(path):
+    data = path.read_bytes()
+    return {'path': str(path), 'bytes': len(data), 'sha256': digest(data)}
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value))
+    return ref(path)
+
+
+@pytest.fixture
+def validator():
+    path = Q / 'verify_bac_cold_import_identity.py'
+    assert path.is_file(), 'closed cold-import validator is not implemented'
+    spec = importlib.util.spec_from_file_location('cold_validator_test', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def state(members=2):
+    return dict(generation=2, revision=0, currency=0, ambient_revision=0, poisoned=False,
+                ready=False, gates=0, operations=0, members=members)
+
+
+def threads():
+    return {'python': [{'name': 'MainThread', 'ident': 1, 'native_id': 102}],
+            'os': 1, 'torch_intraop': 1, 'torch_interop': 1}
+
+
+def command(root, node):
+    return [str(root / '.venv/bin/python'), '-m', 'pytest', TEST + '::' + node,
+            '--no-cov', '-p', 'no:cacheprovider', '-p', 'no:benchmark', '-p',
+            'bac_source_identity', '-p', 'bac_cold_worker_identity', '-q', '-s']
+
+
+class Fixture:
+    def __init__(self, base, row):
+        self.role, self.node, self.mode, self.entry = ROWS[row]
+        self.base = base
+        self.root = base / 'root'
+        self.output = base / 'output'
+        self.run = self.output / self.role / 'run'
+        self.job = self.run / self.role
+        self.job.mkdir(parents=True)
+        self.paths = {k: self.job / ('cold-import-' + v) for k, v in {
+            'worker': 'worker.json', 'child': ('identity.json' if self.mode == 'qualify' else 'fault-witness.json'),
+            'observed': 'observation.json', 'stdout': 'stdout.log', 'stderr': 'stderr.log'}.items()}
+        self.paths.update(manifest=base / 'manifest.json', seal=base / 'seal.json', spec=base / 'spec.json',
+                          result=self.run / (self.role + '-result.json'), log=self.run / (self.role + '.log'))
+        self.modules = {'townlet': 'src/townlet/__init__.py', CORE: 'src/townlet/exploration/rng_custody.py',
+                        FLAT: 'src/townlet/training/replay_buffer.py', PER: 'src/townlet/training/prioritized_replay_buffer.py'}
+        sources = {}
+        for relative in [*self.modules.values(), TEST]:
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('_COLD_IMPORT_PROBE = ' + repr(PROBE) + '\n' if relative == TEST else '# inert synthetic data\n')
+            sources[relative] = ref(path)['sha256']
+        self.manifest = dict(base_commit='a' * 40, candidate_tree='b' * 40, worktree_registry='synthetic\n',
+                             source_files=sources, configs={}, artifacts={})
+        write(self.paths['manifest'], self.manifest)
+        binary = base / 'binary'
+        binary.write_bytes(b'inert runtime bytes')
+        launch = self.root/'.venv/bin/python'
+        launch.parent.mkdir(parents=True)
+        launch.symlink_to(binary)
+        for package in ('torch', 'numpy'):
+            (base / package).write_bytes(b'inert package bytes')
+        self.runtime = dict(launch_python=str(self.root / '.venv/bin/python'), binary=str(binary), binary_sha256=ref(binary)['sha256'],
+                            python_version='3.13.0', torch_path=str(base / 'torch'), torch_version='2.synthetic',
+                            numpy_path=str(base / 'numpy'), numpy_version='2.synthetic')
+        self.seal = dict(schema='bac-cold-import-tool-seal-v2', tools={name: ref(Q / name) for name in (
+            'verify_bac_replay_spawn_identity.py', 'verify_bac_cold_import_identity.py',
+            'bac_cold_worker_identity.py', 'test_verify_bac_cold_import_identity.py')}, runtime=self.runtime)
+        write(self.paths['seal'], self.seal)
+        self.spec = dict(schema='bac-cold-import-spec-v2', root_run_specs={}, manifest_ref=ref(self.paths['manifest']),
+                         tool_seal_ref=ref(self.paths['seal']), root=str(self.root), output=str(self.output), jobs=[])
+        for role, node, mode, entry in ROWS:
+            spec = dict(root=str(self.root), manifest=str(self.paths['manifest']), output=str(self.output / role / 'run'),
+                        workers=1, jobs=[dict(name=role, args=command(self.root, node)[1:])])
+            self.spec['root_run_specs'][role] = write(base / (role + '-spec.json'), spec)
+            self.spec['jobs'].append(dict(role=role, node=node, mode=mode, entry=entry))
+        write(self.paths['spec'], self.spec)
+        self.worker = dict(schema='cuda-core-cold-worker-v2', role=self.role, node=self.node, pid=101, ppid=100,
+                           start_ticks=123, root=str(self.root), cwd=str(self.root), launch_python=self.runtime['launch_python'],
+                           binary=str(binary), binary_sha256=ref(binary)['sha256'], orig_argv=command(self.root, self.node),
+                           proc_argv=command(self.root, self.node), command_sha256=digest(json.dumps(command(self.root, self.node),
+                           ensure_ascii=True, separators=(',', ':')).encode()), manifest_ref=ref(self.paths['manifest']),
+                           test_ref=ref(self.root / TEST), plugin_ref=ref(Q / 'bac_cold_worker_identity.py'),
+                           base_commit='a' * 40, candidate_tree='b' * 40,
+                           python_threads=[dict(name='MainThread', ident=1, native_id=101)], os_threads=1)
+        write(self.paths['worker'], self.worker)
+        argv = [self.runtime['launch_python'], '-I', '-c', PROBE, self.mode, self.entry, str(self.root), str(self.job), 'c' * 32]
+        self.child = dict(schema='cuda-core-cold-import-identity-v2' if self.mode == 'qualify' else 'cuda-core-cold-import-fault-witness-v2',
+                          profile='linux-exec-cold-import-v2', role=self.role, mode=self.mode, entry=self.entry, nonce='c' * 32,
+                          pid=102, ppid=101, worker_ref=ref(self.paths['worker']), root=str(self.root), cwd=str(self.root),
+                          launch_python=self.runtime['launch_python'], binary=str(binary), binary_sha256=ref(binary)['sha256'],
+                          python_version='3.13.0', orig_argv=argv, proc_argv=argv[:],
+                          command_sha256=digest(json.dumps(argv, ensure_ascii=True, separators=(',', ':')).encode()),
+                          script_sha256=digest(PROBE.encode()), manifest_ref=ref(self.paths['manifest']),
+                          test_ref=ref(self.root / TEST), base_commit='a' * 40, candidate_tree='b' * 40)
+        self.paths['stdout'].write_bytes(b'')
+        self.paths['stderr'].write_bytes(b'')
+        env = dict.fromkeys(THREAD_NAMES, '1')
+        origins = {name: dict(path=str(self.root / relative), sha256=sources[relative]) for name, relative in self.modules.items()}
+        if self.mode == 'qualify':
+            selected = sorted({'townlet', CORE, {'core': CORE, 'flat': FLAT, 'per': PER}[self.entry]})
+            self.child.update(runtime={k: self.runtime[k] for k in ('torch_version', 'torch_path', 'numpy_version', 'numpy_path')},
+                              checkpoints=dict(before_torch=[], after_torch=[], before_selected=[], after_selected=selected,
+                                               after_producers=sorted(origins), final=sorted(origins)), source_modules=origins,
+                              threads_before=threads(), threads_after=threads(), environment=env, eager_policy_calls=[],
+                              custody_producer_imports=[], manifest_contracts=[], missing_exports=[], gates=[], unresolved=UNRESOLVED,
+                              rng_before=dict.fromkeys(('python', 'numpy', 'torch'), 'd' * 64),
+                              rng_after=dict.fromkeys(('python', 'numpy', 'torch'), 'd' * 64),
+                              cleanup=dict(unregistered=['flat', 'per'], state=state(0), cache=CACHE, unresolved=UNRESOLVED,
+                                           cuda_calls=0, sentinel_identity=True))
+            for i, (name, owner, route, input_kind) in enumerate(D_ROWS):
+                self.child['manifest_contracts'].append(dict(name=name, contract_id=200+i, descriptor_id=300+i,
+                    owner_kind=owner, route=route, input_kind=input_kind, rationale='synthetic rationale ' + name,
+                    healthy=True, post_poison=False))
+            for name in CACHE:
+                self.child['missing_exports'].append(dict(contract=name, exception_class='ImportError', export_restored=True,
+                    body_calls=0, cuda_calls=0, cache_before=[], cache_after=[], state_before=state(), state_after=state()))
+            for i in range(4):
+                j = i % 2
+                d = self.child['manifest_contracts'][3 if j == 0 else 12]
+                self.child['gates'].append(dict(pass_='first' if i < 2 else 'repeat', contract=CACHE[j], owner_id=400+j,
+                    participant_id=500+j, descriptor_id=d['descriptor_id'], policy_id=600+j, cache_tuple_id=700+j,
+                    owner_class=(FLAT + '.ReplayBuffer' if j == 0 else PER + '.PrioritizedReplayBuffer'),
+                    input_class='builtins.NoneType', route='serialize', rationale=d['rationale'], healthy=True,
+                    post_poison=False, exact_binding=True, completion_failed=False, cache_before=[] if i == 0 else CACHE[:1] if i == 1 else CACHE,
+                    cache_after=CACHE[:1] if i == 0 else CACHE, resolver_before=[2,3,4,4][i], resolver_after=[3,4,4,4][i],
+                    state_before=state(), state_after=state()))
+                self.child['gates'][-1]['pass'] = self.child['gates'][-1].pop('pass_')
+        else:
+            preload = self.mode == 'preflight_preloaded'
+            names = sorted(['townlet', CORE]) if preload else []
+            self.child.update(phase='before_preentry_assert' if preload else 'before_sentinel_raise', modules=names,
+                              source_modules={name: origins[name] for name in names}, cuda_calls=0 if preload else 1,
+                              site_function='_cold_boundary' if preload else '__getattr__', site_line=2 if preload else 5,
+                              caller_function='run', caller_line=8 if preload else 10, threads=threads(), environment=env)
+            error = 'AssertionError: cold import precondition violated' if preload else 'RuntimeError: cold import CUDA sentinel touched'
+            self.paths['stderr'].write_text('Traceback (most recent call last):\n  File "<string>", line ' +
+                str(self.child['caller_line']) + ', in run\n  File "<string>", line ' + str(self.child['site_line']) +
+                ', in ' + self.child['site_function'] + '\n' + error + '\n')
+        self.observed = dict(schema='cuda-core-cold-import-observation-v2', role=self.role, mode=self.mode, entry=self.entry,
+            nonce='c' * 32, parent_pid=101, child_pid=102, worker_start_ticks=123, worker_ref=ref(self.paths['worker']),
+            launch_argv=argv, command_sha256=self.child['command_sha256'], script_sha256=digest(PROBE.encode()), subject_ref={},
+            stdout_ref=ref(self.paths['stdout']), stderr_ref=ref(self.paths['stderr']), exitcode=0 if self.mode == 'qualify' else 1,
+            timed_out=False, termination='none', reaped=True, seconds=0.25)
+        self.result = dict(name=self.role, exit_code=0, seconds=1.0, command=command(self.root, self.node),
+            log=str(self.paths['log']), sha256='', candidate_tree='b'*40, base_commit='a'*40,
+            manifest_sha256=ref(self.paths['manifest'])['sha256'],
+            harness_sha256='180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791')
+        self.sync()
+
+    def sync(self):
+        write(self.paths['worker'], self.worker)
+        self.child['worker_ref'] = ref(self.paths['worker'])
+        self.observed['worker_ref'] = ref(self.paths['worker'])
+        self.observed['subject_ref'] = write(self.paths['child'], self.child)
+        self.observed['stdout_ref'] = ref(self.paths['stdout'])
+        self.observed['stderr_ref'] = ref(self.paths['stderr'])
+        write(self.paths['observed'], self.observed)
+        self.paths['log'].write_text('BAC_COLD_WORKER_SHA256=' + ref(self.paths['worker'])['sha256'] + '\n1 passed in 0.1s\n')
+        self.result['sha256'] = ref(self.paths['log'])['sha256']
+        write(self.paths['result'], self.result)
+
+    def invoke(self, validator, monkeypatch):
+        # Stub only external repository metadata commands; all JSON/source/hash checks are real.
+        def metadata(args, **kwargs):
+            assert kwargs['cwd'] == self.root
+            return {('git','rev-parse','HEAD'): 'a'*40, ('git','write-tree'): 'b'*40,
+                    ('git','worktree','list','--porcelain'): 'synthetic\n'}[tuple(args)]
+        monkeypatch.setattr(validator.subprocess, 'check_output', metadata)
+        monkeypatch.setattr(validator.subprocess, 'run', lambda args, **kw: SimpleNamespace(returncode=0))
+        (self.root / '.superpowers').mkdir(exist_ok=True)
+        return validator.verify(self.paths['spec'], self.role)
+
+
+@pytest.mark.parametrize('row', range(5))
+def test_all_closed_roles_and_exclusive_receipts(tmp_path, validator, monkeypatch, row):
+    f = Fixture(tmp_path, row)
+    receipt = f.invoke(validator, monkeypatch)
+    assert receipt['status'] == ('COLD IMPORT EXPECTED REJECTION VERIFIED' if row < 2 else 'COLD IMPORT POSITIVE VERIFIED')
+    assert receipt['parent_pid'] == 101 and receipt['child_pid'] == 102
+    destination = f.job / 'cold-import-custody.json'
+    original = destination.read_bytes()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+    assert destination.read_bytes() == original
+
+
+@pytest.mark.parametrize('field,value', [
+    ('profile','spawn'), ('role','unknown'), ('mode','other'), ('entry','other'), ('pid',True), ('ppid',103),
+    ('nonce','x'*32), ('binary_sha256','0'*64), ('python_version','wrong'), ('script_sha256','0'*64),
+    ('command_sha256','0'*64), ('base_commit','0'*40), ('candidate_tree','0'*40), ('orig_argv',[]), ('proc_argv',[]),
+    ('eager_policy_calls',['called']), ('custody_producer_imports',['producer']), ('unresolved',[]),
+])
+def test_common_and_positive_mutations(tmp_path, validator, monkeypatch, field, value):
+    f = Fixture(tmp_path, 2)
+    f.child[field] = value
+    f.sync()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+    assert not (f.job / 'cold-import-custody.json').exists()
+
+
+@pytest.mark.parametrize('record,field,value', [
+    ('worker','pid',True), ('worker','start_ticks',124), ('worker','node','unknown'), ('worker','orig_argv',[]),
+    ('worker','proc_argv',[]), ('worker','plugin_ref',{}), ('worker','os_threads',True),
+    ('observed','child_pid',103), ('observed','parent_pid',103), ('observed','worker_start_ticks',124),
+    ('observed','seconds',True), ('observed','seconds',101.0), ('observed','seconds',0.0),
+    ('observed','timed_out',True), ('observed','reaped',False), ('observed','exitcode',1),
+    ('observed','termination','killed'), ('observed','launch_argv',[]), ('result','exit_code',1),
+    ('result','command',[]), ('result','harness_sha256','0'*64),
+])
+def test_worker_parent_result_mutations(tmp_path, validator, monkeypatch, record, field, value):
+    f = Fixture(tmp_path, 2)
+    getattr(f, record)[field] = value
+    f.sync()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+@pytest.mark.parametrize('path,value', [
+    (('checkpoints','before_torch'),['townlet']), (('checkpoints','after_torch'),['townlet']),
+    (('checkpoints','before_selected'),['townlet']), (('checkpoints','after_selected'),[]),
+    (('checkpoints','after_producers'),[]), (('checkpoints','final'),[]),
+    (('threads_before','os'),2), (('threads_after','torch_interop'),5),
+    (('threads_after','python',0,'native_id'),103), (('environment','OMP_NUM_THREADS'),'2'),
+    (('manifest_contracts',0,'healthy'),False), (('manifest_contracts',0,'rationale'),''),
+    (('manifest_contracts',0,'input_kind'),'none'), (('manifest_contracts',1,'contract_id'),200),
+    (('missing_exports',0,'exception_class'),'RuntimeError'), (('missing_exports',1,'export_restored'),False),
+    (('missing_exports',0,'body_calls'),1), (('missing_exports',0,'cache_after'),CACHE),
+    (('gates',0,'resolver_after'),4), (('gates',2,'policy_id'),999), (('gates',3,'cache_tuple_id'),999),
+    (('gates',0,'state_after','revision'),1), (('gates',0,'cache_after'),CACHE),
+    (('gates',1,'exact_binding'),False), (('gates',1,'completion_failed'),True),
+    (('rng_after','python'),'f'*64), (('cleanup','cuda_calls'),1), (('cleanup','sentinel_identity'),False),
+    (('cleanup','state','members'),1), (('cleanup','unresolved'),[]), (('source_modules',CORE,'sha256'),'0'*64),
+])
+def test_nested_semantic_mutations(tmp_path, validator, monkeypatch, path, value):
+    f = Fixture(tmp_path, 2)
+    target = f.child
+    for part in path[:-1]:
+        target = target[part]
+    target[path[-1]] = value
+    f.sync()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+@pytest.mark.parametrize('row', [0,1])
+@pytest.mark.parametrize('field,value', [('phase','wrong'), ('cuda_calls',2), ('site_line',999),
+    ('caller_line',999), ('site_function','wrong'), ('caller_function','wrong'), ('modules',['unknown'])])
+def test_fault_causality_mutations(tmp_path, validator, monkeypatch, row, field, value):
+    f = Fixture(tmp_path, row)
+    f.child[field] = value
+    f.sync()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+@pytest.mark.parametrize('text', ['{"a":1,"a":2}', '{"a":{"b":1,"b":2}}', '{"a":NaN}', '{"a":Infinity}', '{"a":1e999}'])
+def test_json_rejects_ambiguous_and_nonfinite(tmp_path, validator, text):
+    path = tmp_path / 'bad.json'
+    path.write_text(text)
+    with pytest.raises(ValueError):
+        validator.read_json(path)
+
+
+@pytest.mark.parametrize('source', [
+    '_COLD_IMPORT_PROBE = "a" "b"', '_COLD_IMPORT_PROBE: str = "a"',
+    '_COLD_IMPORT_PROBE = "a" + "b"', '_COLD_IMPORT_PROBE = f"a"',
+    '_COLD_IMPORT_PROBE = "a"\n_COLD_IMPORT_PROBE = "b"', '_COLD_IMPORT_PROBE = "a"\ndel _COLD_IMPORT_PROBE',
+    '_COLD_IMPORT_PROBE = "a"\ndef x():\n    _COLD_IMPORT_PROBE = "b"', '_COLD_IMPORT_PROBE = "é"',
+])
+def test_literal_rejects_nonliteral_and_rebinding(validator, source):
+    with pytest.raises(ValueError):
+        validator.extract_probe(source)
+
+
+def test_literal_extraction_is_data_only(validator):
+    assert validator.extract_probe('_COLD_IMPORT_PROBE = ' + repr(PROBE)) == PROBE
+
+
+def test_old_verifier_remains_byte_exact():
+    assert ref(Q / 'verify_bac_replay_spawn_identity.py')['sha256'] == '6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173'
+
+
+def test_required_validator_accepts_exact_literal_data():
+    module = validator.__wrapped__()
+    assert module.extract_probe('_COLD_IMPORT_PROBE = ' + repr(PROBE)) == PROBE
+
+
+def test_worker_plugin_emits_actual_pid_record_exclusively(tmp_path, monkeypatch, capsys):
+    import os
+    import sys
+    path = Q / 'bac_cold_worker_identity.py'
+    assert path.is_file(), 'authoritative worker plugin is not implemented'
+    spec = importlib.util.spec_from_file_location('cold_worker_test', path)
+    plugin = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(plugin)
+    root = tmp_path / 'root'
+    job = tmp_path / 'job'
+    job.mkdir()
+    test = root / TEST
+    test.parent.mkdir(parents=True)
+    test.write_text('# inert synthetic worker test data\n')
+    manifest = tmp_path / 'manifest.json'
+    write(manifest, dict(base_commit='a'*40, candidate_tree='b'*40, source_files={TEST: ref(test)['sha256']}))
+    for key, value in dict(BAC_QUAL_ROOT=str(root), BAC_QUAL_OUTPUT=str(job), BAC_QUAL_MANIFEST=str(manifest),
+                           BAC_QUAL_SHA='a'*40, BAC_QUAL_TREE='b'*40).items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.chdir(root)
+    argv = command(root, ROWS[2][1])
+    monkeypatch.setattr(sys, 'orig_argv', argv)
+    monkeypatch.setattr(sys, 'executable', str(root / '.venv/bin/python'))
+    monkeypatch.setattr(plugin, 'proc_argv', lambda: argv[:])
+    plugin.pytest_sessionstart(SimpleNamespace())
+    record_path = job / 'cold-import-worker.json'
+    record = json.loads(record_path.read_bytes())
+    assert record['pid'] == os.getpid() and record['ppid'] == os.getppid()
+    assert record['start_ticks'] > 0
+    assert record['role'] == 'cuda_core_cold_import_core'
+    assert record['orig_argv'] == argv and record['proc_argv'] == argv
+    assert record['test_ref'] == ref(test)
+    assert capsys.readouterr().out == 'BAC_COLD_WORKER_SHA256=' + ref(record_path)['sha256'] + '\n'
+    original = record_path.read_bytes()
+    with pytest.raises((ValueError, FileExistsError)):
+        plugin.pytest_sessionstart(SimpleNamespace())
+    assert record_path.read_bytes() == original
+
+
+def paths_of(value, prefix=()):
+    if type(value) is dict:
+        yield prefix, value
+        for key, child in value.items():
+            yield from paths_of(child, prefix + (key,))
+    elif type(value) is list:
+        for index, child in enumerate(value):
+            yield from paths_of(child, prefix + (index,))
+
+
+def at(value, path):
+    for key in path:
+        value = value[key]
+    return value
+
+
+@pytest.mark.parametrize('row', [0, 1, 2])
+@pytest.mark.parametrize('mutation', ['extra', 'missing', 'wrong_type'])
+def test_every_record_object_is_closed_and_typed(tmp_path, validator, monkeypatch, row, mutation):
+    f = Fixture(tmp_path, row)
+    for record_name in ('child', 'worker', 'observed', 'result'):
+        original = copy.deepcopy(getattr(f, record_name))
+        # JSON-object maps are closed too; remove arbitrary one of their fixed/source-derived keys.
+        for path, obj in list(paths_of(original)):
+            if not obj:
+                continue
+            mutant = copy.deepcopy(original)
+            target = at(mutant, path)
+            if mutation == 'extra':
+                target['unauthorized'] = 1
+            elif mutation == 'missing':
+                del target[next(iter(target))]
+            else:
+                key = next(iter(target))
+                target[key] = None
+            desired = copy.deepcopy(mutant)
+            setattr(f, record_name, mutant)
+            f.sync()
+            # Preserve the deliberate mutation while authenticating its exact bytes.
+            write(f.paths[record_name], desired)
+            if record_name == 'child':
+                f.observed['subject_ref'] = ref(f.paths['child'])
+                write(f.paths['observed'], f.observed)
+            with pytest.raises(ValueError):
+                f.invoke(validator, monkeypatch)
+            assert not (f.job / 'cold-import-custody.json').exists(), (record_name, path, mutation)
+            setattr(f, record_name, copy.deepcopy(original))
+            f.sync()
+
+
+@pytest.mark.parametrize('name', ['manifest_contracts', 'missing_exports', 'gates'])
+def test_missing_or_duplicate_ordered_records(tmp_path, validator, monkeypatch, name):
+    f = Fixture(tmp_path, 2)
+    f.child[name].pop()
+    f.sync()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+@pytest.mark.parametrize('index,value', [(0,'/other/python'), (1,'-E'), (2,'-m'), (3,PROBE+'\n'),
+    (4,'other'), (5,'other'), (6,'/other/root'), (7,'/other/output'), (8,'e'*32), (9,'extra')])
+def test_all_launch_arguments_are_bound(tmp_path, validator, monkeypatch, index, value):
+    f = Fixture(tmp_path, 2)
+    argv = f.child['orig_argv'][:]
+    if index == 9:
+        argv.append(value)
+    else:
+        argv[index] = value
+    f.child['orig_argv'] = f.child['proc_argv'] = argv
+    f.observed['launch_argv'] = argv
+    f.child['command_sha256'] = f.observed['command_sha256'] = digest(json.dumps(argv, ensure_ascii=True, separators=(',', ':')).encode())
+    f.sync()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+@pytest.mark.parametrize('mutation', ['missing_marker', 'double_marker', 'wrong_marker', 'log_bytes', 'manifest_bytes',
+    'test_bytes', 'tool_bytes', 'binary_bytes', 'extra_cold_file', 'wrong_subject', 'duplicate_json', 'symlink_file',
+    'symlink_ancestor', 'bad_spec_role', 'bad_spec_jobs', 'duplicate_spec_ref', 'other_spec_command', 'bool_workers',
+    'source_traversal', 'source_hash', 'duplicate_module', 'argv_runtime_binary'])
+def test_provenance_inventory_and_spec_fail_closed(tmp_path, validator, monkeypatch, mutation):
+    f = Fixture(tmp_path, 2)
+    if mutation in ('missing_marker', 'double_marker', 'wrong_marker'):
+        marker = 'BAC_COLD_WORKER_SHA256=' + ref(f.paths['worker'])['sha256'] + '\n'
+        f.paths['log'].write_text('' if mutation == 'missing_marker' else marker*2 if mutation == 'double_marker' else 'BAC_COLD_WORKER_SHA256='+'0'*64+'\n')
+        f.result['sha256'] = ref(f.paths['log'])['sha256']
+        write(f.paths['result'], f.result)
+    elif mutation in ('log_bytes', 'manifest_bytes', 'test_bytes', 'binary_bytes'):
+        path = {'log_bytes': f.paths['log'], 'manifest_bytes': f.paths['manifest'], 'test_bytes': f.root/TEST,
+                'binary_bytes': Path(f.runtime['binary'])}[mutation]
+        with path.open('ab') as stream:
+            stream.write(b' drift')
+    elif mutation == 'tool_bytes':
+        f.seal['tools']['bac_cold_worker_identity.py']['sha256'] = '0'*64
+        f.spec['tool_seal_ref'] = write(f.paths['seal'], f.seal)
+        write(f.paths['spec'], f.spec)
+    elif mutation == 'extra_cold_file':
+        (f.job/'cold-import-extra.json').write_text('{}')
+    elif mutation == 'wrong_subject':
+        (f.job/'cold-import-fault-witness.json').write_text('{}')
+    elif mutation == 'duplicate_json':
+        f.paths['child'].write_text('{"schema":1,' + f.paths['child'].read_text()[1:])
+        f.observed['subject_ref'] = ref(f.paths['child'])
+        write(f.paths['observed'], f.observed)
+    elif mutation == 'symlink_file':
+        target = tmp_path/'subject.json'
+        f.paths['child'].rename(target)
+        f.paths['child'].symlink_to(target)
+    elif mutation == 'symlink_ancestor':
+        target = tmp_path/'relocated-job'
+        f.job.rename(target)
+        f.job.symlink_to(target, target_is_directory=True)
+    elif mutation == 'bad_spec_role':
+        f.spec['root_run_specs']['unknown'] = f.spec['root_run_specs'].pop(ROWS[0][0])
+        write(f.paths['spec'], f.spec)
+    elif mutation == 'bad_spec_jobs':
+        f.spec['jobs'][1] = f.spec['jobs'][0]
+        write(f.paths['spec'], f.spec)
+    elif mutation == 'duplicate_spec_ref':
+        f.spec['root_run_specs'][ROWS[1][0]] = f.spec['root_run_specs'][ROWS[0][0]]
+        write(f.paths['spec'], f.spec)
+    elif mutation in ('other_spec_command', 'bool_workers'):
+        path = Path(f.spec['root_run_specs'][ROWS[0][0]]['path'])
+        data = json.loads(path.read_bytes())
+        if mutation == 'bool_workers':
+            data['workers'] = True
+        else:
+            data['jobs'][0]['args'].append('-x')
+        f.spec['root_run_specs'][ROWS[0][0]] = write(path, data)
+        write(f.paths['spec'], f.spec)
+    elif mutation in ('source_traversal', 'source_hash', 'duplicate_module'):
+        if mutation == 'source_traversal':
+            f.manifest['source_files']['src/../other.py'] = '0'*64
+        elif mutation == 'source_hash':
+            f.manifest['source_files'][TEST] = '0'*64
+        else:
+            path = f.root/'src/townlet.py'
+            path.write_text('# inert\n')
+            f.manifest['source_files']['src/townlet.py'] = ref(path)['sha256']
+            # A's prefix excludes this module; collision must instead use module/__init__.py and module.py.
+            relative = 'src/townlet/exploration/rng_custody/__init__.py'
+            path = f.root/relative
+            path.parent.mkdir(parents=True)
+            path.write_text('# inert\n')
+            f.manifest['source_files'][relative] = ref(path)['sha256']
+        f.spec['manifest_ref'] = write(f.paths['manifest'], f.manifest)
+        write(f.paths['spec'], f.spec)
+    else:
+        launch = f.root/'.venv/bin/python'
+        launch.unlink()
+        other = tmp_path/'other-binary'
+        other.write_bytes(b'wrong interpreter')
+        launch.symlink_to(other)
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+    assert not (f.job/'cold-import-custody.json').exists()
+
+
+@pytest.mark.parametrize('row', [0,1])
+@pytest.mark.parametrize('mutation', ['wrong_exception','wrong_frame','appended_exception','multiple_chain','absent_witness','positive_identity'])
+def test_full_negative_traceback_and_non_success_inventory(tmp_path, validator, monkeypatch, row, mutation):
+    f = Fixture(tmp_path, row)
+    if mutation == 'absent_witness':
+        f.paths['child'].unlink()
+    elif mutation == 'positive_identity':
+        (f.job/'cold-import-identity.json').write_text('{}')
+    else:
+        original = f.paths['stderr'].read_text()
+        if mutation == 'wrong_exception':
+            original = original.replace('AssertionError:', 'ImportError:').replace('RuntimeError:', 'ImportError:')
+        elif mutation == 'wrong_frame':
+            original = original.replace('in run', 'in unrelated')
+        elif mutation == 'appended_exception':
+            original += 'RuntimeError: unrelated\n'
+        else:
+            original += original
+        f.paths['stderr'].write_text(original)
+        f.sync()
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+def test_inputs_cannot_drift_during_final_repository_guard(tmp_path, validator, monkeypatch):
+    f = Fixture(tmp_path, 2)
+    original = validator.check_repository
+    def drift(root, manifest):
+        original(root, manifest)
+        f.child['pid'] = 999
+        write(f.paths['child'], f.child)
+    monkeypatch.setattr(validator, 'check_repository', drift)
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+@pytest.mark.parametrize('binding', [
+    'def _COLD_IMPORT_PROBE():\n    pass', 'class _COLD_IMPORT_PROBE:\n    pass',
+    'import os as _COLD_IMPORT_PROBE', 'from os import path as _COLD_IMPORT_PROBE',
+    'def unrelated(_COLD_IMPORT_PROBE):\n    pass',
+    'try:\n    pass\nexcept Exception as _COLD_IMPORT_PROBE:\n    pass',
+    'match value:\n    case _COLD_IMPORT_PROBE:\n        pass',
+    'globals()["_COLD_IMPORT_PROBE"] = "replacement"',
+])
+def test_literal_rejects_all_named_binding_forms(validator, binding):
+    with pytest.raises(ValueError):
+        validator.extract_probe('_COLD_IMPORT_PROBE = "literal"\n' + binding)
+
+
+@pytest.mark.parametrize('row', [0,1,2])
+def test_every_scalar_rejects_wrong_json_type(tmp_path, validator, monkeypatch, row):
+    f = Fixture(tmp_path, row)
+    original = copy.deepcopy(f.child)
+    for path, obj in paths_of(original):
+        for key, value in obj.items():
+            if type(value) in (dict, list):
+                continue
+            mutant = copy.deepcopy(original)
+            at(mutant, path)[key] = (0 if type(value) is str else 'invalid')
+            f.child = copy.deepcopy(mutant)
+            f.sync()
+            write(f.paths['child'], mutant)
+            f.observed['subject_ref'] = ref(f.paths['child'])
+            write(f.paths['observed'], f.observed)
+            with pytest.raises(ValueError):
+                f.invoke(validator, monkeypatch)
+            assert not (f.job/'cold-import-custody.json').exists()
+
+
+@pytest.mark.parametrize('field', ['configs','artifacts'])
+def test_non_source_candidate_inventory_hashes_are_checked(tmp_path, validator, monkeypatch, field):
+    f = Fixture(tmp_path, 2)
+    path = f.root/'other-data'
+    path.write_bytes(b'authored candidate metadata')
+    f.manifest[field]['other-data'] = '0'*64
+    f.spec['manifest_ref'] = write(f.paths['manifest'], f.manifest)
+    write(f.paths['spec'], f.spec)
+    with pytest.raises(ValueError):
+        f.invoke(validator, monkeypatch)
+
+
+@pytest.mark.parametrize('mutation', ['partial_env','unknown_node','extra_argv','wrong_proc'])
+def test_worker_plugin_never_downgrades_qualified_mismatch(tmp_path, monkeypatch, mutation):
+    import sys
+    spec = importlib.util.spec_from_file_location('cold_worker_test', Q/'bac_cold_worker_identity.py')
+    plugin = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(plugin)
+    for key in ('BAC_QUAL_ROOT','BAC_QUAL_OUTPUT','BAC_QUAL_MANIFEST','BAC_QUAL_SHA','BAC_QUAL_TREE'):
+        monkeypatch.delenv(key, raising=False)
+    plugin.pytest_sessionstart(SimpleNamespace())
+    root = tmp_path/'root'
+    job = tmp_path/'job'
+    root.mkdir(); job.mkdir()
+    monkeypatch.setenv('BAC_QUAL_ROOT', str(root))
+    if mutation != 'partial_env':
+        for key,value in dict(BAC_QUAL_OUTPUT=str(job),BAC_QUAL_MANIFEST=str(tmp_path/'missing.json'),
+                              BAC_QUAL_SHA='a'*40,BAC_QUAL_TREE='b'*40).items():
+            monkeypatch.setenv(key,value)
+        monkeypatch.chdir(root)
+        monkeypatch.setattr(sys,'executable',str(root/'.venv/bin/python'))
+        argv = command(root, ROWS[2][1])
+        if mutation == 'unknown_node':
+            argv[3] = TEST+'::unknown'
+        elif mutation == 'extra_argv':
+            argv.append('-x')
+        monkeypatch.setattr(sys,'orig_argv',argv)
+        monkeypatch.setattr(plugin,'proc_argv',lambda: [] if mutation == 'wrong_proc' else argv)
+    with pytest.raises(ValueError):
+        plugin.pytest_sessionstart(SimpleNamespace())
+    assert not (job/'cold-import-worker.json').exists()

@@ -1,0 +1,30 @@
+[
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_single-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:44:35.680251+00:00",
+    "end": "2026-11-14T05:44:36.151692+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"job\": \"cuda-producer-poison-per_admitted_single\",\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"exit_code\": 0,\n  \"counts\": {\n    \"passed\": 1,\n    \"skipped\": 0,\n    \"xfailed\": 0,\n    \"xpassed\": 0,\n    \"warnings\": 0\n  },\n  \"wall_seconds\": 7.796786546707153,\n  \"source_guards\": 819,\n  \"process_identities\": 1,\n  \"config_digests\": 573,\n  \"protected_artifacts\": 13,\n  \"worktree_registry_records\": 14,\n  \"worktrees_available\": 1,\n  \"source_index_import_threads_fixture_custody\": \"PASS\",\n  \"scope\": \"Only this named executable evidence; no package release or whole-BAC completion implied\"\n}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-producer-poison-per_admitted_single-spec.json",
+      "0"
+    ],
+    "start": "2026-11-14T05:44:36.151755+00:00",
+    "end": "2026-11-14T05:44:36.415015+00:00",
+    "exit_code": 0,
+    "stdout": "{\n  \"status\": \"CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED\",\n  \"job\": \"cuda-producer-poison-per_admitted_single\",\n  \"case\": \"cuda_producer_poison\",\n  \"expected_message\": \"cuda producer per_admitted_single poison quarantines under owner custody\",\n  \"parent_job_exit_code\": 0,\n  \"base_commit\": \"fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb\",\n  \"candidate_tree\": \"1aab4391343752e90c7a06b45e7dcc07aeb3ac6f\",\n  \"manifest_sha256\": \"d5e924d5cabbf3a8826e47b34fd962e6e7e5923ce77c39071dea0eb6e35b298f\",\n  \"spec_sha256\": \"0ba82c6a158b6ba9f6b205fab22b7982ff11460533a24ea680bdd862e00022a2\",\n  \"result_sha256\": \"f891bdb572051eb791235ba1a58f58227158ce21f51d71dd2508468fed7f91c4\",\n  \"controller_sha256\": \"0f1970fd2b0175183acf02b63856f4a4f24051a230eba4faa6f3eab54b3858e3\",\n  \"child_receipt_sha256\": \"6c24c2673244a3ae9ae903b028898a3b944e6a0a90c4a9a5d6297f5eb120a1db\",\n  \"parent_observation_sha256\": \"0815db932be95a7b51a7fa13bd74ad71cddc493a9084ab445a6bc97eac8b1da9\",\n  \"verifier_sha256\": \"6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173\",\n  \"harness_sha256\": \"180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791\",\n  \"child_pid\": 178486,\n  \"parent_pid\": 178381,\n  \"child_ppid\": 178381,\n  \"torch\": \"2.11.0+cu130\",\n  \"threads\": 1,\n  \"interop_threads\": 5,\n  \"debug\": true,\n  \"source_guards\": 819,\n  \"configs\": 573,\n  \"artifacts\": 13,\n  \"absolute_time_unavailable_reason\": \"Producer records do not supply absolute UTC timestamps; none inferred.\",\n  \"scope\": \"CPU stand-in producer control only; no CUDA hardware or whole-package qualification.\",\n  \"preflight_sha256\": \"467dbb388ec31b6f32d902f980c680e3ae8419b3f0867a383e0669423e457a92\",\n  \"after_sha256\": \"86e9e081ff762036c9a3cd94e9f35fc9d9ade37f987872cfa0c55dc270c517aa\",\n  \"parent_before_sha256\": \"c22d5f1d7624e58f913f4c26d0ef0d3910c6537b761664c6c2a2b75ef3a25794\",\n  \"producer_case\": \"per_admitted_single\",\n  \"producer_observations\": {\n    \"ambient_refused\": true,\n    \"completion_failed\": [\n      true\n    ],\n    \"cpu_local_available\": true,\n    \"domain_after\": [\n      3,\n      2,\n      true\n    ],\n    \"healthy_controls\": true,\n    \"outcome_errors\": [],\n    \"owner_quarantined\": true,\n    \"peer_blocked\": true,\n    \"peer_errors\": [\n      {\n        \"children\": [],\n        \"id\": 139718255867360,\n        \"message\": \"Replay owner is quarantined after uncertain publication\",\n        \"type\": \"RuntimeError\"\n      }\n    ],\n    \"quarantine_before_unlock\": [\n      true\n    ],\n    \"reached\": true,\n    \"started_work\": false,\n    \"syncs\": [\n      0\n    ],\n    \"worker_errors\": [\n      {\n        \"children\": [],\n        \"id\": 139718255868992,\n        \"message\": \"per_admitted_single: completion0\",\n        \"type\": \"RuntimeError\"\n      }\n    ]\n  },\n  \"producer_limitations\": \"CPU stand-in producer control only; no CUDA hardware or whole-package qualification.\"\n}\n",
+    "stderr": ""
+  }
+]

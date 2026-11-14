@@ -1,0 +1,93 @@
+"""Cold-check launcher with exclusive nested attempts and canonical tool discovery."""
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+import time
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def canonical(value):
+    require(type(value) is str, 'path must be a string')
+    path = Path(value)
+    require(path.is_absolute() and str(path) == value and path.resolve() == path, 'noncanonical path')
+    require(not any(p.is_symlink() for p in (path, *path.parents)), 'symlink path refused')
+    return path
+
+
+def main(spec_path):
+    tool = canonical(str(Path(__file__).absolute()))
+    spec = json.loads(canonical(spec_path).read_bytes())
+    root, output, manifest_path = (canonical(spec[k]) for k in ('root', 'output', 'manifest'))
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = json.loads(manifest_bytes)
+    jobs = spec['jobs']
+    require(type(spec['workers']) is int and spec['workers'] > 0, 'invalid worker count')
+    require(type(jobs) is list and bool(jobs), 'jobs required')
+    names = set()
+    for job in jobs:
+        name = job['name']
+        require(type(name) is str and re.fullmatch(r'[A-Za-z0-9_-]+', name) and name not in names, 'unsafe or duplicate job')
+        require(type(job['args']) is list and all(type(arg) is str for arg in job['args']), 'invalid job arguments')
+        names.add(name)
+    for parent in reversed(output.parents):
+        canonical(str(parent)).mkdir(exist_ok=True)
+        require(parent.is_dir(), 'output parent is not a directory')
+    canonical(str(output)).mkdir(exist_ok=False)
+    python = str(root / '.venv/bin/python')
+    env = dict(os.environ, OMP_NUM_THREADS='1', MKL_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', CUDA_VISIBLE_DEVICES='',
+               PYTHONPATH=str(tool.parent) + os.pathsep + str(root / 'src'), BAC_QUAL_ROOT=str(root),
+               BAC_QUAL_SHA=manifest['base_commit'], BAC_QUAL_TREE=manifest['candidate_tree'], BAC_QUAL_MANIFEST=str(manifest_path))
+
+    def check():
+        require(manifest_path.read_bytes() == manifest_bytes, 'manifest drift')
+        require(subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip() == manifest['base_commit'], 'HEAD mismatch')
+        with (root / '.superpowers/bac-qualification-index.lock').open('a') as lock:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                require(subprocess.check_output(['git', 'write-tree'], cwd=root, text=True).strip() == manifest['candidate_tree'], 'index mismatch')
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+        require(subprocess.run(['git', 'diff', '--quiet'], cwd=root).returncode == 0, 'unstaged changes')
+        for relative, expected in manifest['source_files'].items():
+            require(hashlib.sha256((root / relative).read_bytes()).hexdigest() == expected, 'source mismatch: ' + relative)
+
+    def run(job):
+        name = job['name']
+        command = [python, *job['args']]
+        log = output / (name + '.log')
+        start = time.monotonic()
+        with log.open('x') as stream:
+            code = subprocess.run(command, cwd=root, env=dict(env, BAC_QUAL_OUTPUT=str(output / name)),
+                                  stdout=stream, stderr=subprocess.STDOUT).returncode
+        result = dict(name=name, exit_code=code, seconds=time.monotonic() - start, command=command, log=str(log),
+                      sha256=hashlib.sha256(log.read_bytes()).hexdigest(), candidate_tree=manifest['candidate_tree'],
+                      base_commit=manifest['base_commit'], manifest_sha256=hashlib.sha256(manifest_bytes).hexdigest(),
+                      harness_sha256=hashlib.sha256(tool.read_bytes()).hexdigest())
+        with (output / (name + '-result.json')).open('x') as stream:
+            stream.write(json.dumps(result, indent=2) + '\n')
+        return result
+
+    check()
+    failed = False
+    with ThreadPoolExecutor(max_workers=spec['workers']) as pool:
+        for future in as_completed([pool.submit(run, job) for job in jobs]):
+            result = future.result()
+            print(json.dumps(result), flush=True)
+            failed |= result['exit_code'] != 0
+    check()
+    return int(failed)
+
+
+if __name__ == '__main__':
+    require(len(sys.argv) == 2, 'RUN_SPEC required')
+    sys.exit(main(sys.argv[1]))

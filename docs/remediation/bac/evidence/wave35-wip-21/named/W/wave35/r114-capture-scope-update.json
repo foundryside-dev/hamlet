@@ -1,0 +1,26 @@
+{
+  "before_sha256": "0df546c9677acb3e7b6f4b7528f18622ee2e95f9f0211d1ec01138e369a908fc",
+  "after_sha256": "f349bd712c9ad2deab07b282100ad48af083fcb3625084f01b0f62390debceaa",
+  "added_scope": "T18e-peer-wait-observer-repair",
+  "scope": [
+    {
+      "alias": "rng_core",
+      "path": "src/townlet/exploration/rng_custody.py",
+      "projected_lines": 1195,
+      "access": "read"
+    },
+    {
+      "alias": "shared_replay",
+      "path": "src/townlet/training/replay_contract.py",
+      "projected_lines": 881,
+      "access": "read"
+    },
+    {
+      "alias": "peer_wait_test",
+      "path": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+      "projected_lines": 1250,
+      "access": "modify"
+    }
+  ],
+  "purpose": "Capture exact bounded peer-wait review slice; no production or execution change."
+}

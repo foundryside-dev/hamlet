@@ -1,0 +1,2106 @@
+{
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 960,
+              "path": "wave35-r114-black-format-repair.json",
+              "sha256": "7da5df0adda6247cf59cca3fb637ad139870824fe18c580f77d317033d186980",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 1.3168649340077536,
+          "ended_at": "2026-11-14T05:02:34.507409+00:00",
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-black-format-repair.json--recorded-attempt",
+          "path": "wave35-r114-black-format-repair.json",
+          "process_custody": [],
+          "record": {
+            "bytes": 960,
+            "path": "wave35-r114-black-format-repair.json",
+            "root": "Q",
+            "sha256": "7da5df0adda6247cf59cca3fb637ad139870824fe18c580f77d317033d186980"
+          },
+          "record_id": "recorded-attempt",
+          "result": {
+            "bytes": 960,
+            "path": "wave35-r114-black-format-repair.json",
+            "root": "Q",
+            "sha256": "7da5df0adda6247cf59cca3fb637ad139870824fe18c580f77d317033d186980"
+          },
+          "source_binding_limitation": "Formatting transformation records R114 before-hash and R115 after-hash; this does not claim application execution of either source.",
+          "started_at": "2026-11-14T05:02:33.190556+00:00",
+          "status": "PASSED",
+          "verifier_unavailable_reason": "Retained nonruntime recorded action; no independent runtime qualification claimed."
+        }
+      ],
+      "check": "wave35-r114-black-format-repair.json--recorded-attempt",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-black-format-repair.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-black-format-repair.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-black-format-repair.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-black-format-repair.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r114-black-format-repair.json--recorded-attempt"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "command": [
+            "python",
+            "-B",
+            "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+            "r114",
+            "wave35",
+            "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+            "wave35/r113-candidate.json"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 1086,
+              "path": "wave35-r114-capture-attempt-1-failure.json",
+              "sha256": "ef690da2cf6d0cf080802997d2a007c9c0f396f8d248827d32ee26d553e756ac",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+          "path": "wave35-r114-capture-attempt-1-failure.json",
+          "process_custody": [],
+          "record": {
+            "bytes": 1086,
+            "path": "wave35-r114-capture-attempt-1-failure.json",
+            "root": "Q",
+            "sha256": "ef690da2cf6d0cf080802997d2a007c9c0f396f8d248827d32ee26d553e756ac"
+          },
+          "record_id": "recorded-attempt",
+          "result": {
+            "bytes": 1086,
+            "path": "wave35-r114-capture-attempt-1-failure.json",
+            "root": "Q",
+            "sha256": "ef690da2cf6d0cf080802997d2a007c9c0f396f8d248827d32ee26d553e756ac"
+          },
+          "source_binding_limitation": "Capture failed before candidate manifest creation; recorded index tree equals later R114 tree. Later manifest only identifies that recorded tree, not a successful capture or runtime execution.",
+          "started_at": null,
+          "status": "FAILED",
+          "verifier_unavailable_reason": "Retained nonruntime recorded action; no independent runtime qualification claimed."
+        }
+      ],
+      "check": "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+      "check_kind": "capture",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-capture-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-capture-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-capture-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-capture-attempt-1-failure.json--recorded-attempt"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r114-capture-attempt-1-failure.json--recorded-attempt"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 723,
+              "path": "wave35-r114-changed-test-style/black-result.json",
+              "sha256": "8065ea0c78917efdd8ede8da471c80bff3ea1bf5f7a1cb7863e39d491c7fb4c3",
+              "type": "file"
+            },
+            {
+              "bytes": 129,
+              "path": "wave35-r114-changed-test-style/black.log",
+              "sha256": "1e5e7fc67ed9b0c983f85d655f73a2b9c9512cc84d4d408a87d69b58a2bbc2d0",
+              "type": "file"
+            },
+            {
+              "bytes": 719,
+              "path": "wave35-r114-changed-test-style/ruff-result.json",
+              "sha256": "344cb0474eabf87da031466f11f65f36305bfd825cc58dfb99d0cc82d9a8cd34",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r114-changed-test-style/ruff.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 1.0898053646087646,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-changed-test-style--black",
+          "log_paths": [
+            {
+              "bytes": 129,
+              "path": "wave35-r114-changed-test-style/black.log",
+              "root": "Q",
+              "sha256": "1e5e7fc67ed9b0c983f85d655f73a2b9c9512cc84d4d408a87d69b58a2bbc2d0"
+            }
+          ],
+          "path": "wave35-r114-changed-test-style",
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 723,
+            "path": "wave35-r114-changed-test-style/black-result.json",
+            "root": "Q",
+            "sha256": "8065ea0c78917efdd8ede8da471c80bff3ea1bf5f7a1cb7863e39d491c7fb4c3"
+          },
+          "record_id": "black",
+          "result": {
+            "bytes": 723,
+            "path": "wave35-r114-changed-test-style/black-result.json",
+            "root": "Q",
+            "sha256": "8065ea0c78917efdd8ede8da471c80bff3ea1bf5f7a1cb7863e39d491c7fb4c3"
+          },
+          "spec": {
+            "bytes": 634,
+            "path": "wave35-r114-changed-test-style-spec.json",
+            "root": "Q",
+            "sha256": "49cb2039ceb9729923435dff9caa6cc0cd2599c1294606e157ef1050d341af64"
+          },
+          "started_at": null,
+          "status": "FAILED",
+          "verifier_unavailable_reason": "Original static result has no dedicated verifier receipt; root disposition retained. No runtime qualification."
+        }
+      ],
+      "check": "wave35-r114-changed-test-style--black",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--black"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r114-changed-test-style--black"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "bytes": 723,
+              "path": "wave35-r114-changed-test-style/black-result.json",
+              "sha256": "8065ea0c78917efdd8ede8da471c80bff3ea1bf5f7a1cb7863e39d491c7fb4c3",
+              "type": "file"
+            },
+            {
+              "bytes": 129,
+              "path": "wave35-r114-changed-test-style/black.log",
+              "sha256": "1e5e7fc67ed9b0c983f85d655f73a2b9c9512cc84d4d408a87d69b58a2bbc2d0",
+              "type": "file"
+            },
+            {
+              "bytes": 719,
+              "path": "wave35-r114-changed-test-style/ruff-result.json",
+              "sha256": "344cb0474eabf87da031466f11f65f36305bfd825cc58dfb99d0cc82d9a8cd34",
+              "type": "file"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r114-changed-test-style/ruff.log",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 0.07789897918701172,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-changed-test-style--ruff",
+          "log_paths": [
+            {
+              "bytes": 19,
+              "path": "wave35-r114-changed-test-style/ruff.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            }
+          ],
+          "path": "wave35-r114-changed-test-style",
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 719,
+            "path": "wave35-r114-changed-test-style/ruff-result.json",
+            "root": "Q",
+            "sha256": "344cb0474eabf87da031466f11f65f36305bfd825cc58dfb99d0cc82d9a8cd34"
+          },
+          "record_id": "ruff",
+          "result": {
+            "bytes": 719,
+            "path": "wave35-r114-changed-test-style/ruff-result.json",
+            "root": "Q",
+            "sha256": "344cb0474eabf87da031466f11f65f36305bfd825cc58dfb99d0cc82d9a8cd34"
+          },
+          "spec": {
+            "bytes": 634,
+            "path": "wave35-r114-changed-test-style-spec.json",
+            "root": "Q",
+            "sha256": "49cb2039ceb9729923435dff9caa6cc0cd2599c1294606e157ef1050d341af64"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier_unavailable_reason": "Original static result has no dedicated verifier receipt; root disposition retained. No runtime qualification."
+        }
+      ],
+      "check": "wave35-r114-changed-test-style--ruff",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-changed-test-style--ruff"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r114-changed-test-style--ruff"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r114-collection-spec.json",
+              "sha256": "153426d7657b20b9d3ef69341c13c0971068b1b723acb1819587767e2bbcc18a",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": null,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-collection-spec.json--unrun",
+          "path": "wave35-r114-collection-spec.json",
+          "planned_jobs": [
+            {
+              "args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "--collect-only",
+                "-q"
+              ],
+              "name": "collection"
+            }
+          ],
+          "process_custody": [],
+          "record_id": "unrun-template",
+          "spec": {
+            "bytes": 582,
+            "path": "wave35-r114-collection-spec.json",
+            "root": "Q",
+            "sha256": "153426d7657b20b9d3ef69341c13c0971068b1b723acb1819587767e2bbcc18a"
+          },
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "R114 runtime stopped at failed Black formatting prerequisite; generated curriculum templates also unselected."
+        }
+      ],
+      "check": "wave35-r114-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-collection-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r114-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r114-owned-spec.json",
+              "sha256": "3e5a90f9201824f45ff37878ddc121aa4308926daea35a30c73319410638ecca",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": null,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-owned-spec.json--unrun",
+          "path": "wave35-r114-owned-spec.json",
+          "planned_jobs": [
+            {
+              "args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "-q",
+                "-n",
+                "2",
+                "--dist",
+                "worksteal",
+                "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r114-owned"
+              ],
+              "name": "owned"
+            }
+          ],
+          "process_custody": [],
+          "record_id": "unrun-template",
+          "spec": {
+            "bytes": 707,
+            "path": "wave35-r114-owned-spec.json",
+            "root": "Q",
+            "sha256": "3e5a90f9201824f45ff37878ddc121aa4308926daea35a30c73319410638ecca"
+          },
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "R114 runtime stopped at failed Black formatting prerequisite; generated curriculum templates also unselected."
+        }
+      ],
+      "check": "wave35-r114-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-owned-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r114-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "No absolute UTC start/end unless supplied explicitly in original execution record; no filesystem/aggregate time inference. Static/capture/diagnostic work has no claimed runtime controller or import/thread custody.",
+          "descendants": [
+            {
+              "path": "wave35-r114-peer-collection/peer-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r114-peer-collection/peer-collection/identity-controller.json",
+              "sha256": "b3e1eae93008117f221c1d44b860d1f7998ad45610e60d1c9760db582db4d211",
+              "type": "file"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r114-peer-collection/peer-collection-custody.json",
+              "sha256": "64f78560df52711e7d0ca7c662246dfe9c249e167b7fbb5b579b263b92364c72",
+              "type": "file"
+            },
+            {
+              "bytes": 844,
+              "path": "wave35-r114-peer-collection/peer-collection-result.json",
+              "sha256": "04148fd72da7b30ca059f9dde2a7d0dbd9078fb6bc267625f29bab4d06a3caf9",
+              "type": "file"
+            },
+            {
+              "bytes": 5965,
+              "path": "wave35-r114-peer-collection/peer-collection.log",
+              "sha256": "d2e390af909c078046694fd4d4169e050e72c11ed38a18b0fa96c7aa31d4d2b8",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.221733331680298,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-peer-collection--peer-collection",
+          "log_paths": [
+            {
+              "bytes": 5965,
+              "path": "wave35-r114-peer-collection/peer-collection.log",
+              "root": "Q",
+              "sha256": "d2e390af909c078046694fd4d4169e050e72c11ed38a18b0fa96c7aa31d4d2b8"
+            }
+          ],
+          "path": "wave35-r114-peer-collection",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r114-peer-collection/peer-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "b3e1eae93008117f221c1d44b860d1f7998ad45610e60d1c9760db582db4d211"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r114-peer-collection/peer-collection-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "64f78560df52711e7d0ca7c662246dfe9c249e167b7fbb5b579b263b92364c72"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 844,
+            "path": "wave35-r114-peer-collection/peer-collection-result.json",
+            "root": "Q",
+            "sha256": "04148fd72da7b30ca059f9dde2a7d0dbd9078fb6bc267625f29bab4d06a3caf9"
+          },
+          "record_id": "peer-collection",
+          "result": {
+            "bytes": 844,
+            "path": "wave35-r114-peer-collection/peer-collection-result.json",
+            "root": "Q",
+            "sha256": "04148fd72da7b30ca059f9dde2a7d0dbd9078fb6bc267625f29bab4d06a3caf9"
+          },
+          "spec": {
+            "bytes": 592,
+            "path": "wave35-r114-peer-collection-spec.json",
+            "root": "Q",
+            "sha256": "98a3d75ffe479566815f544b9cbce8fcba60ce6395b2eca33e497f8981e9d07a"
+          },
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 646,
+            "path": "wave35-r114-peer-collection/peer-collection-custody.json",
+            "root": "Q",
+            "sha256": "64f78560df52711e7d0ca7c662246dfe9c249e167b7fbb5b579b263b92364c72"
+          }
+        }
+      ],
+      "check": "wave35-r114-peer-collection--peer-collection",
+      "check_kind": "collection",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-peer-collection--peer-collection"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r114-peer-collection--peer-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Per-job original result lacks absolute UTC start/end; none inferred.",
+          "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+          "candidate_manifest": {
+            "bytes": 205968,
+            "path": "wave35/r114-candidate.json",
+            "root": "W",
+            "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+          },
+          "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 716,
+              "path": "wave35-r114-peer-focused-spec.json",
+              "sha256": "402e16aa388ca65b46229d988ef3514cac42f65afafa0fbde5d198b5b3be9cb0",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "profile": "Recorded historical fixture-resource preflight",
+            "source": {
+              "bytes": 3226,
+              "path": "wave35/r114-fixture-resource-preflight.json",
+              "root": "W",
+              "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+            }
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+          },
+          "exit_code": null,
+          "hardware": {
+            "CUDA": "unavailable/unqualified",
+            "affinity": 5,
+            "cpu": "400000 100000",
+            "memory_limit": "17179869184"
+          },
+          "id": "wave35-r114-peer-focused-spec.json--unrun",
+          "path": "wave35-r114-peer-focused-spec.json",
+          "planned_jobs": [
+            {
+              "args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "-q",
+                "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r114-peer-focused"
+              ],
+              "name": "peer-focused"
+            }
+          ],
+          "process_custody": [],
+          "record_id": "unrun-template",
+          "spec": {
+            "bytes": 716,
+            "path": "wave35-r114-peer-focused-spec.json",
+            "root": "Q",
+            "sha256": "402e16aa388ca65b46229d988ef3514cac42f65afafa0fbde5d198b5b3be9cb0"
+          },
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "R114 runtime stopped at failed Black formatting prerequisite; generated curriculum templates also unselected."
+        }
+      ],
+      "check": "wave35-r114-peer-focused-spec.json--unrun",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Bounded original-round evidence only; not a future terminal subject or B/package/programme acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+          "required_by": [
+            "wave35-r114-peer-focused-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+          "required_by": [
+            "wave35-r114-peer-focused-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+          "required_by": [
+            "wave35-r114-peer-focused-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+          "required_by": [
+            "wave35-r114-peer-focused-spec.json--unrun"
+          ],
+          "role": "exact_published_executed_helper_or_custody_version",
+          "root": "R",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r114-peer-focused-spec.json--unrun"
+    }
+  ],
+  "base_commit": "fe9cc615b1a0e3e94fb5dcf7e7e3fdea0be306eb",
+  "candidate_manifest": {
+    "bytes": 205968,
+    "path": "wave35/r114-candidate.json",
+    "root": "W",
+    "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+  },
+  "candidate_tree": "1616bc02203956a271839a1330a8eba9d27a56c7",
+  "component_id": "wave35-r114-peer-wait-history-v1",
+  "dependencies": [
+    {
+      "bytes": 2043,
+      "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "bytes": 6277,
+      "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "bytes": 2917,
+      "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 3032,
+      "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "exact_published_executed_helper_or_custody_version",
+      "root": "R",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 698,
+      "path": "wave35-r114-black-format-repair.diff",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "a9de8492d5232402bc784bcef2b9b601bc05a238e1b7115ce84519b073107913"
+    },
+    {
+      "bytes": 960,
+      "path": "wave35-r114-black-format-repair.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "7da5df0adda6247cf59cca3fb637ad139870824fe18c580f77d317033d186980"
+    },
+    {
+      "bytes": 1086,
+      "path": "wave35-r114-capture-attempt-1-failure.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "ef690da2cf6d0cf080802997d2a007c9c0f396f8d248827d32ee26d553e756ac"
+    },
+    {
+      "bytes": 5224,
+      "path": "wave35-r114-capture-attempt-2.log",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "c57fc1518455c063db6630f7f136a3e1e55bd0d4d5e5070770989459e1922637"
+    },
+    {
+      "bytes": 0,
+      "path": "wave35-r114-capture.log",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 723,
+      "path": "wave35-r114-changed-test-style/black-result.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "8065ea0c78917efdd8ede8da471c80bff3ea1bf5f7a1cb7863e39d491c7fb4c3"
+    },
+    {
+      "bytes": 129,
+      "path": "wave35-r114-changed-test-style/black.log",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "1e5e7fc67ed9b0c983f85d655f73a2b9c9512cc84d4d408a87d69b58a2bbc2d0"
+    },
+    {
+      "bytes": 719,
+      "path": "wave35-r114-changed-test-style/ruff-result.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "344cb0474eabf87da031466f11f65f36305bfd825cc58dfb99d0cc82d9a8cd34"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r114-changed-test-style/ruff.log",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 1350,
+      "path": "wave35-r114-changed-test-style-runner.log",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "7520f550fda51b31812c8422ddf872256b5331097269f19cece390908449bb2e"
+    },
+    {
+      "bytes": 634,
+      "path": "wave35-r114-changed-test-style-spec.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "49cb2039ceb9729923435dff9caa6cc0cd2599c1294606e157ef1050d341af64"
+    },
+    {
+      "bytes": 582,
+      "path": "wave35-r114-collection-spec.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "153426d7657b20b9d3ef69341c13c0971068b1b723acb1819587767e2bbcc18a"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r114-owned-spec.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "3e5a90f9201824f45ff37878ddc121aa4308926daea35a30c73319410638ecca"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r114-peer-collection/peer-collection/identity-controller.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "b3e1eae93008117f221c1d44b860d1f7998ad45610e60d1c9760db582db4d211"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r114-peer-collection/peer-collection-custody.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "64f78560df52711e7d0ca7c662246dfe9c249e167b7fbb5b579b263b92364c72"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r114-peer-collection/peer-collection-result.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "04148fd72da7b30ca059f9dde2a7d0dbd9078fb6bc267625f29bab4d06a3caf9"
+    },
+    {
+      "bytes": 5965,
+      "path": "wave35-r114-peer-collection/peer-collection.log",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "d2e390af909c078046694fd4d4169e050e72c11ed38a18b0fa96c7aa31d4d2b8"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r114-peer-collection-custody.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "64f78560df52711e7d0ca7c662246dfe9c249e167b7fbb5b579b263b92364c72"
+    },
+    {
+      "bytes": 774,
+      "path": "wave35-r114-peer-collection-runner.log",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "0401ca4ea101c7468161fc7f7c262970fe024cea8756ff1c06335f5e2577783d"
+    },
+    {
+      "bytes": 592,
+      "path": "wave35-r114-peer-collection-spec.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "98a3d75ffe479566815f544b9cbce8fcba60ce6395b2eca33e497f8981e9d07a"
+    },
+    {
+      "bytes": 716,
+      "path": "wave35-r114-peer-focused-spec.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_round_evidence",
+      "root": "Q",
+      "sha256": "402e16aa388ca65b46229d988ef3514cac42f65afafa0fbde5d198b5b3be9cb0"
+    },
+    {
+      "bytes": 205968,
+      "path": "wave35/r114-candidate.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "a68c53188bfc451da90053903ee8985814acf830ac6b5a76c35ff0f2f03918cb"
+    },
+    {
+      "bytes": 582,
+      "path": "wave35/r114-root-checks.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "de304d84801ec8562e37656b87a027ebca0153056c7746f026e36faee557d656"
+    },
+    {
+      "bytes": 3226,
+      "path": "wave35/r114-fixture-resource-preflight.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "d027938365a87a1ac595a93fd66512d08c52ff07d7cdf7039034dedc0d43a9f7"
+    },
+    {
+      "bytes": 6263,
+      "path": "evidence-management/r114-preparation/r114-full-base-candidate.patch",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "ad211f6db426be0b73cf979d957e5d9ddf52dad8aae708b28c01092e6b736277"
+    },
+    {
+      "bytes": 10977,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-PLAN-REVIEW.md",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "ad226cbd95ddb0e36a19631e79fef25512f633989da4cff92714b50d2bc94d42"
+    },
+    {
+      "bytes": 6435,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION.md",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "b4f70bb5695255003fd61620d49018c372cab9cd3ca85b67923394c692c8023d"
+    },
+    {
+      "bytes": 7758,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION-REVIEW.md",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "85507bec29dd5c944ce59511676f5b2c0834416ab7bf5a3cefff811a28a1ec51"
+    },
+    {
+      "bytes": 1933,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-FORMAT-ADDENDUM.md",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "e94a9aec6b30eed13bd51d78f0e8f4b425315d9bb2f37b1362f48d8e533d9c74"
+    },
+    {
+      "bytes": 6263,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR.patch",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "ad211f6db426be0b73cf979d957e5d9ddf52dad8aae708b28c01092e6b736277"
+    },
+    {
+      "bytes": 827,
+      "path": "wave35/r114-capture-scope-update.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "18a3fbb52226f58e72267ea4c81077295fbde5f6a3d88e05536dfb172d36bae0"
+    },
+    {
+      "bytes": 1876,
+      "path": "wave35/r114-peer-wait-tests-only-grant.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "source_provenance_review_or_closed_disposition",
+      "root": "W",
+      "sha256": "83d19c85d20a132b53b1795801cb7bb41f2178916ef2285c500a5f25a4b81d87"
+    },
+    {
+      "bytes": 1382890,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "authenticated_published_helper_catalog",
+      "root": "R",
+      "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd"
+    },
+    {
+      "bytes": 1691458,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "authenticated_published_helper_catalog",
+      "root": "R",
+      "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+    },
+    {
+      "bytes": 6679,
+      "path": "evidence-management/r114-preparation/r114-inventory-v1.json",
+      "required_by": [
+        "wave35-r114-black-format-repair.json--recorded-attempt",
+        "wave35-r114-capture-attempt-1-failure.json--recorded-attempt",
+        "wave35-r114-changed-test-style--black",
+        "wave35-r114-changed-test-style--ruff",
+        "wave35-r114-collection-spec.json--unrun",
+        "wave35-r114-owned-spec.json--unrun",
+        "wave35-r114-peer-collection--peer-collection",
+        "wave35-r114-peer-focused-spec.json--unrun"
+      ],
+      "role": "closed_descendant_inventory",
+      "root": "W",
+      "sha256": "d75d63177261a78e59c353b36a803ba4ce4199968ad44fccd1c53b63743fa467"
+    }
+  ],
+  "excluded_work": [
+    "R114 cold-tool grant and R115 cold-app grant are later independent work; not selected.",
+    "No new cold tool bodies or subsequent source/result namespace included."
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "ef59d922e06c4e2d7eb0f7333e43f1f6276e0bed"
+  },
+  "helper_aliases": [
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 2043,
+        "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+        "root": "R",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 6277,
+        "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+        "root": "R",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 2917,
+        "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+        "root": "R",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/bac_source_identity.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 3032,
+        "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+        "root": "R",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_run.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "catalog_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "root": "R",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      },
+      "immutable_published_ref": {
+        "bytes": 38090,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/named/Q/verify_bac_replay_spawn_identity.py.txt",
+        "root": "R",
+        "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+      },
+      "producing_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "scope": "Exact helper bytes retained in published catalog; byte equivalence only, not new execution.",
+      "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "support",
+      "path": "wave35-r114-black-format-repair.diff",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-black-format-repair.json",
+      "round": 114,
+      "status": "PASSED"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-capture-attempt-1-failure.json",
+      "round": 114,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-capture-attempt-2.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-capture.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-changed-test-style",
+      "round": 114,
+      "status": "MIXED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-changed-test-style-runner.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-changed-test-style-spec.json",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-collection-spec.json",
+      "round": 114,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-owned-spec.json",
+      "round": 114,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-peer-collection",
+      "round": 114,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-peer-collection-custody.json",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-peer-collection-runner.log",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r114-peer-collection-spec.json",
+      "round": 114,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r114-peer-focused-spec.json",
+      "round": 114,
+      "status": "UNRUN"
+    }
+  ],
+  "interval_start": 114,
+  "inventory": {
+    "bytes": 6679,
+    "path": "evidence-management/r114-preparation/r114-inventory-v1.json",
+    "root": "W",
+    "sha256": "d75d63177261a78e59c353b36a803ba4ce4199968ad44fccd1c53b63743fa467"
+  },
+  "overlap_accounting": {
+    "capture": "First captureFAILED before manifest creation; subsequent capture log/manifests retained; no invented exit/time facts.",
+    "collected": 54,
+    "runtime": "UNRUN",
+    "runtime_unique_passed": 0,
+    "static": "RuffPASS/BlackFAIL"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "predecessor_catalog": {
+    "manifest": {
+      "bytes": 1382890,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+      "root": "R",
+      "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd"
+    },
+    "selection_plan": {
+      "bytes": 1691458,
+      "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+      "root": "R",
+      "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+    }
+  },
+  "remaining": [
+    "Cold-import proof",
+    "B6/parent/recurrent/runner integration",
+    "Actual CUDA/access/topology",
+    "Global15mypy,coverage>=70/full/default/slow/learning/final design+implementation reviews/exact finalCI"
+  ],
+  "reviews": [],
+  "root_disposition": {
+    "bytes": 582,
+    "path": "wave35/r114-root-checks.json",
+    "root": "W",
+    "sha256": "de304d84801ec8562e37656b87a027ebca0153056c7746f026e36faee557d656"
+  },
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Closed R114 peer-wait tests-only history; actual candidate identity retained. No WIP21 terminal or selector seal, current-live-source equivalence, package-count change, B/programme/CUDA acceptance.",
+  "series": "wave35",
+  "source_delta": {
+    "bytes": 6263,
+    "path": "evidence-management/r114-preparation/r114-full-base-candidate.patch",
+    "root": "W",
+    "sha256": "ad211f6db426be0b73cf979d957e5d9ddf52dad8aae708b28c01092e6b736277"
+  },
+  "source_retention": "Opaque Git base-to-candidate patch only; no application body inspected or execution/source copy created. Concurrent later cold-proof test edits excluded.",
+  "status": "CLOSED HISTORICAL MIXED PREREQUISITES",
+  "supporting_reviews": [
+    {
+      "bytes": 10977,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-PLAN-REVIEW.md",
+      "root": "W",
+      "sha256": "ad226cbd95ddb0e36a19631e79fef25512f633989da4cff92714b50d2bc94d42"
+    },
+    {
+      "bytes": 6435,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION.md",
+      "root": "W",
+      "sha256": "b4f70bb5695255003fd61620d49018c372cab9cd3ca85b67923394c692c8023d"
+    },
+    {
+      "bytes": 7758,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "85507bec29dd5c944ce59511676f5b2c0834416ab7bf5a3cefff811a28a1ec51"
+    },
+    {
+      "bytes": 1933,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-REPAIR-FORMAT-ADDENDUM.md",
+      "root": "W",
+      "sha256": "e94a9aec6b30eed13bd51d78f0e8f4b425315d9bb2f37b1362f48d8e533d9c74"
+    }
+  ],
+  "terminal_historical_round": 114
+}

@@ -14,6 +14,7 @@ import pickle
 import random
 import select
 import signal
+import subprocess
 import threading
 import time
 import weakref
@@ -2358,3 +2359,525 @@ def test_isolated_inherited_pid_gate_refusal(tmp_path: Path) -> None:
         process.close()
     assert not custody.process_rng_domain().status()[2]
     assert_ambient_unchanged(before)
+
+
+_COLD_IMPORT_PROBE = r"""import ast
+import builtins
+import hashlib
+import importlib.util
+import json
+import os
+import pickle
+import random
+import sys
+import threading
+from pathlib import Path
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+def reference(path):
+    path = Path(path).resolve()
+    data = path.read_bytes()
+    return {"path": str(path), "bytes": len(data), "sha256": digest(data)}
+
+def read(path):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            assert key not in result, "duplicate JSON key"
+            result[key] = value
+        return result
+    return json.loads(Path(path).read_bytes(), object_pairs_hook=pairs)
+
+def verify_reference(ref):
+    assert reference(ref["path"]) == ref
+    return read(ref["path"])
+
+argv = sys.orig_argv
+proc_argv = Path("/proc/self/cmdline").read_bytes().split(b"\0")
+assert proc_argv.pop() == b""
+proc_argv = [value.decode("utf-8") for value in proc_argv]
+assert argv == proc_argv and len(argv) == 9 and argv[1:3] == ["-I", "-c"]
+mode, entry, root_text, output_text, nonce = sys.argv[1:]
+root, output = Path(root_text).resolve(), Path(output_text).resolve()
+assert str(root) == root_text and str(output) == output_text and Path.cwd() == root
+assert mode in ("qualify", "preflight_preloaded", "preflight_cuda_touch") and entry in ("core", "flat", "per")
+assert len(nonce) == 32 and all(c in "0123456789abcdef" for c in nonce)
+launch_python = str(root / ".venv/bin/python")
+assert argv[0] == sys.executable == launch_python and sys.flags.isolated == 1
+binary = str(Path("/proc/self/exe").resolve())
+binary_hash = digest(Path(binary).read_bytes())
+script_hash = digest(argv[3].encode("utf-8"))
+command_hash = digest(json.dumps(argv, ensure_ascii=True, separators=(",", ":")).encode("utf-8"))
+manifest_ref = reference(os.environ["BAC_QUAL_MANIFEST"])
+manifest = read(manifest_ref["path"])
+assert manifest["base_commit"] == os.environ["BAC_QUAL_SHA"]
+assert manifest["candidate_tree"] == os.environ["BAC_QUAL_TREE"]
+assert os.environ["BAC_QUAL_ROOT"] == str(root) and os.environ["BAC_QUAL_OUTPUT"] == str(output)
+test_ref = reference(root / "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py")
+assert manifest["source_files"][str(Path(test_ref["path"]).relative_to(root))] == test_ref["sha256"]
+worker_ref = reference(output / "cold-import-worker.json")
+worker = read(worker_ref["path"])
+assert worker["pid"] == os.getppid() and worker["root"] == str(root)
+role = "cuda_core_cold_import_" + entry if mode == "qualify" else "cuda_core_cold_" + mode
+assert worker["role"] == role
+runtime_seal = None
+if "BAC_COLD_SPEC" in os.environ:
+    spec = read(os.environ["BAC_COLD_SPEC"])
+    assert spec["root"] == str(root) and spec["manifest_ref"] == manifest_ref
+    tool_seal = verify_reference(spec["tool_seal_ref"])
+    runtime_seal = tool_seal["runtime"]
+allowed = {}
+for relative, sha in manifest["source_files"].items():
+    if relative.startswith("src/townlet/") and relative.endswith(".py"):
+        parts = Path(relative).parts[1:]
+        name = ".".join(parts[:-1] if parts[-1] == "__init__.py" else (*parts[:-1], parts[-1][:-3]))
+        path = (root / relative).resolve()
+        assert name not in allowed and path.is_relative_to(root / "src")
+        allowed[name] = {"path": str(path), "sha256": sha}
+
+def modules():
+    return sorted(name for name in sys.modules if name == "townlet" or name.startswith("townlet."))
+
+def sources(names):
+    result = {}
+    for name in names:
+        path = Path(sys.modules[name].__file__).resolve()
+        row = {"path": str(path), "sha256": digest(path.read_bytes())}
+        assert name in allowed and row == allowed[name]
+        result[name] = row
+    return result
+
+checkpoints = {"before_torch": modules()}
+assert checkpoints["before_torch"] == []
+sys.path.insert(0, str(root / "src"))
+import torch
+import numpy as np
+checkpoints["after_torch"] = modules()
+assert checkpoints["after_torch"] == []
+thread_keys = ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS",
+               "VECLIB_MAXIMUM_THREADS", "BLIS_NUM_THREADS")
+environment = {key: os.environ[key] for key in thread_keys}
+assert set(environment.values()) == {"1"}
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
+runtime = {"torch_version": str(torch.__version__), "torch_path": str(Path(torch.__file__).resolve()),
+           "numpy_version": np.__version__, "numpy_path": str(Path(np.__file__).resolve())}
+if runtime_seal is not None:
+    assert all(runtime[key] == runtime_seal[key] for key in runtime)
+    assert runtime_seal["launch_python"] == launch_python and runtime_seal["binary"] == binary
+    assert runtime_seal["binary_sha256"] == binary_hash and runtime_seal["python_version"] == sys.version
+
+def threads():
+    actual = [{"name": t.name, "ident": t.ident, "native_id": t.native_id} for t in threading.enumerate()]
+    tasks = os.listdir("/proc/self/task")
+    assert len(actual) == len(tasks) == 1 and actual[0]["name"] == "MainThread"
+    assert actual[0]["native_id"] == int(tasks[0])
+    intra, inter = torch.get_num_threads(), torch.get_num_interop_threads()
+    assert intra == inter == 1
+    return {"python": actual, "os": len(tasks), "torch_intraop": intra, "torch_interop": inter}
+
+threads_before = threads()
+tree = ast.parse(argv[3])
+boundary_site = next(n.lineno for n in ast.walk(tree) if isinstance(n, ast.Assert)
+                     and isinstance(n.msg, ast.Constant) and n.msg.value == "cold import precondition violated")
+sentinel_site = next(n.lineno for n in ast.walk(tree) if isinstance(n, ast.Raise)
+                    and isinstance(n.exc, ast.Call) and n.exc.args
+                    and isinstance(n.exc.args[0], ast.Constant) and n.exc.args[0].value == "cold import CUDA sentinel touched")
+preload_branch = next(n for n in ast.walk(tree) if isinstance(n, ast.If)
+                      and any(isinstance(v, ast.Constant) and v.value == "preflight_preloaded" for v in ast.walk(n.test)))
+preload_caller = next(n.lineno for n in ast.walk(preload_branch) if isinstance(n, ast.Call)
+                      and isinstance(n.func, ast.Name) and n.func.id == "_cold_boundary")
+touch_caller = next(n.lineno for n in ast.walk(tree) if isinstance(n, ast.Attribute)
+                    and n.attr == "is_initialized" and isinstance(n.value, ast.Attribute) and n.value.attr == "cuda")
+
+def common(schema):
+    assert sys.orig_argv == argv and reference(worker_ref["path"]) == worker_ref
+    return {"schema": schema, "profile": "linux-exec-cold-import-v2", "role": role, "mode": mode, "entry": entry,
+            "nonce": nonce, "pid": os.getpid(), "ppid": os.getppid(), "worker_ref": worker_ref, "root": str(root),
+            "cwd": str(Path.cwd()), "launch_python": launch_python, "binary": binary, "binary_sha256": binary_hash,
+            "python_version": sys.version, "orig_argv": argv, "proc_argv": proc_argv, "command_sha256": command_hash,
+            "script_sha256": script_hash, "manifest_ref": manifest_ref, "test_ref": test_ref,
+            "base_commit": manifest["base_commit"], "candidate_tree": manifest["candidate_tree"]}
+
+def emit(filename, value):
+    with (output / filename).open("x") as stream:
+        json.dump(value, stream, sort_keys=True, allow_nan=False)
+
+cuda_calls = [0]
+def witness(phase, function, line, caller):
+    names = modules()
+    emit("cold-import-fault-witness.json", {**common("cuda-core-cold-import-fault-witness-v2"),
+         "phase": phase, "modules": names, "source_modules": sources(names), "cuda_calls": cuda_calls[0],
+         "site_function": function, "site_line": line, "caller_function": "<module>", "caller_line": caller,
+         "threads": threads(), "environment": environment})
+
+class NoCUDA:
+    def __getattribute__(self, name):
+        cuda_calls[0] += 1
+        if mode == "preflight_cuda_touch":
+            witness("before_sentinel_raise", "__getattribute__", sentinel_site, touch_caller)
+        raise RuntimeError("cold import CUDA sentinel touched")
+
+sentinel = NoCUDA()
+torch.cuda = sentinel
+checkpoints["before_selected"] = modules()
+assert checkpoints["before_selected"] == []
+core_name = "townlet.exploration.rng_custody"
+flat_name = "townlet.training.replay_buffer"
+per_name = "townlet.training.prioritized_replay_buffer"
+core_path = str((root / "src/townlet/exploration/rng_custody.py").resolve())
+eager_calls, custody_imports = [], []
+old_profile, old_import = sys.getprofile(), builtins.__import__
+
+def profile(frame, event, arg):
+    if event == "call" and frame.f_code.co_name in ("_local_cuda_policy", "_resolve_local_cuda_record"):
+        if str(Path(frame.f_code.co_filename).resolve()) == core_path:
+            eager_calls.append(frame.f_code.co_name)
+            raise AssertionError("eager canonical policy lookup")
+
+def observe_import(name, globals=None, locals=None, fromlist=(), level=0):
+    if globals and globals.get("__name__") == core_name:
+        if type(name) is not str or type(level) is not int or not isinstance(fromlist, (tuple, list, type(None))):
+            return old_import(name, globals, locals, fromlist, level)
+        try:
+            base = importlib.util.resolve_name("." * level + name, globals.get("__package__")) if level else name
+            targets = {base, *(base + "." + item for item in (fromlist or ()) if isinstance(item, str))}
+        except (AttributeError, ImportError, TypeError, ValueError):
+            return old_import(name, globals, locals, fromlist, level)
+        if targets.intersection((flat_name, per_name)):
+            custody_imports.append(base)
+            raise AssertionError("custody eagerly imported canonical producer")
+    return old_import(name, globals, locals, fromlist, level)
+
+def _cold_boundary():
+    assert modules() == [], "cold import precondition violated"
+
+sys.setprofile(profile)
+builtins.__import__ = observe_import
+try:
+    if mode == "preflight_preloaded":
+        importlib.import_module(core_name)
+        witness("before_preentry_assert", "_cold_boundary", boundary_site, preload_caller)
+        _cold_boundary()
+    if mode == "preflight_cuda_touch":
+        torch.cuda.is_initialized
+    _cold_boundary()
+    importlib.import_module({"core": core_name, "flat": flat_name, "per": per_name}[entry])
+finally:
+    builtins.__import__ = old_import
+    sys.setprofile(old_profile)
+assert eager_calls == custody_imports == [] and cuda_calls == [0] and torch.cuda is sentinel
+checkpoints["after_selected"] = modules()
+assert {"townlet", core_name, {"core": core_name, "flat": flat_name, "per": per_name}[entry]} <= set(modules())
+if entry == "core":
+    assert flat_name not in sys.modules and per_name not in sys.modules
+custody = importlib.import_module(core_name)
+domain = custody.process_rng_domain()
+assert domain._pid == os.getpid() and domain._local_cuda_policies == {}
+rows = [
+    ("REPLAY_BUFFER_PUSH_CUDA", "flat", "push", "tensor"),
+    ("REPLAY_BUFFER_PUSH_RECORDED_CUDA", "flat", "push_recorded", "tensor"),
+    ("REPLAY_BUFFER_READINESS_CUDA", "flat", "readiness", "request"),
+    ("REPLAY_BUFFER_SERIALIZE_CUDA", "flat", "serialize", "none"),
+    ("REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA", "flat", "validate_serialized", "mapping"),
+    ("REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA", "flat", "load_for_mode", "mapping"),
+    ("REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA", "flat", "historical_archives", "none"),
+    ("REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA", "flat", "install_historical_archive", "archive"),
+    ("PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA", "per", "push", "tensor"),
+    ("PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA", "per", "push_recorded", "tensor"),
+    ("PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA", "per", "declare_unconstrained_action_dim", "integer"),
+    ("PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA", "per", "readiness", "request"),
+    ("PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA", "per", "serialize", "none"),
+    ("PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA", "per", "validate_serialized", "mapping"),
+    ("PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA", "per", "historical_archives", "none"),
+    ("PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA", "per", "install_historical_archive", "archive"),
+    ("PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA", "per", "update_priorities", "indices"),
+    ("PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA", "per", "update_unit_priorities", "indices"),
+]
+from types import MappingProxyType
+contracts = {name: getattr(custody, name) for name, *_ in rows}
+assert type(custody._LOCAL_CUDA_CONTRACTS) is MappingProxyType
+assert len(set(contracts.values())) == 18 and set(custody._LOCAL_CUDA_CONTRACTS) == set(contracts.values())
+inventory = []
+for name, kind, route, input_kind in rows:
+    contract = contracts[name]
+    descriptor = custody._LOCAL_CUDA_CONTRACTS[contract]
+    assert type(contract) is custody.LocalCUDAContract and type(descriptor) is custody._LocalCUDADescriptor
+    assert (descriptor.owner_kind, descriptor.route, descriptor.input_kind) == (kind, route, input_kind)
+    assert descriptor.healthy is True and descriptor.post_poison is False and descriptor.rationale
+    inventory.append({"name": name, "contract_id": id(contract), "descriptor_id": id(descriptor), "owner_kind": kind,
+                      "route": route, "input_kind": input_kind, "rationale": descriptor.rationale,
+                      "healthy": descriptor.healthy, "post_poison": descriptor.post_poison})
+assert len({row["descriptor_id"] for row in inventory}) == 18
+flat, per = importlib.import_module(flat_name), importlib.import_module(per_name)
+checkpoints["after_producers"] = modules()
+owners = []
+missing, gates, resolutions = [], [], []
+real_resolver = domain._resolve_local_cuda_record
+def resolve(*, descriptor):
+    resolutions.append(id(descriptor))
+    return real_resolver(descriptor=descriptor)
+domain._resolve_local_cuda_record = resolve
+names = ["REPLAY_BUFFER_SERIALIZE_CUDA", "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA"]
+
+def cache():
+    return [name for name, *_ in rows if contracts[name] in domain._local_cuda_policies]
+
+def state():
+    with domain._lock:
+        return {"generation": domain._generation, "revision": domain._revision, "currency": domain._currency,
+                "ambient_revision": domain._ambient_revision, "poisoned": domain._poison is not None,
+                "ready": domain._cuda_ready, "gates": len(domain._gates), "operations": len(domain._operations),
+                "members": len(domain._members)}
+
+def rng():
+    return {"python": digest(pickle.dumps(random.getstate(), protocol=5)),
+            "numpy": digest(pickle.dumps(np.random.get_state(), protocol=5)),
+            "torch": digest(torch.get_rng_state().numpy().tobytes())}
+
+try:
+    owners.append(flat.ReplayBuffer(4, torch.device("cpu")))
+    owners.append(per.PrioritizedReplayBuffer(4, 1.0, 0.0, False, torch.device("cpu")))
+    assert cache() == [] and cuda_calls == [0]
+    for owner, module, class_name in zip(owners, (flat, per), ("ReplayBuffer", "PrioritizedReplayBuffer")):
+        assert type(owner) is getattr(module, class_name)
+        assert domain._members[owner.rng_participant].owner() is owner
+    rng_before = rng()
+    for owner, module, class_name, name in zip(owners, (flat, per), ("ReplayBuffer", "PrioritizedReplayBuffer"), names):
+        before, before_cache = state(), cache()
+        canonical = module.__dict__.pop(class_name)
+        body_calls = 0
+        try:
+            try:
+                with domain.local_cuda_access(participant=owner.rng_participant, contract=contracts[name]):
+                    body_calls += 1
+            except ImportError:
+                pass
+            else:
+                raise AssertionError("missing canonical export admitted")
+        finally:
+            module.__dict__[class_name] = canonical
+        after = state()
+        assert before == after and cache() == before_cache == [] and body_calls == 0 and cuda_calls == [0]
+        missing.append({"contract": name, "exception_class": "ImportError", "export_restored": getattr(module, class_name) is canonical,
+                        "body_calls": body_calls, "cuda_calls": cuda_calls[0], "cache_before": before_cache, "cache_after": cache(),
+                        "state_before": before, "state_after": after})
+    assert len(resolutions) == 2
+    retained = {}
+    for pass_name in ("first", "repeat"):
+        for owner, name in zip(owners, names):
+            before, before_cache, count = state(), cache(), len(resolutions)
+            contract = contracts[name]
+            with domain.local_cuda_access(participant=owner.rng_participant, contract=contract) as gate:
+                cached = domain._local_cuda_policies[contract]
+                descriptor, policy = cached
+                live = domain._gate_record(gate)
+                assert live.participant is owner.rng_participant and live.owner is owner and live.contract is contract
+                assert descriptor is custody._LOCAL_CUDA_CONTRACTS[contract] and live.policy is policy
+                assert policy.owner_type is type(owner) and policy.input_type is type(None)
+                assert policy.route == descriptor.route == "serialize" and policy.rationale == descriptor.rationale
+                assert policy.healthy is True and policy.post_poison is False
+                for previous_name, previous in retained.items():
+                    assert domain._local_cuda_policies[contracts[previous_name]] is previous
+                if pass_name == "repeat":
+                    assert retained[name] is cached and len(resolutions) == count
+                else:
+                    assert len(resolutions) == count + 1
+                    retained[name] = cached
+                with owner._owner_operation(mutation=False):
+                    assert owner._replay_lock._is_owned()
+                    with gate.complete(cuda_devices=()):
+                        assert domain._gate_record(gate) is live and live.policy is policy
+                    assert gate.completion_failed() is False and domain._gate_record(gate).policy is policy
+            after = state()
+            assert before == after and domain._local_cuda_policies[contract] is cached
+            gates.append({"pass": pass_name, "contract": name, "owner_id": id(owner), "participant_id": id(owner.rng_participant),
+                          "descriptor_id": id(descriptor), "policy_id": id(policy), "cache_tuple_id": id(cached),
+                          "owner_class": type(owner).__module__ + "." + type(owner).__qualname__, "input_class": "builtins.NoneType",
+                          "route": policy.route, "rationale": policy.rationale, "healthy": policy.healthy,
+                          "post_poison": policy.post_poison, "exact_binding": True, "completion_failed": False,
+                          "cache_before": before_cache, "cache_after": cache(), "resolver_before": count,
+                          "resolver_after": len(resolutions), "state_before": before, "state_after": after})
+    rng_after = rng()
+    assert rng_before == rng_after and len(resolutions) == 4 and cache() == names
+finally:
+    domain._resolve_local_cuda_record = real_resolver
+    for owner in owners:
+        domain.unregister(participant=owner.rng_participant)
+unresolved = [name for name, *_ in rows if name not in cache()]
+cleanup_state = state()
+assert cleanup_state["members"] == cleanup_state["gates"] == cleanup_state["operations"] == 0
+assert cleanup_state["poisoned"] is cleanup_state["ready"] is False and len(unresolved) == 16
+assert cuda_calls == [0] and torch.cuda is sentinel
+checkpoints["final"] = modules()
+threads_after = threads()
+all_modules = sorted(set().union(*map(set, checkpoints.values())))
+emit("cold-import-identity.json", {**common("cuda-core-cold-import-identity-v2"), "runtime": runtime,
+     "checkpoints": checkpoints, "source_modules": sources(all_modules), "threads_before": threads_before,
+     "threads_after": threads_after, "environment": environment, "eager_policy_calls": eager_calls,
+     "custody_producer_imports": custody_imports, "manifest_contracts": inventory, "missing_exports": missing,
+     "gates": gates, "unresolved": unresolved, "rng_before": rng_before, "rng_after": rng_after,
+     "cleanup": {"unregistered": ["flat", "per"], "state": cleanup_state, "cache": cache(), "unresolved": unresolved,
+                 "cuda_calls": cuda_calls[0], "sentinel_identity": torch.cuda is sentinel}})
+"""
+
+
+def _run_cold_import_probe(tmp_path: Path, mode: str, entry: str) -> None:
+    """Launch exact source-issued code without importing this warmed module in its child."""
+    root = Path(custody.__file__).resolve().parents[3]
+    qualified = bootstrap._qualification_active()
+    qualification_keys = ("BAC_QUAL_ROOT", "BAC_QUAL_OUTPUT", "BAC_QUAL_MANIFEST", "BAC_QUAL_SHA", "BAC_QUAL_TREE")
+    if any(key in os.environ for key in qualification_keys):
+        assert qualified and all(key in os.environ for key in qualification_keys), "partial qualification environment"
+    output = Path(os.environ["BAC_QUAL_OUTPUT"]).resolve() if qualified else tmp_path.resolve()
+    role = f"cuda_core_cold_import_{entry}" if mode == "qualify" else f"cuda_core_cold_{mode}"
+    nonce = os.urandom(16).hex()
+
+    def reference(path: Path) -> dict[str, Any]:
+        data = path.read_bytes()
+        return {"path": str(path.resolve()), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+
+    def write(filename: str, value: dict[str, Any]) -> None:
+        with (output / filename).open("x") as stream:
+            json.dump(value, stream, sort_keys=True, allow_nan=False)
+
+    process = None
+    timed_out, termination, started, phase = False, "none", time.monotonic(), "setup"
+
+    def stop_child(sig: signal.Signals) -> None:
+        assert process is not None
+        try:
+            os.killpg(process.pid, sig)
+        except ProcessLookupError:
+            pass
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            pass
+
+    try:
+        worker_path = output / "cold-import-worker.json"
+        child_env = dict(os.environ)
+        if qualified:
+            assert Path(os.environ["BAC_QUAL_ROOT"]).resolve() == root and "BAC_COLD_SPEC" in os.environ
+            worker = json.loads(worker_path.read_bytes())
+            assert worker["pid"] == os.getpid() and worker["role"] == role
+        else:
+            manifest_path = output / "local-manifest.json"
+            source_files = {str(path.relative_to(root)): reference(path)["sha256"] for path in (root / "src/townlet").rglob("*.py")}
+            source_files[str(Path(__file__).resolve().relative_to(root))] = reference(Path(__file__))["sha256"]
+            manifest_path.write_text(
+                json.dumps({"base_commit": "unqualified", "candidate_tree": "unqualified", "source_files": source_files})
+            )
+            child_env.update(
+                BAC_QUAL_ROOT=str(root),
+                BAC_QUAL_OUTPUT=str(output),
+                BAC_QUAL_MANIFEST=str(manifest_path),
+                BAC_QUAL_SHA="unqualified",
+                BAC_QUAL_TREE="unqualified",
+            )
+            child_env.pop("BAC_COLD_SPEC", None)
+            write("cold-import-worker.json", {"pid": os.getpid(), "role": role, "root": str(root)})
+        worker_ref = reference(worker_path)
+        ticks = int(Path("/proc/self/stat").read_text().rsplit(")", 1)[1].split()[19])
+        if qualified:
+            assert worker["start_ticks"] == ticks
+        for key in (
+            "OMP_NUM_THREADS",
+            "MKL_NUM_THREADS",
+            "OPENBLAS_NUM_THREADS",
+            "NUMEXPR_NUM_THREADS",
+            "VECLIB_MAXIMUM_THREADS",
+            "BLIS_NUM_THREADS",
+        ):
+            child_env[key] = "1"
+        argv = [str(root / ".venv/bin/python"), "-I", "-c", _COLD_IMPORT_PROBE, mode, entry, str(root), str(output), nonce]
+        command_hash = hashlib.sha256(json.dumps(argv, ensure_ascii=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+        script_hash = hashlib.sha256(_COLD_IMPORT_PROBE.encode("utf-8")).hexdigest()
+        with (output / "cold-import-stdout.log").open("xb") as stdout, (output / "cold-import-stderr.log").open("xb") as stderr:
+            process = subprocess.Popen(argv, cwd=root, env=child_env, stdout=stdout, stderr=stderr, start_new_session=True)
+            assert process.poll() is None
+            assert int(Path("/proc/self/stat").read_text().rsplit(")", 1)[1].split()[19]) == ticks
+            phase = "import"
+            try:
+                process.wait(timeout=90)
+            except subprocess.TimeoutExpired:
+                timed_out, termination = True, "terminate"
+                stop_child(signal.SIGTERM)
+                if process.poll() is None:
+                    termination = "kill"
+                    stop_child(signal.SIGKILL)
+        assert not timed_out and process.returncode == (0 if mode == "qualify" else 1)
+        phase = "validate"
+        subject = output / ("cold-import-identity.json" if mode == "qualify" else "cold-import-fault-witness.json")
+        record = json.loads(subject.read_bytes())
+        assert record["pid"] == process.pid and record["ppid"] == os.getpid() and record["nonce"] == nonce
+        assert record["orig_argv"] == record["proc_argv"] == argv and record["worker_ref"] == worker_ref
+        assert record["script_sha256"] == script_hash and record["command_sha256"] == command_hash
+        if mode != "qualify":
+            assert not (output / "cold-import-identity.json").exists()
+            expected = (
+                "AssertionError: cold import precondition violated"
+                if mode == "preflight_preloaded"
+                else "RuntimeError: cold import CUDA sentinel touched"
+            )
+            assert (output / "cold-import-stderr.log").read_text().rstrip().splitlines()[-1] == expected
+            assert record["cuda_calls"] == (0 if mode == "preflight_preloaded" else 1)
+        write(
+            "cold-import-observation.json",
+            {
+                "schema": "cuda-core-cold-import-observation-v2",
+                "role": role,
+                "mode": mode,
+                "entry": entry,
+                "nonce": nonce,
+                "parent_pid": os.getpid(),
+                "child_pid": process.pid,
+                "worker_start_ticks": ticks,
+                "worker_ref": worker_ref,
+                "launch_argv": argv,
+                "command_sha256": command_hash,
+                "script_sha256": script_hash,
+                "subject_ref": reference(subject),
+                "stdout_ref": reference(output / "cold-import-stdout.log"),
+                "stderr_ref": reference(output / "cold-import-stderr.log"),
+                "exitcode": process.returncode,
+                "timed_out": timed_out,
+                "termination": termination,
+                "reaped": process.poll() is not None,
+                "seconds": float(time.monotonic() - started),
+            },
+        )
+    except BaseException as error:
+        if process is not None and process.poll() is None:
+            termination = "kill"
+            stop_child(signal.SIGKILL)
+        write(
+            "cold-import-failure.json",
+            {
+                "schema": "cuda-core-cold-import-failure-v2",
+                "role": role,
+                "phase": phase,
+                "error_type": type(error).__name__,
+                "error_message": str(error),
+                "elapsed_seconds": float(time.monotonic() - started),
+                "timeout": timed_out,
+                "termination": termination,
+                "returncode": None if process is None else process.returncode,
+                "reaped": process is not None and process.poll() is not None,
+                "files": [reference(path) for path in sorted(output.iterdir()) if path.is_file()],
+            },
+        )
+        raise
+
+
+@pytest.mark.parametrize("entry", ["core", "flat", "per"])
+def test_fresh_process_canonical_import_order(tmp_path: Path, entry: str) -> None:
+    _run_cold_import_probe(tmp_path, "qualify", entry)
+
+
+@pytest.mark.parametrize("fault", ["preloaded", "cuda_touch"])
+def test_cold_import_probe_faults(tmp_path: Path, fault: str) -> None:
+    _run_cold_import_probe(tmp_path, "preflight_" + fault, "core")

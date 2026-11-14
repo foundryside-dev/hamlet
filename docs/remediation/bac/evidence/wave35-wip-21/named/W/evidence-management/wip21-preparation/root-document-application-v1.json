@@ -1,0 +1,101 @@
+{
+  "schema": "bac-wip21-reviewed-doc-application-v1",
+  "at": "2026-11-14T05:58:32.898403+00:00",
+  "status": "APPLIED EXACT REVIEWED DOCUMENTS; EXECUTION SUBTREES UNCHANGED",
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/WIP21-DOC-PROPOSALS-V3-INDEPENDENT-REVIEW.md",
+    "bytes": 6651,
+    "sha256": "ef844bdc8e187875613cc1653cddf5732620fd9735dffcd4405a59afa361b042"
+  },
+  "proposal_manifest": {
+    "root": "W",
+    "path": "wave35-preparation/wip21-doc-proposals/v3/proposal-manifest-v3.json",
+    "bytes": 3226,
+    "sha256": "628ba771d1ebe0873ad0799fc18ccb6688d852331eea1c2b6e99b87483347408"
+  },
+  "documents": [
+    {
+      "publication_path": "README.md",
+      "pre_sha256": "3bfd2e19a18d5b6599d7a05e5b39c8fceb4b24129dac94181f08f5788d4d3b35",
+      "post_sha256": "a79a6561a93a04a6c4701c5a15dec5a7b1783a46218d32d806b92f56001b8d40",
+      "proposal": {
+        "bytes": 32560,
+        "path": "wave35-preparation/wip21-doc-proposals/v3/README.md",
+        "root": "W",
+        "sha256": "a79a6561a93a04a6c4701c5a15dec5a7b1783a46218d32d806b92f56001b8d40"
+      }
+    },
+    {
+      "publication_path": "docs/remediation/bac/STATUS.md",
+      "pre_sha256": "384255460e70dfdf97712b73e5d7ca6a4ea112f3eca19f9cd09f9e1fd6c490fa",
+      "post_sha256": "891e1871925f719fb65904fc21dd176cb799acecc8f12d5411b443e30964216d",
+      "proposal": {
+        "bytes": 107654,
+        "path": "wave35-preparation/wip21-doc-proposals/v3/docs/remediation/bac/STATUS.md",
+        "root": "W",
+        "sha256": "891e1871925f719fb65904fc21dd176cb799acecc8f12d5411b443e30964216d"
+      }
+    },
+    {
+      "publication_path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "pre_sha256": "e21c1c63b7dddc1bf01dd759d59aefff5ba5ae68780695518cfe24ea2373438c",
+      "post_sha256": "43da02a369c6ced639c989c1b9dc7b6cdf20c7d923e781307fdb39b50cf6221e",
+      "proposal": {
+        "bytes": 18593,
+        "path": "wave35-preparation/wip21-doc-proposals/v3/docs/remediation/bac/EVIDENCE-INDEX.md",
+        "root": "W",
+        "sha256": "43da02a369c6ced639c989c1b9dc7b6cdf20c7d923e781307fdb39b50cf6221e"
+      }
+    },
+    {
+      "publication_path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "pre_sha256": "8d2e1096bfdac94afc97691834e2418a4463de0d70c644ba14aa20ffa73fc99e",
+      "post_sha256": "c194292bf7f19bfaa6554de5095fa451a438b637f353679e1ab2a8d67cf1e181",
+      "proposal": {
+        "bytes": 49204,
+        "path": "wave35-preparation/wip21-doc-proposals/v3/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+        "root": "W",
+        "sha256": "c194292bf7f19bfaa6554de5095fa451a438b637f353679e1ab2a8d67cf1e181"
+      }
+    },
+    {
+      "publication_path": "docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+      "pre_sha256": "8cd7b369e2e1ac35273680ab16e346c8f540b664586904c8b4b9985f630c2137",
+      "post_sha256": "241e67a4e1a05cf38b796a9997a3ca37f9986314954c8db67c3f362ead39bfcf",
+      "proposal": {
+        "bytes": 20836,
+        "path": "wave35-preparation/wip21-doc-proposals/v3/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+        "root": "W",
+        "sha256": "241e67a4e1a05cf38b796a9997a3ca37f9986314954c8db67c3f362ead39bfcf"
+      }
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "1d02337c196103d7606ed8ec291c4b3cb47a835f"
+  },
+  "execution_candidate_tree": "1aab4391343752e90c7a06b45e7dcc07aeb3ac6f",
+  "post_document_index_tree": "df6fbd98549f588ea6b4b969503fb07c7dd30c01",
+  "guarded_inventory_publication_delta": {
+    "source_files": [
+      "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "docs/remediation/bac/STATUS.md"
+    ],
+    "configs": [],
+    "artifacts": []
+  },
+  "unchanged_source_files": 817,
+  "unchanged_configs": 573,
+  "unchanged_artifacts": 13,
+  "preserved_failure": {
+    "root": "W",
+    "path": "evidence-management/wip21-preparation/root-document-application-attempt-1-failure.json",
+    "bytes": 1221,
+    "sha256": "07f0e201ac4c988e49bf240f4005940731bcb5dfa8f235398700ac5a5e37d13d"
+  },
+  "qualification_boundary": "Original R116 manifest and runtime evidence unchanged. Only reviewed documentation differs from guarded source inventory; no rerun claim against publication index. Prospective links require actual materialization."
+}

@@ -1,0 +1,45 @@
+{
+  "schema": "bac-cold-import-tool-seal-v2",
+  "tools": {
+    "verify_bac_replay_spawn_identity.py": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "bytes": 38090,
+      "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+    },
+    "verify_bac_cold_import_identity.py": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_cold_import_identity.py",
+      "bytes": 35492,
+      "sha256": "1d7a07d9300fd05c71c2962446f7e7535a2abc1afa9abf2e763f161fbfda2486"
+    },
+    "bac_cold_worker_identity.py": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_cold_worker_identity.py",
+      "bytes": 5130,
+      "sha256": "eadc46dd32ec17e74f59d53293d4e5a774eefa3af489146335bd5c2be3a4379a"
+    },
+    "test_verify_bac_cold_import_identity.py": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_cold_import_identity.py",
+      "bytes": 39301,
+      "sha256": "be960dce1ac0edfacb5819f0bef80641c97cb02e6199701916abc0a618897254"
+    },
+    "run_bac_cold_checks_locked.py": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+      "bytes": 4482,
+      "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+    },
+    "test_run_bac_cold_checks_locked.py": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_cold_checks_locked.py",
+      "bytes": 8202,
+      "sha256": "b6dbafbf5d644bb5a020141404cda05e0b6d927f820b506a7f853b371d29b41e"
+    }
+  },
+  "runtime": {
+    "launch_python": "/workspace/hamlet/.venv/bin/python",
+    "binary": "/usr/bin/python3.13",
+    "binary_sha256": "889c603f0d17cb54060951bcf4c4f9b8c9ebd9e52b392c70209bbb9755d797d9",
+    "python_version": "3.13.5 (main, Aug 10 2026, 12:06:59) [GCC 14.2.0]",
+    "torch_path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/torch/__init__.py",
+    "torch_version": "2.11.0+cu130",
+    "numpy_path": "/workspace/hamlet/.venv/lib/python3.13/site-packages/numpy/__init__.py",
+    "numpy_version": "2.5.2"
+  }
+}

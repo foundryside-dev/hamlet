@@ -1,0 +1,18 @@
+{
+  "schema": "bac-root-document-application-failure-v1",
+  "recorded_at": "2026-11-14T05:58:32.825337+00:00",
+  "status": "FAILED ROOT POST-APPLICATION CHECK; REVIEWED DOCS WERE APPLIED/STAGED",
+  "failure": "AssertionError: docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+  "cause": "Root incorrectly required every source_files inventory member to remain unchanged after applying independently reviewed documentation; inventory includes CURRENT-RNG-CUSTODY-CORE-CONTRACT.md and STATUS.md. Both are approved document changes. Execution subtree comparison had already passed. No application source changed.",
+  "observed_changed_inventory": {
+    "source_files": [
+      "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "docs/remediation/bac/STATUS.md"
+    ],
+    "configs": [],
+    "artifacts": []
+  },
+  "original_command_absolute_times": null,
+  "unavailable_reason": "Root orchestration was a tool command without retained absolute start/end times; no file times used as substitute.",
+  "next_check": "Verify all five exact reviewed post-document bytes, explicit two-document source inventory delta, every other guarded byte and exact execution subtrees; preserve this failed check."
+}

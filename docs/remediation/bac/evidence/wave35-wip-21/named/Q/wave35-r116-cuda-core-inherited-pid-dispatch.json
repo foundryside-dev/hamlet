@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid-spec.json"
+  ],
+  "start": "2026-11-14T05:43:30.632456+00:00",
+  "end": "2026-11-14T05:43:39.146776+00:00",
+  "seconds": 8.514329696990899,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cuda-core-inherited-pid-dispatch.log",
+  "sha256": "cb49e2a8b54d17d5947a64dd9cce83336e9673f7e08a864f76b8f0c144df53e1",
+  "spec_sha256": "f137fd2604da3bd1fc98b6ac539810e4eb8ae10f794d89b8be7bf87611e51a28"
+}

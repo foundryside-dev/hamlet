@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<string>", line 200, in <module>
+    _cold_boundary()
+    ~~~~~~~~~~~~~~^^
+  File "<string>", line 192, in _cold_boundary
+    assert modules() == [], "cold import precondition violated"
+           ^^^^^^^^^^^^^^^
+AssertionError: cold import precondition violated

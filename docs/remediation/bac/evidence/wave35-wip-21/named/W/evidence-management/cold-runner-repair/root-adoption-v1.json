@@ -1,0 +1,31 @@
+{
+  "schema": "bac-cold-runner-repair-root-adoption-v1",
+  "at": "2026-11-14T05:40:32.970346+00:00",
+  "status": "ADOPTED FOR FRESH COLD APPLICATION ATTEMPTS",
+  "previous_seal": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/root-tool-seal-v2.json",
+    "bytes": 1611,
+    "sha256": "dc0694e146e2c74c984efb51c86ce19d3047e33e0f6533e50eaacaa2b958b3a1"
+  },
+  "tool_seal": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/root-tool-seal-v3.json",
+    "bytes": 2109,
+    "sha256": "cf2c3dc9db1aec4e46fc1a384c4aad074ca62d804843619d71a7af1b60f18ee0"
+  },
+  "implementation": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/implementation-report.json",
+    "bytes": 5547,
+    "sha256": "c99dcfc368ad02ae62048f79ef0800e4bcdac7aafe36a70d1476fc91a791a44f"
+  },
+  "independent_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-B-COLD-RUNNER-REPAIR-INDEPENDENT-REVIEW.md",
+    "bytes": 3278,
+    "sha256": "f5055c8edd191d3a8c55cc3a0dcad31f73e36f0de5975043dc7dc928f6896f51"
+  },
+  "independent_run": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-runner-repair/independent-review/suite-run.json",
+    "bytes": 4722,
+    "sha256": "130d168cc799554bdac3337440c7d686fb0d443303427d731a1fac97c2f913f5"
+  },
+  "scope": "Finite nested launch/plugin discovery repair. APP hashes unchanged; original specs/attempts/seals retained; actual cold cases still UNRUN. No CUDA claim."
+}

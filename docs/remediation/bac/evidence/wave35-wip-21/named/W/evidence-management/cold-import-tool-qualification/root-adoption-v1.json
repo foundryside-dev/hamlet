@@ -1,0 +1,60 @@
+{
+  "schema": "bac-root-cold-tool-adoption-v1",
+  "at": "2026-11-14T05:21:37.225688+00:00",
+  "actor": "/root",
+  "status": "FROZEN TOOLING QUALIFIED FOR FIVE CLOSED COLD-IMPORT ROLES; APP GATES STILL REQUIRED",
+  "seal": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/root-tool-seal-v2.json",
+    "sha256": "dc0694e146e2c74c984efb51c86ce19d3047e33e0f6533e50eaacaa2b958b3a1",
+    "bytes": 1611
+  },
+  "proposal": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/tool-seal-proposal-v2.json",
+    "sha256": "dc0694e146e2c74c984efb51c86ce19d3047e33e0f6533e50eaacaa2b958b3a1",
+    "bytes": 1611
+  },
+  "implementation_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/implementation-freeze-v1.json",
+    "sha256": "7ffc1c74e91bd031cb7353978a27794bfe472c3c11059038c39dd0a89f6ea98c",
+    "bytes": 11530
+  },
+  "independent_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-B-COLD-IMPORT-TOOL-INDEPENDENT-REVIEW.md",
+    "sha256": "146ea3e77b28d205991b8b7fa7fb13657d9e9c3ddf03dedadc649f7dd03572fc",
+    "bytes": 6976
+  },
+  "writer_terminal": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/attempt-09-final-green/record.json",
+    "sha256": "468e85c4668e718a28a6363237c287bad644605d9acc8598dab37e893b368f62",
+    "bytes": 4368
+  },
+  "independent_terminal": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-tool-qualification/independent-review/record-v2.json",
+    "sha256": "d00c827dca67d58eb01da52aa4c9efeea7c2feb3a5d87728225791e24bb1143b",
+    "bytes": 3789
+  },
+  "runtime_facts": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/cold-import-runtime-facts-v1.json",
+    "sha256": "0deb2e44d9ddb8cb2137fc20b5639042ad6b54e9658d253c3a832405316e02a8",
+    "bytes": 1035
+  },
+  "referenced_artifacts_rehashed": 27,
+  "counts": {
+    "writer": 269,
+    "writer_new": 188,
+    "writer_unchanged_strict": 81,
+    "independent": 222,
+    "independent_new_probes": 34,
+    "overlap": "Counts describe separate same-byte runs; do not sum overlapping188."
+  },
+  "verification": "Root verified exact final hashes, before/after inventories, actual terminal records/log/XML and independent adversarial source/spec review. No repeat synthetic run or app execution is claimed.",
+  "dependency_provenance": "Python binary and root-observed Torch/NumPy module bytes rehashed externally; accepted runtime schema remains exact path/version plus binary hash. No added child fields or in-memory/signed attestation claim.",
+  "historical_provenance": "All nine attempt logs/records retained. Intermediate source-byte retention question separately assigned to author; earlier attempts are historical diagnostics, not final-source qualification. Do not invent snapshots or pass identities.",
+  "required_before_actual_run": [
+    "Independent final APP source review",
+    "Frozen source/candidate/specs and resources",
+    "Both negative executions and exact strict validation before any positive",
+    "Full required final owner and affected selections; hardware and B6 remain open"
+  ],
+  "no_scope_reduction": true
+}

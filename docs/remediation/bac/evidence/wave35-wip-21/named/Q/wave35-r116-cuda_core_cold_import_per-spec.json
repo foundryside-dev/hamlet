@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r116-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-cold-import/cuda_core_cold_import_per/run",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "cuda_core_cold_import_per",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_fresh_process_canonical_import_order[per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-p",
+        "bac_cold_worker_identity",
+        "-q",
+        "-s"
+      ]
+    }
+  ]
+}

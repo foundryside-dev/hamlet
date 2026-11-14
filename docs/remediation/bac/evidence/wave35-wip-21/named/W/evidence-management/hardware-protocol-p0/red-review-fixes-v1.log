@@ -1,0 +1,79 @@
+........................................................................ [ 80%]
+.............FFFF                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_reference_parent_replacement_during_hash_refuses _____________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-30/test_reference_parent_replacem0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4223d27360>
+
+    def test_reference_parent_replacement_during_hash_refuses(protocol, tmp_path, monkeypatch):
+        parent = tmp_path / "original"
+        parent.mkdir()
+        target = parent / "data"
+        target.write_bytes(b"original bytes")
+        original_read = protocol.os.read
+        changed = False
+    
+        def read_and_replace(fd, length):
+            nonlocal changed
+            chunk = original_read(fd, length)
+            if chunk and not changed:
+                changed = True
+                parent.rename(tmp_path / "retained")
+                parent.mkdir()
+                target.write_bytes(b"replacement bytes")
+            return chunk
+    
+        monkeypatch.setattr(protocol.os, "read", read_and_replace)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:403: Failed
+______________ test_nonexecution_cannot_relabel_success[refused] _______________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+disposition = 'refused'
+
+    @pytest.mark.parametrize("disposition", ["refused", "unrun"])
+    def test_nonexecution_cannot_relabel_success(protocol, records, disposition):
+        records["job-result"].update(disposition=disposition, reason="not executed")
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:410: Failed
+_______________ test_nonexecution_cannot_relabel_success[unrun] ________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+disposition = 'unrun'
+
+    @pytest.mark.parametrize("disposition", ["refused", "unrun"])
+    def test_nonexecution_cannot_relabel_success(protocol, records, disposition):
+        records["job-result"].update(disposition=disposition, reason="not executed")
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:410: Failed
+_________________ test_source_freeze_end_cannot_precede_start __________________
+
+protocol = <module 'bac_hardware_protocol_v1' from '/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py'>
+records = {'admission': {'admitted_budget': {'cpu_slots': 2, 'ram_bytes': 1024, 'scratch_bytes': 1024, 'scratch_inodes': 4}, 'af...:00:00.000000Z', 'attempt_id': 'attempt', 'kind': 'attempt-start', 'retention': 'exclusive immutable files', ...}, ...}
+
+    def test_source_freeze_end_cannot_precede_start(protocol, records):
+        records["source-freeze"]["end"] = {"state": "measured", "value": "2026-11-13T00:00:00.000000Z", "reason": ""}
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py:416: Failed
+=========================== short test summary info ============================
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_reference_parent_replacement_during_hash_refuses
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_nonexecution_cannot_relabel_success[refused]
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_nonexecution_cannot_relabel_success[unrun]
+FAILED ../workspace/bac-review-2026-11-01/qualification/test_bac_hardware_protocol_v1.py::test_source_freeze_end_cannot_precede_start
+4 failed, 85 passed in 1.21s

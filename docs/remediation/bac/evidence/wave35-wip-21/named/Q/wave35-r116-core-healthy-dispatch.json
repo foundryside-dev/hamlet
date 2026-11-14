@@ -1,0 +1,16 @@
+{
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r116-core-healthy-spec.json"
+  ],
+  "start": "2026-11-14T05:42:18.445305+00:00",
+  "end": "2026-11-14T05:42:24.485384+00:00",
+  "seconds": 6.040082213992719,
+  "orchestration_exit": 0,
+  "actual_exit": 0,
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r116-core-healthy-dispatch.log",
+  "sha256": "6678e4fa4928e6a043ada803ad087e9c5ccc62eb2118c525e6ec301f8808a9b5",
+  "spec_sha256": "6bbd63037a28f8835f81f46187051584b93bef3ef4c54982b3394deaca60ab60"
+}

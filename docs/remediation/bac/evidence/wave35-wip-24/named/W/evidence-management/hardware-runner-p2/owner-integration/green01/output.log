@@ -1,0 +1,31 @@
+F......................                                                  [100%]
+=================================== FAILURES ===================================
+_______________ test_owner_current_adopted_protocol_is_accepted ________________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/green01/fixtures/test_owner_current_adopted_pro0')
+
+    def test_owner_current_adopted_protocol_is_accepted(tmp_path):
+        # A stale historical dependency pin must not reject the adopted P0 module.
+        r = implementation(); path, _, _ = sealed_fixture(tmp_path)
+>       r.Custody(path)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1043: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:842: in __init__
+    self._admitted_arithmetic()
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:902: in _admitted_arithmetic
+    _require((expected is None and fact['state'] in ('unavailable', 'unsupported')) or
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False
+reason = 'derived admission fact mismatch: effective_cpu_capacity'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: derived admission fact mismatch: effective_cpu_capacity
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_current_adopted_protocol_is_accepted
+1 failed, 22 passed, 89 deselected in 1.96s

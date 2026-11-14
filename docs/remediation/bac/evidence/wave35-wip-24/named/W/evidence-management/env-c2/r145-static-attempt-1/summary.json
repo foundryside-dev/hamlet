@@ -1,0 +1,114 @@
+{
+  "records": [
+    {
+      "name": "ruff",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T11:56:34.508095+00:00",
+      "parent_pid": 235819,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+      "manifest_sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53",
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 235845,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T11:56:34.941375+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r145-static-attempt-1/ruff.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "mypy",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet",
+        "--show-error-codes",
+        "--no-incremental"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T11:56:34.941758+00:00",
+      "parent_pid": 235819,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+      "manifest_sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53",
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 235848,
+      "exit_code": 1,
+      "end_utc": "2026-11-14T11:57:04.109475+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r145-static-attempt-1/mypy.log",
+      "log_sha256": "93e12f2763d5c0c34753aadf2d0e726436865e52a902d54aff5a9ce540148d4a"
+    },
+    {
+      "name": "no-defaults",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T11:57:04.110015+00:00",
+      "parent_pid": 235819,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+      "manifest_sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53",
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 235901,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T11:57:04.911985+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r145-static-attempt-1/no-defaults.log",
+      "log_sha256": "15c22233d1944c88af76e0288adcf3c81427edb49ec7803d1a725561ebf7519c"
+    },
+    {
+      "name": "black-changed",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/environment/parent_custody.py",
+        "src/townlet/environment/vectorized_env.py",
+        "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T11:57:04.912328+00:00",
+      "parent_pid": 235819,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+      "manifest_sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53",
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 235911,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T11:57:06.844932+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r145-static-attempt-1/black-changed.log",
+      "log_sha256": "7657c5ec367da2c8d4deead1b5f1f8eca9c1b89120ad13df7f855ca4005696b6"
+    }
+  ],
+  "source_before_after": "PASS",
+  "scope": "Static gates only; failures retained; no whole-BAC acceptance"
+}

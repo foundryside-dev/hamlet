@@ -1,0 +1,150 @@
+{
+  "actual": {
+    "argv": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "task4-actual01",
+      "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[controller-exit]",
+      "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[job-timeout]"
+    ],
+    "env": {
+      "BAC_P2_TASK4_LEASE": "/workspace/bac-review-2026-11-01/task4-backstop-v1/execution-lease.json",
+      "BAC_P2_TASK4_LEASE_SHA256": "ROOT-MUST-SUPPLY-EXACT-DIGEST",
+      "BAC_P2_TEST_CPU_SLOTS": "4",
+      "BAC_P2_TEST_RAM_BYTES": "2147483648"
+    },
+    "status": "UNRUN; root lease and repaired/adopted P1 required"
+  },
+  "cases": {
+    "controller-exit": {
+      "capture_argv": [
+        "/usr/bin/python3.13",
+        "-I",
+        "-B",
+        "-c",
+        "import json,sys; from pathlib import Path; sys.path.insert(0,\"/workspace/bac-review-2026-11-01/qualification\"); from capture_bac_hardware_v1 import capture; print(json.dumps(capture(Path(sys.argv[1]),Path(sys.argv[2]),Path(sys.argv[3])),sort_keys=True))",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/candidate.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/request.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/capture/controller-exit"
+      ],
+      "capture_spec": "/workspace/bac-review-2026-11-01/task4-backstop-v1/capture/controller-exit/spec.json",
+      "capture_terminal": "/workspace/bac-review-2026-11-01/task4-backstop-v1/capture/controller-exit/result.json",
+      "inputs": [
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/identity-policy.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/sampler-policy.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/controller-bound.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/guard-bound.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/allocation.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/source-grant.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/source-freeze.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/candidate.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/controller-exit/request.json"
+      ],
+      "job_output": "/workspace/bac-review-2026-11-01/task4-backstop-v1/output/task4-controller-exit-v1/backstop",
+      "job_scratch": "/workspace/bac-review-2026-11-01/task4-backstop-v1/scratch/task4-controller-exit-v1/backstop"
+    },
+    "job-timeout": {
+      "capture_argv": [
+        "/usr/bin/python3.13",
+        "-I",
+        "-B",
+        "-c",
+        "import json,sys; from pathlib import Path; sys.path.insert(0,\"/workspace/bac-review-2026-11-01/qualification\"); from capture_bac_hardware_v1 import capture; print(json.dumps(capture(Path(sys.argv[1]),Path(sys.argv[2]),Path(sys.argv[3])),sort_keys=True))",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/candidate.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/request.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/capture/job-timeout"
+      ],
+      "capture_spec": "/workspace/bac-review-2026-11-01/task4-backstop-v1/capture/job-timeout/spec.json",
+      "capture_terminal": "/workspace/bac-review-2026-11-01/task4-backstop-v1/capture/job-timeout/result.json",
+      "inputs": [
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/identity-policy.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/sampler-policy.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/controller-bound.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/guard-bound.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/allocation.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/source-grant.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/source-freeze.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/candidate.json",
+        "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/job-timeout/request.json"
+      ],
+      "job_output": "/workspace/bac-review-2026-11-01/task4-backstop-v1/output/task4-job-timeout-v1/backstop",
+      "job_scratch": "/workspace/bac-review-2026-11-01/task4-backstop-v1/scratch/task4-job-timeout-v1/backstop"
+    }
+  },
+  "collection": {
+    "argv": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "task4-collection01",
+      "--collect-only"
+    ],
+    "env": {
+      "BAC_P2_TEST_CPU_SLOTS": "2",
+      "BAC_P2_TEST_RAM_BYTES": "4294967296"
+    },
+    "status": "UNRUN"
+  },
+  "common_inputs": [
+    "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/common/environment.json",
+    "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/common/tools.json",
+    "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/common/root-registry.txt",
+    "/workspace/bac-review-2026-11-01/task4-backstop-v1/inputs/common/availability.json"
+  ],
+  "external_root": "/workspace/bac-review-2026-11-01/task4-backstop-v1",
+  "inert": {
+    "argv": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-B",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "task4-inert01",
+      "-k",
+      "not owner_public_run_observes and not owner_actual_git_backstop"
+    ],
+    "env": {
+      "BAC_P2_TEST_CPU_SLOTS": "2",
+      "BAC_P2_TEST_RAM_BYTES": "4294967296"
+    },
+    "status": "UNRUN"
+  },
+  "lease_root": "Root supplies canonical host-wide namespace; no per-test bypass",
+  "resource": {
+    "allocation_ram_bytes": 8589934592,
+    "cpu_slots": 4,
+    "job_cpu_slots": 3,
+    "job_ram_bytes": 6442450944,
+    "job_scratch_bytes": 134217728,
+    "job_scratch_inodes": 4096,
+    "overhead_cpu_slots": 1,
+    "overhead_ram_bytes": 2147483648,
+    "overhead_scratch_bytes": 67108864,
+    "overhead_scratch_inodes": 1024,
+    "process_rlimit_as_bytes": 2147483648
+  },
+  "root_execution_lease": "/workspace/bac-review-2026-11-01/task4-backstop-v1/execution-lease.json",
+  "root_execution_lease_fields": [
+    "schema",
+    "authority",
+    "start",
+    "end",
+    "recipe",
+    "source_freezes",
+    "pins",
+    "cpu_ids",
+    "ram_limit_bytes",
+    "execution_root",
+    "cases"
+  ],
+  "schema": "bac-p2-task4-required-inputs-v1",
+  "source_baseline": {
+    "artifact_count": 13,
+    "config_count": 573,
+    "head_prefix": "a42d6192",
+    "refresh": "Root must regenerate current full HEAD/tree/input refs after checkpoint or any drift; no Git query performed here",
+    "round": "R144",
+    "source_count": 824,
+    "tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0"
+  },
+  "status": "DECLARATIVE INPUT/COMMAND LIST; NOT A ROOT EXECUTION LEASE OR MEASURED ADMISSION"
+}

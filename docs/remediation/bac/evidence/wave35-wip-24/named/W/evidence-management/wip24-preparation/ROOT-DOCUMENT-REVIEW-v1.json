@@ -1,0 +1,55 @@
+{
+  "schema": "bac-root-reviewed-documents-v1",
+  "root": "/root",
+  "at": "2026-11-14T12:08:23.992648+00:00",
+  "status": "APPROVED EXACT POSTIMAGES FOR BOUNDED WIP24 PUBLICATION",
+  "proposal": {
+    "root": "W",
+    "path": "evidence-management/wip24-preparation/document-postimages-v3/DOCUMENT-PROPOSALS-v3.json",
+    "sha256": "6eade35b1d920c0a66f00b2317d0e3241c93aff1779455a37a5572a20901852d",
+    "bytes": 1993
+  },
+  "files": [
+    {
+      "destination": "docs/remediation/bac/STATUS.md",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/STATUS.md",
+      "sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb",
+      "bytes": 117706,
+      "before_sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/STATUS.diff"
+    },
+    {
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/EVIDENCE-INDEX.md",
+      "sha256": "6c8bd92c3d12727328775ca0875049358e403fbe177438de0e3d03c7f860dbc6",
+      "bytes": 28729,
+      "before_sha256": "68e427f83864e3b463e48565b820cce8debbe73976589ccd3491b6472cb7fafd",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/EVIDENCE-INDEX.diff"
+    },
+    {
+      "destination": "README.md",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/README.md",
+      "sha256": "643bbcd6b1668cd734f4ca67ab71c91a70c649e7f39c062c1a6715823218e8ad",
+      "bytes": 33606,
+      "before_sha256": "a055986ffc6f1901bce6819cb759b48e0b92fd940d2d347e97e8e02d6f06214f",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/README.diff"
+    },
+    {
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "sha256": "dcb18bef329b2161fb5b3a5a0aed3791b685bd1d0fa4d8dc54a7a6a0d54e73f0",
+      "bytes": 12191,
+      "before_sha256": "80389141f88757ec09b5503aca379248e018aa6b3724bb8c1edf26edef764206",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.diff"
+    }
+  ],
+  "review": "Root reviewed full v2 changes and precise v3 corrections. Current ENV/helper/test source hashes match executed manifests and independent source reviews. R14451+9 and R14582 remain separate overlapping executed scopes; nativeR135 remains distinct. 18 restore gaps, four prior skipped cases, unqualified P2Task4/P4, all-child/manual/integration/hardware/coverage/typing/finalCI limits explicit. Global finalBAC review is distinct from checkpoint terminal review. Historical sections retained; current README participation/cleanup wording corrected.",
+  "source_basis": [
+    "env-c2/r144-root-component-adoption-v1.json",
+    "env-c2/fixture-migration/r145-root-adoption-v1.json",
+    "hardware-children-p5/root-v4-adoption-v1.json",
+    "wip23-ci-observation-4-native.json",
+    "hardware-runner-p2/owner-integration/task4-current-platform-prerequisite-v1.json"
+  ],
+  "publication": "No public documentation changed yet; root materializes these exact postimages with manifest/chain at authorized publication."
+}

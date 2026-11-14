@@ -1,0 +1,63 @@
+........................................................................ [ 25%]
+........................................................................ [ 51%]
+........................................................................ [ 77%]
+...........................................................FF..          [100%]
+=================================== FAILURES ===================================
+__________________ test_review_v3_setup_before_child_positive __________________
+
+    def test_review_v3_setup_before_child_positive():
+        b, _ = separated_utc_bundle()
+>       assert api().validate_child_obligation(b.subject())['verdict'] == 'satisfied'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1672: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:1370: in validate_child_obligation
+    result = check.run()
+             ^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:1281: in run
+    evidence = self.execution()
+               ^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:727: in execution
+    _, result = self.d.at(self.job["output"] + "/result.json", "job-result")
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:383: in at
+    return ref, self.get(ref, kind)
+                ^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:375: in get
+    shape(kind, value)
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:305: in shape
+    shape(p0.TYPES[rule], value, live)
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:273: in shape
+    shape(r, value[k], live)
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:286: in shape
+    exact(value, "state value reason provenance" if tag == "fact" else "state value reason")
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:197: in exact
+    require(type(value) is dict and set(value) == set(fields), "exact fields required: " + " ".join(fields))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'exact fields required: state value reason'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: exact fields required: state value reason
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:192: ValueError
+__________________ test_review_v3_actual_controller_required ___________________
+
+    def test_review_v3_actual_controller_required():
+        b = Bundle('replay_poison')
+        for name in ('parent','parent-end'):
+            b.named[name]['role_id'] = b.role
+            b.named[name]['role'] = 'spawn-child'
+            b.named[name+'-raw']['context']['role_id'] = b.role
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1681: Failed
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v3_setup_before_child_positive
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v3_actual_controller_required
+2 failed, 277 passed in 6.53s

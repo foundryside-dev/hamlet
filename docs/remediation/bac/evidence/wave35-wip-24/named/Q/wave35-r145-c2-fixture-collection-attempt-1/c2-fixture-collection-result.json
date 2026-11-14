@@ -1,0 +1,27 @@
+{
+  "name": "c2-fixture-collection",
+  "exit_code": 0,
+  "seconds": 4.1477284880238585,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r145-c2-fixture-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection.log",
+  "sha256": "4bbce9c5b872e1a2706dceb3d6f2c5898536801ffd8b8eafc7c54dccc539ea32",
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "manifest_sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

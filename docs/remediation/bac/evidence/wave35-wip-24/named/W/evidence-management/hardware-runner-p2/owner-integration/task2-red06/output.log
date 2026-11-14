@@ -1,0 +1,28 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_owner_spawn_resealed_foreign_controller_cannot_acquire_root_authority __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red06/fixtures/test_owner_spawn_resealed_fore0')
+
+    def test_owner_spawn_resealed_foreign_controller_cannot_acquire_root_authority(tmp_path):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        reference = seal()
+        def forge(value):
+            if set(value) == {'pid', 'ppid', 'start_identity', 'host', 'boot_id'}:
+                if value['pid'] == 1000: value['pid'] = 1009
+                if value['ppid'] == 1000: value['ppid'] = 1009
+            return value
+        envelope = reseal_owner_fixture(envelope, Path(selected['output']), forge)
+        for obligation in selected['obligations']:
+            for key in ('contract', 'validator'):
+                if Path(obligation[key]['path']).parent == Path(selected['output']):
+                    obligation[key] = r.file_reference(Path(obligation[key]['path']))
+        record = json.loads(Path(reference['path']).read_text())
+>       with pytest.raises(ValueError, match='controller identity'): custody.process_context(selected, record, role, envelope)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1265: Failed
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_resealed_foreign_controller_cannot_acquire_root_authority
+1 failed, 129 deselected in 1.00s

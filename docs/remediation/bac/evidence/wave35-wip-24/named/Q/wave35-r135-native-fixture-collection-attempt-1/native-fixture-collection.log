@@ -1,0 +1,38 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 22 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_pw_scope_conversion.py>
+            <Function test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]>
+            <Function test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]>
+            <Function test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]>
+            <Function test_fixture_actual_private_callback_witnesses[none]>
+            <Function test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]>
+            <Function test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]>
+            <Function test_coherent_incompatible_target_refuses[seed]>
+            <Function test_fixture_current_hc_and_active_replay_roundtrip>
+          <Module test_pw_scope_restore.py>
+            <Function test_pristine_owned_provider_gradient_pairing_control[rnd]>
+            <Function test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]>
+            <Function test_pristine_owned_provider_gradient_pairing_control[icm]>
+          <Module test_pw_scope_conversion.py>
+            <Function test_fixture_coherent_incompatible_targets[family]>
+            <Function test_fixture_coherent_incompatible_targets[learning_rate]>
+            <Function test_fixture_coherent_incompatible_targets[batch]>
+            <Function test_fixture_coherent_incompatible_targets[capacity]>
+            <Function test_fixture_coherent_incompatible_targets[geometry]>
+            <Function test_fixture_coherent_incompatible_targets[seed]>
+            <Function test_fixture_coherent_incompatible_targets[membership]>
+          <Module test_pw_scope_restore.py>
+            <Function test_pristine_historical_current_captured_replay_control>
+
+========================= 22 tests collected in 0.22s ==========================

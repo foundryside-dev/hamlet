@@ -1,0 +1,31 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "f5d45e7f1450ca5c39324ce7c528970a34fd3373",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "RuntimeError: Step requires this population's healthy accepted reset",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_genuine_unowned_selector_does_not_grant_pop_claim_authority",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where ValueError('ENV callback has no permission for this public entry') = <ExceptionInfo ValueError('ENV callback has no permission for this public entry') tblen=15>.value",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_real_validation_failure_preserves_primary_and_terminal_denial[False]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

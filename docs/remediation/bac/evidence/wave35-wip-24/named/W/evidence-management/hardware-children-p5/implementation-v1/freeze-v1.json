@@ -1,0 +1,300 @@
+{
+  "schema": "bac-p5-implementation-freeze-v1",
+  "status": "AUTHOR FROZEN; independent exact-freeze review pending",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+    "bytes": 64899,
+    "sha256": "b1734829f8e57bf3d9538441ceca901e4eabd3703b243f564fb037e7c7f89843",
+    "lines": 1256
+  },
+  "tests": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py",
+    "bytes": 56939,
+    "sha256": "69fcbc92d1f8194c32260a53a92b1fccf1e8226b45a02aadd25372428ad492fd",
+    "lines": 1354
+  },
+  "read_only_dependencies": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+      "bytes": 38090,
+      "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+      "lines": 752
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "lines": 526
+    }
+  ],
+  "body_count": 4,
+  "body_lines": 3888,
+  "individual_caps": {
+    "source": 1500,
+    "tests": 2000
+  },
+  "design": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P4-P5-OWNER-CONTRACT-v1.md",
+    "bytes": 27970,
+    "sha256": "960f6e1b1dec411007c9d33ab388ea9b99d560c0c701f008fe5fdf113645af97"
+  },
+  "root_design_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-contract-preparation/root-design-adoption-v1.json",
+    "bytes": 2067,
+    "sha256": "1bfd632c5f890a0eee0748ccc75c72ea3c09c133e739527ca2e3117865deb50a"
+  },
+  "interface_correction": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/interface-correction-v1.md",
+    "bytes": 4102,
+    "sha256": "e685af9bf32907371aabc676fb7988a47633a906765e033bf36b37e7bf92d9bd"
+  },
+  "synthetic_contract_example": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/synthetic-contract-example-v1.json",
+    "bytes": 8632,
+    "sha256": "c017f529d73d5d89c68141b29d2b7beaed884d6814a488bddbf848eae806a1f5"
+  },
+  "final_execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/final1/execution.json",
+    "bytes": 1551,
+    "sha256": "0d6131a59acccfb719be4751ebaede0eea8e96b974b464787961e37b4f88678b"
+  },
+  "final_output": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/final1/output.log",
+    "bytes": 180,
+    "sha256": "8f7220a65230155498a7afd894c4031ddcf0cc22ff9d0a1a80f02a06f118ad05"
+  },
+  "exact_final_command": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/final1/command.txt",
+    "bytes": 1948,
+    "sha256": "2948eb5d221cea0aea11c08ea1460ccff31d0bce65f35e7f14c1db16837455f5"
+  },
+  "final_result": "125 synthetic tests PASS on exact frozen source/test bytes; no overlap-summed count",
+  "retained_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/retained-inventory-v1.json",
+    "bytes": 230858,
+    "sha256": "b4856055845d48d6c4325cad29c6764637b97f8f910b8ddfe098dc57e269a122"
+  },
+  "attempts": [
+    {
+      "attempt": "final1",
+      "exit": 0,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/final1/execution.json",
+        "bytes": 1551,
+        "sha256": "0d6131a59acccfb719be4751ebaede0eea8e96b974b464787961e37b4f88678b"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/final1/output.log",
+        "bytes": 180,
+        "sha256": "8f7220a65230155498a7afd894c4031ddcf0cc22ff9d0a1a80f02a06f118ad05"
+      }
+    },
+    {
+      "attempt": "green1",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green1/execution.json",
+        "bytes": 1147,
+        "sha256": "7d7017a1f804774a173ec41765a5fde96e3330b8f5821154cf34de1cc2284483"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green1/output.log",
+        "bytes": 80180,
+        "sha256": "6a43b71ac35c1941ebcc761ef3c8df2083c46b6f15b11fd96aa8174e08f126c6"
+      }
+    },
+    {
+      "attempt": "green2",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green2/execution.json",
+        "bytes": 1139,
+        "sha256": "9ca11bbd28c108390c36d7a1c2d09ba443f667eb8c4a82b3952229585a7a4259"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green2/output.log",
+        "bytes": 136202,
+        "sha256": "5844934434aafe147b07e3d560bf1153e3944307f6d905ec6477a642867f5a76"
+      }
+    },
+    {
+      "attempt": "green3",
+      "exit": 0,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green3/execution.json",
+        "bytes": 1139,
+        "sha256": "ca8635d706d8d3511812582ed5187efa2af644ec2b4111d9d4d1ecc91356f5bc"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green3/output.log",
+        "bytes": 99,
+        "sha256": "bdbe4b8b60b12c8b1a4eca081d60947373fd0e6ce01117d2de46ff09134a320c"
+      }
+    },
+    {
+      "attempt": "green4",
+      "exit": 0,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green4/execution.json",
+        "bytes": 1140,
+        "sha256": "c532ea231b6f97922bb079384b19ed62761c784a02d56f198e152479a008a8fe"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green4/output.log",
+        "bytes": 179,
+        "sha256": "061e50fd6f9a2e0873f32129a8cba5e7a295eab2a20f9ff579a04b2e42ff0d80"
+      }
+    },
+    {
+      "attempt": "green5",
+      "exit": 0,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green5/execution.json",
+        "bytes": 1300,
+        "sha256": "fd95caed6323d34614bc5146c845905ffd4185e804fb523aec4696bb6332f61a"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green5/output.log",
+        "bytes": 179,
+        "sha256": "6a50c717fe7e5bec70315d3fa56e44fce8229ba28c1cb8e2df4c0bd5cbafc35c"
+      }
+    },
+    {
+      "attempt": "green6",
+      "exit": 0,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green6/execution.json",
+        "bytes": 1301,
+        "sha256": "bd4578ec9c897cdb6ac78e6e624448698598c68400afcf09a61654ee033acca6"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green6/output.log",
+        "bytes": 180,
+        "sha256": "d4b75c4ac85a3a03edaa6150578c1fbfd301313af919bcc86ce1bb17f5bd0adc"
+      }
+    },
+    {
+      "attempt": "green7",
+      "exit": 0,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green7/execution.json",
+        "bytes": 1302,
+        "sha256": "43a9753039b8b617e68f4d555d563c2ee01ae313047539f9f28f7279f332e237"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green7/output.log",
+        "bytes": 180,
+        "sha256": "7028b2768081cb7bbd17282711b5ea7dd07ad7e9931e83c51c54009c69eb115d"
+      }
+    },
+    {
+      "attempt": "green8",
+      "exit": 0,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green8/execution.json",
+        "bytes": 1302,
+        "sha256": "07bbd8e54fffedaecc32077282b2edff98507238ebfd298e38655ddd03916e6d"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green8/output.log",
+        "bytes": 180,
+        "sha256": "8f7220a65230155498a7afd894c4031ddcf0cc22ff9d0a1a80f02a06f118ad05"
+      }
+    },
+    {
+      "attempt": "red1",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red1/execution.json",
+        "bytes": 612,
+        "sha256": "db4e36426579e9a4c9ddd15f1e9ec97332619bf0bf35bb2e5daf86f8a3afc5d9"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red1/output.log",
+        "bytes": 120935,
+        "sha256": "be1ed2dfda31e0a10ec9a7041dfb1445da3da4b63ed91effb40aee614e2f8979"
+      }
+    },
+    {
+      "attempt": "red2",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red2/execution.json",
+        "bytes": 1137,
+        "sha256": "c8957d056fa9603956bb07df37d1875fb3022563ae2ec0c1aa75ddd6f655f4bd"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red2/output.log",
+        "bytes": 49317,
+        "sha256": "b137978695128b1013175f5df28c95495863ea6aec8854705d35fe928cc3c8a0"
+      }
+    },
+    {
+      "attempt": "red3",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red3/execution.json",
+        "bytes": 1138,
+        "sha256": "c71e9ff3b81efbc58e044da39c0c8a2f57d44fc16d1753934a067332c18331f9"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red3/output.log",
+        "bytes": 4513,
+        "sha256": "f298faa1ab188b091a21dc05911257c25545a288a344a89f517740541a5e28a1"
+      }
+    },
+    {
+      "attempt": "red4",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red4/execution.json",
+        "bytes": 1297,
+        "sha256": "cbbdb02e9b30e30b612bfda9373a916ba80b5b649c854114ac94e2f0cacaaecf"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red4/output.log",
+        "bytes": 13709,
+        "sha256": "30922bf7ebd86e5eda6b8f4511f5bfd686c5b9b87d6881592c9b32200d1ae943"
+      }
+    },
+    {
+      "attempt": "red5",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red5/execution.json",
+        "bytes": 1298,
+        "sha256": "7f003d4c418664be8c84e21b1524ec6274eeccd6b76ade0037901b944b56cd62"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red5/output.log",
+        "bytes": 9428,
+        "sha256": "98b2a43a73ee4f3ec88ce334932dcf5185f131b0cf84c499490dc629617fe578"
+      }
+    },
+    {
+      "attempt": "red6",
+      "exit": 1,
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red6/execution.json",
+        "bytes": 1298,
+        "sha256": "493b23d0b3adecc35c616bb42e328cd50898df5b91af5cd7b711aa32bb57b46b"
+      },
+      "output": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/red6/output.log",
+        "bytes": 17132,
+        "sha256": "e445bfd46c86e9b0be61a1b8c6b3502266d7f63b7204289d745a756571fc7f4e"
+      }
+    }
+  ],
+  "limits": [
+    "No APP/Torch/CUDA/Git/producer-process or package execution",
+    "No P4 wiring/current-owner consumer qualification",
+    "No actual source-owner instrumentation or source assertion custody acquired",
+    "No actual P2/P3/P4/P5 full chain or abrupt guard/live-Git backstop acceptance",
+    "Six real-CUDA groups remain required/UNRUN; server16 access/allocation unknown"
+  ],
+  "public_api": [
+    "validate_child_obligation(subject:dict)->dict",
+    "verify_children(spec_path:Path,job_id:str,destination:Path,*,obligation_id:str)->dict"
+  ]
+}

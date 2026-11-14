@@ -1,0 +1,313 @@
+{
+  "candidate_manifest": {
+    "bytes": 209062,
+    "path": "wave35/r145-candidate.json",
+    "root": "W",
+    "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+  },
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "component_receipts": [
+    {
+      "bytes": 42034,
+      "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r134-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R134 own-source history including failed and UNRUN checks.",
+      "sha256": "899adaac1db7747568e2a6f5a9d51ad048e0b2603c2d223a598a1324e6bb6ce6"
+    },
+    {
+      "bytes": 48972,
+      "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r135-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R135 own-source history including failed and UNRUN checks.",
+      "sha256": "99462849ae44ef4175c367e14298cc791bc3fcef5a8f94ee9092177cd112cfac"
+    },
+    {
+      "bytes": 25508,
+      "candidate_tree": "0976561f1fd373d2675ce23741188d12c0a7d77b",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r136-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R136 own-source history including failed and UNRUN checks.",
+      "sha256": "08fc2efb388f5fbbc728aa9fb78ebd0ad41110cfff267171a2dc3a039f0bbc31"
+    },
+    {
+      "bytes": 23484,
+      "candidate_tree": "6803c49183d76c4fd8768a7fd83efd8fab27a50d",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r137-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R137 own-source history including failed and UNRUN checks.",
+      "sha256": "d360db2f9bd6c5e97fed444d388e2116f8398ff8f070dcc77e71d80487ec917c"
+    },
+    {
+      "bytes": 26052,
+      "candidate_tree": "8a2576c4ef2a45ec3b1ce958440e72df56eb3eee",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r138-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R138 own-source history including failed and UNRUN checks.",
+      "sha256": "9cf37e882ee1d3ad26429972fc11446b3e4fd67f348dd00e6f455f6a62657117"
+    },
+    {
+      "bytes": 23485,
+      "candidate_tree": "6d7ecee922ff7ba0ab4c743071d018bc483772ea",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r139-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R139 own-source history including failed and UNRUN checks.",
+      "sha256": "4528c7f4e35d5e703c9c001c403e3f57c282b539e8e5f4bb6cc88b52df102238"
+    },
+    {
+      "bytes": 27678,
+      "candidate_tree": "f5d45e7f1450ca5c39324ce7c528970a34fd3373",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r140-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R140 own-source history including failed and UNRUN checks.",
+      "sha256": "cbff3d7911bd57edd83ea632ba1e3398fabd67a2ac0d58db1b38575f5f59bf98"
+    },
+    {
+      "bytes": 23488,
+      "candidate_tree": "e0322c4d12f9602e271af9e4d2982c46ec1903e8",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r141-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R141 own-source history including failed and UNRUN checks.",
+      "sha256": "dac59fc3d4ae630bd19cc6017096132b8188d29483e310d368e3135178aeeb5b"
+    },
+    {
+      "bytes": 123528,
+      "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r142-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R142 own-source history including failed and UNRUN checks.",
+      "sha256": "2170a7191536809b2235606835fc3f8a21e968bd4f8b35b55ecf5614c8a9c76a"
+    },
+    {
+      "bytes": 25796,
+      "candidate_tree": "f65eaf09849e4672e16c28e4d477a4dfc9e6efaf",
+      "path": "evidence-management/wip24-preparation/closed-r143-r144-v1/r143-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R143 own-source history including failed and UNRUN checks.",
+      "sha256": "840bb3a43ac3194b31c69139768a0b779b3547b8b131ed620eb71583eefb659a"
+    },
+    {
+      "bytes": 44745,
+      "candidate_tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0",
+      "path": "evidence-management/wip24-preparation/closed-r143-r144-v1/r144-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R144 own-source history including failed and UNRUN checks.",
+      "sha256": "36dd923e3e4219056f8950e1e7644fa2a5c9f648f9b48f64ea9c232bc7c77ff8"
+    },
+    {
+      "bytes": 34844,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/closed-r145-v1/r145-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R145 own-source history including failed and UNRUN checks.",
+      "sha256": "02dbc6a9f4965ff8ffe196f0b80a832dcca8fb0eb622a5268e7374b8fa4aa288"
+    },
+    {
+      "bytes": 484,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-1.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "0b71fcb2964c4e48f7dee65c07244e3b1970c610bf2eea627acc69494f64ee3c"
+    },
+    {
+      "bytes": 485,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-2.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "f3c24c791dc07c7a7713b5b2cd34a08832d96b62e7f6272b68f6aa31d55e4333"
+    },
+    {
+      "bytes": 480,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-3.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "d064fcfc8b9a7cbe5bb1df16aeba1ed24627596681be20d16877126eab8fdadc"
+    },
+    {
+      "bytes": 493,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-4.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "e68c17602fb849443f7b2ead51f0a224a58561f6bd3f00d6f35130ff0e82c2b6"
+    },
+    {
+      "bytes": 460,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-5.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "5ef9bf071edcffcadf21771dec661a9cf94b938e45ff16cbe8560973f3311777"
+    },
+    {
+      "bytes": 465,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-6.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "d9ee246eb6f37375c4d58158cd6321049b8e243d1feb3a51e3cc086274a241f6"
+    },
+    {
+      "bytes": 473,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-7.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "6e8f9a4d67ddf5cc48bf9341b08d082078ca306dcdb2035b13b49af1be5a50a5"
+    }
+  ],
+  "contract": {
+    "bytes": 14136,
+    "path": "evidence-management/wip24-preparation/root-checkpoint-contract-v1.json",
+    "root": "W",
+    "sha256": "710a552e35d91c389bb44ca223722c31e63bdedf2d4c22d7a5bc9107dd02842a"
+  },
+  "document_approval": {
+    "bytes": 3362,
+    "path": "evidence-management/wip24-preparation/ROOT-DOCUMENT-REVIEW-v1.json",
+    "root": "W",
+    "sha256": "3d9a7e27350fc026ce8e9cffd035be3bd5f49da2f589af43558a042f66f0fad1"
+  },
+  "documents": [
+    {
+      "approval_status": "ROOT APPROVED EXACT POSTIMAGE",
+      "bytes": 117706,
+      "destination": "docs/remediation/bac/STATUS.md",
+      "path": "evidence-management/wip24-preparation/document-postimages-v3/STATUS.md",
+      "root": "W",
+      "sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb"
+    },
+    {
+      "approval_status": "ROOT APPROVED EXACT POSTIMAGE",
+      "bytes": 28729,
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "path": "evidence-management/wip24-preparation/document-postimages-v3/EVIDENCE-INDEX.md",
+      "root": "W",
+      "sha256": "6c8bd92c3d12727328775ca0875049358e403fbe177438de0e3d03c7f860dbc6"
+    },
+    {
+      "approval_status": "ROOT APPROVED EXACT POSTIMAGE",
+      "bytes": 33606,
+      "destination": "README.md",
+      "path": "evidence-management/wip24-preparation/document-postimages-v3/README.md",
+      "root": "W",
+      "sha256": "643bbcd6b1668cd734f4ca67ab71c91a70c649e7f39c062c1a6715823218e8ad"
+    },
+    {
+      "approval_status": "ROOT APPROVED EXACT POSTIMAGE",
+      "bytes": 12191,
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "path": "evidence-management/wip24-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "root": "W",
+      "sha256": "dcb18bef329b2161fb5b3a5a0aed3791b685bd1d0fa4d8dc54a7a6a0d54e73f0"
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "e7ee676c583be01daf9fac75f551bbb52b027dff",
+    "tests": "fc500b6781a26a186db446f363633ef969fbf258"
+  },
+  "freeze_utc": "2026-11-14T12:18:47.817718+00:00",
+  "historical_attestation": {
+    "bytes": 4791187,
+    "path": "evidence-management/wip24-preparation/root-historical-source-attestation-v1.json",
+    "root": "W",
+    "sha256": "daa8bd7a678ad3610d2ffaae06441cb1fa63df3315b0c7ed627eaad73fe7eebf"
+  },
+  "nonacceptance_design_inputs": [
+    {
+      "bytes": 2535,
+      "path": "evidence-management/manual-driver-design/root-design-adoption-v1.json",
+      "root": "W",
+      "sha256": "9a910860ff5112887d821c3100891692fb6a0079f52d89ccc9430ab92f9618d4"
+    },
+    {
+      "bytes": 27262,
+      "path": "evidence-management/manual-driver-design/manual-physical-driver-design-v1.md",
+      "root": "W",
+      "sha256": "5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2"
+    },
+    {
+      "bytes": 6937,
+      "path": "evidence-management/manual-driver-design/input-inventory-v1.json",
+      "root": "W",
+      "sha256": "681feb8942382a9b06ee3f064296e4af625d36645a158c7614616a299e72bf84"
+    },
+    {
+      "bytes": 6626,
+      "path": "evidence-management/manual-driver-design/independent-review/review-v1.json",
+      "root": "W",
+      "sha256": "7cf914a8b51c16d780b93643059a43ed8f2aa7c18c64d0c0da41a1c2d8078c5e"
+    },
+    {
+      "bytes": 7328,
+      "path": "evidence-management/manual-driver-design/independent-review/review-v1.md",
+      "root": "W",
+      "sha256": "f84182e3ccf1e672a3bfca21098bb3685860e8e5e8a982299be2ae8f25f59537"
+    },
+    {
+      "bytes": 11396,
+      "path": "evidence-management/env-c2/restore-correlation/env-independent-design-review-v1.md",
+      "root": "W",
+      "sha256": "7e40c7558f4ae76e9da38a17777d879d79bb2e6fa16267edf9c9dbe999722562"
+    },
+    {
+      "bytes": 3900,
+      "path": "evidence-management/env-c2/restore-correlation/core-currency-supplier-v1.json",
+      "root": "W",
+      "sha256": "180d504974b2ffd85fa4fde0c4a7f0c4a3d0f4e5010ca449e647df7d6f83a62d"
+    },
+    {
+      "bytes": 22024,
+      "path": "evidence-management/env-c2/restore-correlation/producer-facts-v1.md",
+      "root": "W",
+      "sha256": "bdd365df98fbf5521198eeef77336002beffdb4cded61063117633301cd28116"
+    },
+    {
+      "bytes": 26910,
+      "path": "evidence-management/env-c2/restore-correlation/producer-facts-v2.md",
+      "root": "W",
+      "sha256": "8593de9209fe8eea39bcae036704d1aa0a749f82fd55ab3a976d562e5400cd23"
+    },
+    {
+      "bytes": 4277,
+      "path": "evidence-management/env-c2/restore-correlation/producer-facts-v1.json",
+      "root": "W",
+      "sha256": "fa0013fbd6829135bb35c8f6c483f64bbcba11848fe6142fe069d1a1e746113c"
+    },
+    {
+      "bytes": 13222,
+      "path": "evidence-management/env-c2/restore-correlation/core-currency-supplier-v1.md",
+      "root": "W",
+      "sha256": "b24eab4821f3b5bf73d663acd8dc5e8733838e93b9bb2327cf727f3b72a7395b"
+    }
+  ],
+  "p1_historical_alias_resolution": {
+    "bytes": 917,
+    "path": "evidence-management/wip24-preparation/packet-r145-v5/P1-HISTORICAL-ALIAS-RESOLUTION-v5.json",
+    "root": "W",
+    "sha256": "a650af2150e9708c5b9f8325dff42a267b5c49167e784ce6b430eff7ef890d40"
+  },
+  "required_next": [
+    "18 known G3/G4 restore failures; full-owner rerun and four prior unqualified skips.",
+    "Manual driver designed, not implemented; complete child/source/device inventory and outer completion consumers required.",
+    "P1 real-input repair, P2 Task4 actual backstop, P4 independent review/strict dispatch, actual full chain and CUDA remain open or UNRUN.",
+    "Global mypy12 FAIL; full/default/coverage>=70/slow/learning/B6/final review and exact remote CI gates remain.",
+    "Local full-ancestry admission unsupported: membership /, mount root /.., PID1 namespace EACCES. Four CPU/16 GiB remain usable locally. Actual Task4 UNRUN pending server access/measured ancestry; P1 two-gap fixes not qualified in WIP24; concurrent subsequent implementation excluded."
+  ],
+  "root": "/root",
+  "scope": "R134-R145 finite closed interval; component/tooling and package acceptance distinct.",
+  "source_alias_resolution": {
+    "bytes": 6855,
+    "path": "evidence-management/wip24-preparation/packet-r145-v4/EXACT-INERT-ALIAS-RESOLUTION-v4.json",
+    "root": "W",
+    "sha256": "96a5b1bf42c016718d0ca433c08f92754df94417ea7b4e53fe64bd955e131822"
+  },
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW"
+}

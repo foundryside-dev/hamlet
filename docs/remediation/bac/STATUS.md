@@ -1,5 +1,21 @@
 # BAC implementation status
 
+## 2026-11-14 — WIP24 checkpoint: R134–R145 ENV custody and fixture repair
+
+The [authoritative record](evidence/wave35-wip-24.json) and [selection plan](evidence/wave35-wip-24/selection-plan.json) bind this finite interval. R145 executed tree is `192bfdbd16fd998e0095f303c5e93a49e346a471`, based on WIP23 `a42d61920ab302e16a4aab885fbbd44640e5d908`; candidate-manifest SHA256 is `d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53`.
+
+R145 records **82 cases in the affected environment-controller fixture suite passed** with controller, two actual workers and full source/import/postflight custody. Independent review and root adoption retain all 39 original test functions and contract assertions. The first-transition case passed separately and overlaps the 82. This resolves eleven original G1/G2 failures; **18 known G3/G4 restore failures, a full owner rerun and four prior unqualified skips remain**. The initial R145 capture failed on a stale duplicated inventory cap before any candidate manifest existed; the corrected capture and bounded review-scope split remain separate evidence.
+
+R144 records **51 targeted C2/diagnostic cases passed** and **nine independent adversarial cases passed** on its own source. The adopted ENV guard and diagnostic repair does not close outer source/device inventory or completion-outcome consumption. R143's 1 FAIL / 1 PASS remains preserved. R142's broader owner result remains **234 PASS / 30 FAIL / 4 SKIP**, historical rather than a new R145 full-owner result. R135 native-fixture positive controls passed 12 cases; original progression recorded 5 PASS / 6 FAIL at that source. Earlier failures, independent retries, all 24 automatic UNRUN T21 templates and collection-only records remain in the interval. These overlapping selections are never summed into unique terminal coverage.
+
+P2 Tasks 1–3 and P5 v4 have bounded tooling adoptions. All four P5 freezes, independent reviews and failed proofs remain retained. P2 Task 4 is durable **unqualified preparation**: AST checks only, actual Git backstop UNRUN. Checkpointed P4 reports **99 inert cases passed**, but has no independent qualification review and no strict dispatch; it remains unqualified. Plans, C3 design, source-currency observations and CHANGES REQUIRED dispositions are not acceptance. The genuine width-three manual ENV driver is designed, not implemented. Complete child/source/device inventory, completion consumers, P1 real-input fixes, P2 backstop, P4 integration and actual full-chain/hardware execution remain required.
+
+Local P1 full-ancestry admission is unsupported: cgroup membership is `/`, the mount root is `/..`, and PID 1 namespace access returns EACCES. This is not CPU scarcity: four CPU and 16 GiB remain available for authorized local APP and inert checks. Actual P2 Task 4 remains UNRUN pending access to the user-provided server and measured ancestry; the promised 16-worker CUDA server is unprobed. The two identified P1 code fixes are not qualified in WIP24; subsequent implementation is outside this checkpoint.
+
+R145 global Ruff, scoped Black and defaults pass; global mypy still fails with **12 diagnostics in two files**. Latest observed WIP23 CI at exact `a42d61920ab302e16a4aab885fbbd44640e5d908` reports Config Validation SUCCESS, Lint FAILURE and Tests FAILURE. The unit job failed at “Run fast test suite”; failed logs were unavailable, so cause and count are not asserted. Hosted Ruff/Black passed, mypy failed and defaults was skipped; the hosted error count is unknown. No WIP24 remote identity or CI result is yet observed.
+
+**28 qualified / 38 remaining / 66 original packages** is unchanged. Full C1/C2/BAC, restore/cohort/recurrent/runner work, B6, default/full suites, coverage ≥70%, slow/learning work, global typing, fresh final BAC design/implementation review and exact final remote CI remain open. Actual CUDA is UNRUN; the offered 16-worker server still requires access and GPU-topology evidence.
+
 ## 2026-11-14 — WIP23 checkpoint: R123–R133 diagnostics and POP cleanup
 
 The [authoritative record](evidence/wave35-wip-23.json) and [selection plan](evidence/wave35-wip-23/selection-plan.json) bind the finite interval and retained evidence.

@@ -1,0 +1,74 @@
+........................................................................ [ 73%]
+...............F........F.                                               [100%]
+=================================== FAILURES ===================================
+__________ test_phase_pair_recomputes_both_explicit_subject_receipts ___________
+
+    def test_phase_pair_recomputes_both_explicit_subject_receipts():
+>       b,_=pair_bundle();r=api().validate_child_obligation(b.subject())
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:351: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:571: in validate_child_obligation
+    result=check.run();documents.finish();return result
+           ^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:528: in run
+    if self.o['kind']=='phase-pair':self.phase_pair(e)
+                                    ^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:511: in phase_pair
+    prior=set(self.d.used);actual=sub.run();equal(actual,receipt['result'],'recomputed strict receipt differs')
+                                  ^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:535: in run
+    require(reference(self.d.rows[path]['reference']) in self.output_inventory,'consumed owner record absent from completion')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'consumed owner record absent from completion'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: consumed owner record absent from completion
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:45: ValueError
+__________ test_standalone_exclusive_receipt_and_live_hash_validation __________
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-162/test_standalone_exclusive_rece0')
+
+    def test_standalone_exclusive_receipt_and_live_hash_validation(tmp_path):
+        b=Bundle();spec=materialize(b,tmp_path);dest=tmp_path/'receipt.json'
+>       receipt=api().verify_children(spec,b.jobid,dest,obligation_id='strict')
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:408: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:602: in verify_children
+    spec_ref=p0.file_reference(spec_path);spec=parse(read_bytes(spec_ref));p0.validate_spec(spec)
+                                                                           ^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:526: in validate_spec
+    validate_record("spec", spec)
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:521: in validate_record
+    _check(kind, value, kind)
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:219: in _check
+    _check(rule[1], item, f"{location}[{index}]")
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:364: in _semantic
+    _require(value["argv"][0] == value["interpreter"], "argv interpreter differs")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'argv interpreter differs'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: argv interpreter differs
+
+bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_phase_pair_recomputes_both_explicit_subject_receipts
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_standalone_exclusive_receipt_and_live_hash_validation
+2 failed, 96 passed in 1.49s

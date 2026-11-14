@@ -1,0 +1,64 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 48 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_environment_parent_custody.py>
+            <Function test_genuine_claim_preserves_independently_owned_predecessor>
+            <Function test_claim_callback_cannot_enter_peer_env_work[get_action_masks]>
+            <Function test_claim_callback_cannot_enter_peer_env_work[get_affordance_positions]>
+            <Function test_claim_callback_cannot_enter_peer_env_work[vfs_random_state]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[shared-none]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[shared-count_based]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[shared-rnd]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[shared-adaptive_rnd]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[shared-icm]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[per_world-none]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[per_world-count_based]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[per_world-rnd]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[per_world-adaptive_rnd]>
+            <Function test_bound_env_and_runtime_preserve_real_step_and_service[per_world-icm]>
+            <Function test_retained_env_requires_binding_and_expires>
+            <Function test_retained_env_scope_is_nonportable>
+            <Function test_peer_waits_at_common_admission_through_outer_exit_and_consumer>
+            <Function test_claim_cannot_preconsume_the_real_producers_single_check>
+            <Function test_real_validation_failure_preserves_primary_and_terminal_denial[content-False]>
+            <Function test_real_validation_failure_preserves_primary_and_terminal_denial[content-True]>
+            <Function test_real_validation_failure_preserves_primary_and_terminal_denial[shape-False]>
+            <Function test_real_validation_failure_preserves_primary_and_terminal_denial[shape-True]>
+            <Function test_real_validation_failure_preserves_primary_and_terminal_denial[dtype-False]>
+            <Function test_real_validation_failure_preserves_primary_and_terminal_denial[dtype-True]>
+            <Function test_adversarial_owned_observation_corruption_reaches_genuine_cleanup[False]>
+            <Function test_adversarial_owned_observation_corruption_reaches_genuine_cleanup[True]>
+            <Function test_validator_and_later_physics_hook_cannot_reuse_reverse_permission>
+            <Function test_callback_exception_keeps_identity_and_expires_permission[before]>
+            <Function test_callback_exception_keeps_identity_and_expires_permission[after]>
+            <Function test_cleanup_after_real_claim_is_terminal_even_if_callback_returns[False]>
+            <Function test_cleanup_after_real_claim_is_terminal_even_if_callback_returns[True]>
+            <Function test_empty_proofs_use_separate_expiring_permissions_and_actual_owners[None-False]>
+            <Function test_empty_proofs_use_separate_expiring_permissions_and_actual_owners[None-True]>
+            <Function test_empty_proofs_use_separate_expiring_permissions_and_actual_owners[population-False]>
+            <Function test_empty_proofs_use_separate_expiring_permissions_and_actual_owners[population-True]>
+            <Function test_empty_proofs_use_separate_expiring_permissions_and_actual_owners[bank-False]>
+            <Function test_empty_proofs_use_separate_expiring_permissions_and_actual_owners[bank-True]>
+            <Function test_bound_role_identity_rebind_preserves_actual_owner_set>
+            <Function test_real_first_a_only_population_step_close_release_and_next_reset>
+            <Function test_genuine_unowned_selector_does_not_grant_pop_claim_authority>
+            <Function test_wrong_issued_identity_consumes_slot_before_validator_tensor_work[foreign-accepted]>
+            <Function test_wrong_issued_identity_consumes_slot_before_validator_tensor_work[foreign-participation]>
+            <Function test_wrong_issued_identity_consumes_slot_before_validator_tensor_work[stale-accepted]>
+            <Function test_wrong_issued_identity_consumes_slot_before_validator_tensor_work[stale-participation]>
+            <Function test_expired_operation_binding_does_not_consume_retained_scope>
+            <Function test_binding_one_env_does_not_authorize_another_env>
+            <Function test_failed_retention_entry_releases_acquired_exclusion>
+            <Function test_claim_diagnostic_read_grants_neither_retention_nor_boundary_work>
+
+========================= 48 tests collected in 0.14s ==========================

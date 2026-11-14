@@ -1,0 +1,170 @@
+FFF..FF.                                                                 [100%]
+=================================== FAILURES ===================================
+_______ test_owner_spawn_process_source_is_observed_after_process_entry ________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red15/fixtures/test_owner_spawn_process_sourc0')
+
+    def test_owner_spawn_process_source_is_observed_after_process_entry(tmp_path):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        reference = seal()
+        def later_source(value):
+            if value.get('kind') == 'source-witness' and value['at'] in ('2026-01-01T00:00:01.000000Z', '2026-01-01T00:00:03.000000Z'):
+                value['at'] = value['at'].replace('.000000Z', '.500000Z')
+            return value
+        envelope = reseal_owner_fixture(envelope, Path(selected['output']), later_source)
+        for obligation in selected['obligations']:
+            for key in ('contract', 'validator'):
+                if Path(obligation[key]['path']).parent == Path(selected['output']):
+                    obligation[key] = r.file_reference(Path(obligation[key]['path']))
+        record = json.loads(Path(reference['path']).read_text())
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1442: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1042: in process_context
+    self._process_context(job, record, role, envelope, set())
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1111: in _process_context
+    self.owner_context(job, record, role, raw, envelope, ancestry)
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1260: in owner_context
+    _require(witness['process_identity'] == identity and witness['candidate'] == self.spec['candidate'] and
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'owner source identity/input/lifetime mismatch'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: owner source identity/input/lifetime mismatch
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+_ test_owner_spawn_all_admitted_noncontroller_nonworker_roles_use_owner_context[discovery] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red15/fixtures/test_owner_spawn_all_admitted_0')
+owner_role = 'discovery'
+
+    @pytest.mark.parametrize('owner_role', ['discovery', 'observer', 'work-child'])
+    def test_owner_spawn_all_admitted_noncontroller_nonworker_roles_use_owner_context(tmp_path, owner_role):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        role['role'] = record['role'] = owner_role
+        contract = json.loads(Path(launch['owner_contract']['path']).read_text()); contract['roles'] = [role]
+        contract_ref = put('owner-contract.json', contract); selected['obligations'][-1]['contract'] = contract_ref
+        launch['owner_contract'] = contract_ref; launch_ref = put('owner-launch-spawn-one.json', launch)
+        claim['launch'] = launch_ref; claim_ref = put('owner-claim-spawn-one.json', claim)
+        raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+        updated = {x['path']: x for x in (contract_ref, launch_ref, claim_ref)}
+        envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1456: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1042: in process_context
+    self._process_context(job, record, role, envelope, set())
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1067: in _process_context
+    _require(raw['owner_claim'] == [], 'ordinary delegated process has owner evidence')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'ordinary delegated process has owner evidence'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: ordinary delegated process has owner evidence
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+_ test_owner_spawn_all_admitted_noncontroller_nonworker_roles_use_owner_context[observer] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red15/fixtures/test_owner_spawn_all_admitted_1')
+owner_role = 'observer'
+
+    @pytest.mark.parametrize('owner_role', ['discovery', 'observer', 'work-child'])
+    def test_owner_spawn_all_admitted_noncontroller_nonworker_roles_use_owner_context(tmp_path, owner_role):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        role['role'] = record['role'] = owner_role
+        contract = json.loads(Path(launch['owner_contract']['path']).read_text()); contract['roles'] = [role]
+        contract_ref = put('owner-contract.json', contract); selected['obligations'][-1]['contract'] = contract_ref
+        launch['owner_contract'] = contract_ref; launch_ref = put('owner-launch-spawn-one.json', launch)
+        claim['launch'] = launch_ref; claim_ref = put('owner-claim-spawn-one.json', claim)
+        raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+        updated = {x['path']: x for x in (contract_ref, launch_ref, claim_ref)}
+        envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1456: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1042: in process_context
+    self._process_context(job, record, role, envelope, set())
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1067: in _process_context
+    _require(raw['owner_claim'] == [], 'ordinary delegated process has owner evidence')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'ordinary delegated process has owner evidence'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: ordinary delegated process has owner evidence
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+_ test_owner_spawn_inherited_imports_follow_pinned_source_authority[unfrozen] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red15/fixtures/test_owner_spawn_inherited_imp1')
+authority = 'unfrozen'
+
+    @pytest.mark.parametrize('authority', ['candidate', 'unfrozen', 'outside-import-root', 'duplicate-name'])
+    def test_owner_spawn_inherited_imports_follow_pinned_source_authority(tmp_path, authority):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        allowed = custody.inputs[0]
+        if authority == 'unfrozen':
+            path = Path(selected['cwd']) / 'unfrozen.txt'; path.write_text('authored unapproved bytes')
+            allowed = r.file_reference(path)
+        elif authority == 'outside-import-root': allowed = custody.inputs[1]
+        launch['inherited_imports'] = [{'name': '_late_alias', 'reference': allowed}]
+        if authority == 'duplicate-name': launch['inherited_imports'] *= 2
+        launch_ref = put('owner-launch-spawn-one.json', launch); claim['launch'] = launch_ref
+        claim_ref = put('owner-claim-spawn-one.json', claim)
+        raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+        updated = {x['path']: x for x in (launch_ref, claim_ref)}
+        envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+        if authority == 'candidate':
+            custody.process_context(selected, record, role, envelope)
+        else:
+>           with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1477: Failed
+_ test_owner_spawn_inherited_imports_follow_pinned_source_authority[outside-import-root] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red15/fixtures/test_owner_spawn_inherited_imp2')
+authority = 'outside-import-root'
+
+    @pytest.mark.parametrize('authority', ['candidate', 'unfrozen', 'outside-import-root', 'duplicate-name'])
+    def test_owner_spawn_inherited_imports_follow_pinned_source_authority(tmp_path, authority):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        allowed = custody.inputs[0]
+        if authority == 'unfrozen':
+            path = Path(selected['cwd']) / 'unfrozen.txt'; path.write_text('authored unapproved bytes')
+            allowed = r.file_reference(path)
+        elif authority == 'outside-import-root': allowed = custody.inputs[1]
+        launch['inherited_imports'] = [{'name': '_late_alias', 'reference': allowed}]
+        if authority == 'duplicate-name': launch['inherited_imports'] *= 2
+        launch_ref = put('owner-launch-spawn-one.json', launch); claim['launch'] = launch_ref
+        claim_ref = put('owner-claim-spawn-one.json', claim)
+        raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+        updated = {x['path']: x for x in (launch_ref, claim_ref)}
+        envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+        if authority == 'candidate':
+            custody.process_context(selected, record, role, envelope)
+        else:
+>           with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1477: Failed
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_process_source_is_observed_after_process_entry
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_all_admitted_noncontroller_nonworker_roles_use_owner_context[discovery]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_all_admitted_noncontroller_nonworker_roles_use_owner_context[observer]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_inherited_imports_follow_pinned_source_authority[unfrozen]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_inherited_imports_follow_pinned_source_authority[outside-import-root]
+5 failed, 3 passed, 137 deselected in 1.94s

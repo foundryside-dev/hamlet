@@ -1,0 +1,156 @@
+..FFFF                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_owner_observed_child_import_authority_in_complete_envelope[unfrozen-source-start] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-red24/fixtures/test_owner_observed_child_impo2')
+phase = 'start', authority = 'unfrozen-source'
+
+    @pytest.mark.parametrize('phase', ['start', 'end'])
+    @pytest.mark.parametrize('authority', ['frozen-source', 'unfrozen-source', 'outside-import-root'])
+    def test_owner_observed_child_import_authority_in_complete_envelope(tmp_path, phase, authority):
+        r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+        reference = custody.candidate['inventory']['source'][0]['reference']
+        if authority == 'unfrozen-source':
+            path = Path(selected['cwd']) / 'unfrozen-child-module.txt'
+            path.write_text('authored bytes absent from frozen candidate')
+            reference = r.file_reference(path)
+        elif authority == 'outside-import-root':
+            reference = custody.candidate['inventory']['configs'][0]['reference']
+        for index, process_ref in enumerate(completion['process_records']):
+            process = json.loads(Path(process_ref['path']).read_text())
+            if process['role'] == 'spawn-child' and process['phase'] == phase:
+                # A child may load a legitimate module absent from its parent START
+                # and from launch.inherited_imports; its own byte authority is required.
+                process['imports'] = [{'name': '_observed_child_extra', 'reference': reference}]
+                updated = put(Path(process_ref['path']).name, process)
+                completion['process_records'][index] = updated
+                completion['inventory'] = [updated if item == process_ref else item for item in completion['inventory']]
+                break
+        else:
+            raise AssertionError('authored child phase missing')
+        put('completion.json', completion)
+        if authority == 'frozen-source':
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1429: Failed
+_ test_owner_observed_child_import_authority_in_complete_envelope[unfrozen-source-end] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-red24/fixtures/test_owner_observed_child_impo3')
+phase = 'end', authority = 'unfrozen-source'
+
+    @pytest.mark.parametrize('phase', ['start', 'end'])
+    @pytest.mark.parametrize('authority', ['frozen-source', 'unfrozen-source', 'outside-import-root'])
+    def test_owner_observed_child_import_authority_in_complete_envelope(tmp_path, phase, authority):
+        r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+        reference = custody.candidate['inventory']['source'][0]['reference']
+        if authority == 'unfrozen-source':
+            path = Path(selected['cwd']) / 'unfrozen-child-module.txt'
+            path.write_text('authored bytes absent from frozen candidate')
+            reference = r.file_reference(path)
+        elif authority == 'outside-import-root':
+            reference = custody.candidate['inventory']['configs'][0]['reference']
+        for index, process_ref in enumerate(completion['process_records']):
+            process = json.loads(Path(process_ref['path']).read_text())
+            if process['role'] == 'spawn-child' and process['phase'] == phase:
+                # A child may load a legitimate module absent from its parent START
+                # and from launch.inherited_imports; its own byte authority is required.
+                process['imports'] = [{'name': '_observed_child_extra', 'reference': reference}]
+                updated = put(Path(process_ref['path']).name, process)
+                completion['process_records'][index] = updated
+                completion['inventory'] = [updated if item == process_ref else item for item in completion['inventory']]
+                break
+        else:
+            raise AssertionError('authored child phase missing')
+        put('completion.json', completion)
+        if authority == 'frozen-source':
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1429: Failed
+_ test_owner_observed_child_import_authority_in_complete_envelope[outside-import-root-start] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-red24/fixtures/test_owner_observed_child_impo4')
+phase = 'start', authority = 'outside-import-root'
+
+    @pytest.mark.parametrize('phase', ['start', 'end'])
+    @pytest.mark.parametrize('authority', ['frozen-source', 'unfrozen-source', 'outside-import-root'])
+    def test_owner_observed_child_import_authority_in_complete_envelope(tmp_path, phase, authority):
+        r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+        reference = custody.candidate['inventory']['source'][0]['reference']
+        if authority == 'unfrozen-source':
+            path = Path(selected['cwd']) / 'unfrozen-child-module.txt'
+            path.write_text('authored bytes absent from frozen candidate')
+            reference = r.file_reference(path)
+        elif authority == 'outside-import-root':
+            reference = custody.candidate['inventory']['configs'][0]['reference']
+        for index, process_ref in enumerate(completion['process_records']):
+            process = json.loads(Path(process_ref['path']).read_text())
+            if process['role'] == 'spawn-child' and process['phase'] == phase:
+                # A child may load a legitimate module absent from its parent START
+                # and from launch.inherited_imports; its own byte authority is required.
+                process['imports'] = [{'name': '_observed_child_extra', 'reference': reference}]
+                updated = put(Path(process_ref['path']).name, process)
+                completion['process_records'][index] = updated
+                completion['inventory'] = [updated if item == process_ref else item for item in completion['inventory']]
+                break
+        else:
+            raise AssertionError('authored child phase missing')
+        put('completion.json', completion)
+        if authority == 'frozen-source':
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1429: Failed
+_ test_owner_observed_child_import_authority_in_complete_envelope[outside-import-root-end] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-red24/fixtures/test_owner_observed_child_impo5')
+phase = 'end', authority = 'outside-import-root'
+
+    @pytest.mark.parametrize('phase', ['start', 'end'])
+    @pytest.mark.parametrize('authority', ['frozen-source', 'unfrozen-source', 'outside-import-root'])
+    def test_owner_observed_child_import_authority_in_complete_envelope(tmp_path, phase, authority):
+        r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+        reference = custody.candidate['inventory']['source'][0]['reference']
+        if authority == 'unfrozen-source':
+            path = Path(selected['cwd']) / 'unfrozen-child-module.txt'
+            path.write_text('authored bytes absent from frozen candidate')
+            reference = r.file_reference(path)
+        elif authority == 'outside-import-root':
+            reference = custody.candidate['inventory']['configs'][0]['reference']
+        for index, process_ref in enumerate(completion['process_records']):
+            process = json.loads(Path(process_ref['path']).read_text())
+            if process['role'] == 'spawn-child' and process['phase'] == phase:
+                # A child may load a legitimate module absent from its parent START
+                # and from launch.inherited_imports; its own byte authority is required.
+                process['imports'] = [{'name': '_observed_child_extra', 'reference': reference}]
+                updated = put(Path(process_ref['path']).name, process)
+                completion['process_records'][index] = updated
+                completion['inventory'] = [updated if item == process_ref else item for item in completion['inventory']]
+                break
+        else:
+            raise AssertionError('authored child phase missing')
+        put('completion.json', completion)
+        if authority == 'frozen-source':
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1429: Failed
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_observed_child_import_authority_in_complete_envelope[unfrozen-source-start]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_observed_child_import_authority_in_complete_envelope[unfrozen-source-end]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_observed_child_import_authority_in_complete_envelope[outside-import-root-start]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_observed_child_import_authority_in_complete_envelope[outside-import-root-end]
+4 failed, 2 passed, 148 deselected in 1.50s

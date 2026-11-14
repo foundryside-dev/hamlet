@@ -1,0 +1,41 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+  "unique_node_phase_failures": 6,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'",
+      "count": 6,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

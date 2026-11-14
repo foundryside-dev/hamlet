@@ -1,0 +1,2050 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFF...........................FFF.......        [100%]
+=================================== FAILURES ===================================
+____________________ test_exact_owner_cases[replay_poison] _____________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-replay-result-v1"}', 'reference': {'bytes': 42, 'path': '/synthet......], 'job_id': 'replay-poison', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f90583d1400>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'replay_poison'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-replay-result-v1"}', 'reference': {'bytes': 42, 'path': '/synthet......], 'job_id': 'replay-poison', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_______________ test_exact_owner_cases[recurrent_replay_poison] ________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-replay-result-v1"}', 'reference': {'bytes': 42, 'path': '/synthet..._id': 'recurrent-replay-poison', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f90580f9590>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'recurrent_replay_poison'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-replay-result-v1"}', 'reference': {'bytes': 42, 'path': '/synthet..._id': 'recurrent-replay-poison', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+__________________ test_exact_owner_cases[bootstrap_failure] ___________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...: 'cuda-core-bootstrap-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f90580f9810>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'bootstrap_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...: 'cuda-core-bootstrap-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+________________ test_exact_owner_cases[runtime_query_failure] _________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...uda-core-runtime-query-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f90583c28b0>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'runtime_query_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...uda-core-runtime-query-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_______________ test_exact_owner_cases[local_completion_single] ________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...a-core-local-completion-single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f90583c2b10>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'local_completion_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...a-core-local-completion-single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+____________ test_exact_owner_cases[local_completion_multiple_body] ____________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...local-completion-multiple-body', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905833b1d0>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'local_completion_multiple_body'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...local-completion-multiple-body', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+__________ test_exact_owner_cases[local_completion_duplicate_parent] ___________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...al-completion-duplicate-parent', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905819ff00>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'local_completion_duplicate_parent'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...al-completion-duplicate-parent', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_________________ test_exact_owner_cases[poison_unknown_ready] _________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...cuda-core-poison-unknown-ready', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905819fac0>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'poison_unknown_ready'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...cuda-core-poison-unknown-ready', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+________________ test_exact_owner_cases[poison_ready_qualified] ________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...da-core-poison-ready-qualified', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811ef50>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'poison_ready_qualified'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...da-core-poison-ready-qualified', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+______________ test_exact_owner_cases[poison_ready_healthy_only] _______________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...core-poison-ready-healthy-only', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811d450>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'poison_ready_healthy_only'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...core-poison-ready-healthy-only', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+______________ test_exact_owner_cases[operation_body_completion] _______________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...core-operation-body-completion', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811d850>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'operation_body_completion'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...core-operation-body-completion', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+____________________ test_exact_owner_cases[inherited_pid] _____________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811eb50>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'inherited_pid'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+________________ test_exact_owner_cases[invocation_same_error] _________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...uda-core-invocation-same-error', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f150>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'invocation_same_error'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...uda-core-invocation-same-error', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_______________ test_exact_owner_cases[invocation_child_failure] _______________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...-core-invocation-child-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f750>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'invocation_child_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...-core-invocation-child-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+______________ test_exact_owner_cases[invocation_parent_failure] _______________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...core-invocation-parent-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811eb50>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'invocation_parent_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...core-invocation-parent-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_____________ test_exact_owner_cases[invocation_reported_failure] ______________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...re-invocation-reported-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f850>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'invocation_reported_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...re-invocation-reported-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+______________ test_exact_owner_cases[invocation_phase_reference] ______________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...ore-invocation-phase-reference', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811d450>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'invocation_phase_reference'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...ore-invocation-phase-reference', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_______________ test_exact_owner_cases[invocation_phase_failure] _______________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...-core-invocation-phase-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811e550>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'invocation_phase_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic...-core-invocation-phase-failure', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+__________________ test_exact_owner_cases[flat_local_single] ___________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ducer-poison-flat_local_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f450>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'flat_local_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ducer-poison-flat_local_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_________________ test_exact_owner_cases[flat_local_distinct] __________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...cer-poison-flat_local_distinct', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f650>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'flat_local_distinct'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...cer-poison-flat_local_distinct', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+___________________ test_exact_owner_cases[flat_local_same] ____________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...roducer-poison-flat_local_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811e550>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'flat_local_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...roducer-poison-flat_local_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_________________ test_exact_owner_cases[flat_admitted_single] _________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...er-poison-flat_admitted_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f950>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'flat_admitted_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...er-poison-flat_admitted_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+__________________ test_exact_owner_cases[flat_admitted_same] __________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ucer-poison-flat_admitted_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f250>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'flat_admitted_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ucer-poison-flat_admitted_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+___________________ test_exact_owner_cases[per_local_single] ___________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...oducer-poison-per_local_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811d450>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'per_local_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...oducer-poison-per_local_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+__________________ test_exact_owner_cases[per_local_distinct] __________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ucer-poison-per_local_distinct', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811f850>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'per_local_distinct'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ucer-poison-per_local_distinct', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+____________________ test_exact_owner_cases[per_local_same] ____________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...producer-poison-per_local_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811fc50>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'per_local_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...producer-poison-per_local_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_________________ test_exact_owner_cases[per_admitted_single] __________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...cer-poison-per_admitted_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811ee50>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'per_admitted_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...cer-poison-per_admitted_single', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+__________________ test_exact_owner_cases[per_admitted_same] ___________________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ducer-poison-per_admitted_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811fb50>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::tes...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+case = 'per_admitted_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-producer-result-v1"}', 'reference': {'bytes': 44, 'path': '/synth...ducer-poison-per_admitted_same', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_______ test_return_7_9_ack_8_1_and_reap_order[11100000000-11200000000] ________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811d350>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+ack = 11100000000, reap = 11200000000
+
+    @pytest.mark.parametrize('ack,reap',[(11100000000,11200000000),(11200000000,11100000000),(13000000000,13000000000)])
+    def test_return_7_9_ack_8_1_and_reap_order(ack,reap):
+        b=Bundle('inherited_pid');custody=b.named['admission-observation']['parent_custody'];custody.update(acknowledgement_received_ns=ack,reaped_ns=reap)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_______ test_return_7_9_ack_8_1_and_reap_order[11200000000-11100000000] ________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811ef50>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+ack = 11200000000, reap = 11100000000
+
+    @pytest.mark.parametrize('ack,reap',[(11100000000,11200000000),(11200000000,11100000000),(13000000000,13000000000)])
+    def test_return_7_9_ack_8_1_and_reap_order(ack,reap):
+        b=Bundle('inherited_pid');custody=b.named['admission-observation']['parent_custody'];custody.update(acknowledgement_received_ns=ack,reaped_ns=reap)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+_______ test_return_7_9_ack_8_1_and_reap_order[13000000000-13000000000] ________
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+>           result=check.run();documents.finish();return result
+                   ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:478: in run
+    else:self.owner(e)
+         ^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:302: in owner
+    start,end,launch=self.pair_process(ack['process_start'],ack['process_end'],p['parent_start'],p['owner_launch'],role,'spawn')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:241: in pair_process
+    launch=self.d.get(launch_ref);exact(launch,LAUNCH_FIELDS);self.bound(launch)
+                                                              ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <verify_bac_hardware_children_v1.Check object at 0x7f905811e650>
+obj = {'at': '2026-11-14T00:00:00.000000Z', 'case_id': 'tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_...s': 0, 'path': '/synthetic/opaque', 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}, ...}
+
+    def bound(self, obj):
+>       equal(obj['spec'],self.spec_ref,'foreign spec');equal(obj['job_id'],self.job['id'],'foreign job')
+                                                              ^^^^^^^^^^^^^
+E       KeyError: 'job_id'
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:204: KeyError
+
+The above exception was the direct cause of the following exception:
+
+ack = 13000000000, reap = 13000000000
+
+    @pytest.mark.parametrize('ack,reap',[(11100000000,11200000000),(11200000000,11100000000),(13000000000,13000000000)])
+    def test_return_7_9_ack_8_1_and_reap_order(ack,reap):
+        b=Bundle('inherited_pid');custody=b.named['admission-observation']['parent_custody'];custody.update(acknowledgement_received_ns=ack,reaped_ns=reap)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'documents': [{'content': b'{"schema":"bac-hardware-core-result-v1"}', 'reference': {'bytes': 40, 'path': '/synthetic..._id': 'cuda-core-inherited-pid', 'obligation_id': 'strict', 'schema': 'bac-hardware-strict-validation-subject-v1', ...}
+
+    def validate_child_obligation(subject):
+        """Validate supplied bytes only; no I/O or independently acquired authority."""
+        try:
+            exact(subject,'schema spec job_id obligation_id documents');equal(subject['schema'],SUBJECT,'subject schema')
+            shape('id',subject['job_id']);shape('id',subject['obligation_id'])
+            documents=Documents(subject['documents'])
+            check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+            result=check.run();documents.finish();return result
+        except (KeyError,TypeError,IndexError,RecursionError) as exc:
+>           raise ValueError('malformed strict subject') from exc
+E           ValueError: malformed strict subject
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:520: ValueError
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[replay_poison]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[recurrent_replay_poison]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[bootstrap_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[runtime_query_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[local_completion_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[local_completion_multiple_body]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[local_completion_duplicate_parent]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[poison_unknown_ready]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[poison_ready_qualified]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[poison_ready_healthy_only]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[operation_body_completion]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[inherited_pid]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_same_error]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_child_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_parent_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_reported_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_phase_reference]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_phase_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_local_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_local_distinct]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_local_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_admitted_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_admitted_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_local_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_local_distinct]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_local_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_admitted_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_admitted_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_return_7_9_ack_8_1_and_reap_order[11100000000-11200000000]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_return_7_9_ack_8_1_and_reap_order[11200000000-11100000000]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_return_7_9_ack_8_1_and_reap_order[13000000000-13000000000]
+31 failed, 34 passed in 2.56s

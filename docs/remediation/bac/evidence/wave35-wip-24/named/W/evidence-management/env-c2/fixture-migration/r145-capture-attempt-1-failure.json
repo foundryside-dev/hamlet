@@ -1,0 +1,21 @@
+{
+  "status": "FAILED CAPTURE BEFORE MANIFEST; PREREQUISITE REPAIRED",
+  "argv": [
+    ".venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+    "r145",
+    "wave35",
+    "a42d61920ab302e16a4aab885fbbd44640e5d908",
+    "wave35/r144-candidate.json"
+  ],
+  "exit_code": 1,
+  "error": "AssertionError: test_initial_participation_env.py 1343 > stale world-lifecycle row projected_lines1241",
+  "candidate_manifest_created": false,
+  "absolute_start_utc": null,
+  "absolute_end_utc": null,
+  "unavailable_reason": "Initial direct capture launcher did not record absolute UTC; not inferred from file metadata. Tool reported exit1 and0.2268 seconds.",
+  "repair": "Update only duplicated read-only inventory row to actual1343; actual five-file scope4690 remains <=5000; dedicated writer one-file cap1500 retained",
+  "before_tasks_sha256": "8980bbc586d951f135f85893e06a368e6b9656221852aacd24aa843ca6e6dc62",
+  "after_tasks_sha256": "4f07ba7137cee88cac15b757e109c49d9ad59df8455a9e4ed5b5dea2a37d0e5c"
+}

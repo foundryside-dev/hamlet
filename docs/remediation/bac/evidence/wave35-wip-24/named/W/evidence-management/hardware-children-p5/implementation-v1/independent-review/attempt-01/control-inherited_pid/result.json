@@ -1,0 +1,38 @@
+{
+  "name": "control-inherited_pid",
+  "expected": "satisfied",
+  "mode": "pure",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+    ],
+    "evidence": [
+      {
+        "bytes": 1123,
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/evidence.json",
+        "sha256": "2aa69e57ea247da44eb6339678bdaf55c65748c0a2eae34e0ad1c57a7af6fd6d"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 1708,
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-result-cuda_core_inherited_pid.json",
+        "sha256": "4073d63848c4d80c3ca7cc3258feae1ca2cec9b2dee5288b2ce09cced65e1352"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 2826,
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/parent.json",
+        "sha256": "9eba17c529d325be236c8a15ce45ea4a79f4f05c247be7b0966fa0c4c32d0488"
+      }
+    ],
+    "related_attempts": []
+  },
+  "matched_expectation": true
+}

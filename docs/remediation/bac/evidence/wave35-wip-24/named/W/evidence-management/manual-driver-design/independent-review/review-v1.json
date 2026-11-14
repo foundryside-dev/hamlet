@@ -1,0 +1,111 @@
+{
+  "schema": "manual-physical-driver-independent-design-review-v1",
+  "date": "2026-11-14",
+  "reviewer": "/root/bac_astra_native_fixture_review",
+  "author": "/root/bac_astra_manual_driver_design",
+  "disposition": "APPROVE_FINITE_DESIGN",
+  "subject": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/manual-physical-driver-design-v1.md",
+    "bytes": 27262,
+    "sha256": "5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2"
+  },
+  "author_input_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/input-inventory-v1.json",
+    "bytes": 6937,
+    "sha256": "681feb8942382a9b06ee3f064296e4af625d36645a158c7614616a299e72bf84"
+  },
+  "reviewed_metadata": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/manual-physical-driver-design-v1.md",
+      "bytes": 27262,
+      "sha256": "5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/input-inventory-v1.json",
+      "bytes": 6937,
+      "sha256": "681feb8942382a9b06ee3f064296e4af625d36645a158c7614616a299e72bf84"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/genuine-driver-requirements-v1.json",
+      "bytes": 30840,
+      "sha256": "04400b3a1bfad466640fc1df6f70c20ee1200f2c6d41f52f2837c7c4b8920f01"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/manual-driver-fixture-binding-facts-v1.json",
+      "bytes": 7338,
+      "sha256": "650da05f438b5ac8875b7872bbf91e614013be994205db69fb63d1be6e4f9cb0"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/root-bank-clock-facts-v1.json",
+      "bytes": 2366,
+      "sha256": "8f5ee99521f62d5f5a738fabd2021a03f7b4182a548dfbe8e6a831b743d29e4d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-POP-MANUAL-PHYSICAL-DRIVER-GAP-FACTS-v1.md",
+      "bytes": 22180,
+      "sha256": "ab60faefe9500462c9a3fc9f88f38cae96f01e69f5ae7ea9d29c7c5235ce9dc7"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-ENV-C2-PROPOSAL-v1.md",
+      "bytes": 25283,
+      "sha256": "ac73d33427e0c4c4d708a11010f7e278b577978fa5075c3e41e241078778f667"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-ENV-C2-PROPOSAL-v2.md",
+      "bytes": 19760,
+      "sha256": "419f57fd2c1abca43a3733db3274b161526a26bb01332bbcbaccc723dad105d6"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-INTEGRATION-PROPOSAL-V2.md",
+      "bytes": 33413,
+      "sha256": "45801f6d05a751b4fa7458278f2c781290c094eafa267a65479efb34d9c427c6"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-ENV-RUNTIME-CURRENT-SUPPLIER.md",
+      "bytes": 25703,
+      "sha256": "02ac16732bb18dd6613c09cf90f2b20850da402c355cd11604f000f3f91b5b33"
+    },
+    {
+      "path": "/workspace/hamlet/AGENTS.md",
+      "bytes": 6242,
+      "sha256": "7cf711206c00682b317064a2ff0f49eb78ca03d899642af8be82951c12970c93"
+    },
+    {
+      "path": "/workspace/hamlet/docs/remediation/bac/EVIDENCE-PROCESS.md",
+      "bytes": 14570,
+      "sha256": "409d31fd8fecc91237d90f3424447cb812258f3b42699faca0d121008461ef75"
+    }
+  ],
+  "implementation_bodies": [
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "bytes": 72479,
+      "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f",
+      "whole_lines": 1511
+    },
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+      "bytes": 69095,
+      "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9",
+      "whole_lines": 1515
+    }
+  ],
+  "whole_body_budget": {
+    "files": 2,
+    "lines": 3026,
+    "new_producer_bodies": 0
+  },
+  "blocking_findings": [],
+  "necessity": "Supported manual physical route and between-vector retirement preserve the same learned BANK/ENV completed-parent correlation, physical-count-backed content and existing independent synthetic schedule; existing POP cannot supply those jointly without added effects or false ownership. No separate outcome-import subsystem is justified.",
+  "required_implementation_proofs": [
+    "Current issued session/accepted/activation/participation and generation validation, conflicting binding refusal, unforgeable noncopyable capabilities, exact ownership and owned result copies.",
+    "A-only entry through genuine initial participation; B actual count4 before A-only fifth physical step; no fifth B effect/admission; exactly-once terminal cancellation.",
+    "One complete physical/DAC step and zero BANK/runtime/Q/replay service; separate original synthetic BANK event exactly once with independent sparse ticks/masks and unchanged geometry.",
+    "Full local role-owned canonical completion, actual same BANK dispositions, real ENV close/release and strict initial/completed restore; old history cannot authorize receiving live close.",
+    "Original exception identity, stage-based fail-closed cleanup, no earned effect retry, cleanup notes, and no blanket unrelated BANK/native quarantine.",
+    "Ordinary integrated reward path remains equivalent after shared factoring; every physical helper effect retained.",
+    "Whole-source packet caps and no implicit helper expansion; full original matrices and gate remain required."
+  ],
+  "later_required_gate": "Full ENV source-complete RNG/device inventory and genuine invocation-completion consumer/health integration remain explicit later shared C2 gate; bounded CPU execution must not be marketed as that proof.",
+  "scope": "Design approval only. No implementation grant or runtime qualification; root owns exclusive APP baton and publication. No application execution, APP edit, Git/index, branches/worktrees/source copies, deletions or delegation."
+}

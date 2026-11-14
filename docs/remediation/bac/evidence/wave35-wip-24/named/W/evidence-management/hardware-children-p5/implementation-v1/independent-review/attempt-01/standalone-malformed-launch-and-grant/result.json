@@ -1,0 +1,38 @@
+{
+  "name": "standalone-malformed-launch-and-grant",
+  "expected": "refused",
+  "mode": "standalone",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+    ],
+    "evidence": [
+      {
+        "bytes": 1930,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-01/standalone-malformed-launch-and-grant/inert/out/a/replay-poison/evidence.json",
+        "sha256": "31035d90df97a49de8bcca74c6e0aebfd45aafb7b4310c0620a6476636768fe9"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 2945,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-01/standalone-malformed-launch-and-grant/inert/out/a/replay-poison/replay-result-replay_poison.json",
+        "sha256": "a2cd3e396e69bd3dbab4dc37ed023e31c1dc34ade25e0f1f4abbfb7847cb5e27"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 6926,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-01/standalone-malformed-launch-and-grant/inert/out/a/replay-poison/parent.json",
+        "sha256": "43825902e7f7b52e4f8f0528bbbb5c8d4f5c5ae042bd1c65072128d41db27795"
+      }
+    ],
+    "related_attempts": []
+  },
+  "matched_expectation": false
+}

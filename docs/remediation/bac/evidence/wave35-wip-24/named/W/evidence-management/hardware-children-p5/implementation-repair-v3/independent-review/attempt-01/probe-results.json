@@ -1,0 +1,781 @@
+[
+  {
+    "name": "control-replay_poison",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+      ],
+      "evidence": [
+        {
+          "bytes": 1090,
+          "path": "/synthetic/out/a/replay-poison/evidence.json",
+          "sha256": "d30783642cbd67b8ec4f8b75ec538727d0842b3c07e05d31cb647408120dcc61"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1593,
+          "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+          "sha256": "ee4d01d4f3d44c1bcad9ffd60619423eb028828b81580cad34014273f592b544"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 3644,
+          "path": "/synthetic/out/a/replay-poison/parent.json",
+          "sha256": "6db0ad0f5de1859769cfa3343d7a5c4d41d91d325e847eefef759d099e235468"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-inherited_pid",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+      ],
+      "evidence": [
+        {
+          "bytes": 1123,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/evidence.json",
+          "sha256": "c27ed3c9721a08f6cb3ee50aae9d9d8549f8c08687130b6873250759f63d8401"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1708,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/core-result-cuda_core_inherited_pid.json",
+          "sha256": "272cf3d482ab53e470f17f485cfc0df8bc66ba14c0ec5a172addc62da6f3dae1"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 2826,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/parent.json",
+          "sha256": "9eba17c529d325be236c8a15ce45ea4a79f4f05c247be7b0966fa0c4c32d0488"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-per_local_distinct",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_local_distinct]"
+      ],
+      "evidence": [
+        {
+          "bytes": 1182,
+          "path": "/synthetic/out/a/cuda-producer-poison-per_local_distinct/evidence.json",
+          "sha256": "97ba002c02e6290c182eb3ac391fcd28dd6c86dfc55539171b39f1c83db16516"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 2788,
+          "path": "/synthetic/out/a/cuda-producer-poison-per_local_distinct/producer-result.json",
+          "sha256": "6d29d92e132ae474e54bff90a361c5db012d04b5d9704b49c15c40c2c2b78a49"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 3575,
+          "path": "/synthetic/out/a/cuda-producer-poison-per_local_distinct/parent.json",
+          "sha256": "48caaea241f7b936a339af59bda6cf2e0177eae91f66651f1a1c91237d14edb7"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-phase-pair",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+      ],
+      "evidence": [
+        {
+          "bytes": 1428,
+          "path": "/synthetic/pair/out/a/replay-poison/evidence.json",
+          "sha256": "1cf2ff67de9d01fe1beb9aa9391df83cd588d1fd56cb84dc160f7cd9900361a3"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1232,
+          "path": "/synthetic/pair/out/a/replay-poison/pair-wrapper.json",
+          "sha256": "c6179709759d5f033a94235eb400c271a01caa9b61e277e6591b8b53cac4af83"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 0,
+          "path": "/synthetic/pair/out/a/replay-poison/parent.json",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ],
+      "related_attempts": [
+        {
+          "bytes": 4202,
+          "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/spec.json",
+          "sha256": "1970bbed34a04528db0b028acb2342604773d9b5a6fc9d43179b533fef45b115"
+        },
+        {
+          "bytes": 4170,
+          "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-failure/spec.json",
+          "sha256": "aeb3470841dd60296ca8d92a32c7606f04405a3bf7af864312239899de76c261"
+        }
+      ]
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "phase-swapped-jobs-relabelled-wrapper",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "phase wrapper actual case mismatch",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "phase-two-reference-runs-no-failure-run",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "phase wrapper actual case mismatch",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "launch-command-bool",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "exact fields required: path bytes sha256",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "launch-source-witness-foreign",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "missing referenced document: /synthetic/opaque",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "launch-parent-argv-object",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "list cardinality",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "launch-inherited-imports-object",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "list cardinality",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "launch-timestamp-bool",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "utc: string required",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "launch-monotonic-bool",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "uint: exact integer required",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "raw-worker-identity-object",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "exact fields required: workerid workercount testrunuid mainargv",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "raw-observation-limit-object",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "text: string required",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "sampler-commands-malformed",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "list cardinality",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "sampler-lock-time-bool",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "uint: exact integer required",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "sampler-lock-reversed",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "sampler lock chronology",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "guard-process-time-after-return",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "parent/launch/child lifetime contradiction",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "parent-end-before-child-start",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "parent/launch/child lifetime contradiction",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "claim-time-before-launch",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "claim outside owner lifetime",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "context-grant-bool",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "exact fields required: path bytes sha256",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "context-required-imports-object",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "list cardinality",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "context-policy-bool",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "list cardinality",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "negative-control-exit-bool",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "child unsuccessful exit",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "standalone-malformed-launch-and-grant",
+    "expected": "refused",
+    "mode": "standalone",
+    "observed": "refused",
+    "error": "exact fields required: path bytes sha256",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-standalone",
+    "expected": "satisfied",
+    "mode": "standalone",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+      ],
+      "evidence": [
+        {
+          "bytes": 1882,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/evidence.json",
+          "sha256": "91c8f64a858991d61e348c0860cb0a696a08c3a1c5f97f1c131419ee949d5c66"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 2861,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/replay-result-replay_poison.json",
+          "sha256": "a67dd4a2681cebcb6a5eea65474e54bb7bec4409311e90b63b20b9496d3a0446"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 6722,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent.json",
+          "sha256": "b81b6ae8a114c263260f9db975037ce102443372a079b7f087aae3163e169c32"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": true
+  },
+  {
+    "name": "parent-end-before-guard-return",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "custody endpoint after observing parent END",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "parent-end-before-guard-ack-reap",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "custody endpoint after observing parent END",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "reports-after-parent-end",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "report outside observing process lifetime",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "reports-before-parent-start",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "report outside observing process lifetime",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "parent-end-substitutes-child-role",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "wrong process role",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "inherited-module-alias-crosswired",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "inherited import differs from parent",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "required-import-alias-crosswired",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "refused",
+    "error": "required import observation mismatch",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "standalone-reports-after-parent-end",
+    "expected": "refused",
+    "mode": "standalone",
+    "observed": "refused",
+    "error": "report outside observing process lifetime",
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "both-parent-phases-substitute-child-role",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+      ],
+      "evidence": [
+        {
+          "bytes": 1090,
+          "path": "/synthetic/out/a/replay-poison/evidence.json",
+          "sha256": "852edc94ba0ad4a4d94087021b04fa8d898bf3e14aedc8fc8451a573a3d43bc6"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1593,
+          "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+          "sha256": "d28f9527e05e4ab218a7dbe77eb234ec958d263d002d8fd52ad4b57ad3368cca"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 3648,
+          "path": "/synthetic/out/a/replay-poison/parent.json",
+          "sha256": "b5ba562b3600726149211cf3cf70582983b068bff26ded34db18836c5673445a"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": false,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-separated-utc-timeline",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+      ],
+      "evidence": [
+        {
+          "bytes": 1090,
+          "path": "/synthetic/out/a/replay-poison/evidence.json",
+          "sha256": "46a1bb9220925a8d764421a6deb02afaff15b37078d3e3a67741351f6f6d54fb"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1593,
+          "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+          "sha256": "98f33813db3d619552d2e15cd443dc556f8daf49208e8dd978a88dcf6880c1e7"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 3644,
+          "path": "/synthetic/out/a/replay-poison/parent.json",
+          "sha256": "6db0ad0f5de1859769cfa3343d7a5c4d41d91d325e847eefef759d099e235468"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "passing-call-before-child-start",
+    "expected": "refused",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+      ],
+      "evidence": [
+        {
+          "bytes": 1090,
+          "path": "/synthetic/out/a/replay-poison/evidence.json",
+          "sha256": "46a1bb9220925a8d764421a6deb02afaff15b37078d3e3a67741351f6f6d54fb"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1593,
+          "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+          "sha256": "98f33813db3d619552d2e15cd443dc556f8daf49208e8dd978a88dcf6880c1e7"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 3644,
+          "path": "/synthetic/out/a/replay-poison/parent.json",
+          "sha256": "6db0ad0f5de1859769cfa3343d7a5c4d41d91d325e847eefef759d099e235468"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": false,
+    "receipt_exists": false
+  },
+  {
+    "name": "passing-call-before-child-end-standalone",
+    "expected": "refused",
+    "mode": "standalone",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+      ],
+      "evidence": [
+        {
+          "bytes": 1971,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/passing-call-before-child-end-standalone/inert/out/a/replay-poison/evidence.json",
+          "sha256": "ab75654e77ba68065ca4cd84de34ebf954e0a9753aa6e524fab53a103f5a5cc9"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 3016,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/passing-call-before-child-end-standalone/inert/out/a/replay-poison/replay-result-replay_poison.json",
+          "sha256": "5c6f4c81c251653425a4b87b3f4ad7c950698b16f55b6ba6433671b81d69b824"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 7097,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/passing-call-before-child-end-standalone/inert/out/a/replay-poison/parent.json",
+          "sha256": "91c327a884141922366a7fbee615ad578965820318613fd9e7ed96096aaf78f7"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": false,
+    "receipt_exists": true
+  },
+  {
+    "name": "control-observer-end-equals-reap",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+      ],
+      "evidence": [
+        {
+          "bytes": 1123,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/evidence.json",
+          "sha256": "abe8e331e64358ec1b1e7f129f23c1620246018ad2a426fe7b69386edc8b99a2"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1708,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/core-result-cuda_core_inherited_pid.json",
+          "sha256": "109f4e814299724715dc36365b5397abbd9df97729c48ef1a55e21c943bfaa63"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 2826,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/parent.json",
+          "sha256": "9eba17c529d325be236c8a15ce45ea4a79f4f05c247be7b0966fa0c4c32d0488"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-both-endpoints-exact-deadline",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+      ],
+      "evidence": [
+        {
+          "bytes": 1123,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/evidence.json",
+          "sha256": "985b83d5e19179b5d36e9c420c401bd4089fd71a30ad66f23ff5905a57329783"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1708,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/core-result-cuda_core_inherited_pid.json",
+          "sha256": "ebba812fa1963dd39f6a3b9f171d304ee4c5eb715395ecb9e6aa73157ad0b2db"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 2826,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/parent.json",
+          "sha256": "9eba17c529d325be236c8a15ce45ea4a79f4f05c247be7b0966fa0c4c32d0488"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-reap-before-ack",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+      ],
+      "evidence": [
+        {
+          "bytes": 1123,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/evidence.json",
+          "sha256": "578e36e52e7efa6136db8dc0660a9237dca1985748a42c9492debd7fa6252f71"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1708,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/core-result-cuda_core_inherited_pid.json",
+          "sha256": "370e3164833185291d28a621f5a76a427823fb66849ba2282ad98603f8b667dd"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 2826,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/parent.json",
+          "sha256": "9eba17c529d325be236c8a15ce45ea4a79f4f05c247be7b0966fa0c4c32d0488"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  },
+  {
+    "name": "control-explicit-valid-import-joins",
+    "expected": "satisfied",
+    "mode": "pure",
+    "observed": "satisfied",
+    "result": {
+      "schema": "bac-hardware-strict-validation-result-v1",
+      "obligation_id": "strict",
+      "verdict": "satisfied",
+      "reasons": [],
+      "cases": [
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+      ],
+      "evidence": [
+        {
+          "bytes": 1123,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/evidence.json",
+          "sha256": "832efe38b8dbd0c3004b67b333e8e71c86f52f17942e21fbfa423cf5aa8a4bdf"
+        }
+      ],
+      "payloads": [
+        {
+          "bytes": 1708,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/core-result-cuda_core_inherited_pid.json",
+          "sha256": "91ff9326a221163976b5c2ce900a6fc7418d2c5860bd9277dbd56682f07eff54"
+        }
+      ],
+      "producer_processes": [
+        {
+          "bytes": 2826,
+          "path": "/synthetic/out/a/cuda-core-inherited-pid/parent.json",
+          "sha256": "33ffa9772a0d5adb2e707e0d9fba903b513a158ccb1c3e4baf911a6945aa8a63"
+        }
+      ],
+      "related_attempts": []
+    },
+    "matched_expectation": true,
+    "receipt_exists": false
+  }
+]

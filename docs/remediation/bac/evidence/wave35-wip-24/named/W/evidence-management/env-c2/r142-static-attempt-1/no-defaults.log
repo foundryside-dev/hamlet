@@ -1,0 +1,8 @@
+Scanning 200 Python file(s)...
+Progress: 1/200 files scannedProgress: 10/200 files scannedProgress: 20/200 files scannedProgress: 30/200 files scannedProgress: 40/200 files scannedProgress: 50/200 files scannedProgress: 60/200 files scannedProgress: 70/200 files scannedProgress: 80/200 files scannedProgress: 90/200 files scannedProgress: 100/200 files scannedProgress: 110/200 files scannedProgress: 120/200 files scannedProgress: 130/200 files scannedProgress: 140/200 files scannedProgress: 150/200 files scannedProgress: 160/200 files scannedProgress: 170/200 files scannedProgress: 180/200 files scannedProgress: 190/200 files scannedProgress: 200/200 files scanned
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+No defaults detected. Clean.
+(600 violation(s) whitelisted)
+Ratchet: 600 whitelisted violation(s), at the ceiling.

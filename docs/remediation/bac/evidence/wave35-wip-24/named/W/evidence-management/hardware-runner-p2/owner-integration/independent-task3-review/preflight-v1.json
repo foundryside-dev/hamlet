@@ -1,0 +1,45 @@
+{
+  "at": "2026-11-14T11:04:46.942279+00:00",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-freeze-v1.json",
+    "bytes": 15627,
+    "sha256": "7c54f456107ee8474ebb8d8427bb73f3efcbd48a8efc31eb724bf4a4f102234c"
+  },
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 110168,
+      "sha256": "05afd0f982915da45439543038c55f0abb3dcfe53a2c53630ce08fa9d04d19ec"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 132244,
+      "sha256": "952aa84da7d3526085b9d1eac7d7785d617207c5b87b9d948e0416567bb474eb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "bytes": 3778,
+      "sha256": "3cf8269324c5407bad4d3ceacfea1489f57b04ab3371e2ac9840a2d86453d650"
+    }
+  ],
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py",
+    "bytes": 9545,
+    "sha256": "c5e7541e431be102f1e4c1e2b53fd1b60c46f65ab4d2a22976517d5c1dacf4c1"
+  },
+  "historical_probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/test_independent_task1.py.task2-history.py.txt",
+    "bytes": 7883,
+    "sha256": "459226845107e8fd9844742d72312e19286fde173a717dd7d3dd139ed59cd042"
+  },
+  "body_budget": {
+    "bodies": 5,
+    "lines": 4255
+  },
+  "runtime_status": "HOLD awaiting root twoCPU slot release"
+}

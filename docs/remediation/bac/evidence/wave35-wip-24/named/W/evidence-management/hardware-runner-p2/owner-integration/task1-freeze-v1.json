@@ -1,0 +1,166 @@
+{
+  "at": "2026-11-14T10:03:50.343924+00:00",
+  "attempt_inventory": {
+    "bytes": 1746951,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/attempt-inventory-v1.json",
+    "sha256": "5dcfcdc1278aa5469b0416dbd02e6b9ddfa4a60fad8138e1eb1ba07376e71367"
+  },
+  "before": {
+    "bytes": 1344,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/before-v1.json",
+    "sha256": "a9f74fa05b8dc9da2377234ac3ef05d7eed6c77809039a7f9a7e92655f5465f4"
+  },
+  "body_budget": {
+    "files": 4,
+    "lines": 3044,
+    "maximum_files": 5,
+    "maximum_lines": 5000
+  },
+  "bootstrap_failure": {
+    "bytes": 1064,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/collection01/bootstrap-failure-v1.json",
+    "sha256": "4b8881a7288490f416e3d7f3c03bfef48c836187d52805b9e8135f5c27098701"
+  },
+  "bootstrap_limit": "collection01 failed before wrapper structured finalization; PID/UTC/duration unavailable and not invented. Historical wrapper pin is in test-freeze-v1; collection01 does not prove runtime source custody.",
+  "checks": [
+    {
+      "name": "collection02",
+      "reference": {
+        "bytes": 3497,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/collection02/execution.json",
+        "sha256": "00573f82f7a0d1dd0f07b61ac3ee780c80f8d4a22406aa229ed952f59cc736e8"
+      },
+      "result": "112 collected; no test execution"
+    },
+    {
+      "name": "red01",
+      "reference": {
+        "bytes": 3705,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/red01/execution.json",
+        "sha256": "d3eda294d6d2b977135205533b16615cd911f05992c71462f129cc5f4b2b1d5a"
+      },
+      "result": "5 expected failure,18PASS,89deselected; stale P0 and raw-v1 gates demonstrated"
+    },
+    {
+      "name": "green01",
+      "reference": {
+        "bytes": 3711,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/green01/execution.json",
+        "sha256": "d18b38964d096b82a35853fbe40eed0a872098a2c55a9555780d34f47aab3a72"
+      },
+      "result": "22PASS,1FAIL effective_cpu_capacity fixture mismatch,89deselected; retained"
+    },
+    {
+      "name": "green02",
+      "reference": {
+        "bytes": 3725,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/green02/execution.json",
+        "sha256": "5d899d075d0974c6d501f192cb1ddd192ecc4026bb1a32d56affe809ff48ecaa"
+      },
+      "result": "23PASS,89deselected"
+    },
+    {
+      "name": "full03",
+      "reference": {
+        "bytes": 3628,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/execution.json",
+        "sha256": "ab1955b7eeb9be1007e7212afffdcda64154809539b3e9c85602ecf029e23904"
+      },
+      "result": "96PASS,16deselected = original73 plus Task1 current23; overlapping green02 not added"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 82822,
+      "lines": 1274,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "5f72c9e7c1cce50378f32b30fc46f4d35625f837a3980e91b9c6644753bf2953"
+    },
+    {
+      "bytes": 77658,
+      "lines": 1171,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "5aaedc415da0c1bd9efea5df78df7ccab6659ba6d8cad0cd4e869d132d1214d2"
+    },
+    {
+      "bytes": 34654,
+      "lines": 526,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 3635,
+      "lines": 73,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "sha256": "51ffece3829826d47be9860ef8cf039b1f25bd36b9534446952d04a343c1d1a7"
+    }
+  ],
+  "implemented": [
+    "Exact adopted P0 e4f31e pin replaces historical adc8ef pin; no fallback",
+    "Current raw-v2 ordinary/controller/worker closure only; owner branches still refuse",
+    "Python debug true/optimization0 measured independently of Torch; anomaly false accepted for loaded work; exact current no-call reason/phase/config validation",
+    "Current success fixtures explicitly raw-v2/Python-debug; closed synthetic CPU admission effective capacity follows actual granted affinity, overhead1 retained"
+  ],
+  "plan": {
+    "bytes": 22095,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-OWNER-INTEGRATION-PLAN-v2.md",
+    "sha256": "ed0e4a19fe2c27106d9ef32a86ffa4d6c1678c0e96b565413efc64b30019b56e"
+  },
+  "preservation": "No Git/index/init/worktree/branch/checkout/source execution clone or APP modifications. Original before/failed attempts retained; only owned Q runner/test and E artifacts changed.",
+  "remaining": [
+    "Root review/explicit grant before Task2-4",
+    "Actual source/P3/Git integration and owned-live-Git-backstop need source lease plus exact inert stall/reaper recipe",
+    "P4/P5 whole-call timing vectors and adopted implementation remain UNRUN",
+    "APP owner instrumentation, source-owned inter-op5 and real server/CUDA qualification remain UNRUN"
+  ],
+  "resource_custody": {
+    "green_terminal": "twoCPU affinity0,1 /4GiB address-space ceiling; thread env1; serial pytest xdist0; inherited actual process affinity; exact argv/PID/start identity/UTC and pins before/after in execution.json",
+    "limits": "RLIMIT_AS is per-process, not an aggregate cgroup guarantee. Synthetic admission facts test consumer arithmetic, not hardware capacity qualification. No APP/Torch/P3 import, actual Git or source execution.",
+    "red": "oneCPU affinity0 /2GiB address-space ceiling; actual controller facts in records"
+  },
+  "review": {
+    "bytes": 3512,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration-plan/independent-review/review-v2.json",
+    "sha256": "8618dc939a703f1833fac7500fdfbf89e7137650ff901885d20e8d724231668e"
+  },
+  "schema": "bac-p2-owner-task1-freeze-v1",
+  "snapshots": [
+    {
+      "bytes": 82822,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run_bac_hardware_v1.py.task1-freeze.py.txt",
+      "sha256": "5f72c9e7c1cce50378f32b30fc46f4d35625f837a3980e91b9c6644753bf2953"
+    },
+    {
+      "bytes": 77658,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/test_run_bac_hardware_v1.py.task1-freeze.py.txt",
+      "sha256": "5aaedc415da0c1bd9efea5df78df7ccab6659ba6d8cad0cd4e869d132d1214d2"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/bac_hardware_protocol_v1.py.task1-freeze.py.txt",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 3635,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py.task1-freeze.py.txt",
+      "sha256": "51ffece3829826d47be9860ef8cf039b1f25bd36b9534446952d04a343c1d1a7"
+    }
+  ],
+  "status": "TASK1 FROZEN FOR ROOT REVIEW; TASK2-4 NOT IMPLEMENTED",
+  "supplier_reason_capsule": {
+    "bytes": 9203,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/observation-reason-literals-supplier-v1.json",
+    "sha256": "ad597f75000940593c1c1aca7784372557ae7f7bba96cc0779108afb6d837a5d"
+  },
+  "terminal": {
+    "bytes": 3628,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/execution.json",
+    "sha256": "ab1955b7eeb9be1007e7212afffdcda64154809539b3e9c85602ecf029e23904"
+  },
+  "terminal_log": {
+    "bytes": 195,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/output.log",
+    "sha256": "787c022db4040ac8d8d4daf1ac5f47e8844ddfd362499b2b90c32b533043d6d8"
+  },
+  "test_authoring": "16 owner-spawn future tests authored but UNRUN under Task1 scope; no Task2 production implementation. All existing73 pure P2 cases executed including actual affinity-shrink on2CPU."
+}

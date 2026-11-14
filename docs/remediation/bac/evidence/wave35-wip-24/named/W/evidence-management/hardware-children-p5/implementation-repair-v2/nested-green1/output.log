@@ -1,0 +1,50 @@
+........................................................................ [ 26%]
+........................................................................ [ 53%]
+........................................................................ [ 80%]
+.................................................F.                      [100%]
+=================================== FAILURES ===================================
+________ test_nested_transport_semantic_correspondence[ordinary_claim] _________
+
+mutation = 'ordinary_claim'
+
+    @pytest.mark.parametrize('mutation',['command_exit','command_truncated','command_limit','command_log_missing','command_time','guard_anomaly','ordinary_sampler','ordinary_claim','role_kind'])
+    def test_nested_transport_semantic_correspondence(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('command','guard')) else 'replay_poison')
+        if mutation.startswith('command'):
+            command=b.named['admission-start-sampler']['commands'][0]
+            if mutation=='command_exit':command['exit_code']=1
+            elif mutation=='command_truncated':command['stdout_truncated']=True
+            elif mutation=='command_limit':command['stdout']['bytes']=8193
+            elif mutation=='command_log_missing':b.named['completion']['inventory'].remove(command['stdout'])
+            elif mutation=='command_time':command['end_ns']=9000000000
+        elif mutation=='guard_anomaly':b.named['admission-start-raw']['torch_anomaly']={'state':'measured','value':False,'reason':''}
+        elif mutation=='ordinary_sampler':b.named['parent-raw']['sampler']=[OPAQUE]
+        elif mutation=='ordinary_claim':b.named['parent-raw']['owner_claim']=[b.claims[101]]
+        elif mutation=='role_kind':b.named['child-start']['role']='work-child'
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                                                       ^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1486: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_verify_bac_hardware_children_v1.Bundle object at 0x7ff65cc6c550>
+
+    def subject(self):
+        for _ in range(100):
+            changed = False
+            for name, obj, ref in self.items:
+                data = json.dumps(obj, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+                update = {"path": ref["path"], "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+                if ref != update:
+                    ref.update(update)
+                    changed = True
+            if not changed:
+                break
+        else:
+>           raise AssertionError("synthetic reference cycle")
+E           AssertionError: synthetic reference cycle
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:774: AssertionError
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_nested_transport_semantic_correspondence[ordinary_claim]
+1 failed, 266 passed in 4.41s

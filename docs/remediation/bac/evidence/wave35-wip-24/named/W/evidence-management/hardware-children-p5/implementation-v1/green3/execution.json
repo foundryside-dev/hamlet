@@ -1,0 +1,37 @@
+{
+  "phase": "green3",
+  "argv": [
+    "-q",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "-p",
+    "no:cacheprovider",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py"
+  ],
+  "pid": 225914,
+  "ppid": 225911,
+  "affinity": [
+    0
+  ],
+  "ram_limit": 4294967296,
+  "start": "2026-11-14T10:47:43.401513+00:00",
+  "end": "2026-11-14T10:47:44.489826+00:00",
+  "elapsed": 1.088299125985941,
+  "exit": 0,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "bytes": 44589,
+      "sha256": "9ea8a1df0ca001178d90fa44818485c68d8eb3156fe74744e481e74d1e7aaf3d"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py",
+      "bytes": 23885,
+      "sha256": "20367d01ae8c70a1d4364a4be6282b8723c223a7a79b7f293416e758f544d70e"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ]
+}

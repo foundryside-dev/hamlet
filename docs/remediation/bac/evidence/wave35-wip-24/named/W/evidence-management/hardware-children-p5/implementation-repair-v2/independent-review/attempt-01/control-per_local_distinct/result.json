@@ -1,0 +1,39 @@
+{
+  "name": "control-per_local_distinct",
+  "expected": "satisfied",
+  "mode": "pure",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_local_distinct]"
+    ],
+    "evidence": [
+      {
+        "bytes": 1182,
+        "path": "/synthetic/out/a/cuda-producer-poison-per_local_distinct/evidence.json",
+        "sha256": "97ba002c02e6290c182eb3ac391fcd28dd6c86dfc55539171b39f1c83db16516"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 2788,
+        "path": "/synthetic/out/a/cuda-producer-poison-per_local_distinct/producer-result.json",
+        "sha256": "6d29d92e132ae474e54bff90a361c5db012d04b5d9704b49c15c40c2c2b78a49"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 3575,
+        "path": "/synthetic/out/a/cuda-producer-poison-per_local_distinct/parent.json",
+        "sha256": "48caaea241f7b936a339af59bda6cf2e0177eae91f66651f1a1c91237d14edb7"
+      }
+    ],
+    "related_attempts": []
+  },
+  "matched_expectation": true,
+  "receipt_exists": false
+}

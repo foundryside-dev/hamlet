@@ -1,0 +1,57 @@
+{
+  "schema": "bac-root-bounded-component-adoption-v1",
+  "at": "2026-11-14T11:59:32.945985+00:00",
+  "status": "ADOPTED BOUNDED G1/G2 FIXTURE MIGRATION",
+  "reviewer": "/root/bac_c2_owner_failure_reconciliation",
+  "writer": "/root/bac_c2_fixture_migration",
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "actual_current_source": {
+    "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+    "bytes": 64401,
+    "sha256": "80a9ef90c939214b9d709b94e7f058041e4cfa24cfaa0421b8cb0d31a0c327d1"
+  },
+  "references": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/fixture-migration/independent-review-v1.json",
+      "bytes": 6836,
+      "sha256": "8718cc1da48b2ebc1c09568695784ea3af0e8cf55c0d5fb2be1fd45da2309e9a"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/fixture-migration/independent-review-v1.md",
+      "bytes": 9801,
+      "sha256": "09083f02e93bd1c20bec8676319984d0250d2150acb8e9d2a275af75a86403ed"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/fixture-migration/handoff-v1.json",
+      "bytes": 2503,
+      "sha256": "dd983f0fa3bcf4b66f3817c1b5529e6f9e6e292fc9fe89f5e55f50d42c47022d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/fixture-migration/before-v1.json",
+      "bytes": 6476,
+      "sha256": "7e50f481ae36c0c22ae03957ee8399bb95d0e06ba81d4de539a70ea9bda6a9de"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+      "bytes": 209062,
+      "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-custody.json",
+      "bytes": 648,
+      "sha256": "7b856f28809cfbf1c72ac66c2a842aa0712518f4fb39fee3c637c3bae5aee30f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r145-static-attempt-1/summary.json",
+      "bytes": 4663,
+      "sha256": "51355ff7808b87503eea795f40ce71cdd68bf7566fa2d14dae0fdfbef9cea25e"
+    }
+  ],
+  "qualification": "82 owner cases PASS with three actual process identities and source/index/import custody. Eleven original G1/G2 failures resolved; all39 original test functions and their contract assertions retained. First-transition1PASS overlaps82.",
+  "remaining": "18 known G3/G4 restore failures and full-owner rerun owed; four prior skips remain unqualified. No full C2 or package closure. Ruff/Black/defaults PASS; mypy12 FAIL remains.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

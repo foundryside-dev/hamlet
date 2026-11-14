@@ -1,0 +1,41 @@
+{
+  "argv": [
+    "/usr/bin/python3.13",
+    "-c",
+    "import os,time;from pathlib import Path;Path.cwd().parent.joinpath(\"output/attempt/a/actual-pid.txt\").write_text(str(os.getpid()));time.sleep(10)",
+    "--bac-identity-policy",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_direct_controller_retains0/metadata/identity-policy.json",
+    "--bac-identity-policy-sha256",
+    "e4c89d4501eff30d0309d3724ad92076f55c3e2a555f457b4010a345020cbc48"
+  ],
+  "at": "2026-11-14T10:46:06.056772Z",
+  "attempt_id": "attempt",
+  "cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_direct_controller_retains0/source",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "17"
+  },
+  "job_id": "a",
+  "kind": "command",
+  "runner": {
+    "bytes": 96510,
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "8bf7f17c79c2e79df08e8402a96acc0b09483777faaef5d814bf8d550420bfda"
+  },
+  "schema": "bac-hardware-v1",
+  "seed": {
+    "cuda": [],
+    "numpy": 18,
+    "policy": "explicit",
+    "python": 17,
+    "torch": 19
+  },
+  "spec": {
+    "bytes": 9066,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_direct_controller_retains0/metadata/spec.json",
+    "sha256": "e2bec2c8f8ae3f9a190a78195fae50d5f0868b685992d1a906dac2cdd27c36d5"
+  }
+}

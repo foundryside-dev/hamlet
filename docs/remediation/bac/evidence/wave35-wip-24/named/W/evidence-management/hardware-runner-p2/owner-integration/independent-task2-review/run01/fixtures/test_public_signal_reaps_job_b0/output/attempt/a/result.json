@@ -1,0 +1,73 @@
+{
+  "attempt_id": "attempt",
+  "collected_ids": [],
+  "command": {
+    "bytes": 1777,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/command.json",
+    "sha256": "208597f739694e0b0ce9436dd47bdb6b423593b20794da2c3b8a69f7290c73df"
+  },
+  "disposition": "interrupted",
+  "elapsed_ns": {
+    "reason": "",
+    "state": "measured",
+    "value": 82339502
+  },
+  "end": {
+    "reason": "",
+    "state": "measured",
+    "value": "2026-11-14T10:41:34.341293Z"
+  },
+  "exit_code": -15,
+  "inventory": [
+    {
+      "bytes": 6,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/actual-pid.txt",
+      "sha256": "61f25f751239a4b87f87d8fc49e4f8b7d0fdcd6a8e538157e3b2ddd1d3b4f54f"
+    },
+    {
+      "bytes": 1777,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/command.json",
+      "sha256": "208597f739694e0b0ce9436dd47bdb6b423593b20794da2c3b8a69f7290c73df"
+    },
+    {
+      "bytes": 1774,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/launch.json",
+      "sha256": "f386de054cf071455c14952135c2fa0a55c0c0b76c32c8e87984af5c0bd95ae9"
+    },
+    {
+      "bytes": 2053,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/runtime-context.json",
+      "sha256": "21d0a213f86967026f685f2b87b1b8d5be1bc3bcb901d6f22df4026f11b5b178"
+    },
+    {
+      "bytes": 0,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1591,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/wait.json",
+      "sha256": "c26e7e51bab531e14a346ac7b858201a65d910818823cb8b1ad4d1a73a7a177a"
+    }
+  ],
+  "job_id": "a",
+  "kind": "job-result",
+  "log": {
+    "bytes": 0,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "obligation_records": [],
+  "outcomes": [],
+  "process_records": [],
+  "reason": "runner interruption; evidence incomplete: unreadable/unsafe reference: /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/completion.json",
+  "schema": "bac-hardware-v1",
+  "signal": 15,
+  "source_witnesses": [],
+  "spec": {
+    "bytes": 9319,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_public_signal_reaps_job_b0/metadata/spec.json",
+    "sha256": "20c7e21a0464cea6211b61dd6c26345adac19eea9501d52b697239e83d8b8630"
+  },
+  "start": "2026-11-14T10:41:34.258843Z"
+}

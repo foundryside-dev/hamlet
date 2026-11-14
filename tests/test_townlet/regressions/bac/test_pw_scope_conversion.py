@@ -6,6 +6,7 @@ Synthetic 3D curiosity inputs do not claim actual runner or sampler integration.
 
 from collections import OrderedDict
 from collections.abc import Mapping
+from contextlib import contextmanager, nullcontext
 from copy import copy, deepcopy
 from pathlib import Path
 
@@ -286,22 +287,24 @@ def service(bank, accepted, tick, active):
     return context, stamp, reward, receipts
 
 
-def backend(bank, world="A"):
-    """Shared-only test seam; private providers never escape an owned callback."""
+def backend(bank, operation):
+    """Standalone shared callback; the installed provider never leaves its owner."""
     assert bank.scope == "shared", "inspect private state inside on_backend callback"
-    return bank._shared
+    return bank._shared.call(operation, lineage=None)
 
 
 def on_backend(bank, operation, world="A"):
+    """Standalone managed observation/effect; only owned values leave callbacks."""
     if bank.scope == "shared":
-        return operation(bank._shared)
-    return bank._owners[world].call(lambda provider, sources: operation(provider))
+        return backend(bank, operation)
+    return bank._owners[world].call(lambda provider, sources: operation(provider), lineage=None)
 
 
 def validate_live(bank, state, world="A"):
     on_backend(bank, lambda provider: provider.validate_state(state), world)
 
 
+@contextmanager
 def observe_training(bank, family, world="A"):
     batches, handles = [], []
 
@@ -318,7 +321,16 @@ def observe_training(bank, family, world="A"):
             handle.remove()
 
     on_backend(bank, install, world)
-    return batches, lambda: on_backend(bank, remove, world)
+    try:
+        yield batches
+    except BaseException as error:
+        try:
+            on_backend(bank, remove, world)
+        except BaseException as cleanup:
+            error.add_note(f"Training-hook cleanup also failed: {cleanup!r}")
+        raise
+    else:
+        on_backend(bank, remove, world)
 
 
 def modules(provider, family):
@@ -525,20 +537,23 @@ def test_fixture_actual_shared_learning_and_completed_parent(compiled, family, m
         assert counters["optimizer_updates"] >= 2
         assert len(pending) == 1
         assert counters["admitted_rows"] == counters["consumed_rows"] + counters["dropped_rows"] + 1
-        provider = backend(source.bank)
-        provider.validate_state(native)
         actual = learned(native, family)
         assert storages(actual).isdisjoint(storages(source.original["native"]))
-        first_module = next(iter(modules(provider, family).values()))
         initial_native = source.original["native"]
         if family == "adaptive_rnd":
             initial_native = initial_native["rnd_state"]
             assert len(native["survival_history"]) == 10
             assert native["current_intrinsic_weight"] < native["initial_intrinsic_weight"]
         key = "encoder" if family == "icm" else "predictor_network"
-        assert any(not torch.equal(value, initial_native[key][name]) for name, value in first_module.state_dict().items())
-        adam = provider.rnd.optimizer if family == "adaptive_rnd" else provider.optimizer
-        assert adam.state and any(bool(state["exp_avg"].abs().sum() > 0) for state in adam.state.values())
+
+        def inspect_learning(provider):
+            provider.validate_state(native)
+            first_module = next(iter(modules(provider, family).values()))
+            assert any(not torch.equal(value, initial_native[key][name]) for name, value in first_module.state_dict().items())
+            adam = provider.rnd.optimizer if family == "adaptive_rnd" else provider.optimizer
+            assert adam.state and any(bool(state["exp_avg"].abs().sum() > 0) for state in adam.state.values())
+
+        on_backend(source.bank, inspect_learning)
         gradients = live(source.bank)["gradients"]
         values = [value for group in gradients.values() for value in group.values()]
         assert any(value is None for value in values)
@@ -558,8 +573,12 @@ def test_fixture_icm_rejects_erased_updates_with_inherited_adam(compiled):
     native["counters"].update(admitted_rows=0, consumed_rows=0, dropped_rows=0, optimizer_updates=0, mandatory_service_updates=0)
     native.update(pending=[], last_loss=0.0, ordinary_updates_at_position=0)
     before = live(source.bank)
-    with pytest.raises(ValueError):
-        backend(source.bank).validate_state(native)
+
+    def refuse_invalid(provider):
+        with pytest.raises(ValueError):
+            provider.validate_state(native)
+
+    on_backend(source.bank, refuse_invalid)
     equal(live(source.bank), before)
 
 
@@ -710,13 +729,12 @@ def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, cho
     if family in TRAINABLE:
         native, pending = native_ledger(live(target.bank)["native"], family)
         assert len(pending) == 0
-        trained_batches, remove_hook = observe_training(target.bank, family)
-    before_b = live(target.bank, "B")
-    target.begin(source.accepted.batch_episode + 1)
-    first, _, _, _ = target.step(301, (True, False))
-    second, _, _, _ = target.step(302, (True, False))
+    with observe_training(target.bank, family) if family in TRAINABLE else nullcontext([]) as trained_batches:
+        before_b = live(target.bank, "B")
+        target.begin(source.accepted.batch_episode + 1)
+        first, _, _, _ = target.step(301, (True, False))
+        second, _, _, _ = target.step(302, (True, False))
     if family in TRAINABLE:
-        remove_hook()
         equal(trained_batches[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
         actual, pending = native_ledger(live(target.bank)["native"], family)
         baseline = native["optimizer_updates"]
@@ -770,9 +788,10 @@ def replay_roundtrip(replay):
     equal(decoded.available_learned_state, payload)
     assert decoded.archives == ()
     restored = ReplayBuffer(capacity=4, device=torch.device("cpu"))
-    restored.load_prepared(
-        restored.prepare_serialized(decoded.available_learned_state["population_state"]["replay_buffer"], expected_obs_dim=3)
+    prepared = restored.prepare_serialized(
+        decoded.available_learned_state["population_state"]["replay_buffer"], expected_obs_dim=3, lineage=None
     )
+    restored.load_prepared(prepared, lineage=None)
     equal(restored.serialize(), saved)
     assert len(restored) == restored.retained_transitions == 2
     assert bool(saved["legality_recorded"].all()) and bool(saved["rewards_intrinsic_present"].all())
@@ -780,15 +799,34 @@ def replay_roundtrip(replay):
     equal(saved["next_action_masks"], torch.tensor([[True, False], [False, False]]))
     with pytest.raises(ValueError):
         hc.resolve_historical_access(payload, requested_mode="archived_history_fresh_episode")
-    with pytest.raises(ValueError):
-        restored.load_for_mode(saved, requested_mode="archived_history_fresh_episode")
+    with pytest.raises(ValueError, match="^current replay cannot discard qualified active rows$"):
+        restored.load_for_mode(saved, requested_mode="archived_history_fresh_episode", lineage=None)
     equal(restored.serialize(), saved)
     return restored, payload, decoded
 
 
 def test_fixture_current_hc_and_active_replay_roundtrip():
     """Prerequisite: real captured replay must survive real HC and replay loaders."""
-    replay_roundtrip(recorded_replay())
+    source = recorded_replay()
+    saved = source.serialize()
+    restored, payload, envelope = replay_roundtrip(source)
+    restored.push_recorded(
+        observations=saved["observations"],
+        actions=saved["actions"],
+        rewards=RewardTensor(
+            saved["rewards"],
+            extrinsic=saved["rewards_extrinsic"],
+            intrinsic=saved["rewards_intrinsic"],
+            shaping=None,
+            is_composed=True,
+        ),
+        next_observations=saved["next_observations"],
+        dones=saved["dones"],
+        next_action_masks=saved["next_action_masks"],
+    )
+    assert len(restored) == restored.retained_transitions == 4
+    equal(source.serialize(), saved)
+    equal(envelope.available_learned_state, payload)
 
 
 @pytest.mark.parametrize("family", FAMILIES)
@@ -1009,20 +1047,36 @@ def test_prepared_initialization_custody(compiled, failure):
     """Catches foreign, copied, stale or repeated publication of a prepared runtime."""
     source = trained_source(compiled, "count_based", "paced_fifo")
     target = destination(compiled, source)
+    foreign = destination(compiled, source) if failure == "foreign" else None
+    receiving = foreign if foreign is not None else target
+    before = {world: live(receiving.bank, world) for world in IDS}
     token = prepare(target, source.saved, CHOICES[1])
     if failure == "stale":
         target.bank.snapshot_world(world_id="A")
     elif failure == "foreign":
-        target = destination(compiled, source)
+        target = foreign
     elif failure == "copied":
         token = copy(token)
     else:
         target.bank.install_restore(prepared=token)
-    before = {world: live(target.bank, world) for world in IDS}
-    with pytest.raises(ValueError):
+        # Isolate consumption: no managed observation between publication and reuse.
+        with pytest.raises(ValueError, match="^foreign or consumed restore token$"):
+            target.bank.install_restore(prepared=token)
+        before = {world: live(target.bank, world) for world in IDS}
+        for witness in before.values():
+            equal(learned(witness["native"], "count_based"), learned(source.saved["shared_backend"]["native"], "count_based"))
+            equal(witness["gradients"], source.saved["shared_backend"]["gradients"])
+        # This second refusal also follows observation currency; retain full identity checks.
+    with pytest.raises(ValueError, match="^foreign or consumed restore token$" if failure == "used" else None):
         target.bank.install_restore(prepared=token)
     for world in IDS:
         equal(live(target.bank, world), before[world])
+    control = destination(compiled, source)
+    valid = prepare(control, source.saved, CHOICES[1])
+    control.bank.install_restore(prepared=valid)
+    control.install_parent()
+    for world in IDS:
+        equal(learned(live(control.bank, world)["native"], "count_based"), learned(source.saved["shared_backend"]["native"], "count_based"))
 
 
 @pytest.mark.parametrize("mutation", ("baseline", "epoch", "archive", "callback"))
@@ -1103,7 +1157,7 @@ def test_coherent_incompatible_target_refuses(compiled, mismatch):
     """Source validation alone cannot reject these separately valid target configurations."""
     source = Rig(compiled, policy(compiled, "icm", "shared", "paced_fifo"))
     state = source.bank.checkpoint_state()
-    backend(source.bank).validate_state(state["shared_backend"]["native"])
+    validate_live(source.bank, state["shared_backend"]["native"])
     target = incompatible_target(compiled, mismatch)
     before = {world: live(target.bank, world) for world in target.env.world_ids}
     for world in target.env.world_ids:
@@ -1129,7 +1183,7 @@ def test_explicit_choice_profile_and_parent_custody(compiled, fault):
     source = trained_source(compiled, "icm", "paced_fifo")
     target = destination(compiled, source)
     state = deepcopy(source.saved)
-    backend(source.bank).validate_state(state["shared_backend"]["native"])
+    validate_live(source.bank, state["shared_backend"]["native"])
     for world in IDS:
         validate_live(target.bank, live(target.bank, world)["native"], world)
     parent = target.parent
@@ -1218,12 +1272,12 @@ def test_private_rng_is_owned_and_starts_at_same_id_factory_continuation(compile
     def draw(provider, sources):
         return torch.rand(13)
 
-    first = target.bank._owners["A"].call(draw)
-    equal(first, independent.bank._owners["A"].call(draw))
+    first = target.bank._owners["A"].call(draw, lineage=None)
+    equal(first, independent.bank._owners["A"].call(draw, lineage=None))
     equal(target.bank.snapshot_world(world_id="A")["backend"]["rng"], independent.bank.snapshot_world(world_id="A")["backend"]["rng"])
     equal(target.bank.snapshot_world(world_id="B")["backend"]["rng"], b_before)
     equal(torch.get_rng_state(), ambient)
-    assert not torch.equal(first, target.bank._owners["A"].call(draw))
+    assert not torch.equal(first, target.bank._owners["A"].call(draw, lineage=None))
     equal(target.bank.snapshot_world(world_id="B")["backend"]["rng"], b_before)
 
 
@@ -1232,22 +1286,25 @@ def offset_source(compiled, sign):
     source.begin(0)
     source.step(1)
     source.step(2)
-    provider = backend(source.bank)
-    earlier = deepcopy(provider.optimizer.state_dict())
+    earlier = on_backend(source.bank, lambda provider: provider.optimizer.state_dict())
     source.step(3)
     source.step(4)
     source.step(5, (True, False))
     if sign == "positive":
         # Genuine manual Adam update using the last real backward's residual gradients.
-        provider.optimizer.step()
+        on_backend(source.bank, lambda provider: provider.optimizer.step())
     else:
         # Deliberate public Adam rewind: real earlier moments/steps, current learned model.
-        provider.optimizer.load_state_dict(earlier)
+        on_backend(source.bank, lambda provider: provider.optimizer.load_state_dict(earlier))
     source.close()
     source.saved = source.bank.checkpoint_state()
     native = source.saved["shared_backend"]["native"]
-    provider.validate_state(native)
-    steps = {int(item["step"].item()) for item in provider.optimizer.state.values()}
+
+    def inspect_steps(provider):
+        provider.validate_state(native)
+        return {int(item["step"].item()) for item in provider.optimizer.state.values()}
+
+    steps = on_backend(source.bank, inspect_steps)
     assert len(steps) == 1
     offset = next(iter(steps)) - native["predictor_service"]["optimizer_updates"]
     assert offset == (1 if sign == "positive" else -2)
@@ -1264,7 +1321,7 @@ def dropped_source(compiled, family):
     source.close()
     source.saved = source.bank.checkpoint_state()
     native = source.saved["shared_backend"]["native"]
-    backend(source.bank).validate_state(native)
+    validate_live(source.bank, native)
     counters, tail = native_ledger(native, family)
     assert counters["admitted_rows"] == 15 and counters["optimizer_updates"] >= 2
     assert counters["dropped_rows"] > 0 and len(tail) >= 2
@@ -1333,12 +1390,11 @@ def test_nonzero_drop_baseline_and_multirow_archive_exclusion(compiled, family, 
     convert(target, source.saved, choice)
     assert_baseline(target.bank, source.saved, choice, "A", 0, 0)
     b = live(target.bank, "B")
-    trained, remove_hook = observe_training(target.bank, family)
-    target.begin(1)
-    first, _, _, receipts = target.step(71, (True, False, False, False, False))
-    assert receipts[0].clock == ServiceClock("world_eligible_admission", 1)
-    second, _, _, receipts = target.step(72, (True, False, False, False, False))
-    remove_hook()
+    with observe_training(target.bank, family) as trained:
+        target.begin(1)
+        first, _, _, receipts = target.step(71, (True, False, False, False, False))
+        assert receipts[0].clock == ServiceClock("world_eligible_admission", 1)
+        second, _, _, receipts = target.step(72, (True, False, False, False, False))
     equal(trained[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
     assert receipts[0].clock == ServiceClock("world_eligible_admission", 2)
     assert_baseline(target.bank, source.saved, choice, "A", 2, 1)
@@ -1359,12 +1415,11 @@ def test_fixture_actual_private_callback_witnesses(compiled, family):
     rng = rig.bank.snapshot_world(world_id="B")["backend"]["rng"]
     if family in TRAINABLE:
         assert before["storage_ids"]
-        batches, remove_hook = observe_training(rig.bank, family)
-    rig.begin(0)
-    first, _, _, _ = rig.step(1, (True, False))
-    second, _, _, _ = rig.step(2, (True, False))
+    with observe_training(rig.bank, family) if family in TRAINABLE else nullcontext([]) as batches:
+        rig.begin(0)
+        first, _, _, _ = rig.step(1, (True, False))
+        second, _, _, _ = rig.step(2, (True, False))
     if family in TRAINABLE:
-        remove_hook()
         equal(batches[0], torch.cat((first.predecessor[:1], second.predecessor[:1])))
     after = live(rig.bank)
     assert after["provider_id"] == before["provider_id"]

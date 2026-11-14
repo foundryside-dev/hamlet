@@ -1,0 +1,28 @@
+{
+  "name": "c2-independent-collection",
+  "exit_code": 0,
+  "seconds": 2.9892240219924133,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "-s",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-independent-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection.log",
+  "sha256": "dba9685adb5c1b53a138af15f64d6c2432f741974ee0d1624e84aaefa59e7014",
+  "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "manifest_sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

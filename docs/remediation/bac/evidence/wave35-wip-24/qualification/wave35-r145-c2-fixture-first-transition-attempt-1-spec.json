@@ -1,0 +1,25 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r145-c2-fixture-first-transition-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "c2-fixture-first-transition",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_first_real_transition_uses_sealed_activity_and_one_service",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r145-c2-fixture-first-transition-attempt-1"
+      ]
+    }
+  ]
+}

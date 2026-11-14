@@ -287,6 +287,8 @@ class ComponentPopulation:
                 value, expected
             ):
                 raise ValueError("component step content changed")
+        if self.participation is not None:
+            self.env.validate_initial_participation(accepted=self.accepted, participation=self.participation, predecessor=self.current_obs)
         record["claimed"] = True
         self.step_started = True
         return record["tick"]
@@ -454,6 +456,50 @@ def test_no_retirement_preserves_ordinary_active_transition(compiled: Any) -> No
     equal(info["active_on_entry"], torch.tensor([True, True]))
     equal(info["step_counts"], torch.tensor([1, 1]))
     assert rig.ledger.vector_ticks == 1 and rig.ledger.eligible_transitions == 2
+
+
+@pytest.mark.parametrize("with_participation", [True, False])
+def test_real_claim_validates_current_owned_reading_once_before_publication(
+    compiled: Any, monkeypatch: Any, with_participation: bool
+) -> None:
+    claim = ComponentPopulation.claim_vector_step
+    claim_calls, validations = [], []
+    in_claim = False
+
+    def observed_claim(owner: ComponentPopulation, *, prepared: Any, **candidate: Any) -> int:
+        nonlocal in_claim
+        assert not in_claim
+        claim_calls.append(prepared)
+        in_claim = True
+        try:
+            return claim(owner, prepared=prepared, **candidate)
+        finally:
+            in_claim = False
+
+    monkeypatch.setattr(ComponentPopulation, "claim_vector_step", observed_claim)
+    rig = ComponentPopulation(compiled)
+    if with_participation:
+        rig.publish(prepare(rig))
+    rig.activate()
+    predecessor = rig.current_obs
+    validate = rig.env.validate_initial_participation
+
+    def observed_validation(**kwargs: Any) -> Any:
+        assert kwargs["accepted"] is rig.accepted and kwargs["participation"] is rig.participation
+        assert kwargs["predecessor"] is predecessor
+        assert not rig.step_started and not any(record["claimed"] for record in rig.step_registry.values())
+        validations.append(in_claim)
+        return validate(**kwargs)
+
+    monkeypatch.setattr(rig.env, "validate_initial_participation", observed_validation)
+    _, _, _, info, _ = rig.step()
+    assert len(claim_calls) == 1 and rig.step_registry[id(claim_calls[0])]["claimed"] and rig.step_started
+    assert validations == ([False, True] if with_participation else [])
+    assert not in_claim and rig.env.world_phase == "active"
+    expected = torch.tensor([True, not with_participation])
+    equal(info["active_on_entry"], expected)
+    equal(info["step_counts"], expected.long())
+    assert rig.ledger.vector_ticks == 1 and rig.ledger.eligible_transitions == int(expected.sum())
 
 
 def test_validator_accepts_later_genuine_active_lane_terminal(compiled: Any) -> None:
@@ -878,22 +924,66 @@ def test_claim_cleanup_cannot_resume_physics(compiled: Any, monkeypatch: Any, wi
     assert_unchanged(rig, before)
 
 
-def test_observation_cleanup_cannot_return_healthy_validation(compiled: Any, monkeypatch: Any) -> None:
-    """Unchanged genuine encoding cannot bless lifecycle custody abandoned in that read."""
-    rig = activated(compiled)
+def observe_refused_encoder_cleanup(rig: ComponentPopulation, monkeypatch: Any) -> dict[str, Any]:
+    """Observe real nested refusal separately from actual cleanup after guard unwind."""
     encode = rig.env._encode_observations
-    abandonments: list[Any] = []
+    abandon, record = rig.env.abandon_episode, rig.env._record
+    probe: dict[str, Any] = {"encode": encode, "events": [], "attempts": [], "refused": [], "abandonments": [], "records": []}
 
-    def encode_then_abandon() -> Any:
-        observation = encode()
-        abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
-        return observation
+    def observed_record(kind: str, payload: Any) -> Any:
+        probe["records"].append(kind)
+        return record(kind, payload)
 
-    monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
+    def observed_abandon(*, accepted: Any, reason: str) -> Any:
+        probe["attempts"].append((accepted, reason, rig.activation))
+        try:
+            result = abandon(accepted=accepted, reason=reason)
+        except ValueError as error:
+            probe["refused"].append(error)
+            raise
+        probe["abandonments"].append(result)
+        return result
+
+    def encode_then_attempt_cleanup() -> Any:
+        probe["events"].append("entered")
+        encode()  # Preserve genuine outer observation work before the rejected cleanup.
+        probe["events"].append("encoded")
+        before = witness(rig)
+        phase, revision, records = rig.env.world_phase, rig.env._world_revision, tuple(probe["records"])
+        probe["events"].append("attempted")
+        try:
+            rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure")
+        except ValueError as error:
+            assert probe["refused"][-1] is error
+            assert rig.env.world_phase == phase and rig.env._world_revision == revision
+            assert tuple(probe["records"]) == records
+            assert_unchanged(rig, before)
+            probe["events"].append("refused")
+            raise
+        raise AssertionError("nested encoder cleanup unexpectedly completed")
+
+    monkeypatch.setattr(rig.env, "_record", observed_record)
+    monkeypatch.setattr(rig.env, "abandon_episode", observed_abandon)
+    monkeypatch.setattr(rig.env, "_encode_observations", encode_then_attempt_cleanup)
+    return probe
+
+
+def test_observation_cleanup_cannot_return_healthy_validation(compiled: Any, monkeypatch: Any) -> None:
+    """An escaping observation fault denies validation; genuine later cleanup stays durable."""
+    rig = activated(compiled)
+    probe = observe_refused_encoder_cleanup(rig, monkeypatch)
     before, revision = witness(rig), rig.env._world_revision
+    with pytest.raises(ValueError) as failure:
+        rig.env.validate_initial_participation(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    assert probe["events"] == ["entered", "encoded", "attempted", "refused"]
+    assert probe["refused"] == [failure.value] and len(probe["attempts"]) == 1 and probe["abandonments"] == []
+    monkeypatch.setattr(rig.env, "_encode_observations", probe["encode"])
+    cleanup = rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure")
+    abandonments = probe["abandonments"]
+    assert len(abandonments) == 1 and abandonments[0].reason == "runtime_failure"
+    assert abandonments[0] is cleanup and cleanup.accepted is rig.accepted and len(probe["attempts"]) == 2
     with pytest.raises(ValueError):
         rig.env.validate_initial_participation(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
-    assert len(abandonments) == 1 and abandonments[0].reason == "runtime_failure"
     assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
     assert_unchanged(rig, before)
 
@@ -901,19 +991,28 @@ def test_observation_cleanup_cannot_return_healthy_validation(compiled: Any, mon
 def test_observation_cleanup_cannot_activate_quarantined_episode(compiled: Any, monkeypatch: Any) -> None:
     rig = ComponentPopulation(compiled)
     rig.publish(prepare(rig))
-    encode = rig.env._encode_observations
-    abandonments: list[Any] = []
+    probe = observe_refused_encoder_cleanup(rig, monkeypatch)
+    begin, curiosity = rig.runtime.begin_episode, []
 
-    def encode_then_abandon() -> Any:
-        observation = encode()
-        abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
-        return observation
+    def observed_begin(**kwargs: Any) -> Any:
+        result = begin(**kwargs)
+        curiosity.append(result)
+        return result
 
-    monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
+    monkeypatch.setattr(rig.runtime, "begin_episode", observed_begin)
     before, revision = witness(rig), rig.env._world_revision
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as failure:
         rig.activate()
+    assert probe["events"] == ["entered", "encoded", "attempted", "refused"]
+    assert probe["refused"] == [failure.value] and len(probe["attempts"]) == 2
+    abandonments = probe["abandonments"]  # Actual ComponentPopulation.activate cleanup after ENV unwound.
     assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
+    assert abandonments[0].reason == "runtime_failure"
+    retained_activation = probe["attempts"][0][2]
+    assert retained_activation is not None and probe["attempts"][1][2] is None and len(curiosity) == 1
+    monkeypatch.setattr(rig.env, "_encode_observations", probe["encode"])
+    with pytest.raises(ValueError):
+        rig.env.activate_episode(accepted=rig.accepted, population_receipt=retained_activation, curiosity_receipt=curiosity[0])
     assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
     assert rig.activation is None
     assert_unchanged(rig, before)
@@ -977,19 +1076,22 @@ def test_reading_validator_rejects_public_physical_tamper(compiled: Any, field: 
 
 def test_reading_validator_cleanup_is_durable(compiled: Any, monkeypatch: Any) -> None:
     rig = activated(compiled)
-    encode = rig.env._encode_observations
-    abandonments: list[Any] = []
-
-    def encode_then_abandon() -> Any:
-        observation = encode()
-        abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
-        return observation
-
-    monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
+    probe = observe_refused_encoder_cleanup(rig, monkeypatch)
     before, revision = witness(rig), rig.env._world_revision
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as failure:
         rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+    assert probe["events"] == ["entered", "encoded", "attempted", "refused"]
+    assert probe["refused"] == [failure.value] and len(probe["attempts"]) == 1 and probe["abandonments"] == []
+    monkeypatch.setattr(rig.env, "_encode_observations", probe["encode"])
+    cleanup = rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure")
+    abandonments = probe["abandonments"]
     assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
+    assert abandonments[0] is cleanup and cleanup.reason == "runtime_failure" and len(probe["attempts"]) == 2
+    for _ in range(2):
+        with pytest.raises(ValueError):
+            rig.env.validate_initial_participation_reading(
+                accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs
+            )
     assert rig.env.world_phase == "quarantined" and rig.env._world_revision == revision
     assert_unchanged(rig, before)
 

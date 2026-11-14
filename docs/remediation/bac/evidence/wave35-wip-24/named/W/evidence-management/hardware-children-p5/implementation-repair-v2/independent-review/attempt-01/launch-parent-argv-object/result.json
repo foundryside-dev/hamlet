@@ -1,0 +1,9 @@
+{
+  "name": "launch-parent-argv-object",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "list cardinality",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

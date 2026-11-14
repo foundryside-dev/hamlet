@@ -1,0 +1,20 @@
+{
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1-spec.json",
+  "spec_sha256": "42b28c08118c06ddb62213bc7ed1c3ef8526147d514a0804a79056556053910f",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T10:38:17.989739+00:00",
+  "orchestrator_pid": 224053,
+  "script_sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+  "environment_delta": {},
+  "scope": "Outer launcher observations; original job results and import custody remain separate",
+  "launcher_pid": 224056,
+  "launcher_start_ticks": 13200833,
+  "exit_code": 1,
+  "end_utc": "2026-11-14T10:38:35.235763+00:00",
+  "elapsed_seconds": 17.246019143000012
+}

@@ -557,7 +557,7 @@ def actual_owner_witness(owner, family):
         assert {id(parameter) for parameter in adam.state}.issubset(set(trainable))
         return result
 
-    return owner.call(inspect)
+    return owner.call(inspect, lineage=None)
 
 
 @pytest.mark.parametrize("family", FAMILIES)
@@ -622,9 +622,9 @@ def test_pristine_owned_provider_gradient_pairing_control(compiled, family):
         return backend.checkpoint_state()
 
     before = ambient()
-    snapshot = owner.call(witness)
+    snapshot = owner.call(witness, lineage=None)
     same(ambient(), before)
-    independent(snapshot, owner.snapshot()["backend"])
+    independent(snapshot, owner.snapshot(lineage=None)["backend"])
 
     def admit(backend, sources, position):
         del sources
@@ -642,7 +642,7 @@ def test_pristine_owned_provider_gradient_pairing_control(compiled, family):
         return backend.admit_and_service_at(data, clock=ServiceClock("world_eligible_admission", position))
 
     for position in range(1, 6):
-        owner.call(lambda backend, sources: admit(backend, sources, position))
+        owner.call(lambda backend, sources: admit(backend, sources, position), lineage=None)
 
     def trained_witness(backend, sources):
         del sources
@@ -663,8 +663,22 @@ def test_pristine_owned_provider_gradient_pairing_control(compiled, family):
         assert all(float(state["step"]) >= 2 for state in adam.state.values())
         return dict(native=backend.checkpoint_state(), gradients=[parameter.grad for parameter in parameters])
 
-    learned_state = owner.call(trained_witness)
-    independent(learned_state, owner.call(trained_witness))
+    learned_state = owner.call(trained_witness, lineage=None)
+    independent(learned_state, owner.call(trained_witness, lineage=None))
+    installed = actual_owner_witness(owner, family)
+    same(actual_owner_witness(owner, family), installed)
+    if family == "icm":
+        invalid = deepcopy(learned_state["native"])
+        invalid["counters"].update(admitted_rows=0, consumed_rows=0, dropped_rows=0, optimizer_updates=0, mandatory_service_updates=0)
+        invalid.update(pending=[], last_loss=0.0, ordinary_updates_at_position=0)
+
+        def refuse_invalid(backend, sources):
+            with pytest.raises(ValueError):
+                backend.validate_state(invalid)
+
+        owner.call(refuse_invalid, lineage=None)
+        same(actual_owner_witness(owner, family), installed)
+        independent(learned_state, owner.call(trained_witness, lineage=None))
 
 
 def test_pristine_historical_current_captured_replay_control():
@@ -1101,6 +1115,8 @@ def test_restore_token_and_input_custody(compiled, defect):
     rig.begin(1)
     rig.train()
     saved = rig.bank.checkpoint_state()
+    other = Rig(compiled, "rnd", "per_world", IDS) if defect == "foreign" else None
+    foreign_before = other.bank.checkpoint_state() if other is not None else None
     prepared = prepare(rig, saved, "live_episode", None)
     if defect == "caller_mutation":
         expected = deepcopy(saved)
@@ -1117,12 +1133,13 @@ def test_restore_token_and_input_custody(compiled, defect):
     elif defect == "copy":
         prepared = copy(prepared)
     if defect == "foreign":
-        other = Rig(compiled, "rnd", "per_world", IDS)
-        before = other.bank.checkpoint_state()
-        no_live_change(other, before, lambda: other.bank.install_restore(prepared=prepared))
+        no_live_change(other, foreign_before, lambda: other.bank.install_restore(prepared=prepared))
     else:
         before = rig.bank.checkpoint_state() if defect in ("snapshot", "real_mutation") else deepcopy(saved)
         no_live_change(rig, before, lambda: rig.bank.install_restore(prepared=prepared))
+    valid = prepare(rig, saved, "live_episode", None)
+    rig.bank.install_restore(prepared=valid)
+    same(rig.bank.checkpoint_state(), saved)
 
 
 @pytest.mark.parametrize("allocation", ("report", "last_owner", "cache", "receipt", "outcome"))

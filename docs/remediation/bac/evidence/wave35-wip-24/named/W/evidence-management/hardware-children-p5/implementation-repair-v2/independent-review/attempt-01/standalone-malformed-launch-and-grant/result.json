@@ -1,0 +1,9 @@
+{
+  "name": "standalone-malformed-launch-and-grant",
+  "expected": "refused",
+  "mode": "standalone",
+  "observed": "refused",
+  "error": "exact fields required: path bytes sha256",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

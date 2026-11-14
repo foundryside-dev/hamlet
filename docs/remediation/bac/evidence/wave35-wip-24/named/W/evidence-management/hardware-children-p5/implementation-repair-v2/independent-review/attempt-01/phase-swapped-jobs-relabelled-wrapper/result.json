@@ -1,0 +1,9 @@
+{
+  "name": "phase-swapped-jobs-relabelled-wrapper",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "phase wrapper actual case mismatch",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

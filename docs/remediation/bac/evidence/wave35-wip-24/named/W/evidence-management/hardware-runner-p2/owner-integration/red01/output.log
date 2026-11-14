@@ -1,0 +1,200 @@
+FFFFF..................                                                  [100%]
+=================================== FAILURES ===================================
+_______________ test_owner_current_adopted_protocol_is_accepted ________________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/red01/fixtures/test_owner_current_adopted_pro0')
+
+    def test_owner_current_adopted_protocol_is_accepted(tmp_path):
+        # A stale historical dependency pin must not reject the adopted P0 module.
+        r = implementation(); path, _, _ = sealed_fixture(tmp_path)
+>       r.Custody(path)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1043: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:779: in __init__
+    _require(file_reference(Path(protocol.__file__))['sha256'] == 'adc8efeba368998e2e875a60c54ed3338a5ad2aa7daa710b7609e9ed2119de3c',
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'unadopted protocol bytes'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: unadopted protocol bytes
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+____ test_owner_raw_v2_python_debug_is_independent_of_torch[unloaded-start] ____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/red01/fixtures/test_owner_raw_v2_python_debug0')
+profile = 'unloaded-start'
+
+    @pytest.mark.parametrize('profile', ['unloaded-start', 'unloaded-end', 'loaded-observer', 'work-anomaly-false'])
+    def test_owner_raw_v2_python_debug_is_independent_of_torch(tmp_path, profile):
+        r, custody, selected, record, role, raw, envelope, put, seal = owner_transport_fixture(tmp_path)
+        if profile == 'unloaded-end':
+            raw['phase'] = record['phase'] = 'end'; record['elapsed_ns'] = {'state': 'measured', 'value': 1, 'reason': ''}
+        if profile in ('loaded-observer', 'work-anomaly-false'):
+            raw.update(torch_loaded=True, cuda_marker=False)
+            record['torch_observation'] = 'loaded-without-calls'
+            raw['torch_anomaly']['reason'] = 'loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited'
+            raw['observation_limit'] = raw['torch_anomaly']['reason']
+            role['torch_policy'] = 'observe-loaded'
+            for key in ('intra_op', 'inter_op'): record[key]['reason'] = raw['observation_limit']
+        if profile == 'work-anomaly-false':
+            role.update(observer='work', torch_policy='work')
+            raw['observation_limit'] = 'loaded Torch initialization state only, not independent proof of native device work'
+            record['torch_observation'] = 'work'; raw['torch_anomaly'] = {'state': 'measured', 'value': False, 'reason': ''}
+            for key in ('intra_op', 'inter_op'): record[key] = {'state': 'measured', 'value': 1, 'reason': ''}
+        seal()
+        r.validate_record('process', record)
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1065: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1049: in process_context
+    _closed(raw, 'context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at', 'bac-hardware-process-observation-v1')
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:474: in _closed
+    _require(type(value) is dict and set(value) == set(keys.split()) | {'schema'}, 'closed private ' + schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'closed private bac-hardware-process-observation-v1'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: closed private bac-hardware-process-observation-v1
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+_____ test_owner_raw_v2_python_debug_is_independent_of_torch[unloaded-end] _____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/red01/fixtures/test_owner_raw_v2_python_debug1')
+profile = 'unloaded-end'
+
+    @pytest.mark.parametrize('profile', ['unloaded-start', 'unloaded-end', 'loaded-observer', 'work-anomaly-false'])
+    def test_owner_raw_v2_python_debug_is_independent_of_torch(tmp_path, profile):
+        r, custody, selected, record, role, raw, envelope, put, seal = owner_transport_fixture(tmp_path)
+        if profile == 'unloaded-end':
+            raw['phase'] = record['phase'] = 'end'; record['elapsed_ns'] = {'state': 'measured', 'value': 1, 'reason': ''}
+        if profile in ('loaded-observer', 'work-anomaly-false'):
+            raw.update(torch_loaded=True, cuda_marker=False)
+            record['torch_observation'] = 'loaded-without-calls'
+            raw['torch_anomaly']['reason'] = 'loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited'
+            raw['observation_limit'] = raw['torch_anomaly']['reason']
+            role['torch_policy'] = 'observe-loaded'
+            for key in ('intra_op', 'inter_op'): record[key]['reason'] = raw['observation_limit']
+        if profile == 'work-anomaly-false':
+            role.update(observer='work', torch_policy='work')
+            raw['observation_limit'] = 'loaded Torch initialization state only, not independent proof of native device work'
+            record['torch_observation'] = 'work'; raw['torch_anomaly'] = {'state': 'measured', 'value': False, 'reason': ''}
+            for key in ('intra_op', 'inter_op'): record[key] = {'state': 'measured', 'value': 1, 'reason': ''}
+        seal()
+        r.validate_record('process', record)
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1065: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1049: in process_context
+    _closed(raw, 'context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at', 'bac-hardware-process-observation-v1')
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:474: in _closed
+    _require(type(value) is dict and set(value) == set(keys.split()) | {'schema'}, 'closed private ' + schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'closed private bac-hardware-process-observation-v1'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: closed private bac-hardware-process-observation-v1
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+___ test_owner_raw_v2_python_debug_is_independent_of_torch[loaded-observer] ____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/red01/fixtures/test_owner_raw_v2_python_debug2')
+profile = 'loaded-observer'
+
+    @pytest.mark.parametrize('profile', ['unloaded-start', 'unloaded-end', 'loaded-observer', 'work-anomaly-false'])
+    def test_owner_raw_v2_python_debug_is_independent_of_torch(tmp_path, profile):
+        r, custody, selected, record, role, raw, envelope, put, seal = owner_transport_fixture(tmp_path)
+        if profile == 'unloaded-end':
+            raw['phase'] = record['phase'] = 'end'; record['elapsed_ns'] = {'state': 'measured', 'value': 1, 'reason': ''}
+        if profile in ('loaded-observer', 'work-anomaly-false'):
+            raw.update(torch_loaded=True, cuda_marker=False)
+            record['torch_observation'] = 'loaded-without-calls'
+            raw['torch_anomaly']['reason'] = 'loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited'
+            raw['observation_limit'] = raw['torch_anomaly']['reason']
+            role['torch_policy'] = 'observe-loaded'
+            for key in ('intra_op', 'inter_op'): record[key]['reason'] = raw['observation_limit']
+        if profile == 'work-anomaly-false':
+            role.update(observer='work', torch_policy='work')
+            raw['observation_limit'] = 'loaded Torch initialization state only, not independent proof of native device work'
+            record['torch_observation'] = 'work'; raw['torch_anomaly'] = {'state': 'measured', 'value': False, 'reason': ''}
+            for key in ('intra_op', 'inter_op'): record[key] = {'state': 'measured', 'value': 1, 'reason': ''}
+        seal()
+        r.validate_record('process', record)
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1065: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1049: in process_context
+    _closed(raw, 'context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at', 'bac-hardware-process-observation-v1')
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:474: in _closed
+    _require(type(value) is dict and set(value) == set(keys.split()) | {'schema'}, 'closed private ' + schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'closed private bac-hardware-process-observation-v1'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: closed private bac-hardware-process-observation-v1
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+__ test_owner_raw_v2_python_debug_is_independent_of_torch[work-anomaly-false] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/red01/fixtures/test_owner_raw_v2_python_debug3')
+profile = 'work-anomaly-false'
+
+    @pytest.mark.parametrize('profile', ['unloaded-start', 'unloaded-end', 'loaded-observer', 'work-anomaly-false'])
+    def test_owner_raw_v2_python_debug_is_independent_of_torch(tmp_path, profile):
+        r, custody, selected, record, role, raw, envelope, put, seal = owner_transport_fixture(tmp_path)
+        if profile == 'unloaded-end':
+            raw['phase'] = record['phase'] = 'end'; record['elapsed_ns'] = {'state': 'measured', 'value': 1, 'reason': ''}
+        if profile in ('loaded-observer', 'work-anomaly-false'):
+            raw.update(torch_loaded=True, cuda_marker=False)
+            record['torch_observation'] = 'loaded-without-calls'
+            raw['torch_anomaly']['reason'] = 'loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited'
+            raw['observation_limit'] = raw['torch_anomaly']['reason']
+            role['torch_policy'] = 'observe-loaded'
+            for key in ('intra_op', 'inter_op'): record[key]['reason'] = raw['observation_limit']
+        if profile == 'work-anomaly-false':
+            role.update(observer='work', torch_policy='work')
+            raw['observation_limit'] = 'loaded Torch initialization state only, not independent proof of native device work'
+            record['torch_observation'] = 'work'; raw['torch_anomaly'] = {'state': 'measured', 'value': False, 'reason': ''}
+            for key in ('intra_op', 'inter_op'): record[key] = {'state': 'measured', 'value': 1, 'reason': ''}
+        seal()
+        r.validate_record('process', record)
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1065: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1049: in process_context
+    _closed(raw, 'context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at', 'bac-hardware-process-observation-v1')
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:474: in _closed
+    _require(type(value) is dict and set(value) == set(keys.split()) | {'schema'}, 'closed private ' + schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'closed private bac-hardware-process-observation-v1'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: closed private bac-hardware-process-observation-v1
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_current_adopted_protocol_is_accepted
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_raw_v2_python_debug_is_independent_of_torch[unloaded-start]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_raw_v2_python_debug_is_independent_of_torch[unloaded-end]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_raw_v2_python_debug_is_independent_of_torch[loaded-observer]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_raw_v2_python_debug_is_independent_of_torch[work-anomaly-false]
+5 failed, 18 passed, 89 deselected in 1.71s

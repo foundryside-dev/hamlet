@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-14T10:29:20.547921+00:00",
+  "supplier": "/root",
+  "source": {
+    "path": "/workspace/hamlet/src/townlet/exploration/scoped_curiosity.py",
+    "bytes": 70651,
+    "sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c",
+    "lines": 1492
+  },
+  "api": "CuriosityBank.install_restore(self, *, prepared: Any) -> None",
+  "exception": {
+    "type": "ValueError",
+    "exact_message": "foreign or consumed restore token",
+    "anchored_match": "^foreign or consumed restore token$"
+  },
+  "ordering": "Actual body first requires exact PreparedCuriosityRestore type AND membership in this BANK._restore_tokens, then pops token, then checks preparation identity/pending completion, accepted validation/correlation, current currency, and finally assigns __dict__. _require raises ValueError.",
+  "success_consumption": "Successful _restore_publication runtime dictionary carries _restore_tokens={} and new owners/shared state; install assigns that dictionary. An immediate retry of the same handle fails the first body membership requirement before currency checks or publication assignment.",
+  "admission_limits": "The _serialized install wrapper still enters existing BANK call/admission and device invocation first. _admission clears transient _entered/_lineage in finally; ordinary rejected membership does not change _publications, so its publication-failure branch does not set _failed. A real own-completion failure can independently set uncertainty; no unconditional immunity from completion/poison asserted.",
+  "approved_fixture_control": "Genuine prepare/install; immediate same-handle retry with exact BANK membership message; compare expected native/gradient data; capture full installed baseline; repeat same consumed retry and compare full identity/state. Keep adjacent valid prepare/install countercontrol. The first retry has no intervening observer; second also follows observations and is not the sole consumed-causality proof.",
+  "scope": "Root source-qualified BANK facts, not native OwnedWorldBackend wording. No new public API, raw provider escape, private candidate forging, source modification or test execution."
+}

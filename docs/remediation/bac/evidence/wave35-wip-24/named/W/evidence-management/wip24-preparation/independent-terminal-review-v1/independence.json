@@ -1,0 +1,54 @@
+{
+  "schema": "bac-independent-terminal-review-v1",
+  "at": "2026-11-14T12:25:24.527133+00:00",
+  "producer": "/root",
+  "evidence_preparer": "/root/bac_astra_wip23_closed_evidence",
+  "reviewer": "/root/bac_astra_wip22_terminal_review",
+  "role": "terminal",
+  "disposition": "APPROVE BOUNDED PUBLICATION",
+  "reviewed_subject": {
+    "contract": {
+      "root": "R",
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/root-checkpoint-contract-v1.json",
+      "bytes": 14136,
+      "sha256": "710a552e35d91c389bb44ca223722c31e63bdedf2d4c22d7a5bc9107dd02842a"
+    },
+    "subject": {
+      "root": "R",
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/root-qualification-subject-v1.json",
+      "bytes": 14132,
+      "sha256": "f855854e9bbf123fb35b70a87ce3d3dd148bad8868b8475ca9083e6fedb81445"
+    },
+    "receipt_draft": {
+      "root": "R",
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/root-reviewed-receipt-draft-v1.json",
+      "bytes": 50453759,
+      "sha256": "ddc6f339be9924d2a6db4f9ddf332317411c729e3c4fbf5f997611ff23f1427a"
+    },
+    "candidate": {
+      "root": "R",
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+      "bytes": 209062,
+      "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+    }
+  },
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "review": {
+    "root": "R",
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/independent-terminal-review-v1/review.md",
+    "bytes": 9055,
+    "sha256": "588986ac68accb2cf99ac63ccb073a5bb230b6fbc32e8e3b14e5e79111f5e565"
+  },
+  "metadata_checks": {
+    "root": "R",
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/independent-terminal-review-v1/metadata-checks.json",
+    "bytes": 658,
+    "sha256": "f9b274101ca5ba2ef06438b82a14c0e3708b55e741209d18923eaf4aafdc48da"
+  },
+  "implementation_authored": false,
+  "new_source_bodies_read": 0,
+  "runtime_executed": false,
+  "frozen_inputs_modified": false,
+  "scope": "Finite R134-R145 WIP24 checkpoint only; final assembly/selector/size validation/publication remain root-owned; no full BAC or merge approval."
+}

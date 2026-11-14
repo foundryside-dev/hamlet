@@ -1,0 +1,104 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+  "unique_node_phase_failures": 11,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py"
+  ],
+  "signatures": [
+    {
+      "error": "TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[icm]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[rnd]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'SharedWorldBackend' object has no attribute 'checkpoint_state'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'SharedWorldBackend' object has no attribute 'encoder'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'SharedWorldBackend' object has no attribute 'rnd'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: Missing required keyword-only argument: 'lineage'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'SharedWorldBackend' object has no attribute 'validate_state'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses[seed]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'SharedWorldBackend' object has no attribute 'predictor_network'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

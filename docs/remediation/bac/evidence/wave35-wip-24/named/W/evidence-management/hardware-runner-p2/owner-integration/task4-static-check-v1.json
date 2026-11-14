@@ -1,0 +1,40 @@
+{
+  "actual_test_names": [
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[controller-exit]",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[job-timeout]"
+  ],
+  "at": "2026-11-14T11:59:50.364247+00:00",
+  "check": "stdlib ast.parse on four owned file byte strings; no import/exec of those files",
+  "collection": "UNRUN",
+  "files": [
+    {
+      "bytes": 110631,
+      "lines": 1603,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+    },
+    {
+      "bytes": 152607,
+      "lines": 2202,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "5340db4c7eac1870f6748d6116ef2ca7a307e9994c6bbb790c0d272fc9070e43"
+    },
+    {
+      "bytes": 34654,
+      "lines": 526,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 5571,
+      "lines": 100,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+    }
+  ],
+  "production_runner_unchanged": true,
+  "protocol_unchanged": true,
+  "result": "AST PARSE PASSED ONLY",
+  "runtime": "UNRUN",
+  "schema": "bac-p2-task4-static-check-v1"
+}

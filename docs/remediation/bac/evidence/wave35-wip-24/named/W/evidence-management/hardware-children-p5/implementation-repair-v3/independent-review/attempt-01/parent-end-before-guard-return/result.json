@@ -1,0 +1,9 @@
+{
+  "name": "parent-end-before-guard-return",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "custody endpoint after observing parent END",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

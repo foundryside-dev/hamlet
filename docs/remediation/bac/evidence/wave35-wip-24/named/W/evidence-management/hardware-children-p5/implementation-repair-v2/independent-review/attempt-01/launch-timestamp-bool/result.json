@@ -1,0 +1,9 @@
+{
+  "name": "launch-timestamp-bool",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "utc: string required",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

@@ -1,0 +1,155 @@
+"""ENV exclusion and finite reverse calls; these confer no completion authority."""
+
+from __future__ import annotations
+
+import os
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from functools import wraps
+from threading import RLock, current_thread
+from typing import Any
+
+from townlet.exploration.rng_custody import process_rng_domain
+
+
+def env_guard(method: Callable[..., Any]) -> Callable[..., Any]:
+    """Guard the complete public method, including boundary-authority work."""
+
+    @wraps(method)
+    def guarded(self: Any, *args: Any, **kwargs: Any) -> Any:
+        env = self._env if method.__qualname__.startswith("WorldBoundaryAuthority.") else self
+        with env._env_custody.call(method.__name__, kwargs):
+            return method(self, *args, **kwargs)
+
+    return guarded
+
+
+class EnvCustody:
+    """One ENV's domain-first exclusion and source-owned lexical outcall state."""
+
+    def __init__(self, owner: Any):
+        self.owner = owner
+        self.pid = os.getpid()
+        self.lock = RLock()
+        self.active: tuple[object, Any] | None = None
+        self.reverse: dict[str, Any] | None = None
+
+    def check_process(self) -> None:
+        if os.getpid() != self.pid:
+            raise ValueError("ENV custody belongs to another process")
+
+    def binding(self) -> tuple[Any, ...]:
+        env = self.owner
+        return (
+            env._world_role_owners,
+            getattr(env, "_exploration_runtime", None),
+            getattr(env, "_claim_vector_step", None),
+            env._world_authority,
+        )
+
+    @contextmanager
+    def call(self, name: str, arguments: dict[str, Any]) -> Iterator[None]:
+        self.check_process()
+        thread = current_thread()
+        if self.active is not None and self.active[1] is thread:
+            with self._reverse_entry(name, arguments):
+                yield
+            return
+        with process_rng_domain().admission(lineage=None), self.lock:
+            if self.active is not None:
+                raise ValueError("ENV method custody is already active")
+            self.active = (object(), thread)
+            try:
+                yield
+            finally:
+                self.active = None
+
+    def _current(self, record: dict[str, Any]) -> None:
+        env = self.owner
+        if (
+            self.reverse is not record
+            or self.active is not record["call"]
+            or current_thread() is not record["thread"]
+            or env._world_accepted is not record["accepted"]
+            or env._world_generation != record["generation"]
+            or env._world_revision != record["revision"]
+            or env._participation_committed is not record["committed"]
+            or any(left is not right for left, right in zip(self.binding(), record["binding"], strict=True))
+        ):
+            raise ValueError("ENV reverse-call identity is no longer current")
+
+    @contextmanager
+    def _reverse_entry(self, name: str, arguments: dict[str, Any]) -> Iterator[None]:
+        record = self.reverse
+        if record is None:
+            raise ValueError("ENV public methods cannot reenter active work")
+        state = record["state"]
+        if name == "validate_initial_participation" and state == "CLAIM_READY" and record["committed"] is not None:
+            # Consume before identity validation as well as before any tensor work.
+            record["state"] = "VALIDATING"
+            try:
+                self._current(record)
+                if arguments.get("accepted") is not record["accepted"] or arguments.get("participation") is not record["participation"]:
+                    raise ValueError("ENV reverse validation requires the exact current decision")
+                yield
+            except BaseException as error:
+                record["failure"] = error
+                record["denied"] = True
+                record["state"] = "CHECK_FAILED"
+                raise
+            else:
+                record["state"] = "CHECKED"
+            return
+        if name == "abandon_episode" and state in ("CLAIM_READY", "CHECKED", "CHECK_FAILED", "EMPTY_READY"):
+            self._current(record)
+            if (
+                arguments.get("accepted") is not record["accepted"]
+                or type(arguments.get("reason")) is not str
+                or arguments["reason"] != "runtime_failure"
+            ):
+                raise ValueError("ENV reverse cleanup requires exact current runtime failure")
+            record["denied"], record["state"] = True, "CLEANING"
+            try:
+                yield
+            finally:
+                record["state"] = "DENIED"
+            return
+        raise ValueError("ENV callback has no permission for this public entry")
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+                raise ValueError("ENV continuation refused after producer callback")
+            return result
+        finally:
+            self.reverse = None
+            record.clear()

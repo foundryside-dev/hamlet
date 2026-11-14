@@ -1,0 +1,1354 @@
+"""Synthetic closed P5 semantics; no APP, Torch, CUDA or child execution."""
+
+import copy
+import hashlib
+import importlib
+import importlib.util
+import json
+from pathlib import Path
+
+import pytest
+import bac_hardware_protocol_v1 as p0
+
+PREFIX = "tests/test_townlet/regressions/bac/"
+STAMP = "2026-11-14T00:00:00.000000Z"
+OPAQUE = {"path": "/synthetic/opaque", "bytes": 0, "sha256": hashlib.sha256(b"").hexdigest()}
+CORE = [
+    "bootstrap_failure",
+    "runtime_query_failure",
+    "local_completion_single",
+    "local_completion_multiple_body",
+    "local_completion_duplicate_parent",
+    "poison_unknown_ready",
+    "poison_ready_qualified",
+    "poison_ready_healthy_only",
+    "operation_body_completion",
+    "inherited_pid",
+    "invocation_same_error",
+    "invocation_child_failure",
+    "invocation_parent_failure",
+    "invocation_reported_failure",
+    "invocation_phase_reference",
+    "invocation_phase_failure",
+]
+PRODUCER = [
+    f"{a}_{b}" for a in ("flat", "per") for b in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
+]
+ACTIONS = {
+    "admission": ["resolve_cuda", "enroll", "report_failure", "domain_admission"],
+    "local": [
+        "resolve_cuda",
+        "complete",
+        "completion_failed",
+        "report_failure",
+        "domain_local_cuda_access",
+        "domain_local_cuda_policy",
+        "domain_resolve_local_cuda_record",
+    ],
+    "invocation": ["active_enter", "active_exit", "active_completion_failed", "completed_completion_failed", "domain_device_invocation"],
+}
+
+
+def api():
+    assert importlib.util.find_spec("verify_bac_hardware_children_v1") is not None, "P5 implementation absent"
+    return importlib.import_module("verify_bac_hardware_children_v1")
+
+
+def seed(rule):
+    """Populate all P0 fields, then fixtures override behavioral values explicitly."""
+    if isinstance(rule, dict):
+        return {k: seed(v) for k, v in rule.items()}
+    if isinstance(rule, list):
+        if rule[0] == "enum":
+            return rule[1]
+        if rule[0] == "list":
+            return [seed(rule[1]) for _ in range(rule[2])]
+        if rule[0] == "nullable":
+            return None
+        obj = {"state": "measured", "value": seed(rule[1]), "reason": ""}
+        if rule[0] == "fact":
+            obj["provenance"] = copy.deepcopy(OPAQUE)
+        return obj
+    if rule == "reference":
+        return copy.deepcopy(OPAQUE)
+    if rule in p0.TYPES:
+        return seed(p0.TYPES[rule])
+    return {
+        "path": "/synthetic/path",
+        "uint": 0,
+        "positive-int": 1,
+        "int": 0,
+        "number": 0,
+        "positive-number": 1,
+        "bool": True,
+        "text": "synthetic",
+        "string": "",
+        "sha256": "a" * 64,
+        "git-id": "b" * 40,
+        "id": "synthetic",
+        "reference-name": "synthetic",
+        "utc": STAMP,
+        "env": {},
+    }[rule]
+
+
+class Bundle:
+    def __init__(self, case="replay_poison", kind=None, base="/synthetic"):
+        self.base = base
+        self.items = []
+        self.named = {}
+        self.case = case
+        self.claims = {}
+        if case in CORE:
+            self.family = "core"
+            self.role = "cuda_core_" + case
+            self.jobid = "cuda-core-" + case.replace("_", "-")
+            node = "test_isolated_inherited_pid_gate_refusal" if case == "inherited_pid" else "test_isolated_poison_protocol[" + case + "]"
+            self.node = PREFIX + "test_rng_cuda_admission.py::" + node
+            self.message = "cuda core inherited pid gates fail closed" if case == "inherited_pid" else f"cuda core {case} fail closed"
+        elif case in PRODUCER:
+            self.family = "producer"
+            self.role = "cuda_producer_poison"
+            self.jobid = "cuda-producer-poison-" + case
+            self.node = PREFIX + f"test_replay_cuda_producer.py::test_isolated_producer_poison[{case}]"
+            self.message = f"cuda producer {case} poison quarantines under owner custody"
+        else:
+            self.family = "replay"
+            self.role = case
+            self.jobid = "replay-poison" if case == "replay_poison" else "recurrent-replay-poison"
+            self.node = PREFIX + (
+                "test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+                if case == "replay_poison"
+                else "test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison"
+            )
+            self.message = "replay poison fail closed" if case == "replay_poison" else "recurrent replay scratch poison fail closed"
+        self.kind = kind or ("strict-child-producer" if self.family == "producer" else "strict-child-core")
+        self.validator = copy.deepcopy(OPAQUE)
+        witness = self.add("witness", {"schema": f"bac-hardware-{self.family}-result-v1"})
+        role = seed("role")
+        role.update(
+            id=self.role,
+            role="spawn-child",
+            count=1,
+            inter_op=5,
+            debug=True,
+            observer="work",
+            torch_policy="work",
+            cuda_policy="no-initialize",
+        )
+        ctrl = copy.deepcopy(role)
+        ctrl.update(id="controller", role="controller")
+        self.roles = [ctrl, role]
+        if case == "inherited_pid":
+            guard = copy.deepcopy(role)
+            guard.update(
+                id="cuda_core_inherited_pid_guard",
+                role="fork-guard",
+                count=3,
+                observer="guard-only",
+                torch_policy="forbidden",
+                cuda_policy="forbidden",
+            )
+            self.roles.append(guard)
+        contract = seed("case-contract")
+        contract.update(
+            obligation_kind=self.kind,
+            required_cases=[self.node],
+            witness_schema=witness,
+            validator=self.validator,
+            roles=self.roles,
+            evidence_class="cpu",
+            minimum_devices=0,
+        )
+        self.contract = self.add("contract", contract)
+        self.obligation = {
+            "id": "strict",
+            "kind": self.kind,
+            "required_cases": [self.node],
+            "contract": self.contract,
+            "validator": self.validator,
+            "evidence_class": "cpu",
+            "minimum_devices": 0,
+        }
+        job = seed("job")
+        job.update(
+            id=self.jobid,
+            required_collected_ids=[self.node],
+            roles=self.roles,
+            obligations=[self.obligation],
+            output=base + "/out/a/" + self.jobid,
+            scratch=base + "/scratch/a/" + self.jobid,
+            argv=["/synthetic/python", "-m", "pytest", self.node],
+            interpreter="/synthetic/python",
+            environment={"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "CUDA_VISIBLE_DEVICES": ""},
+        )
+        self.job = job
+        self.policy = None
+        if case == "inherited_pid":
+            policy = {
+                "schema": "bac-hardware-owner-sampler-policy-v1",
+                "role_ids": ["cuda_core_inherited_pid_guard"],
+                "owner_deadline_ns": 10000000000,
+                "sampler_cutoff_ns": 8000000000,
+                "sampler_total_ns": 6000000000,
+                "phase_ns": 3000000000,
+                "lock_wait_ns": 250000000,
+                "command_run_ns": 500000000,
+                "term_grace_ns": 100000000,
+                "kill_reap_ns": 400000000,
+                "emission_reserve_ns": 250000000,
+                "stdout_limit_bytes": 8192,
+                "stderr_limit_bytes": 8192,
+                "max_input_bytes": 10000000,
+                "cpu_slots": 1,
+                "scratch_bytes": 10000000,
+                "scratch_inodes": 1000,
+            }
+            self.policy = self.add("policy", policy, self.base + "/meta/policy.json")
+            job["prerequisites"] = [self.policy]
+        candidate = seed("candidate")
+        candidate["authorized_root"] = base + "/source"
+        candidate["import_roots"] = [base + "/source/src"]
+        candidate["inventory"] = {k: [] for k in candidate["inventory"]}
+        self.owner_source = copy.deepcopy(OPAQUE)
+        self.owner_source["path"] = base + "/source/" + self.node.split("::")[0]
+        candidate["inventory"] = {k: [{"path": self.owner_source["path"], "reference": self.owner_source}] for k in candidate["inventory"]}
+        self.imports = {}
+        names = [
+            "townlet.exploration.world_curiosity_state",
+            "townlet.exploration.rng_custody",
+            "townlet.exploration.rnd",
+            "test_world_rng_bootstrap",
+            self.node.split("::")[0].split("/")[-1][:-3],
+        ]
+        if self.family == "replay":
+            names += [
+                "townlet.training.replay_buffer",
+                "townlet.training.prioritized_replay_buffer",
+                "townlet.training.sequential_replay_buffer",
+                "townlet.training.replay_contract",
+            ]
+        if case == "recurrent_replay_poison":
+            names += ["test_replay_rng_custody"]
+        if self.family == "producer":
+            names += ["townlet.training.replay_contract", "townlet.training.replay_buffer", "townlet.training.prioritized_replay_buffer"]
+        for n in names:
+            path = base + "/source/" + ("src/" + n.replace(".", "/") + ".py" if n.startswith("townlet.") else PREFIX + n + ".py")
+            rr = copy.deepcopy(OPAQUE)
+            rr["path"] = path
+            self.imports[n] = rr
+        candidate["inventory"]["source"] = [{"path": r["path"], "reference": r} for r in self.imports.values()]
+        self.candidate = self.add("candidate", candidate)
+        spec = seed("spec")
+        spec.update(
+            tools=[{"name": n, "reference": self.validator if n == "children-verifier" else copy.deepcopy(OPAQUE)} for n in p0.TOOLS],
+            attempt_id="a",
+            jobs=[job],
+            candidate=self.candidate,
+            authorized_root=base + "/source",
+            output_root=base + "/out",
+            scratch_root=base + "/scratch",
+            lease_root=base + "/lease",
+        )
+        self.spec = self.add("spec", spec)
+        self.parent = self.process("parent", "controller", 100, 1, None, None, "start", 1000000000)
+        self.parent_end = self.process("parent-end", "controller", 100, 1, None, None, "end", 20000000000)
+        self.launch = self.launch_record("launch", self.role, self.parent, "spawn")
+        self.start = self.process("child-start", self.role, 101, 100, self.parent, self.launch, "start", 2000000000)
+        self.end = self.process("child-end", self.role, 101, 100, self.parent, self.launch, "end", 15000000000)
+        self.child_result = self.child()
+        ack = {
+            "case": case,
+            "role": self.role,
+            "pid": 101,
+            "ppid": 100,
+            "message": self.message,
+            "process_start": self.start,
+            "process_end": self.end,
+            ("outcome" if self.family == "producer" else "result"): self.child_result,
+        }
+        parent = {
+            "schema": f"bac-hardware-{self.family}-result-v1",
+            "spec": self.spec,
+            "job_id": self.jobid,
+            "case": case,
+            "role": self.role,
+            "parent_start": self.parent,
+            "owner_launch": self.launch,
+            "process_pid": 101,
+            "exitcode": 0,
+            "acknowledgement": ack,
+            "assertion_source": self.owner_source,
+            "parent_rng_assertion": {
+                "kind": "source-assertion-only",
+                "checkpoint": "after_child_cleanup",
+                "function": "assert_ambient_unchanged" if self.family == "core" else "_assert_same_transport",
+                "channels": ["python", "numpy", "torch_cpu"],
+            },
+        }
+        if self.family == "producer":
+            baseline = self.baseline()
+            parent.update(
+                parent_baseline=self.add(
+                    "baseline",
+                    {
+                        "schema": "bac-hardware-producer-parent-baseline-v1",
+                        "spec": self.spec,
+                        "job_id": self.jobid,
+                        "case": case,
+                        "role": self.role,
+                        "parent_start": self.parent,
+                        "owner_launch": self.launch,
+                        "before": baseline,
+                    },
+                ),
+                before=baseline,
+                after=copy.deepcopy(baseline),
+                cleanup={k: True for k in ["participant_unregistered", "queue_closed", "queue_thread_joined", "process_closed"]},
+                parent_rng_assertion={
+                    "kind": "source-assertion-and-serialized-digests",
+                    "checkpoint": "after_child_join_before_unregister",
+                    "function": "_assert_tree_equal",
+                    "channels": ["python", "numpy", "torch_cpu", "cuda_if_initialized"],
+                },
+            )
+        self.payload = self.add("payload", parent)
+        evidence = seed("obligation-evidence")
+        evidence.update(
+            attempt_id="a",
+            job_id=self.jobid,
+            spec=self.spec,
+            obligation_id="strict",
+            obligation_kind=self.kind,
+            contract=self.contract,
+            validator=self.validator,
+            case_id=self.node,
+            evidence_class="cpu",
+            payload=self.payload,
+            producer_process=self.parent,
+            related_attempts=[],
+        )
+        self.evidence = self.add("evidence", evidence)
+        completion = seed("job-evidence")
+        completion.update(
+            attempt_id="a",
+            job_id=self.jobid,
+            spec=self.spec,
+            collected_ids=[self.node],
+            outcomes=[
+                {
+                    "case_id": self.node,
+                    "setup": "passed",
+                    "call": "passed",
+                    "teardown": "passed",
+                    "evidence": [
+                        self.add(
+                            "report-" + phase,
+                            {
+                                "schema": "bac-hardware-pytest-report-v1",
+                                "process": self.parent,
+                                "case_id": self.node,
+                                "phase": phase,
+                                "outcome": "passed",
+                                "longrepr": "",
+                                "at": STAMP,
+                            },
+                        )
+                        for phase in ("setup", "call", "teardown")
+                    ],
+                }
+            ],
+            process_records=[ref for _, obj, ref in self.items if obj.get("kind") == "process"],
+            obligation_records=[self.evidence],
+            source_witnesses=[ref for _, obj, ref in self.items if obj.get("kind") == "source-witness"],
+            inventory=[],
+        )
+        completion["inventory"] = [ref for _, obj, ref in self.items if ref["path"].startswith(job["output"] + "/")]
+        self.completion = self.add("completion", completion, job["output"] + "/completion.json")
+        result = seed("job-result")
+        result.update(attempt_id="a", job_id=self.jobid, spec=self.spec, exit_code=0, signal=0, reason="", disposition="successful")
+        for key in ("collected_ids", "outcomes", "process_records", "obligation_records", "source_witnesses", "inventory"):
+            result[key] = completion[key]
+        self.result = self.add("result", result, job["output"] + "/result.json")
+
+    def add(self, name, obj, path=None):
+        if path is None and hasattr(self, "job"):
+            basename = {"payload": f"{self.family}-result-{self.role}.json", "child-result": f"{self.family}-child-{self.role}.json"}.get(
+                name
+            )
+            if self.family == "producer":
+                basename = {
+                    "payload": "producer-result.json",
+                    "preflight": "producer-preflight.json",
+                    "outcome": "producer-outcome.json",
+                    "baseline": "producer-parent-baseline.json",
+                }.get(name, basename)
+            for trial in ACTIONS:
+                if name == trial + "-terminal":
+                    basename = "core-fork-result-" + trial + ".json"
+                if name == trial + "-observation":
+                    basename = "core-fork-observation-" + trial + ".json"
+            if basename:
+                path = self.job["output"] + "/" + basename
+        path = path or (self.job["output"] if hasattr(self, "job") else self.base + "/meta") + "/" + name + ".json"
+        ref = {"path": path, "bytes": 0, "sha256": "0" * 64}
+        self.items.append((name, obj, ref))
+        self.named[name] = obj
+        return ref
+
+    def launch_record(self, name, role, parent, method):
+        identity = self.obj(parent)["identity"]
+        start = 3000000000 if method == "fork" else 1500000000
+        return self.add(
+            name,
+            {
+                "schema": "bac-hardware-owner-launch-v1",
+                "spec": self.spec,
+                "command": copy.deepcopy(OPAQUE),
+                "owner_contract": self.contract,
+                "parent_process": parent,
+                "source_witness": self.obj(parent)["source_witness"],
+                "parent_identity": identity,
+                "parent_argv": ["/synthetic/python"],
+                "case_id": self.node,
+                "pytest_phase": "call",
+                "child_role_id": role,
+                "instance_id": name,
+                "start_method": method,
+                "environment": {},
+                "python_assertions_enabled": True,
+                "inherited_imports": [],
+                "module_names_sha256": "a" * 64,
+                "sampler_policy": [self.policy] if method == "fork" else [],
+                "owner_deadline_ns": start + 10000000000 if method == "fork" else None,
+                "sampler_cutoff_ns": start + 8000000000 if method == "fork" else None,
+                "at": STAMP,
+                "monotonic_ns": start,
+            },
+        )
+
+    def process(self, name, role, pid, ppid, parent, launch, phase, ns):
+        ident = {"pid": pid, "ppid": ppid, "start_identity": str(pid), "host": "synthetic", "boot_id": "synthetic-boot"}
+        context = {
+            "schema": "bac-hardware-identity-context-v1",
+            "spec": getattr(self, "spec", OPAQUE),
+            "command": copy.deepcopy(OPAQUE),
+            "trusted_grant": copy.deepcopy(OPAQUE),
+            "job_id": self.jobid,
+            "role_id": role,
+            "required_imports": [],
+            "worker_roles": [],
+            "environment_delta": {"common": {}, "worker": {}},
+            "parent_start": [parent] if parent else [],
+            "replacement_start": [],
+            "lifecycle": [launch] if launch else [],
+            "worker_identity": None,
+            "policy": [],
+            "runtime": [],
+        }
+        raw = self.add(
+            name + "-raw",
+            {
+                "schema": "bac-hardware-process-observation-v2",
+                "context": context,
+                "identity": ident,
+                "phase": phase,
+                "environment": {},
+                "worker_identity": None,
+                "torch_loaded": True,
+                "cuda_marker": False,
+                "observation_limit": "synthetic",
+                "at": STAMP,
+                "python_debug": True,
+                "python_optimize": 0,
+                "torch_anomaly": {"state": "measured", "value": False, "reason": ""},
+                "source_method": "direct-git",
+                "recorder_mode": "fork-guard" if "guard" in role else "ordinary",
+                "module_names_before_sha256": "a" * 64,
+                "module_names_after_sha256": "a" * 64,
+                "owner_claim": [],
+                "sampler": [],
+            },
+        )
+        if launch:
+            if pid not in self.claims:
+                self.claims[pid] = self.add(
+                    "claim-" + str(pid),
+                    {
+                        "schema": "bac-hardware-owner-claim-v1",
+                        "launch": launch,
+                        "identity": ident,
+                        "role_id": role,
+                        "at": STAMP,
+                        "monotonic_ns": ns,
+                    },
+                )
+            self.obj(raw)["owner_claim"] = [self.claims[pid]]
+        source = seed("source-witness")
+        source.update(candidate=self.candidate, process_identity=ident, inventory=[self.owner_source])
+        sr = self.add(name + "-source", source)
+        proc = seed("process")
+        proc.update(
+            attempt_id="a",
+            job_id=self.jobid,
+            spec=self.spec,
+            process_id="p-" + str(pid),
+            role_id=role,
+            role="controller" if role == "controller" else ("fork-guard" if "guard" in role else "spawn-child"),
+            phase=phase,
+            identity=ident,
+            parent_identity=[self.obj(parent)["identity"]] if parent else [],
+            argv=["/synthetic/python"],
+            imports=[{"name": n, "reference": r} for n, r in self.imports.items()],
+            source_witness=sr,
+            environment={},
+            at=STAMP,
+            monotonic_ns=ns,
+            elapsed_ns=(
+                {"state": "unavailable", "value": None, "reason": "start"}
+                if phase == "start"
+                else {"state": "measured", "value": ns - 2000000000, "reason": ""}
+            ),
+        )
+        for key, value in [("intra_op", 1), ("inter_op", 5), ("debug", True)]:
+            proc[key] = {"state": "measured", "value": value, "reason": "", "provenance": raw}
+        if "guard" in role:
+            proc["torch_observation"] = "forbidden-inherited-module-witness"
+            proc["cuda_observation"] = "forbidden"
+            for k in ("intra_op", "inter_op", "debug"):
+                proc[k].update(state="unavailable", value=None, reason="no Torch calls permitted in fork guard-only process")
+            self.obj(raw)["torch_anomaly"] = {
+                "state": "unavailable",
+                "value": None,
+                "reason": "no Torch calls permitted in fork guard-only process",
+            }
+        return self.add(name, proc)
+
+    def obj(self, ref):
+        return next(obj for _, obj, r in self.items if r is ref)
+
+    def child(self):
+        if self.family == "producer":
+            return self.producer()
+        obj = {
+            "schema": f"bac-hardware-{self.family}-child-result-v1",
+            "spec": self.spec,
+            "job_id": self.jobid,
+            "case": self.case,
+            "role": self.role,
+            "owner_launch": self.launch,
+            "process_start": self.start,
+            "python_assertions_enabled": True,
+            "message": self.message,
+            "rng_assertion_scopes": [],
+        }
+        if self.family == "core":
+            obj.update(phase=[], forks=[])
+            if self.case.startswith("invocation_phase_"):
+                obj["phase"] = [
+                    {
+                        "devices": [0, 1, 2],
+                        "synchronize_events": [0, 1, 2],
+                        "exception_labels": ["body", "synchronization"],
+                        "completion_failed": None if self.case.endswith("reference") else True,
+                    }
+                ]
+            if self.case == "inherited_pid":
+                obj["forks"] = [self.fork(t, i) for i, t in enumerate(ACTIONS)]
+                obj["rng_assertion_scopes"] = ["after_admission", "after_local", "after_invocation", "after_unregister"]
+        else:
+            obj["assertion_source"] = self.owner_source
+            obj["rng_assertion_scopes"] = (
+                ["after_all_poison_operations"]
+                if self.case == "replay_poison"
+                else ["after_priority_update", "after_store_refresh", "after_all_poison_operations"]
+            )
+        return self.add("child-result", obj)
+
+    def fork(self, trial, index):
+        role = "cuda_core_inherited_pid_guard"
+        launch = self.launch_record(trial + "-launch", role, self.start, "fork")
+        start = self.process(trial + "-start", role, 110 + index, 101, self.start, launch, "start", 3100000000)
+        end = self.process(trial + "-end", role, 110 + index, 101, self.start, launch, "end", 10000000000)
+        rows = []
+        for phase, pr, entry, returned in [("start", start, 3000000000, 4000000000), ("end", end, 9000000000, 10900000000)]:
+            proc = self.obj(pr)
+            rawref = proc["debug"]["provenance"]
+            raw = self.obj(rawref)
+            sampler = self.add(
+                trial + "-" + phase + "-sampler",
+                {
+                    "schema": "bac-hardware-owner-sampler-observation-v1",
+                    "policy": self.policy,
+                    "launch": launch,
+                    "identity": proc["identity"],
+                    "phase": phase,
+                    "start_ns": entry,
+                    "end_ns": entry + 100000000,
+                    "cumulative_ns": 100000000 if phase == "start" else 200000000,
+                    "lock_acquired_ns": entry,
+                    "lock_released_ns": entry + 100000000,
+                    "commands": [],
+                },
+            )
+            raw["sampler"] = [sampler]
+            emission = self.add(
+                trial + "-" + phase + "-emission",
+                {
+                    "schema": "bac-hardware-owner-sampler-emission-v1",
+                    "policy": self.policy,
+                    "launch": launch,
+                    "identity": proc["identity"],
+                    "phase": phase,
+                    "sampler": sampler,
+                    "raw": rawref,
+                    "process": pr,
+                    "emission_end_ns": entry + 200000000,
+                    "module_names_after_sha256": "a" * 64,
+                },
+            )
+            rows.append({"phase": phase, "process": pr, "emission": emission, "entry_ns": entry, "return_ns": returned})
+        terminal = {
+            "schema": "bac-hardware-core-fork-result-v2",
+            "spec": self.spec,
+            "job_id": self.jobid,
+            "role": role,
+            "trial": trial,
+            "owner_launch": launch,
+            "process_start": start,
+            "inherited_parent_start": self.start,
+            "inherited_domain_pid": 101,
+            "python_assertions_enabled": True,
+            "module_origin": "inherited-loaded-module-objects",
+            "source_modules": {
+                "townlet.exploration.rng_custody": self.imports["townlet.exploration.rng_custody"],
+                "test_rng_cuda_admission": self.imports["test_rng_cuda_admission"],
+            },
+            "os_threads": 1,
+            "torch_profile": None,
+            "torch_profile_unavailable_reason": "no Torch calls permitted in fork guard-only process",
+            "guard_results": {
+                a: {
+                    "exception_class": "builtins.RuntimeError",
+                    "diagnostic": "RNG custody cannot be inherited by another process",
+                    "lock_acquire_calls": 0,
+                    "owner_lock_acquire_calls": 0,
+                    "cuda_touch_calls": 0,
+                    "body_calls": 0,
+                    "state_unchanged": True,
+                }
+                for a in ACTIONS[trial]
+            },
+            "recorder_returns": rows,
+        }
+        tr = self.add(trial + "-terminal", terminal)
+        ack = {
+            "trial": trial,
+            "pid": 110 + index,
+            "ppid": 101,
+            "result": tr,
+            "process_start": start,
+            "process_end": end,
+            "message": f"cuda core inherited pid {trial} fail closed",
+        }
+        return self.add(
+            trial + "-observation",
+            {
+                "schema": "bac-hardware-core-fork-observation-v2",
+                "spec": self.spec,
+                "job_id": self.jobid,
+                "trial": trial,
+                "role": role,
+                "parent_start": self.start,
+                "owner_launch": launch,
+                "fork_pid": 110 + index,
+                "waitpid_pid": 110 + index,
+                "wait_status": 0,
+                "exit_code": 0,
+                "acknowledgement": ack,
+                "parent_os_threads_before_fork": 1,
+                "parent_custody": {
+                    "launch": launch,
+                    "child_identity": self.obj(start)["identity"],
+                    "terminal_payload": tr,
+                    "acknowledgement_received_ns": 11100000000,
+                    "reaped_ns": 11200000000,
+                    "wait_status": 0,
+                },
+            },
+        )
+
+    def baseline(self):
+        return {"domain": [1, 1, False], "python": "a" * 64, "numpy": ["MT19937", "b" * 64, 1, 0, 0.0], "torch": "c" * 64, "cuda": None}
+
+    def producer(self):
+        case = self.case
+        same = case.endswith("same")
+        distinct = case.endswith("distinct")
+        ids = [1, 1, None] if same else [1, 2, 3] if distinct else [None, 2, None]
+        pre = self.add(
+            "preflight",
+            {
+                "schema": "bac-hardware-producer-preflight-v1",
+                "spec": self.spec,
+                "job_id": self.jobid,
+                "case": case,
+                "role": self.role,
+                "owner_launch": self.launch,
+                "process_start": self.start,
+                "python_assertions_enabled": True,
+                "before": {"domain": [1, 1, False], "devices": [0, 1], "error_ids": ids},
+            },
+        )
+
+        def err(kind, msg, n):
+            return {"type": kind, "message": msg, "id": n, "children": []}
+
+        outward = err("ValueError" if same else "RuntimeError", case + (": body" if same else ": completion0"), ids[1])
+        if distinct:
+            outward = {
+                "type": "ExceptionGroup",
+                "message": "synthetic",
+                "id": 4,
+                "children": [
+                    err(k, case + ": " + s, i)
+                    for k, s, i in zip(["ValueError", "RuntimeError", "OSError"], ["body", "completion0", "completion1"], ids)
+                ],
+            }
+        obs = {
+            k: True for k in ["healthy_controls", "reached", "peer_blocked", "owner_quarantined", "cpu_local_available", "ambient_refused"]
+        }
+        obs.update(
+            started_work=same or distinct,
+            syncs=[0, 1],
+            worker_errors=[outward],
+            peer_errors=[err("RuntimeError", "quarantined", 5)],
+            completion_failed=[True],
+            outcome_errors=[],
+            quarantine_before_unlock=[True],
+            domain_after=[2, 2, True],
+        )
+        return self.add(
+            "outcome",
+            {
+                "schema": "bac-hardware-producer-outcome-v1",
+                "spec": self.spec,
+                "job_id": self.jobid,
+                "case": case,
+                "role": self.role,
+                "owner_launch": self.launch,
+                "process_start": self.start,
+                "python_assertions_enabled": True,
+                "preflight": pre,
+                "phase": "complete",
+                "success": True,
+                "observations": obs,
+                "failure": None,
+            },
+        )
+
+    def subject(self):
+        for _ in range(100):
+            changed = False
+            for name, obj, ref in self.items:
+                data = json.dumps(obj, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+                update = {"path": ref["path"], "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+                if ref != update:
+                    ref.update(update)
+                    changed = True
+            if not changed:
+                break
+        else:
+            raise AssertionError("synthetic reference cycle")
+        return {
+            "schema": "bac-hardware-strict-validation-subject-v1",
+            "spec": self.spec,
+            "job_id": self.jobid,
+            "obligation_id": "strict",
+            "documents": [
+                {
+                    "reference": copy.deepcopy(ref),
+                    "content": json.dumps(obj, sort_keys=True, separators=(",", ":"), allow_nan=False).encode(),
+                }
+                for _, obj, ref in self.items
+            ],
+        }
+
+
+@pytest.mark.parametrize("case", ["replay_poison", "recurrent_replay_poison", *CORE, *PRODUCER])
+def test_exact_owner_cases(case):
+    # A missing dispatch or omitted strict chain must not yield satisfaction.
+    result = api().validate_child_obligation(Bundle(case).subject())
+    assert result["verdict"] == "satisfied" and result["reasons"] == []
+    assert result["cases"] == [Bundle(case).node]
+
+
+@pytest.mark.parametrize("mutation", ["extra", "missing", "pid", "ppid", "exit_bool", "debug", "role", "phase", "cleanup", "source", "rng"])
+def test_resealed_owner_mutations(mutation):
+    b = Bundle("flat_local_distinct" if mutation == "cleanup" else "replay_poison")
+    p = b.named["payload"]
+    c = b.named.get("child-result")
+    if mutation == "extra":
+        p["extra"] = True
+    elif mutation == "missing":
+        del p["acknowledgement"]
+    elif mutation == "pid":
+        p["process_pid"] = 999
+    elif mutation == "ppid":
+        p["acknowledgement"]["ppid"] = 999
+    elif mutation == "exit_bool":
+        p["exitcode"] = False
+    elif mutation == "debug":
+        c["python_assertions_enabled"] = False
+    elif mutation == "role":
+        p["role"] = "foreign"
+    elif mutation == "phase":
+        b.named["completion"]["outcomes"][0]["teardown"] = "failed"
+    elif mutation == "cleanup":
+        p["cleanup"]["process_closed"] = False
+    elif mutation == "source":
+        p["assertion_source"] = OPAQUE
+    elif mutation == "rng":
+        p["parent_rng_assertion"]["channels"].append("cuda")
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(b.subject())
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing_return",
+        "reverse",
+        "late_call",
+        "late_sum",
+        "late_return",
+        "late_ack",
+        "late_reap",
+        "bool",
+        "negative",
+        "payload",
+        "emission",
+        "identity",
+        "actions",
+        "wait",
+        "clock",
+        "missing_doc",
+    ],
+)
+def test_fork_resealed_mutations(mutation):
+    b = Bundle("inherited_pid")
+    t = b.named["admission-terminal"]
+    o = b.named["admission-observation"]
+    rows = t["recorder_returns"]
+    if mutation == "missing_return":
+        rows.pop()
+    elif mutation == "reverse":
+        rows.reverse()
+    elif mutation == "late_call":
+        rows[0]["return_ns"] = 6100000000
+    elif mutation == "late_sum":
+        rows[0]["return_ns"] = 6000000000
+        rows[1]["entry_ns"] = 6000000000
+        rows[1]["return_ns"] = 9100000001
+    elif mutation == "late_return":
+        rows[1]["return_ns"] = 11000000001
+    elif mutation == "late_ack":
+        o["parent_custody"]["acknowledgement_received_ns"] = 13000000001
+    elif mutation == "late_reap":
+        o["parent_custody"]["reaped_ns"] = 13000000001
+    elif mutation == "bool":
+        rows[0]["entry_ns"] = True
+    elif mutation == "negative":
+        rows[0]["entry_ns"] = -1
+    elif mutation == "payload":
+        o["parent_custody"]["terminal_payload"] = b.start
+    elif mutation == "emission":
+        rows[1]["emission"] = rows[0]["emission"]
+    elif mutation == "identity":
+        o["parent_custody"]["child_identity"] = {**o["parent_custody"]["child_identity"], "pid": 999}
+    elif mutation == "actions":
+        del t["guard_results"]["enroll"]
+    elif mutation == "wait":
+        o["wait_status"] = 9
+    elif mutation == "clock":
+        b.named["admission-end"]["identity"] = {**b.named["admission-end"]["identity"], "boot_id": "other"}
+    elif mutation == "missing_doc":
+        b.items = [i for i in b.items if i[0] != "admission-end-emission"]
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(b.subject())
+
+
+@pytest.mark.parametrize("ack,reap", [(11100000000, 11200000000), (11200000000, 11100000000), (13000000000, 13000000000)])
+def test_return_7_9_ack_8_1_and_reap_order(ack, reap):
+    b = Bundle("inherited_pid")
+    custody = b.named["admission-observation"]["parent_custody"]
+    custody.update(acknowledgement_received_ns=ack, reaped_ns=reap)
+    assert api().validate_child_obligation(b.subject())["verdict"] == "satisfied"
+
+
+@pytest.mark.parametrize("mutation", ["hash", "length", "duplicate", "unknown", "duplicate_json", "nonfinite"])
+def test_document_boundary(mutation):
+    s = Bundle().subject()
+    if mutation == "hash":
+        s["documents"][0]["reference"]["sha256"] = "0" * 64
+    elif mutation == "length":
+        s["documents"][0]["reference"]["bytes"] += 1
+    elif mutation == "duplicate":
+        s["documents"].append(s["documents"][0])
+    elif mutation == "unknown":
+        s["trust_me"] = True
+    else:
+        data = b'{"schema":"x","schema":"y"}' if mutation == "duplicate_json" else b'{"x":NaN}'
+        s["documents"].append(
+            {
+                "reference": {"path": "/synthetic/extra.json", "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()},
+                "content": data,
+            }
+        )
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(s)
+
+
+def test_standalone_requires_explicit_obligation():
+    with pytest.raises(TypeError):
+        api().verify_children(Path("/synthetic/spec"), "job", Path("/synthetic/destination"))
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["report", "claim", "module", "source_identity", "head", "raw_mode", "anomaly", "guard_profile", "guard_module", "undeclared_child"],
+)
+def test_source_process_and_report_custody_mutants(mutation):
+    b = Bundle("inherited_pid" if mutation.startswith("guard") else "replay_poison")
+    if mutation == "report":
+        b.named["report-call"]["process"] = b.start
+    elif mutation == "claim":
+        b.named["child-end-raw"]["owner_claim"] = []
+    elif mutation == "module":
+        b.named["child-end"]["imports"] = []
+    elif mutation == "source_identity":
+        b.named["child-end-source"]["process_identity"] = {**b.named["child-end-source"]["process_identity"], "start_identity": "999"}
+    elif mutation == "head":
+        b.named["child-end-source"]["head"] = "c" * 40
+    elif mutation == "raw_mode":
+        b.named["child-end-raw"]["recorder_mode"] = "fork-guard"
+    elif mutation == "anomaly":
+        b.named["child-end-raw"]["torch_anomaly"]["value"] = 1
+    elif mutation == "guard_profile":
+        b.named["admission-start"]["debug"].update(state="measured", value=True, reason="")
+    elif mutation == "guard_module":
+        b.named["admission-terminal"]["source_modules"]["townlet.exploration.rng_custody"] = b.owner_source
+    elif mutation == "undeclared_child":
+        p = copy.deepcopy(b.named["child-start"])
+        p["identity"]["pid"] = 998
+        b.named["completion"]["process_records"].append(b.add("undeclared", p))
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(b.subject())
+
+
+@pytest.mark.parametrize(
+    "which",
+    ["numpy_bool", "numpy_int_float", "cuda", "error_order", "same_error", "quarantine", "admitted_count", "baseline", "cleanup_extra"],
+)
+def test_producer_typed_semantic_mutants(which):
+    b = Bundle("flat_admitted_same" if which == "admitted_count" else "per_local_distinct")
+    p = b.named["payload"]
+    out = b.named["outcome"]["observations"]
+    if which == "numpy_bool":
+        p["after"]["numpy"][3] = False
+    elif which == "numpy_int_float":
+        p["after"]["numpy"][4] = 0
+    elif which == "cuda":
+        p["after"]["cuda"] = ["a" * 64]
+    elif which == "error_order":
+        out["worker_errors"][0]["children"].reverse()
+    elif which == "same_error":
+        out["worker_errors"][0]["children"][0]["id"] = 2
+    elif which == "quarantine":
+        out["quarantine_before_unlock"] = [1]
+    elif which == "admitted_count":
+        out["completion_failed"] = [True, True]
+    elif which == "baseline":
+        p["before"]["python"] = "b" * 64
+    elif which == "cleanup_extra":
+        p["cleanup"]["future"] = True
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(b.subject())
+
+
+def test_complete_timing_inclusive_three_six_eight_ten():
+    b = Bundle("inherited_pid")
+    for trial in ACTIONS:
+        rows = b.named[trial + "-terminal"]["recorder_returns"]
+        rows[0].update(entry_ns=3000000000, return_ns=6000000000)
+        rows[1].update(entry_ns=8000000000, return_ns=11000000000)
+        ss = b.named[trial + "-end-sampler"]
+        ss.update(start_ns=8000000000, end_ns=8100000000)
+        b.named[trial + "-end-emission"]["emission_end_ns"] = 8200000000
+        b.named[trial + "-observation"]["parent_custody"].update(acknowledgement_received_ns=13000000000, reaped_ns=13000000000)
+    assert api().validate_child_obligation(b.subject())["verdict"] == "satisfied"
+
+
+def test_pure_function_has_no_filesystem_io(monkeypatch):
+    subject = Bundle().subject()
+    module = api()
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("pure function performed filesystem I/O")
+
+    monkeypatch.setattr(Path, "open", forbidden)
+    monkeypatch.setattr(p0, "file_reference", forbidden)
+    assert module.validate_child_obligation(subject)["verdict"] == "satisfied"
+
+
+def test_no_follow_live_reader_and_hash_changes(tmp_path):
+    f = tmp_path / "document"
+    f.write_bytes(b"abc")
+    ref = p0.file_reference(f)
+    assert api().read_bytes(ref) == b"abc"
+    f.write_bytes(b"abd")
+    with pytest.raises(ValueError):
+        api().read_bytes(ref)
+    link = tmp_path / "link"
+    link.symlink_to(f)
+    with pytest.raises(ValueError):
+        api().read_bytes({**ref, "path": str(link)})
+
+
+def pair_bundle():
+    outer = Bundle(kind="phase-pair", base="/synthetic/pair")
+    # Pair wrapper has explicit subjects, not adjacent receipt discovery.
+    subs = []
+    for label in ("reference", "failure"):
+        b = Bundle("invocation_phase_" + label, base="/synthetic/" + label)
+        b.named["spec"]["attempt_id"] = label
+        b.named["spec"]["authorized_root"] = "/synthetic/source"
+        b.named["candidate"]["authorized_root"] = "/synthetic/source"
+        b.named["candidate"]["import_roots"] = ["/synthetic/source/src"]
+        for _, obj, _ in b.items:
+            if obj.get("attempt_id") == "a":
+                obj["attempt_id"] = label
+        for rr in [b.owner_source, *b.imports.values()]:
+            rr["path"] = rr["path"].replace("/synthetic/" + label + "/source", "/synthetic/source")
+        for rows in b.named["candidate"]["inventory"].values():
+            for row in rows:
+                row["path"] = row["reference"]["path"]
+        subject = b.subject()
+        expected = {
+            "schema": "bac-hardware-strict-validation-result-v1",
+            "obligation_id": "strict",
+            "verdict": "satisfied",
+            "reasons": [],
+            "cases": [b.node],
+            "evidence": [b.evidence],
+            "payloads": [b.payload],
+            "producer_processes": [b.parent],
+            "related_attempts": [],
+        }
+        receipt = {
+            "schema": "bac-hardware-strict-child-receipt-v1",
+            "spec": b.spec,
+            "job_id": b.jobid,
+            "obligation_id": "strict",
+            "validator": b.validator,
+            "validator_dependencies": [copy.deepcopy(OPAQUE)],
+            "contract": b.contract,
+            "witness_schema": b.named["contract"]["witness_schema"],
+            "documents": [r for _, _, r in b.items],
+            "result": expected,
+            "validation_identity": {"pid": 500, "ppid": 1, "start_identity": "500", "host": "synthetic", "boot_id": "synthetic-boot"},
+            "validated_at": STAMP,
+        }
+        receipt_ref = b.add("strict-receipt", receipt)
+        subs.append((b, receipt_ref))
+    keep = {
+        "witness",
+        "contract",
+        "candidate",
+        "spec",
+        "evidence",
+        "completion",
+        "result",
+        "report-setup",
+        "report-call",
+        "report-teardown",
+    }
+    outer.items = [item for item in outer.items if item[0] in keep]
+    wrapper = {
+        "schema": "bac-hardware-core-phase-pair-v1",
+        "spec": outer.spec,
+        "job_id": outer.jobid,
+        "obligation_id": "strict",
+        "subjects": [
+            {
+                "case": b.case,
+                "spec": b.spec,
+                "attempt_id": b.spec and b.named["spec"]["attempt_id"],
+                "job_id": b.jobid,
+                "strict_receipt": rr,
+            }
+            for b, rr in subs
+        ],
+    }
+    wr = outer.add("pair-wrapper", wrapper)
+    outer.named["witness"]["schema"] = wrapper["schema"]
+    outer.named["evidence"]["payload"] = wr
+    outer.named["evidence"]["related_attempts"] = [b.spec for b, _ in subs]
+    outer.named["completion"]["process_records"] = []
+    outer.named["completion"]["source_witnesses"] = []
+    outer.named["completion"]["inventory"] = [
+        r for n, o, r in outer.items if n not in ("completion", "result") and r["path"].startswith(outer.job["output"] + "/")
+    ]
+    for k in ("process_records", "source_witnesses", "inventory"):
+        outer.named["result"][k] = outer.named["completion"][k]
+    for b, rr in subs:
+        outer.items += b.items
+    return outer, subs
+
+
+def test_phase_pair_recomputes_both_explicit_subject_receipts():
+    b, _ = pair_bundle()
+    r = api().validate_child_obligation(b.subject())
+    assert r["verdict"] == "satisfied" and len(r["related_attempts"]) == 2
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["swapped", "duplicate", "receipt_result", "events", "typed_completion", "receipt_documents", "recursive", "receipt_validator"],
+)
+def test_phase_pair_resealed_mutations(mutation):
+    b, subs = pair_bundle()
+    second = subs[1][0]
+    wrapper = b.named["pair-wrapper"]
+    receipt = second.named["strict-receipt"]
+    if mutation == "swapped":
+        wrapper["subjects"].reverse()
+    elif mutation == "duplicate":
+        wrapper["subjects"][1] = wrapper["subjects"][0]
+    elif mutation == "receipt_result":
+        receipt["result"]["verdict"] = "unrun"
+    elif mutation == "events":
+        second.named["child-result"]["phase"][0]["synchronize_events"] = [0, 2]
+    elif mutation == "typed_completion":
+        second.named["child-result"]["phase"][0]["completion_failed"] = 1
+    elif mutation == "receipt_documents":
+        receipt["documents"] = []
+    elif mutation == "recursive":
+        second.named["spec"]["jobs"][0]["obligations"][0]["kind"] = "phase-pair"
+    elif mutation == "receipt_validator":
+        receipt["validator"] = {**OPAQUE, "path": "/synthetic/other"}
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(b.subject())
+
+
+def materialize(b, root):
+    """Write inert nonexecuted source/data files, never import or run fake sources."""
+    old = b.base
+
+    def replace(obj):
+        if isinstance(obj, dict):
+            for k, v in list(obj.items()):
+                if isinstance(v, str) and v.startswith(old):
+                    obj[k] = str(root) + v[len(old) :]
+                else:
+                    replace(v)
+        elif isinstance(obj, list):
+            for i, v in enumerate(obj):
+                if isinstance(v, str) and v.startswith(old):
+                    obj[i] = str(root) + v[len(old) :]
+                else:
+                    replace(v)
+
+    for _, obj, ref in b.items:
+        replace(obj)
+        replace(ref)
+    b.job["cwd"] = str(root / "source")
+    b.job["budget"] = {k: 100 for k in b.job["budget"]}
+    b.named["spec"]["budget"] = dict(b.job["budget"])
+    b.named["candidate"].update(authorized_root=str(root / "source"), import_roots=[str(root / "source/src")])
+    selfref = p0.file_reference(Path(api().__file__).absolute())
+    protocol = p0.file_reference(Path(p0.__file__).absolute())
+    b.validator.clear()
+    b.validator.update(selfref)
+    b.named["spec"]["tools"] = [{"name": n, "reference": protocol if n == "protocol" else selfref} for n in p0.TOOLS]
+    for kind in ("process-custody", "source-freeze", "required-cases"):
+        b.job["obligations"].append({**b.obligation, "id": kind, "kind": kind})
+    document_paths = {r["path"] for _, _, r in b.items}
+
+    def leaves(obj):
+        if isinstance(obj, dict):
+            if set(obj) == {"path", "bytes", "sha256"} and obj["path"] not in document_paths and obj != selfref and obj != protocol:
+                path = Path(obj["path"])
+                path.parent.mkdir(parents=True, exist_ok=True)
+                if not path.exists():
+                    path.write_bytes(b"")
+                obj.update(p0.file_reference(path))
+            else:
+                for v in obj.values():
+                    leaves(v)
+        elif isinstance(obj, list):
+            for v in obj:
+                leaves(v)
+
+    for _, obj, _ in b.items:
+        leaves(obj)
+    subject = b.subject()
+    for row in subject["documents"]:
+        path = Path(row["reference"]["path"])
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(row["content"])
+    return Path(b.spec["path"])
+
+
+def test_standalone_exclusive_receipt_and_live_hash_validation(tmp_path):
+    b = Bundle()
+    spec = materialize(b, tmp_path)
+    dest = tmp_path / "receipt.json"
+    receipt = api().verify_children(spec, b.jobid, dest, obligation_id="strict")
+    assert receipt["result"]["verdict"] == "satisfied"
+    assert receipt["validation_identity"]["pid"] > 0 and receipt["schema"] == "bac-hardware-strict-child-receipt-v1"
+    assert json.loads(dest.read_text()) == receipt
+    with pytest.raises(FileExistsError):
+        api().verify_children(spec, b.jobid, dest, obligation_id="strict")
+    source = Path(b.owner_source["path"])
+    source.write_bytes(b"changed")
+    with pytest.raises(ValueError):
+        api().verify_children(spec, b.jobid, tmp_path / "second.json", obligation_id="strict")
+
+
+def test_standalone_unknown_explicit_obligation_refuses(tmp_path):
+    b = Bundle()
+    spec = materialize(b, tmp_path)
+    with pytest.raises(ValueError):
+        api().verify_children(spec, b.jobid, tmp_path / "receipt.json", obligation_id="not-declared")
+
+
+def add_canonical_owner(b, selected_roles=None):
+    canonical = copy.deepcopy(b.named["contract"])
+    canonical.update(obligation_kind="strict-child-core", roles=b.roles)
+    cr = b.add("canonical-contract", canonical)
+    co = {**b.obligation, "id": "owner", "kind": "strict-child-core", "contract": cr}
+    b.job["obligations"].append(co)
+    if selected_roles is not None:
+        b.named["contract"]["roles"] = selected_roles
+    for _, obj, _ in b.items:
+        if obj.get("schema") == "bac-hardware-owner-launch-v1":
+            obj["owner_contract"] = cr
+    ce = {**b.named["evidence"], "obligation_id": "owner", "obligation_kind": "strict-child-core", "contract": cr}
+    er = b.add("canonical-evidence", ce)
+    b.named["completion"]["obligation_records"].append(er)
+    b.named["completion"]["inventory"].extend([cr, er])
+    return cr
+
+
+@pytest.mark.parametrize("kind", ["rng-custody", "fork-three-trials"])
+def test_one_canonical_launch_with_distinct_obligation_role_subsets(kind):
+    b = Bundle("inherited_pid", kind=kind)
+    subset = b.roles[:2] if kind == "rng-custody" else b.roles[1:]
+    add_canonical_owner(b, subset)
+    assert api().validate_child_obligation(b.subject())["verdict"] == "satisfied"
+
+
+@pytest.mark.parametrize("mutation", ["ambiguous", "missing", "payload", "producer", "role", "class", "minimum"])
+def test_canonical_owner_cross_binding_refuses(mutation):
+    b = Bundle("inherited_pid", kind="rng-custody")
+    cr = add_canonical_owner(b, b.roles[:2])
+    if mutation == "ambiguous":
+        b.job["obligations"].append({**b.job["obligations"][-1], "id": "another"})
+    elif mutation == "missing":
+        b.job["obligations"].pop()
+    elif mutation == "payload":
+        b.named["canonical-evidence"]["payload"] = b.child_result
+    elif mutation == "producer":
+        b.named["canonical-evidence"]["producer_process"] = b.start
+    elif mutation == "role":
+        b.named["contract"]["roles"] = copy.deepcopy(b.named["contract"]["roles"])
+        b.named["contract"]["roles"][0]["count"] = 2
+    elif mutation == "class":
+        b.named["canonical-contract"]["evidence_class"] = "cpu-standin"
+    elif mutation == "minimum":
+        b.named["canonical-contract"]["minimum_devices"] = 1
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(b.subject())
+
+
+@pytest.mark.parametrize(
+    "status,expected", [("unrun", "unrun"), ("refused", "unrun"), ("completed-failed", "unsatisfied"), ("interrupted", "unsatisfied")]
+)
+def test_retained_unexecuted_or_failed_transport_never_satisfies(status, expected):
+    b = Bundle()
+    keep = {"spec", "candidate", "witness", "contract", "completion", "result"}
+    b.items = [i for i in b.items if i[0] in keep]
+    for obj in (b.named["completion"], b.named["result"]):
+        for k in ("collected_ids", "outcomes", "process_records", "obligation_records", "source_witnesses"):
+            obj[k] = []
+        obj["inventory"] = [copy.deepcopy(OPAQUE)]
+    r = b.named["result"]
+    r.update(
+        disposition=status,
+        reason="synthetic retained " + status,
+        exit_code=1 if status == "completed-failed" else None,
+        signal=9 if status == "interrupted" else 0,
+    )
+    if status in ("unrun", "refused"):
+        for key in ("end", "elapsed_ns"):
+            r[key] = {"state": "unavailable", "value": None, "reason": "not executed"}
+    out = api().validate_child_obligation(b.subject())
+    assert out["verdict"] == expected and out["reasons"] and out["evidence"] == []
+
+
+@pytest.mark.parametrize(
+    "mutation", ["outside_payload", "wrong_filename", "extra_strict_inventory", "tool_pin", "protocol_dependency", "json_overflow"]
+)
+def test_closed_locator_and_validator_dependencies(mutation):
+    if mutation == "protocol_dependency":
+        b, subs = pair_bundle()
+        subs[1][0].named["strict-receipt"]["validator_dependencies"] = [{**OPAQUE, "path": "/synthetic/foreign-protocol"}]
+    else:
+        b = Bundle()
+    if mutation == "outside_payload":
+        b.payload["path"] = "/synthetic/outside/replay-result-replay_poison.json"
+    elif mutation == "wrong_filename":
+        b.payload["path"] = b.job["output"] + "/different.json"
+    elif mutation == "extra_strict_inventory":
+        b.named["completion"]["inventory"].append({**OPAQUE, "path": b.job["output"] + "/core-child-foreign.json"})
+    elif mutation == "tool_pin":
+        b.named["spec"]["tools"][-1]["reference"] = {**OPAQUE, "path": "/synthetic/foreign-validator"}
+    subject = b.subject()
+    if mutation == "json_overflow":
+        row = next(r for r in subject["documents"] if r["reference"]["path"] == b.contract["path"])
+        data = row["content"].replace(b'"minimum_devices":0', b'"minimum_devices":1e999')
+        row["content"] = data
+        row["reference"]["bytes"] = len(data)
+        row["reference"]["sha256"] = hashlib.sha256(data).hexdigest()
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(subject)
+
+
+@pytest.mark.parametrize(
+    "mutation", ["policy", "policy_zero", "policy_deadline", "spawn_deadline", "role_count", "source_root", "cpu_minimum"]
+)
+def test_finite_owner_profile_and_policy(mutation):
+    b = Bundle("inherited_pid" if mutation.startswith("policy") else "replay_poison")
+    if mutation == "policy":
+        b.named["admission-end-emission"]["policy"] = OPAQUE
+    elif mutation == "policy_zero":
+        b.named["policy"]["max_input_bytes"] = 0
+    elif mutation == "policy_deadline":
+        b.named["policy"]["owner_deadline_ns"] = 11000000000
+    elif mutation == "spawn_deadline":
+        b.named["launch"]["owner_deadline_ns"] = 10
+    elif mutation == "role_count":
+        b.roles[1]["count"] = 2
+    elif mutation == "source_root":
+        b.named["candidate"]["authorized_root"] = "/synthetic/other-root"
+    elif mutation == "cpu_minimum":
+        b.obligation["minimum_devices"] = 1
+        b.named["contract"]["minimum_devices"] = 1
+    with pytest.raises(ValueError):
+        api().validate_child_obligation(b.subject())
+
+
+def test_nonfinite_numeric_exponent_refuses_at_json_boundary():
+    with pytest.raises(ValueError):
+        api().parse(b'{"value":1e999}')

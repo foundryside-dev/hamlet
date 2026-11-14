@@ -1,0 +1,934 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 207615,
+            "path": "wave35/r134-candidate.json",
+            "root": "W",
+            "sha256": "ddbae3ba721a012ffb2cb45af43f768e0e7d8fe9bb5967fb92a14b028dac45fc"
+          },
+          "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r134-collection-spec.json",
+              "sha256": "7dedf1d958db0fe00728cfc8d5963014e4200205355c2fa9ce0f0221636078d5",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5089,
+            "path": "wave35/r134-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d1cda15c18dda9448a3c838f6561ab71f95e702cd06ebc128323a330a5a67ce7"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r134-collection-spec.json--unrun",
+          "path": "wave35-r134-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 134,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r134-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r134-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 207615,
+            "path": "wave35/r134-candidate.json",
+            "root": "W",
+            "sha256": "ddbae3ba721a012ffb2cb45af43f768e0e7d8fe9bb5967fb92a14b028dac45fc"
+          },
+          "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+          "collected_count": 11,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses[seed]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[icm]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r134-native-fixture-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection/identity-controller.json",
+              "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d",
+              "type": "file"
+            },
+            {
+              "bytes": 657,
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection-custody.json",
+              "sha256": "9a81056e7c4b586ec250619816ad53a9c3d68811fe6c83ab45a0c3ec367003bd",
+              "type": "file"
+            },
+            {
+              "bytes": 2532,
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection-result.json",
+              "sha256": "683ee20f8092c035bbb432f1ad3f17a7c9d91f6689a05a580698b9df90c87658",
+              "type": "file"
+            },
+            {
+              "bytes": 1737,
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection.log",
+              "sha256": "4ee82ce21928be6ae481817fe54e229897eebb5e5c81b9c908e386000a980598",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.3044997440010775,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5089,
+            "path": "wave35/r134-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d1cda15c18dda9448a3c838f6561ab71f95e702cd06ebc128323a330a5a67ce7"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r134-native-fixture-collection-attempt-1--native-fixture-collection",
+          "log_paths": [
+            {
+              "bytes": 1737,
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection.log",
+              "root": "Q",
+              "sha256": "4ee82ce21928be6ae481817fe54e229897eebb5e5c81b9c908e386000a980598"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 934,
+            "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "5226361f7d1f1d2efcfdd42d3901087af1dba2bba46afd4cf636133a79d6e319"
+          },
+          "path": "wave35-r134-native-fixture-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 2532,
+            "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection-result.json",
+            "root": "Q",
+            "sha256": "683ee20f8092c035bbb432f1ad3f17a7c9d91f6689a05a580698b9df90c87658"
+          },
+          "record_id": "native-fixture-collection",
+          "result": {
+            "bytes": 2532,
+            "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection-result.json",
+            "root": "Q",
+            "sha256": "683ee20f8092c035bbb432f1ad3f17a7c9d91f6689a05a580698b9df90c87658"
+          },
+          "round": 134,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 657,
+            "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection-custody.json",
+            "root": "Q",
+            "sha256": "9a81056e7c4b586ec250619816ad53a9c3d68811fe6c83ab45a0c3ec367003bd"
+          }
+        }
+      ],
+      "check": "wave35-r134-native-fixture-collection-attempt-1--native-fixture-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r134-native-fixture-collection-attempt-1--native-fixture-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 207615,
+            "path": "wave35/r134-candidate.json",
+            "root": "W",
+            "sha256": "ddbae3ba721a012ffb2cb45af43f768e0e7d8fe9bb5967fb92a14b028dac45fc"
+          },
+          "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses[seed]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[icm]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r134-native-fixture-red-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 11,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red",
+              "type": "directory"
+            },
+            {
+              "bytes": 1309,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-01358e1e905afb66.json",
+              "sha256": "ba6ddbf3d3b957e68002ae61b566ae27ecbbefe1b12c437e8785d9e1c2219c8a",
+              "type": "file"
+            },
+            {
+              "bytes": 2108,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-0456144aca5535c5.json",
+              "sha256": "f8555ba7fa84982bfbd7e9f43740ea6dbb980da352c8afc1ceebba44bb4a2a02",
+              "type": "file"
+            },
+            {
+              "bytes": 2965,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-29097e00c3bdb916.json",
+              "sha256": "b758e1a1710d5aa7da4c90d90b0b371c454b4d7c3fbf9710b145ced42f04191e",
+              "type": "file"
+            },
+            {
+              "bytes": 3094,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-33226fb81933e916.json",
+              "sha256": "c073183cc35f62890798c2b314f556e17b70021e47fa76f8c1f310d69a670ca9",
+              "type": "file"
+            },
+            {
+              "bytes": 2530,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-4bbc3b37f58370e4.json",
+              "sha256": "22972dc68081e39b77caf74ea2bcc9253feee9f3a3c01e05149757e4f80089e4",
+              "type": "file"
+            },
+            {
+              "bytes": 3168,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-55eade4c1b1dff03.json",
+              "sha256": "9b4b8a341ba6b5909d72457346e199bfa0c4fc7f6148b9673cab419c0a0eb181",
+              "type": "file"
+            },
+            {
+              "bytes": 4366,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-67440aaf3ae8c836.json",
+              "sha256": "b8819525c3810f5f4c1cd6ce2d8a0f6e7ed1c0bb66ed261029e5cf59831062f2",
+              "type": "file"
+            },
+            {
+              "bytes": 2548,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-689e5c4e74402eda.json",
+              "sha256": "d6a8cdbd05bab40be3336dccf86df9119e7a00ad1f1793b7107ab2b9bb56cdb5",
+              "type": "file"
+            },
+            {
+              "bytes": 2886,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-9974d5d8ee43b3c6.json",
+              "sha256": "0700cde04ef1fc03301b4db97feb459f88d63d65e8d6bcd449788bc31d798737",
+              "type": "file"
+            },
+            {
+              "bytes": 2530,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-bc6f8f49fd217ef5.json",
+              "sha256": "9c9869023348ae958d52aeb39bdb2258aa2ac27e957d688ee1d317b901930f7f",
+              "type": "file"
+            },
+            {
+              "bytes": 1630,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-faa67279778cf3a1.json",
+              "sha256": "ae0d2b7d32f751dacb5d164f7723448274dad0dc5f1a74b29fbbfd4d6d0cb233",
+              "type": "file"
+            },
+            {
+              "bytes": 2101,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-0456144aca5535c5.json",
+              "sha256": "6a138ab748386d10550ed5f3f197061ba120ffc0d907c810d7e1febf20cacb95",
+              "type": "file"
+            },
+            {
+              "bytes": 3087,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-33226fb81933e916.json",
+              "sha256": "d7f6489d821b536139f34589943e1005ec1687712fad17293e051c266c8195b2",
+              "type": "file"
+            },
+            {
+              "bytes": 3161,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-55eade4c1b1dff03.json",
+              "sha256": "cd7c7e54975618c1b88fc9e5b519acc11c3420ffdc091ad4a7aa4bf5dac5b734",
+              "type": "file"
+            },
+            {
+              "bytes": 4359,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-67440aaf3ae8c836.json",
+              "sha256": "197515bbd6f8d0bcb2ea8f803b61210459258d4f703e92107a89059c0ad7db99",
+              "type": "file"
+            },
+            {
+              "bytes": 2879,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-9974d5d8ee43b3c6.json",
+              "sha256": "7f361c5681883398c0d7fc575fbee7fbdc827e0434c3d37ee852068208a8a81f",
+              "type": "file"
+            },
+            {
+              "bytes": 2523,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-bc6f8f49fd217ef5.json",
+              "sha256": "978c7e1b2ef26ab29d62252ef05231b99ea2425cbc2e7a9ef4ca7cf4521d58b6",
+              "type": "file"
+            },
+            {
+              "bytes": 1302,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-01358e1e905afb66.json",
+              "sha256": "a6c417236387d1fa14d9e7afb5a7d27cea906c87154647988586ae2d110f2eed",
+              "type": "file"
+            },
+            {
+              "bytes": 2958,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-29097e00c3bdb916.json",
+              "sha256": "64e4cec854d5bff53b775fd268e9603eeea09944d19ba5c61e2049bc75d73888",
+              "type": "file"
+            },
+            {
+              "bytes": 2523,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-4bbc3b37f58370e4.json",
+              "sha256": "bd7234403774fb55e9e23694cf5bba134576ef84fe1dee46d5eb4bb41964a35e",
+              "type": "file"
+            },
+            {
+              "bytes": 2541,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-689e5c4e74402eda.json",
+              "sha256": "2493554f465ac665728863d3c9a4a48c1e545090789a7d21cbf69047f9c4af67",
+              "type": "file"
+            },
+            {
+              "bytes": 1623,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-faa67279778cf3a1.json",
+              "sha256": "3d78d49b942cf9bb2d1c7eeefdbbe172f7fb820bedb3375275acb947184a5cd4",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-controller.json",
+              "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-gw0.json",
+              "sha256": "6ace02747fb0aecc667a75c593f23eaf1ffd156ae7b858a2a72b5406f2ae1c26",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-gw1.json",
+              "sha256": "0c196a4ede3eb083e744e8cdd6cc93c1ddee03cfe767ae8d134c72abe3de1616",
+              "type": "file"
+            },
+            {
+              "bytes": 3871,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-failure-index.json",
+              "sha256": "a2438c148fa3a23ad8e276cb159708fac6c2641f9a5940d4bc159234b149d938",
+              "type": "file"
+            },
+            {
+              "bytes": 961,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-negative-custody.json",
+              "sha256": "aaf00b2eef15c0bed5331e1fd4311f4ccd2812ffcad8303ceb806078d34b6890",
+              "type": "file"
+            },
+            {
+              "bytes": 2532,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-result.json",
+              "sha256": "c619844a53e5692a20825111a8d0a9ec0dc442122cf6d8b71800e5c01f375b87",
+              "type": "file"
+            },
+            {
+              "bytes": 29166,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red.log",
+              "sha256": "4063452ba0a8daafa8bb392fe51d854a93ebb4323cb79c38708edbb8972abc34",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 17.538512112019816,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5089,
+            "path": "wave35/r134-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d1cda15c18dda9448a3c838f6561ab71f95e702cd06ebc128323a330a5a67ce7"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r134-native-fixture-red-attempt-1--native-fixture-red",
+          "log_paths": [
+            {
+              "bytes": 29166,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red.log",
+              "root": "Q",
+              "sha256": "4063452ba0a8daafa8bb392fe51d854a93ebb4323cb79c38708edbb8972abc34"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 919,
+            "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-red-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "2c890a97c2b384e95792e7223927e2aa0d463c49e6088cd1061220bffcf441f6"
+          },
+          "path": "wave35-r134-native-fixture-red-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "6ace02747fb0aecc667a75c593f23eaf1ffd156ae7b858a2a72b5406f2ae1c26"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "0c196a4ede3eb083e744e8cdd6cc93c1ddee03cfe767ae8d134c72abe3de1616"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 2532,
+            "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-result.json",
+            "root": "Q",
+            "sha256": "c619844a53e5692a20825111a8d0a9ec0dc442122cf6d8b71800e5c01f375b87"
+          },
+          "record_id": "native-fixture-red",
+          "result": {
+            "bytes": 2532,
+            "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-result.json",
+            "root": "Q",
+            "sha256": "c619844a53e5692a20825111a8d0a9ec0dc442122cf6d8b71800e5c01f375b87"
+          },
+          "round": 134,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 961,
+            "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-negative-custody.json",
+            "root": "Q",
+            "sha256": "aaf00b2eef15c0bed5331e1fd4311f4ccd2812ffcad8303ceb806078d34b6890"
+          }
+        }
+      ],
+      "check": "wave35-r134-native-fixture-red-attempt-1--native-fixture-red",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r134-native-fixture-red-attempt-1--native-fixture-red"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 207615,
+            "path": "wave35/r134-candidate.json",
+            "root": "W",
+            "sha256": "ddbae3ba721a012ffb2cb45af43f768e0e7d8fe9bb5967fb92a14b028dac45fc"
+          },
+          "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r134-owned-spec.json",
+              "sha256": "c5c33a4f9eb9412d240ca16783f28e010edaf99009e214498b29b0bf55186400",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5089,
+            "path": "wave35/r134-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "d1cda15c18dda9448a3c838f6561ab71f95e702cd06ebc128323a330a5a67ce7"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r134-owned-spec.json--unrun",
+          "path": "wave35-r134-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 134,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r134-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r134-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_manifest": {
+    "bytes": 207615,
+    "path": "wave35/r134-candidate.json",
+    "root": "W",
+    "sha256": "ddbae3ba721a012ffb2cb45af43f768e0e7d8fe9bb5967fb92a14b028dac45fc"
+  },
+  "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+  "fixture_preflight": {
+    "bytes": 5089,
+    "path": "wave35/r134-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "d1cda15c18dda9448a3c838f6561ab71f95e702cd06ebc128323a330a5a67ce7"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r134-collection-spec.json",
+      "round": 134,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r134-native-fixture-collection-attempt-1",
+      "round": 134,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r134-native-fixture-collection-attempt-1-spec.json",
+      "round": 134,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r134-native-fixture-red-attempt-1",
+      "round": 134,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r134-native-fixture-red-attempt-1-spec.json",
+      "round": 134,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r134-owned-spec.json",
+      "round": 134,
+      "status": "UNRUN"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r134-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r134-collection-spec.json",
+        "sha256": "7dedf1d958db0fe00728cfc8d5963014e4200205355c2fa9ce0f0221636078d5",
+        "type": "file"
+      }
+    ],
+    "wave35-r134-native-fixture-collection-attempt-1": [
+      {
+        "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection/identity-controller.json",
+        "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d",
+        "type": "file"
+      },
+      {
+        "bytes": 657,
+        "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection-custody.json",
+        "sha256": "9a81056e7c4b586ec250619816ad53a9c3d68811fe6c83ab45a0c3ec367003bd",
+        "type": "file"
+      },
+      {
+        "bytes": 2532,
+        "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection-result.json",
+        "sha256": "683ee20f8092c035bbb432f1ad3f17a7c9d91f6689a05a580698b9df90c87658",
+        "type": "file"
+      },
+      {
+        "bytes": 1737,
+        "path": "wave35-r134-native-fixture-collection-attempt-1/native-fixture-collection.log",
+        "sha256": "4ee82ce21928be6ae481817fe54e229897eebb5e5c81b9c908e386000a980598",
+        "type": "file"
+      }
+    ],
+    "wave35-r134-native-fixture-collection-attempt-1-spec.json": [
+      {
+        "bytes": 2321,
+        "path": "wave35-r134-native-fixture-collection-attempt-1-spec.json",
+        "sha256": "94380ce89036d253895b5aa7fa4414e04515229852b820da9594316945bb07d2",
+        "type": "file"
+      }
+    ],
+    "wave35-r134-native-fixture-red-attempt-1": [
+      {
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red",
+        "type": "directory"
+      },
+      {
+        "bytes": 1309,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-01358e1e905afb66.json",
+        "sha256": "ba6ddbf3d3b957e68002ae61b566ae27ecbbefe1b12c437e8785d9e1c2219c8a",
+        "type": "file"
+      },
+      {
+        "bytes": 2108,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-0456144aca5535c5.json",
+        "sha256": "f8555ba7fa84982bfbd7e9f43740ea6dbb980da352c8afc1ceebba44bb4a2a02",
+        "type": "file"
+      },
+      {
+        "bytes": 2965,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-29097e00c3bdb916.json",
+        "sha256": "b758e1a1710d5aa7da4c90d90b0b371c454b4d7c3fbf9710b145ced42f04191e",
+        "type": "file"
+      },
+      {
+        "bytes": 3094,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-33226fb81933e916.json",
+        "sha256": "c073183cc35f62890798c2b314f556e17b70021e47fa76f8c1f310d69a670ca9",
+        "type": "file"
+      },
+      {
+        "bytes": 2530,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-4bbc3b37f58370e4.json",
+        "sha256": "22972dc68081e39b77caf74ea2bcc9253feee9f3a3c01e05149757e4f80089e4",
+        "type": "file"
+      },
+      {
+        "bytes": 3168,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-55eade4c1b1dff03.json",
+        "sha256": "9b4b8a341ba6b5909d72457346e199bfa0c4fc7f6148b9673cab419c0a0eb181",
+        "type": "file"
+      },
+      {
+        "bytes": 4366,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-67440aaf3ae8c836.json",
+        "sha256": "b8819525c3810f5f4c1cd6ce2d8a0f6e7ed1c0bb66ed261029e5cf59831062f2",
+        "type": "file"
+      },
+      {
+        "bytes": 2548,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-689e5c4e74402eda.json",
+        "sha256": "d6a8cdbd05bab40be3336dccf86df9119e7a00ad1f1793b7107ab2b9bb56cdb5",
+        "type": "file"
+      },
+      {
+        "bytes": 2886,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-9974d5d8ee43b3c6.json",
+        "sha256": "0700cde04ef1fc03301b4db97feb459f88d63d65e8d6bcd449788bc31d798737",
+        "type": "file"
+      },
+      {
+        "bytes": 2530,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-bc6f8f49fd217ef5.json",
+        "sha256": "9c9869023348ae958d52aeb39bdb2258aa2ac27e957d688ee1d317b901930f7f",
+        "type": "file"
+      },
+      {
+        "bytes": 1630,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-controller-faa67279778cf3a1.json",
+        "sha256": "ae0d2b7d32f751dacb5d164f7723448274dad0dc5f1a74b29fbbfd4d6d0cb233",
+        "type": "file"
+      },
+      {
+        "bytes": 2101,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-0456144aca5535c5.json",
+        "sha256": "6a138ab748386d10550ed5f3f197061ba120ffc0d907c810d7e1febf20cacb95",
+        "type": "file"
+      },
+      {
+        "bytes": 3087,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-33226fb81933e916.json",
+        "sha256": "d7f6489d821b536139f34589943e1005ec1687712fad17293e051c266c8195b2",
+        "type": "file"
+      },
+      {
+        "bytes": 3161,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-55eade4c1b1dff03.json",
+        "sha256": "cd7c7e54975618c1b88fc9e5b519acc11c3420ffdc091ad4a7aa4bf5dac5b734",
+        "type": "file"
+      },
+      {
+        "bytes": 4359,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-67440aaf3ae8c836.json",
+        "sha256": "197515bbd6f8d0bcb2ea8f803b61210459258d4f703e92107a89059c0ad7db99",
+        "type": "file"
+      },
+      {
+        "bytes": 2879,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-9974d5d8ee43b3c6.json",
+        "sha256": "7f361c5681883398c0d7fc575fbee7fbdc827e0434c3d37ee852068208a8a81f",
+        "type": "file"
+      },
+      {
+        "bytes": 2523,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw0-bc6f8f49fd217ef5.json",
+        "sha256": "978c7e1b2ef26ab29d62252ef05231b99ea2425cbc2e7a9ef4ca7cf4521d58b6",
+        "type": "file"
+      },
+      {
+        "bytes": 1302,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-01358e1e905afb66.json",
+        "sha256": "a6c417236387d1fa14d9e7afb5a7d27cea906c87154647988586ae2d110f2eed",
+        "type": "file"
+      },
+      {
+        "bytes": 2958,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-29097e00c3bdb916.json",
+        "sha256": "64e4cec854d5bff53b775fd268e9603eeea09944d19ba5c61e2049bc75d73888",
+        "type": "file"
+      },
+      {
+        "bytes": 2523,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-4bbc3b37f58370e4.json",
+        "sha256": "bd7234403774fb55e9e23694cf5bba134576ef84fe1dee46d5eb4bb41964a35e",
+        "type": "file"
+      },
+      {
+        "bytes": 2541,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-689e5c4e74402eda.json",
+        "sha256": "2493554f465ac665728863d3c9a4a48c1e545090789a7d21cbf69047f9c4af67",
+        "type": "file"
+      },
+      {
+        "bytes": 1623,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/failure-gw1-faa67279778cf3a1.json",
+        "sha256": "3d78d49b942cf9bb2d1c7eeefdbbe172f7fb820bedb3375275acb947184a5cd4",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-controller.json",
+        "sha256": "a9a6abb713304e88967247eb88a5009e103fab3c4c83e60ee0ff8c2412202e7d",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-gw0.json",
+        "sha256": "6ace02747fb0aecc667a75c593f23eaf1ffd156ae7b858a2a72b5406f2ae1c26",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red/identity-gw1.json",
+        "sha256": "0c196a4ede3eb083e744e8cdd6cc93c1ddee03cfe767ae8d134c72abe3de1616",
+        "type": "file"
+      },
+      {
+        "bytes": 3871,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-failure-index.json",
+        "sha256": "a2438c148fa3a23ad8e276cb159708fac6c2641f9a5940d4bc159234b149d938",
+        "type": "file"
+      },
+      {
+        "bytes": 961,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-negative-custody.json",
+        "sha256": "aaf00b2eef15c0bed5331e1fd4311f4ccd2812ffcad8303ceb806078d34b6890",
+        "type": "file"
+      },
+      {
+        "bytes": 2532,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red-result.json",
+        "sha256": "c619844a53e5692a20825111a8d0a9ec0dc442122cf6d8b71800e5c01f375b87",
+        "type": "file"
+      },
+      {
+        "bytes": 29166,
+        "path": "wave35-r134-native-fixture-red-attempt-1/native-fixture-red.log",
+        "sha256": "4063452ba0a8daafa8bb392fe51d854a93ebb4323cb79c38708edbb8972abc34",
+        "type": "file"
+      }
+    ],
+    "wave35-r134-native-fixture-red-attempt-1-spec.json": [
+      {
+        "bytes": 2340,
+        "path": "wave35-r134-native-fixture-red-attempt-1-spec.json",
+        "sha256": "b6efe22c451685ead4aa42e90627ae7ff0e727580bdc7147827560fb749fa0e4",
+        "type": "file"
+      }
+    ],
+    "wave35-r134-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r134-owned-spec.json",
+        "sha256": "c5c33a4f9eb9412d240ca16783f28e010edaf99009e214498b29b0bf55186400",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 134,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN"
+}

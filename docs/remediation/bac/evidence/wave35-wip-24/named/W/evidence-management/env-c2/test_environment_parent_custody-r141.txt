@@ -1,0 +1,747 @@
+"""Real ENV ingress and finite reverse-call controls for retained parent custody."""
+
+import copy
+import pickle
+from contextlib import ExitStack, contextmanager
+from threading import Event, Thread, current_thread
+from typing import Any
+
+import pytest
+import torch
+
+from tests.test_townlet.regressions.bac.test_initial_participation_population import begin, close, prepare_close, select, unowned
+from tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff import IDS
+from tests.test_townlet.regressions.bac.test_runtime_bank_parent_custody import compiled as compiled
+from tests.test_townlet.regressions.bac.test_runtime_bank_parent_custody import make_parent
+from townlet.environment.parent_custody import EnvParentCustody
+from townlet.environment.vectorized_env import VectorizedHamletEnv, WorldReceiptIssuer
+from townlet.exploration.rng_custody import process_rng_domain
+from townlet.population.vectorized import VectorizedPopulation
+
+
+def _observe_claim(monkeypatch: Any, peer_method: str | None) -> dict[str, Any]:
+    """Observe the configured producer without replacing its claim authority."""
+    claim = VectorizedPopulation.claim_vector_step
+    validate = VectorizedHamletEnv.validate_initial_participation
+    seen: dict[str, Any] = {"claims": [], "checks": [], "peer_errors": [], "inside": False}
+
+    def observed_validation(self: Any, **kwargs: Any) -> None:
+        if seen["inside"]:
+            seen["checks"].append(kwargs)
+        return validate(self, **kwargs)
+
+    def observed_claim(self: Any, **kwargs: Any) -> int:
+        seen["claims"].append(kwargs)
+        seen["inside"] = True
+        try:
+            if peer_method is not None:
+                try:
+                    getattr(self.env, peer_method)()
+                except ValueError as error:
+                    seen["peer_errors"].append(error)
+            return claim(self, **kwargs)
+        finally:
+            seen["inside"] = False
+
+    # POP captures this real bound method during its constructor's one-time
+    # ENV runtime binding. No private callback replacement or fake handle.
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observed_claim)
+    monkeypatch.setattr(VectorizedHamletEnv, "validate_initial_participation", observed_validation)
+    return seen
+
+
+def _real_component_step(rig: Any) -> tuple[Any, dict[str, Any]]:
+    candidate = rig.candidate()
+    prepared = rig.population.prepare_vector_step(**candidate)
+    result = rig.env.step(candidate["actions"], vector_step=prepared)
+    return result, candidate
+
+
+def test_genuine_claim_preserves_independently_owned_predecessor(compiled: Any, monkeypatch: Any) -> None:
+    """Rejecting POP's independent reading by Python identity breaks real claims."""
+    seen = _observe_claim(monkeypatch, None)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+
+    result, candidate = _real_component_step(rig)
+
+    assert len(seen["claims"]) == len(seen["checks"]) == 1
+    claim, check = seen["claims"][0], seen["checks"][0]
+    assert claim["accepted"] is check["accepted"] is candidate["accepted"]
+    assert check["predecessor"] is not claim["predecessor"]
+    assert torch.equal(check["predecessor"], claim["predecessor"])
+    assert result[3]["intrinsic_transition"].accepted is candidate["accepted"]
+    assert result[3]["intrinsic_transition"].context.vector_tick == 1
+    assert rig.env.global_tick == 1
+    assert torch.equal(rig.env.step_counts, torch.ones_like(rig.env.step_counts))
+
+
+@pytest.mark.parametrize("peer_method", ["get_action_masks", "get_affordance_positions", "vfs_random_state"])
+def test_claim_callback_cannot_enter_peer_env_work(compiled: Any, monkeypatch: Any, peer_method: str) -> None:
+    """A general callback reentry exemption would allow these independent reads."""
+    seen = _observe_claim(monkeypatch, peer_method)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+
+    result, candidate = _real_component_step(rig)
+
+    # The actual POP callback still runs once and earns its genuine validation;
+    # the refused probe cannot replace it or consume that validation slot.
+    assert len(seen["claims"]) == len(seen["checks"]) == 1
+    assert len(seen["peer_errors"]) == 1
+    assert result[3]["intrinsic_transition"].accepted is candidate["accepted"]
+    assert rig.env.global_tick == 1
+    assert torch.equal(rig.env.step_counts, torch.ones_like(rig.env.step_counts))
+
+
+class Controller:
+    def __init__(self) -> None:
+        self.domain = process_rng_domain()
+        self.participant = self.domain.register(owner=self, cuda_devices=(), entrypoints=frozenset({"component"}))
+
+    def invocation(self) -> Any:
+        return self.domain.device_invocation(participant=self.participant, operation_kind="component", lineage=None, cuda_devices=())
+
+
+@pytest.mark.parametrize("family", ["none", "count_based", "rnd", "adaptive_rnd", "icm"])
+@pytest.mark.parametrize("scope", ["shared", "per_world"])
+def test_bound_env_and_runtime_preserve_real_step_and_service(compiled: Any, family: str, scope: str) -> None:
+    """An ambient/missing lineage path cannot execute the real bound children."""
+    rig = make_parent(compiled, family, scope)
+    rig.enter()
+    controller = Controller()
+    with rig.env.retain_parent_custody() as env_scope, rig.runtime.retain_parent_custody() as runtime_scope:
+        invocation = controller.invocation()
+        with invocation as operation:
+            with env_scope.bind_operation(operation=operation), runtime_scope.bind_operation(operation=operation):
+                result, candidate = _real_component_step(rig)
+                handoff = result[3]["intrinsic_transition"]
+                rig.runtime.admit_and_service(context=handoff.context, stamp=handoff.stamp, accepted=handoff.accepted)
+                assert handoff.accepted is candidate["accepted"]
+                assert rig.env.global_tick == 1
+        assert invocation.completion_failed() is False
+    assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_retained_env_requires_binding_and_expires(compiled: Any) -> None:
+    """Retained exclusion alone and expired execution references grant no work."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    with rig.env.retain_parent_custody() as scope:
+        with pytest.raises(ValueError):
+            rig.env.get_action_masks()
+        with pytest.raises(ValueError):
+            with rig.env.retain_parent_custody():
+                pytest.fail("same-owner retention reentered")
+        invocation = controller.invocation()
+        with invocation as operation:
+            with scope.bind_operation(operation=operation):
+                assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+                with pytest.raises(ValueError):
+                    with scope.bind_operation(operation=operation):
+                        pytest.fail("operation binding reentered")
+            with pytest.raises(ValueError):
+                rig.env.get_action_masks()
+        assert invocation.completion_failed() is False
+    with pytest.raises(ValueError):
+        with scope.bind_operation(operation=operation):
+            pytest.fail("expired scope bound")
+    assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_retained_env_scope_is_nonportable(compiled: Any) -> None:
+    """Copies, reconstructions and another Thread cannot acquire scope authority."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    with rig.env.retain_parent_custody() as scope:
+        for transfer in (copy.copy, copy.deepcopy, pickle.dumps):
+            with pytest.raises(TypeError):
+                transfer(scope)
+        invocation = controller.invocation()
+        with invocation as operation:
+            errors: list[BaseException] = []
+
+            def bind_elsewhere() -> None:
+                try:
+                    with scope.bind_operation(operation=operation):
+                        pytest.fail("foreign thread bound ENV")
+                except BaseException as error:
+                    errors.append(error)
+
+            worker = Thread(target=bind_elsewhere)
+            worker.start()
+            worker.join(timeout=5)
+            assert not worker.is_alive(), "foreign scope use waited for the domain or ENV lock"
+            assert len(errors) == 1 and isinstance(errors[0], ValueError)
+            forged = object.__new__(type(scope))
+            with pytest.raises((ValueError, AttributeError)):
+                with forged.bind_operation(operation=operation):
+                    pytest.fail("unissued scope bound ENV")
+            with scope.bind_operation(operation=operation):
+                assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_peer_waits_at_common_admission_through_outer_exit_and_consumer(compiled: Any, monkeypatch: Any) -> None:
+    """A peer must reach common admission before ENV, then wait through the final cut."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    attempted, entered, finished = Event(), Event(), Event()
+    errors: list[BaseException] = []
+    admission = type(controller.domain).admission
+    worker: Thread
+
+    @contextmanager
+    def observed_admission(self: Any, *, lineage: Any) -> Any:
+        peer = current_thread() is worker
+        if peer:
+            attempted.set()
+        with admission(self, lineage=lineage) as admitted:
+            if peer:
+                entered.set()
+            yield admitted
+
+    def peer_read() -> None:
+        try:
+            rig.env.get_action_masks()
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            finished.set()
+
+    worker = Thread(target=peer_read)
+    monkeypatch.setattr(type(controller.domain), "admission", observed_admission)
+    try:
+        with rig.env.retain_parent_custody() as scope, rig.runtime.retain_parent_custody() as runtime_scope:
+            invocation = controller.invocation()
+            with invocation as operation:
+                with scope.bind_operation(operation=operation), runtime_scope.bind_operation(operation=operation):
+                    result, _ = _real_component_step(rig)
+                    worker.start()
+                    assert attempted.wait(timeout=5), "peer waited at ENV before common admission"
+                    assert not entered.is_set() and not finished.is_set()
+                    assert result[2] is rig.env.dones
+            assert invocation.completion_failed() is False
+            assert not entered.is_set() and not finished.is_set()
+            # The actual outer outcome consumer still owns ENV's live aliases.
+            assert result[3]["intrinsic_weight"] is rig.env.intrinsic_weights
+            assert not entered.is_set() and not finished.is_set()
+    finally:
+        if worker.ident is not None:
+            worker.join(timeout=5)
+    assert not worker.is_alive()
+    assert entered.is_set() and finished.is_set() and errors == []
+
+
+def _capture_participation(monkeypatch: Any) -> list[Any]:
+    original = VectorizedHamletEnv.commit_initial_participation
+    results: list[Any] = []
+
+    def observe(self: Any, **kwargs: Any) -> Any:
+        result = original(self, **kwargs)
+        results.append(result)
+        return result
+
+    monkeypatch.setattr(VectorizedHamletEnv, "commit_initial_participation", observe)
+    return results
+
+
+def test_claim_cannot_preconsume_the_real_producers_single_check(compiled: Any, monkeypatch: Any) -> None:
+    """A reused slot must refuse at the genuine POP check before physics."""
+    participation = _capture_participation(monkeypatch)
+    original = VectorizedPopulation.claim_vector_step
+    reached: list[str] = []
+
+    def preconsume(self: Any, **kwargs: Any) -> int:
+        self.env.validate_initial_participation(
+            accepted=kwargs["accepted"], participation=participation[-1], predecessor=kwargs["predecessor"]
+        )
+        reached.append("first_check")
+        return original(self, **kwargs)
+
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", preconsume)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    with pytest.raises(ValueError):
+        _real_component_step(rig)
+    assert reached == ["first_check"]
+    assert rig.env.global_tick == 0 and not bool(rig.env.step_counts.any())
+
+
+@pytest.mark.parametrize("swallow", [False, True])
+@pytest.mark.parametrize("reading_fault", ["content", "shape", "dtype"])
+def test_real_validation_failure_preserves_primary_and_terminal_denial(
+    compiled: Any, monkeypatch: Any, swallow: bool, reading_fault: str
+) -> None:
+    """A swallowed real validation failure cannot authorize physics or lose its identity."""
+    claim = VectorizedPopulation.claim_vector_step
+    validate = VectorizedHamletEnv.validate_initial_participation
+    state: dict[str, Any] = {"inside": False, "primary": None}
+
+    def wrong_reading(self: Any, **kwargs: Any) -> None:
+        if state["inside"]:
+            predecessor = kwargs["predecessor"]
+            changed = {"content": lambda: predecessor + 1, "shape": lambda: predecessor[:, :-1], "dtype": predecessor.double}
+            kwargs = {**kwargs, "predecessor": changed[reading_fault]()}
+        try:
+            return validate(self, **kwargs)
+        except BaseException as error:
+            if state["inside"]:
+                state["primary"] = error
+            raise
+
+    def observer(self: Any, **kwargs: Any) -> Any:
+        state["inside"] = True
+        try:
+            return claim(self, **kwargs)
+        except BaseException:
+            if not swallow:
+                raise
+            # This is deliberately a negative callback result, never a tick or
+            # fabricated successful claim. ENV must rethrow the actual failure.
+            return None
+        finally:
+            state["inside"] = False
+
+    monkeypatch.setattr(VectorizedHamletEnv, "validate_initial_participation", wrong_reading)
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observer)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    with pytest.raises(ValueError) as caught:
+        _real_component_step(rig)
+    assert caught.value is state["primary"]
+    assert rig.env.global_tick == 0 and not bool(rig.env.step_counts.any())
+    assert rig.env._env_custody.reverse is None and rig.env._env_custody.active is None
+
+
+@pytest.mark.parametrize("cleanup_fails", [False, True])
+def test_adversarial_owned_observation_corruption_reaches_genuine_cleanup(compiled: Any, monkeypatch: Any, cleanup_fails: bool) -> None:
+    """Real POP owned-state failure must retain its primary and cleanup notes."""
+    participation = _capture_participation(monkeypatch)
+    claim = VectorizedPopulation.claim_vector_step
+    equal_record = VectorizedHamletEnv._equal_record
+    state: dict[str, Any] = {"primary": None, "cleanup": 0}
+    cleanup_error = RuntimeError("injected genuine cleanup cut")
+
+    def cleanup_cut(self: Any, key: str, kind: str, payload: Any) -> Any:
+        if key == "abandonment":
+            state["cleanup"] += 1
+            with pytest.raises(ValueError):
+                self.abandon_episode(accepted=payload["accepted"], reason="runtime_failure")
+            with pytest.raises(ValueError):
+                self.validate_initial_participation(
+                    accepted=payload["accepted"], participation=participation[-1], predecessor=participation[-1].observation
+                )
+            if cleanup_fails:
+                raise cleanup_error
+        return equal_record(self, key, kind, payload)
+
+    def corrupt(self: Any, **kwargs: Any) -> int:
+        # Adversarial negative only: corrupt the public observation after genuine
+        # preparation, so the actual POP owned-state check detects the mismatch.
+        self.current_obs.add_(1)
+        try:
+            return claim(self, **kwargs)
+        except BaseException as error:
+            state["primary"] = error
+            raise
+
+    monkeypatch.setattr(VectorizedHamletEnv, "_equal_record", cleanup_cut)
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", corrupt)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    with pytest.raises(ValueError) as caught:
+        _real_component_step(rig)
+    assert caught.value is state["primary"] and state["cleanup"] == 1
+    if cleanup_fails:
+        assert any(str(cleanup_error) in note for note in caught.value.__notes__)
+    assert rig.env.global_tick == 0 and not bool(rig.env.step_counts.any())
+    assert rig.env._env_custody.reverse is None and rig.env._env_custody.active is None
+
+
+def test_validator_and_later_physics_hook_cannot_reuse_reverse_permission(compiled: Any, monkeypatch: Any) -> None:
+    """Permission must be suspended during validation and expired before physics."""
+    participation = _capture_participation(monkeypatch)
+    claim = VectorizedPopulation.claim_vector_step
+    reading = VectorizedHamletEnv._participation_reading
+    state: dict[str, Any] = {"request": None, "probes": []}
+
+    def probe(env: Any, label: str) -> None:
+        request = state["request"]
+        with pytest.raises(ValueError):
+            env.validate_initial_participation(
+                accepted=request["accepted"], participation=participation[-1], predecessor=request["predecessor"]
+            )
+        with pytest.raises(ValueError):
+            env.abandon_episode(accepted=request["accepted"], reason="runtime_failure")
+        assert all(value.shape == (env.num_agents,) for value in env.bars.values())
+        state["probes"].append(label)
+
+    def observe_claim(self: Any, **kwargs: Any) -> int:
+        state["request"] = kwargs
+        return claim(self, **kwargs)
+
+    def reading_hook(self: Any, value: Any, **kwargs: Any) -> None:
+        if state["request"] is not None and not state["probes"]:
+            probe(self, "validating")
+        return reading(self, value, **kwargs)
+
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observe_claim)
+    monkeypatch.setattr(VectorizedHamletEnv, "_participation_reading", reading_hook)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    execute = rig.env._action_executor._execute_actions
+
+    def physics_hook(actions: Any) -> Any:
+        probe(rig.env, "physics")
+        return execute(actions)
+
+    monkeypatch.setattr(rig.env._action_executor, "_execute_actions", physics_hook)
+    _real_component_step(rig)
+    assert state["probes"] == ["validating", "physics"]
+    assert rig.env.global_tick == 1
+    assert rig.env._env_custody.reverse is None and rig.env._env_custody.active is None
+
+
+@pytest.mark.parametrize("cut", ["before", "after"])
+def test_callback_exception_keeps_identity_and_expires_permission(compiled: Any, monkeypatch: Any, cut: str) -> None:
+    """Outcall finalization must not replace the actual escaping callback error."""
+    claim = VectorizedPopulation.claim_vector_step
+    error = RuntimeError("actual observer failure")
+    reached: list[int] = []
+
+    def fail(self: Any, **kwargs: Any) -> int:
+        if cut == "after":
+            reached.append(claim(self, **kwargs))
+        raise error
+
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", fail)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    with pytest.raises(RuntimeError) as caught:
+        _real_component_step(rig)
+    assert caught.value is error
+    assert reached == ([1] if cut == "after" else [])
+    assert rig.env.global_tick == 0 and not bool(rig.env.step_counts.any())
+    assert rig.env._env_custody.reverse is None and rig.env._env_custody.active is None
+
+
+@pytest.mark.parametrize("cleanup_fails", [False, True])
+def test_cleanup_after_real_claim_is_terminal_even_if_callback_returns(compiled: Any, monkeypatch: Any, cleanup_fails: bool) -> None:
+    """Even cleanup failing before its phase assignment denies outer healthy work."""
+    claim = VectorizedPopulation.claim_vector_step
+    equal_record = VectorizedHamletEnv._equal_record
+    attempts: list[str] = []
+
+    def cleanup_cut(self: Any, key: str, kind: str, payload: Any) -> Any:
+        if key == "abandonment":
+            attempts.append(key)
+            if cleanup_fails:
+                raise RuntimeError("cleanup publication cut")
+        return equal_record(self, key, kind, payload)
+
+    def deny(self: Any, **kwargs: Any) -> int:
+        tick = claim(self, **kwargs)
+        try:
+            self.env.abandon_episode(accepted=kwargs["accepted"], reason="runtime_failure")
+        except RuntimeError:
+            if not cleanup_fails:
+                raise
+        with pytest.raises(ValueError):
+            self.env.abandon_episode(accepted=kwargs["accepted"], reason="runtime_failure")
+        return tick
+
+    monkeypatch.setattr(VectorizedHamletEnv, "_equal_record", cleanup_cut)
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", deny)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    with pytest.raises(ValueError):
+        _real_component_step(rig)
+    assert attempts == ["abandonment"]
+    assert rig.env.global_tick == 0 and not bool(rig.env.step_counts.any())
+
+
+@pytest.mark.parametrize("bound", [False, True])
+@pytest.mark.parametrize("fail_owner", [None, "population", "bank"])
+def test_empty_proofs_use_separate_expiring_permissions_and_actual_owners(
+    compiled: Any, monkeypatch: Any, bound: bool, fail_owner: str | None
+) -> None:
+    """One owner's callback must not lend rights to the next owner or receipt check."""
+    participation = _capture_participation(monkeypatch)
+    rig = make_parent(compiled, "none", "shared")
+    begin(rig, retired=IDS)
+    accepted = rig.record.accepted
+    calls: list[str] = []
+    receipts: list[Any] = []
+    failure = RuntimeError("actual empty proof failure")
+    validate = WorldReceiptIssuer.validate
+
+    def observe_receipt(receipt: Any, kind: str, owner: Any) -> Any:
+        if kind == "empty_episode":
+            with pytest.raises(ValueError):
+                rig.env.abandon_episode(accepted=accepted, reason="runtime_failure")
+            receipts.append(receipt)
+        return validate(receipt, kind, owner)
+
+    monkeypatch.setattr(WorldReceiptIssuer, "validate", staticmethod(observe_receipt))
+
+    def observe_owner(name: str, owner: Any) -> None:
+        original = owner.prepare_empty_episode_evidence
+
+        def observed(*, accepted: Any) -> Any:
+            calls.append(name)
+            with pytest.raises(ValueError):
+                rig.env.validate_initial_participation(
+                    accepted=accepted, participation=participation[-1], predecessor=participation[-1].observation
+                )
+            result = original(accepted=accepted)
+            if fail_owner == name:
+                raise failure
+            return result
+
+        monkeypatch.setattr(owner, "prepare_empty_episode_evidence", observed)
+
+    observe_owner("population", rig.population)
+    observe_owner("bank", rig.bank)
+    controller = Controller()
+    with ExitStack() as contexts:
+        invocation = None
+        if bound:
+            env_scope = contexts.enter_context(rig.env.retain_parent_custody())
+            bank_scope = contexts.enter_context(rig.bank.retain_parent_custody())
+            invocation = controller.invocation()
+            operation = contexts.enter_context(invocation)
+            contexts.enter_context(env_scope.bind_operation(operation=operation))
+            contexts.enter_context(bank_scope.bind_operation(operation=operation))
+        if fail_owner is None:
+            result = rig.env.abandon_episode(accepted=accepted, reason="empty_participation")
+            assert result.accepted is accepted and result.reason == "empty_participation"
+            assert rig.env.world_phase == "quarantined"
+        else:
+            with pytest.raises(RuntimeError) as caught:
+                rig.env.abandon_episode(accepted=accepted, reason="empty_participation")
+            assert caught.value is failure
+        assert calls == (["population"] if fail_owner == "population" else ["population", "bank"])
+        assert len(receipts) == ({None: 2, "population": 0, "bank": 1}[fail_owner])
+        assert not bool(rig.env.step_counts.any())
+        assert rig.env._env_custody.reverse is None and rig.env._env_custody.active is None
+    if invocation is not None:
+        assert invocation.completion_failed() is False
+
+
+def test_bound_role_identity_rebind_preserves_actual_owner_set(compiled: Any) -> None:
+    """A retained scope must preserve genuine role owners on equal and changed binds."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    roles = dict(rig.env._world_role_owners)
+    controller = Controller()
+    with rig.env.retain_parent_custody() as scope:
+        with controller.invocation() as operation:
+            with scope.bind_operation(operation=operation):
+                original = rig.env.bind_boundary_authority(owner=rig, role_owners=roles)
+                changed = {**roles, "population": object()}
+                with pytest.raises(ValueError):
+                    rig.env.bind_boundary_authority(owner=rig, role_owners=changed)
+                assert rig.env.bind_boundary_authority(owner=rig, role_owners=roles) is original
+                assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_real_first_a_only_population_step_close_release_and_next_reset(compiled: Any) -> None:
+    """ENV exclusion must preserve actual POP accounting and all real close effects."""
+    rig = make_parent(compiled, "none", "shared")
+    begin(rig, retired=IDS[1:])
+    accepted = rig.record.accepted
+    state = rig.population.step_population(rig.env)
+    assert state.info["intrinsic_transition"].accepted is accepted
+    assert rig.env.step_counts.tolist() == [1, 0, 0, 0, 0, 0, 0, 0]
+    retirement = close(rig, prepare_close(rig), release=True)
+    assert retirement.accepted is accepted
+    assert rig.env.world_phase == "released-completed"
+    begin(rig, retired=(), batch=1)
+    assert rig.record.accepted is not accepted
+    assert rig.env.world_phase == "active" and rig.env.global_tick == 0
+    assert not bool(rig.env.step_counts.any())
+
+
+def test_genuine_unowned_selector_does_not_grant_pop_claim_authority(compiled: Any) -> None:
+    """A successful inference selector must remain distinct from an owned claim."""
+    rig = unowned(compiled)
+    actions = select(rig.population, rig.env, "greedy")
+    assert actions.shape == (rig.env.num_agents,)
+    candidate = rig.candidate()
+    with pytest.raises(RuntimeError, match="this population's healthy accepted reset"):
+        rig.population.prepare_vector_step(**candidate)
+    assert rig.env.global_tick == 0 and not bool(rig.env.step_counts.any())
+
+
+@pytest.mark.parametrize("identity", ["accepted", "participation"])
+@pytest.mark.parametrize("origin", ["foreign", "stale"])
+def test_wrong_issued_identity_consumes_slot_before_validator_tensor_work(
+    compiled: Any, monkeypatch: Any, identity: str, origin: str
+) -> None:
+    """Genuine foreign or old-generation records cannot reach the tensor validator."""
+    participation = _capture_participation(monkeypatch)
+    claim = VectorizedPopulation.claim_vector_step
+    reading = VectorizedHamletEnv._participation_reading
+    state: dict[str, Any] = {"probe": False, "inside": False, "reads": 0, "primary": None, "forwarded": 0}
+    wrong: dict[str, Any] = {}
+
+    def observe_reading(self: Any, value: Any, **kwargs: Any) -> None:
+        if state["inside"]:
+            state["reads"] += 1
+        return reading(self, value, **kwargs)
+
+    def observer(self: Any, **kwargs: Any) -> Any:
+        if not state["probe"]:
+            return claim(self, **kwargs)
+        state["inside"] = True
+        try:
+            request = {"accepted": kwargs["accepted"], "participation": participation[-1], "predecessor": kwargs["predecessor"]}
+            request[identity] = wrong[identity]
+            try:
+                self.env.validate_initial_participation(**request)
+            except ValueError as error:
+                state["primary"] = error
+            state["forwarded"] += 1
+            try:
+                return claim(self, **kwargs)
+            except ValueError:
+                return None  # Negative swallowing control; never substitute a claim tick.
+        finally:
+            state["inside"] = False
+
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observer)
+    monkeypatch.setattr(VectorizedHamletEnv, "_participation_reading", observe_reading)
+    previous = make_parent(compiled, "none", "shared")
+    begin(previous, retired=IDS[1:])
+    wrong.update(accepted=previous.record.accepted, participation=participation[-1])
+    if origin == "foreign":
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+    else:
+        rig = previous
+        rig.population.step_population(rig.env)
+        close(rig, prepare_close(rig), release=True)
+        begin(rig, retired=(), batch=1)
+    state["probe"] = True
+    with pytest.raises(ValueError) as caught:
+        _real_component_step(rig)
+    assert caught.value is state["primary"]
+    assert state["reads"] == 0 and state["forwarded"] == 1
+    assert rig.env.global_tick == 0 and not bool(rig.env.step_counts.any())
+
+
+def test_expired_operation_binding_does_not_consume_retained_scope(compiled: Any) -> None:
+    """Failed authentication must leave no execution binding or leaked admission."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    with controller.invocation() as expired:
+        pass
+    with rig.env.retain_parent_custody() as scope:
+        with pytest.raises((ValueError, RuntimeError)):
+            with scope.bind_operation(operation=expired):
+                pytest.fail("expired operation was adopted")
+        with pytest.raises(ValueError):
+            rig.env.get_action_masks()
+        with controller.invocation() as operation:
+            with scope.bind_operation(operation=operation):
+                assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_binding_one_env_does_not_authorize_another_env(compiled: Any, monkeypatch: Any) -> None:
+    """Another ENV cannot borrow a same-thread scope's authentic operation."""
+    first = make_parent(compiled, "none", "shared")
+    second = make_parent(compiled, "none", "shared")
+    first.enter()
+    second.enter()
+    controller = Controller()
+    reached: list[str] = []
+    build = second.env._build_action_masks
+
+    def observe() -> Any:
+        reached.append("second")
+        return build()
+
+    monkeypatch.setattr(second.env, "_build_action_masks", observe)
+    with first.env.retain_parent_custody() as scope:
+        with controller.invocation() as operation:
+            with scope.bind_operation(operation=operation):
+                with pytest.raises(RuntimeError):
+                    second.env.get_action_masks()
+                assert not reached
+                assert first.env.get_action_masks().shape == (first.env.num_agents, first.env.action_dim)
+    assert second.env.get_action_masks().shape == (second.env.num_agents, second.env.action_dim)
+    assert reached == ["second"]
+
+
+def test_failed_retention_entry_releases_acquired_exclusion(compiled: Any, monkeypatch: Any) -> None:
+    """A scope-construction error must release both actual domain and ENV locks."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    initialize = EnvParentCustody.__init__
+    failure = RuntimeError("scope construction cut")
+
+    def fail(self: Any, custody: Any) -> None:
+        initialize(self, custody)
+        raise failure
+
+    with monkeypatch.context() as patch:
+        patch.setattr(EnvParentCustody, "__init__", fail)
+        with pytest.raises(RuntimeError) as caught:
+            with rig.env.retain_parent_custody():
+                pytest.fail("failed scope entered")
+        assert caught.value is failure
+    errors: list[BaseException] = []
+
+    def peer() -> None:
+        try:
+            rig.env.get_action_masks()
+        except BaseException as error:
+            errors.append(error)
+
+    worker = Thread(target=peer, daemon=True)
+    worker.start()
+    worker.join(timeout=5)
+    assert not worker.is_alive() and not errors
+    controller = Controller()
+    with rig.env.retain_parent_custody() as scope:
+        with controller.invocation() as operation:
+            with scope.bind_operation(operation=operation):
+                assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_claim_diagnostic_read_grants_neither_retention_nor_boundary_work(compiled: Any, monkeypatch: Any) -> None:
+    """The allowed phase diagnostic cannot become lifecycle or scope permission."""
+    claim = VectorizedPopulation.claim_vector_step
+    check = VectorizedHamletEnv._check_committed_participation
+    state = {"probing": False, "peer_checks": 0, "claims": 0}
+
+    def observe_check(self: Any) -> None:
+        if state["probing"]:
+            state["peer_checks"] += 1
+        return check(self)
+
+    def observer(self: Any, **kwargs: Any) -> int:
+        assert self.env.world_phase == "active"
+        state["probing"] = True
+        try:
+            with pytest.raises(ValueError):
+                with self.env.retain_parent_custody():
+                    pytest.fail("callback retained a new ENV scope")
+            with pytest.raises(ValueError):
+                self.env._world_authority.bootstrap(first_batch_episode=0)
+        finally:
+            state["probing"] = False
+        state["claims"] += 1
+        return claim(self, **kwargs)
+
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observer)
+    monkeypatch.setattr(VectorizedHamletEnv, "_check_committed_participation", observe_check)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    _real_component_step(rig)
+    assert state["peer_checks"] == 0 and state["claims"] == 1
+    assert rig.env.global_tick == 1

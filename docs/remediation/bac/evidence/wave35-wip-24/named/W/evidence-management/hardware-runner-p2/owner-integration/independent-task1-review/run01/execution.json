@@ -1,0 +1,106 @@
+{
+  "affinity": [
+    0,
+    1
+  ],
+  "after": [
+    {
+      "bytes": 82822,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "5f72c9e7c1cce50378f32b30fc46f4d35625f837a3980e91b9c6644753bf2953"
+    },
+    {
+      "bytes": 77658,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "5aaedc415da0c1bd9efea5df78df7ccab6659ba6d8cad0cd4e869d132d1214d2"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "argv": [
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "independent-task1-review/run01",
+    "-k",
+    "owner_raw_v2 or owner_current_adopted or independent_task1",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py"
+  ],
+  "before": [
+    {
+      "bytes": 82822,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "5f72c9e7c1cce50378f32b30fc46f4d35625f837a3980e91b9c6644753bf2953"
+    },
+    {
+      "bytes": 77658,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "5aaedc415da0c1bd9efea5df78df7ccab6659ba6d8cad0cd4e869d132d1214d2"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "elapsed_seconds": 0.14238851799746044,
+  "exit_code": 4,
+  "final_affinity": [
+    0,
+    1
+  ],
+  "imported_project_modules": {},
+  "kernel_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "independent-task1-review/run01",
+    "-k",
+    "owner_raw_v2 or owner_current_adopted or independent_task1",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py"
+  ],
+  "log": {
+    "bytes": 428,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/run01/output.log",
+    "sha256": "a6e9ac2122c8549e1dc5676a33cdfb72d5e4aaf929025a856cc90632784a6c1f"
+  },
+  "pid": 220927,
+  "ppid": 220926,
+  "proc_stat_start_identity": "13009267",
+  "pytest_args": [
+    "--verbose",
+    "-m",
+    "not perf",
+    "--cov=townlet",
+    "--cov-branch",
+    "--cov-report=term-missing",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/run01/fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "-k",
+    "owner_raw_v2 or owner_current_adopted or independent_task1",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py"
+  ],
+  "pytest_version": "8.4.2",
+  "ram_limit_bytes": 4294967296,
+  "runner": {
+    "bytes": 3635,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "sha256": "51ffece3829826d47be9860ef8cf039b1f25bd36b9534446952d04a343c1d1a7"
+  },
+  "scope": "Pure authored-data/inert-process P2 tooling only; no APP/source/Git/hardware qualification",
+  "source_unchanged": true,
+  "status": "FAILED",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "utc_end": "2026-11-14T10:06:22.523417+00:00",
+  "utc_start": "2026-11-14T10:06:22.380300+00:00",
+  "xdist_workers": 0
+}

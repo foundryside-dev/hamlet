@@ -1,0 +1,38 @@
+.......F.                                                                [100%]
+=================================== FAILURES ===================================
+_ test_owner_completion_result_correspondence_and_declared_closure[duplicate] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-closure-red01/fixtures/test_owner_completion_result_c7')
+mutation = 'duplicate'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'raw', 'process', 'launch', 'claim', 'source', 'source-list', 'duplicate', 'contradictory'])
+    def test_owner_completion_result_correspondence_and_declared_closure(tmp_path, mutation):
+        r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+        child_ref = next(ref for ref in completion['process_records'] if json.loads(Path(ref['path']).read_text())['role'] == 'spawn-child')
+        child = json.loads(Path(child_ref['path']).read_text())
+        raw_ref = child['intra_op']['provenance']; raw = json.loads(Path(raw_ref['path']).read_text())
+        targets = {'raw': raw_ref, 'process': child_ref, 'launch': raw['context']['lifecycle'][0],
+            'claim': raw['owner_claim'][0], 'source': child['source_witness']}
+        if mutation in targets:
+            completion['inventory'].remove(targets[mutation])
+        elif mutation == 'source-list': completion['source_witnesses'].remove(child['source_witness'])
+        elif mutation == 'duplicate': completion['inventory'].append(raw_ref)
+        elif mutation == 'contradictory': completion['inventory'].append({**raw_ref, 'sha256': 'f' * 64})
+        put('completion.json', completion)
+        Path(selected['output'], 'stdout.log').write_text('authored pure transport log')
+        observation = {**custody.observations[selected['id']], 'exit_code': 0, 'signal': 0,
+            'disposition': 'completed-unverified', 'reason': 'awaiting evidence'}
+        result = custody.result(selected, observation, None)
+        if mutation == 'valid':
+            assert result['disposition'] == 'successful'
+            for key in ('collected_ids', 'outcomes', 'process_records', 'obligation_records', 'source_witnesses'):
+                assert result[key] == completion[key]
+            assert result['inventory'] != completion['inventory']
+        else:
+>           assert result['disposition'] != 'successful'
+E           AssertionError: assert 'successful' != 'successful'
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1671: AssertionError
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_completion_result_correspondence_and_declared_closure[duplicate]
+1 failed, 8 passed, 154 deselected in 1.51s

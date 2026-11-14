@@ -1,0 +1,39 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r135-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "native-fixture-progression",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses[seed]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[icm]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r135-native-fixture-progression-attempt-1",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

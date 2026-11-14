@@ -1,0 +1,775 @@
+........................................................................ [ 29%]
+.......................................................F..F.F...F...FF.. [ 59%]
+.FF.....F..F............FF..FFF....FF..............FFF.................. [ 88%]
+.........FFFFFFFFFFFFFFFFFF                                              [100%]
+=================================== FAILURES ===================================
+______________ test_complete_private_field_types[launch-command] _______________
+
+record = 'launch', field = 'command'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+___________ test_complete_private_field_types[launch-source_witness] ___________
+
+record = 'launch', field = 'source_witness'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+____________ test_complete_private_field_types[launch-parent_argv] _____________
+
+record = 'launch', field = 'parent_argv'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+____________ test_complete_private_field_types[launch-instance_id] _____________
+
+record = 'launch', field = 'instance_id'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_________ test_complete_private_field_types[launch-inherited_imports] __________
+
+record = 'launch', field = 'inherited_imports'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+________ test_complete_private_field_types[launch-module_names_sha256] _________
+
+record = 'launch', field = 'module_names_sha256'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_________________ test_complete_private_field_types[launch-at] _________________
+
+record = 'launch', field = 'at'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+____________ test_complete_private_field_types[launch-monotonic_ns] ____________
+
+record = 'launch', field = 'monotonic_ns'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+______ test_complete_private_field_types[child-start-raw-worker_identity] ______
+
+record = 'child-start-raw', field = 'worker_identity'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_____ test_complete_private_field_types[child-start-raw-observation_limit] _____
+
+record = 'child-start-raw', field = 'observation_limit'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+______________ test_complete_private_field_types[context-command] ______________
+
+record = 'context', field = 'command'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+___________ test_complete_private_field_types[context-trusted_grant] ___________
+
+record = 'context', field = 'trusted_grant'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_________ test_complete_private_field_types[context-required_imports] __________
+
+record = 'context', field = 'required_imports'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+___________ test_complete_private_field_types[context-worker_roles] ____________
+
+record = 'context', field = 'worker_roles'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_________ test_complete_private_field_types[context-environment_delta] _________
+
+record = 'context', field = 'environment_delta'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+______________ test_complete_private_field_types[context-policy] _______________
+
+record = 'context', field = 'policy'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+______________ test_complete_private_field_types[context-runtime] ______________
+
+record = 'context', field = 'runtime'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_ test_complete_private_field_types[admission-start-sampler-lock_acquired_ns] __
+
+record = 'admission-start-sampler', field = 'lock_acquired_ns'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_ test_complete_private_field_types[admission-start-sampler-lock_released_ns] __
+
+record = 'admission-start-sampler', field = 'lock_released_ns'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+_____ test_complete_private_field_types[admission-start-sampler-commands] ______
+
+record = 'admission-start-sampler', field = 'commands'
+
+    @pytest.mark.parametrize('record,field',[(r,f) for r,fields in PRIVATE_FIELD_CASES.items() for f in fields.split()])
+    def test_complete_private_field_types(record,field):
+        b=Bundle('inherited_pid' if record.startswith('admission') or record=='policy' else 'replay_poison')
+        obj=b.named['child-start-raw']['context'] if record=='context' else b.named[record]
+        obj[field] = {} if isinstance(obj[field],list) else True if isinstance(obj[field],dict) else []
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1375: Failed
+______ test_phase_wrapper_must_bind_actual_recomputed_case[two_reference] ______
+
+mutation = 'two_reference'
+
+    @pytest.mark.parametrize('mutation',['two_reference','swapped_relabelled'])
+    def test_phase_wrapper_must_bind_actual_recomputed_case(mutation):
+        b,subs=pair_bundle();wrapper=b.named['pair-wrapper']
+        if mutation=='swapped_relabelled':
+            wrapper['subjects'].reverse()
+            for obj,label in zip(wrapper['subjects'],('reference','failure')):obj['case']='invocation_phase_'+label
+            b.named['evidence']['related_attempts']=[x['spec'] for x in wrapper['subjects']]
+        else:
+            second=subs[1][0]
+            def rename(value):
+                if isinstance(value,dict):
+                    for key,item in value.items():
+                        if isinstance(item,str):value[key]=item.replace('cuda-core-invocation-phase-failure','cuda-core-invocation-phase-reference').replace('invocation_phase_failure','invocation_phase_reference')
+                        else:rename(item)
+                elif isinstance(value,list):
+                    for i,item in enumerate(value):
+                        if isinstance(item,str):value[i]=item.replace('cuda-core-invocation-phase-failure','cuda-core-invocation-phase-reference').replace('invocation_phase_failure','invocation_phase_reference')
+                        else:rename(item)
+            for _,obj,ref in second.items:rename(obj);rename(ref)
+            second.named['child-result']['phase'][0]['completion_failed']=None
+            wrapper['subjects'][1]['job_id']='cuda-core-invocation-phase-reference'
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1399: Failed
+___ test_phase_wrapper_must_bind_actual_recomputed_case[swapped_relabelled] ____
+
+mutation = 'swapped_relabelled'
+
+    @pytest.mark.parametrize('mutation',['two_reference','swapped_relabelled'])
+    def test_phase_wrapper_must_bind_actual_recomputed_case(mutation):
+        b,subs=pair_bundle();wrapper=b.named['pair-wrapper']
+        if mutation=='swapped_relabelled':
+            wrapper['subjects'].reverse()
+            for obj,label in zip(wrapper['subjects'],('reference','failure')):obj['case']='invocation_phase_'+label
+            b.named['evidence']['related_attempts']=[x['spec'] for x in wrapper['subjects']]
+        else:
+            second=subs[1][0]
+            def rename(value):
+                if isinstance(value,dict):
+                    for key,item in value.items():
+                        if isinstance(item,str):value[key]=item.replace('cuda-core-invocation-phase-failure','cuda-core-invocation-phase-reference').replace('invocation_phase_failure','invocation_phase_reference')
+                        else:rename(item)
+                elif isinstance(value,list):
+                    for i,item in enumerate(value):
+                        if isinstance(item,str):value[i]=item.replace('cuda-core-invocation-phase-failure','cuda-core-invocation-phase-reference').replace('invocation_phase_failure','invocation_phase_reference')
+                        else:rename(item)
+            for _,obj,ref in second.items:rename(obj);rename(ref)
+            second.named['child-result']['phase'][0]['completion_failed']=None
+            wrapper['subjects'][1]['job_id']='cuda-core-invocation-phase-reference'
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1399: Failed
+__________ test_resealed_private_correlations_and_clocks[source_ref] ___________
+
+mutation = 'source_ref'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+__________ test_resealed_private_correlations_and_clocks[parent_argv] __________
+
+mutation = 'parent_argv'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+________ test_resealed_private_correlations_and_clocks[context_command] ________
+
+mutation = 'context_command'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+_________ test_resealed_private_correlations_and_clocks[context_grant] _________
+
+mutation = 'context_grant'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+____ test_resealed_private_correlations_and_clocks[required_import_phases] _____
+
+mutation = 'required_import_phases'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+___________ test_resealed_private_correlations_and_clocks[env_delta] ___________
+
+mutation = 'env_delta'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+______ test_resealed_private_correlations_and_clocks[claim_before_launch] ______
+
+mutation = 'claim_before_launch'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+____ test_resealed_private_correlations_and_clocks[parent_end_before_child] ____
+
+mutation = 'parent_end_before_child'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+_____ test_resealed_private_correlations_and_clocks[process_after_return] ______
+
+mutation = 'process_after_return'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+_________ test_resealed_private_correlations_and_clocks[lock_reverse] __________
+
+mutation = 'lock_reverse'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+_________ test_resealed_private_correlations_and_clocks[command_shape] _________
+
+mutation = 'command_shape'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+________ test_resealed_private_correlations_and_clocks[command_reverse] ________
+
+mutation = 'command_reverse'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+__________ test_resealed_private_correlations_and_clocks[raw_worker] ___________
+
+mutation = 'raw_worker'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+________ test_resealed_private_correlations_and_clocks[claim_after_end] ________
+
+mutation = 'claim_after_end'
+
+    @pytest.mark.parametrize('mutation',['source_ref','parent_argv','context_command','context_grant','required_import_phases','env_delta','claim_before_launch','parent_end_before_child','process_after_return','lock_reverse','command_shape','command_reverse','raw_worker','claim_after_end'])
+    def test_resealed_private_correlations_and_clocks(mutation):
+        b=Bundle('inherited_pid' if mutation.startswith(('process_','lock_','command_')) else 'replay_poison')
+        if mutation=='source_ref':b.named['launch']['source_witness']=OPAQUE
+        elif mutation=='parent_argv':b.named['launch']['parent_argv']=['different-actual-parent']
+        elif mutation=='context_command':b.named['child-start-raw']['context']['command']={**OPAQUE,'path':'/synthetic/foreign-command'}
+        elif mutation=='context_grant':b.named['child-start-raw']['context']['trusted_grant']={**OPAQUE,'path':'/synthetic/foreign-grant'}
+        elif mutation=='required_import_phases':b.named['child-start-raw']['context']['required_imports']=[{'name':'test_world_rng_bootstrap','reference':b.owner_source,'phases':['end','end']}]
+        elif mutation=='env_delta':b.named['child-start-raw']['context']['environment_delta']['invented']={}
+        elif mutation=='claim_before_launch':b.named['claim-101']['monotonic_ns']=0
+        elif mutation=='claim_after_end':b.named['claim-101']['monotonic_ns']=999000000000
+        elif mutation=='parent_end_before_child':b.named['parent-end']['monotonic_ns']=1
+        elif mutation=='process_after_return':b.named['admission-end']['monotonic_ns']=999000000000
+        elif mutation=='lock_reverse':b.named['admission-start-sampler']['lock_released_ns']=1
+        elif mutation=='command_shape':b.named['admission-start-sampler']['commands']=[True]
+        elif mutation=='command_reverse':b.named['admission-start-sampler']['commands']=[{'argv':['git'],'pid':500,'start_ns':4000000000,'end_ns':1,'exit_code':0,'stdout':OPAQUE,'stderr':OPAQUE,'stdout_truncated':False,'stderr_truncated':False}]
+        elif mutation=='raw_worker':b.named['child-start-raw']['worker_identity']={'workerid':'invented'}
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1419: Failed
+__________ test_standalone_private_malformed_transport_cannot_publish __________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/red1/pytest/test_standalone_private_malfor0')
+
+    def test_standalone_private_malformed_transport_cannot_publish(tmp_path):
+        b=Bundle();b.named['launch']['command']=True;b.named['child-start-raw']['context']['trusted_grant']=True
+        spec=materialize(b,tmp_path);dest=tmp_path/'receipt.json'
+>       with pytest.raises(ValueError):api().verify_children(spec,b.jobid,dest,obligation_id='strict')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1425: Failed
+_____________ test_standalone_private_opaque_refs_are_live_checked _____________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/red1/pytest/test_standalone_private_opaque0')
+
+    def test_standalone_private_opaque_refs_are_live_checked(tmp_path):
+        b=Bundle();spec=materialize(b,tmp_path)
+        for _,obj,_ in b.items:
+            if obj.get('schema')=='bac-hardware-process-observation-v2':obj['context']['trusted_grant']['sha256']='1'*64
+        for row in b.subject()['documents']:Path(row['reference']['path']).write_bytes(row['content'])
+>       with pytest.raises(ValueError):api().verify_children(spec,b.jobid,tmp_path/'receipt.json',obligation_id='strict')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1434: Failed
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-command]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-source_witness]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-parent_argv]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-instance_id]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-inherited_imports]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-module_names_sha256]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-at]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[launch-monotonic_ns]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[child-start-raw-worker_identity]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[child-start-raw-observation_limit]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[context-command]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[context-trusted_grant]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[context-required_imports]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[context-worker_roles]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[context-environment_delta]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[context-policy]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[context-runtime]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[admission-start-sampler-lock_acquired_ns]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[admission-start-sampler-lock_released_ns]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_complete_private_field_types[admission-start-sampler-commands]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_phase_wrapper_must_bind_actual_recomputed_case[two_reference]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_phase_wrapper_must_bind_actual_recomputed_case[swapped_relabelled]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[source_ref]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[parent_argv]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[context_command]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[context_grant]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[required_import_phases]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[env_delta]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[claim_before_launch]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[parent_end_before_child]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[process_after_return]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[lock_reverse]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[command_shape]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[command_reverse]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[raw_worker]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_private_correlations_and_clocks[claim_after_end]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_standalone_private_malformed_transport_cannot_publish
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_standalone_private_opaque_refs_are_live_checked
+38 failed, 205 passed in 3.87s

@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "identity_scope": "Checkpoint inclusion anchor only; original source/execution identities retained in named input.",
+  "input": {
+    "bytes": 4980,
+    "path": "evidence-management/hardware-verifier-p4/current-owner-integration/checkpoint-unqualified-v1.json",
+    "root": "W",
+    "sha256": "5474cc03811d55b5e3bb76c59c4624050cd08f7454cb39252d8c0a6c8ba8357a"
+  },
+  "status": "UNQUALIFIED PREPARATION"
+}

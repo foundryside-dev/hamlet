@@ -1,0 +1,22 @@
+{
+  "command": {
+    "bytes": 619,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/fixtures/test_scheduler_advances_cpu_pa0/out/attempt/gpu/command.json",
+    "sha256": "26805dfa3c4ea7f9fe7c26b19c330dd86c3d0b557eb2f58f7333aa5b1f4b55c2"
+  },
+  "disposition": "completed-unverified",
+  "end": "2026-11-14T10:02:40.251127Z",
+  "exit_code": 0,
+  "job_id": "gpu",
+  "log": {
+    "bytes": 9,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/fixtures/test_scheduler_advances_cpu_pa0/out/attempt/gpu/stdout.log",
+    "sha256": "08cfb1f08c9a2b3985853df5336808a27d616d731c6e944ff0a4e8e74dde5e5f"
+  },
+  "monotonic_end_ns": 129870591585196,
+  "monotonic_start_ns": 129870520711665,
+  "process_records": [],
+  "reason": "completion transport not integrated",
+  "signal": 0,
+  "start": "2026-11-14T10:02:40.180227Z"
+}

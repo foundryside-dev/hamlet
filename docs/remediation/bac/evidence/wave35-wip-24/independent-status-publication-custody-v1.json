@@ -1,0 +1,47 @@
+{
+  "approved_STATUS": {
+    "before_sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371",
+    "bytes": 117706,
+    "destination": "docs/remediation/bac/STATUS.md",
+    "diff": "evidence-management/wip24-preparation/document-postimages-v3/STATUS.diff",
+    "postimage": "evidence-management/wip24-preparation/document-postimages-v3/STATUS.md",
+    "sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb"
+  },
+  "approved_document_review": {
+    "bytes": 3362,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/ROOT-DOCUMENT-REVIEW-v1.json",
+    "sha256": "3d9a7e27350fc026ce8e9cffd035be3bd5f49da2f589af43558a042f66f0fad1"
+  },
+  "at": "2026-11-14T12:42:56.069461+00:00",
+  "candidate": {
+    "bytes": 209062,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+    "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+  },
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "conclusion": "Explicitly permitting only this exact approved documentation postimage while retaining the original execution inventory is a publication correction, not APP source equivalence or re-execution. All other candidate source/config/artifact equality checks must remain exact.",
+  "config_artifact_overlap": [],
+  "current_STATUS": {
+    "bytes": 117706,
+    "path": "/workspace/hamlet/docs/remediation/bac/STATUS.md",
+    "sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb"
+  },
+  "executed_STATUS_sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371",
+  "final_selection_plan": {
+    "bytes": 85280637,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/root-selection-plan-v1.json",
+    "sha256": "1d7180158b15d17aa132c46080e0a2141bcb12d2f85b3d0829c20564d3552265"
+  },
+  "limits": "No APP source rehash/read/execution, Git or tracked writes. Root assertion that other 823 source/573 config/13 artifact hashes match is not independently repeated here.",
+  "only_source_inventory_overlap": [
+    "docs/remediation/bac/STATUS.md"
+  ],
+  "reviewer": "/root/bac_astra_wip23_closed_evidence",
+  "selected_postimage": {
+    "bytes": 117706,
+    "logical_path": "named/W/evidence-management/wip24-preparation/document-postimages-v3/STATUS.md",
+    "original": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/document-postimages-v3/STATUS.md",
+    "sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb"
+  },
+  "status": "PASS NARROW DOCUMENT CUSTODY; CORRECTED GUARD IMPLEMENTATION NOT YET REVIEWED"
+}

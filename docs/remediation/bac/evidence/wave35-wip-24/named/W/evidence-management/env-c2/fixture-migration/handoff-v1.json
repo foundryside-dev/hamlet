@@ -1,0 +1,36 @@
+{
+  "schema": "bac-env-c2-fixture-migration-v1",
+  "source": "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+  "before_sha256": "0a90bb7e57956ce714b8bc4f663cbdb3aa237448dd1437d733f98c04ec913f11",
+  "after_sha256": "80a9ef90c939214b9d709b94e7f058041e4cfa24cfaa0421b8cb0d31a0c327d1",
+  "before_lines": 1241,
+  "after_lines": 1343,
+  "changed_source_nodes": [
+    "ComponentPopulation",
+    "test_observation_cleanup_cannot_activate_quarantined_episode",
+    "test_observation_cleanup_cannot_return_healthy_validation",
+    "test_reading_validator_cleanup_is_durable"
+  ],
+  "added_source_nodes": [
+    "observe_refused_encoder_cleanup",
+    "test_real_claim_validates_current_owned_reading_once_before_publication"
+  ],
+  "removed_source_nodes": [],
+  "existing_test_functions": 39,
+  "retained_test_functions": 39,
+  "scope": "One authorized body; no producer/helper body reads, APP runtime, imports, Git/index operations, branches, worktrees, source copies, or deletion.",
+  "qualification": "Static AST inventory and scoped Ruff/Black pass only. Root owns causal/full-file execution and independent review.",
+  "controls": [
+    "test_real_claim_validates_current_owned_reading_once_before_publication[True]",
+    "test_real_claim_validates_current_owned_reading_once_before_publication[False]",
+    "test_observation_cleanup_cannot_return_healthy_validation",
+    "test_observation_cleanup_cannot_activate_quarantined_episode",
+    "test_reading_validator_cleanup_is_durable",
+    "test_claim_cleanup_cannot_resume_physics[True]",
+    "test_claim_cleanup_cannot_resume_physics[False]"
+  ],
+  "assertion_preservation": {
+    "G1": "Registry/candidate identity and exact dtype/device/shape/content checks retained; one active validation of exact retained accepted/participation/current predecessor inside actual committed claim before claimed/step_started publication; no-decision claim has zero validations; no reward/service changes.",
+    "G2": "All original three nodes retain exactly one actual successful abandonment receipt, exact accepted/reason checks, quarantine, revision and physical/RNG invariance. Separate nested encoder entry/encoding/cleanup-attempt/refusal observations require no receipt _record entry or phase/revision/physical/RNG effects across rejected cleanup. Exact escaping refusal retained. Actual cleanup after unwind remains mandatory; activation uses existing actual outer cleanup. Injection removed before retained-authority refusal checks."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "control-phase-pair",
+  "expected": "satisfied",
+  "mode": "pure",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+    ],
+    "evidence": [
+      {
+        "bytes": 1428,
+        "path": "/synthetic/pair/out/a/replay-poison/evidence.json",
+        "sha256": "1cf2ff67de9d01fe1beb9aa9391df83cd588d1fd56cb84dc160f7cd9900361a3"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 1232,
+        "path": "/synthetic/pair/out/a/replay-poison/pair-wrapper.json",
+        "sha256": "c6179709759d5f033a94235eb400c271a01caa9b61e277e6591b8b53cac4af83"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 0,
+        "path": "/synthetic/pair/out/a/replay-poison/parent.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    ],
+    "related_attempts": [
+      {
+        "bytes": 4202,
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/spec.json",
+        "sha256": "1970bbed34a04528db0b028acb2342604773d9b5a6fc9d43179b533fef45b115"
+      },
+      {
+        "bytes": 4170,
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-failure/spec.json",
+        "sha256": "aeb3470841dd60296ca8d92a32c7606f04405a3bf7af864312239899de76c261"
+      }
+    ]
+  },
+  "matched_expectation": true,
+  "receipt_exists": false
+}

@@ -1,0 +1,13 @@
+# P5 finite controller/report repair v4
+
+AUTHOR FROZEN, independent exact review pending. Root accepted the two contract-bound defects in independent review-v3 and authorized this finite repair. All earlier freezes, attempts and reviews remain unchanged.
+
+The actual outer spawn launch parent START must now use the authentic configured job's unique controller role ID and kind. The prior exact parent END role/identity binding then binds its END to that same controller. Fixed job cardinality and complete checked-process inventory continue to reject undeclared or unchecked observations. This does not equate canonical, selected, RNG or fork obligation role subsets.
+
+Passing call and teardown reports bound to that emitting parent must occur no earlier than the required child's observed END UTC timestamp. Existing parent lifetime and report ordering checks remain. This is a necessary causal lower bound only: it does not assert that END timestamp equals complete recorder return. Guard actual returns and acknowledgement/reap custody retain their separate monotonic bounds. Setup can precede child execution; inclusive limits and either post-return acknowledgement/reap order remain supported.
+
+Test-first evidence: red1 retained one real controller false acceptance plus a fixture mistake (job-result observed end/elapsed values were initially replaced by scalars). The separated UTC helper was corrected before red2. red2 ran on exact v3 source34df34f0... and reproduced all three independent false accepts: both controller phases substituted coherently, passing reports before child START, and standalone passing reports before child END producing a receipt. Its valid separated UTC control passed (3 failures/276 passes). final1 on frozen formatted source/tests passes all279 tests, including that control and standalone refusal with no receipt. No existing test was removed and counts are not added across overlapping runs.
+
+Source1518 + tests1703 + P0526 + historical752 =4499 lines/four implementation bodies. Source cap1600/tests2000 remain respected. With the reviewer's287-line probe, expected review total4786/five bodies remains below5000. Only two authorized Q files were edited; P0 and historical hashes remain unchanged. One-CPU/4GiB inert executions retain exact commands, snapshots, process identity metadata, logs and evidence-local fixtures. Runtime slot released after final1.
+
+Independent final repair review and root adoption remain required. No P4/APP/producer-source/Git implementation or CUDA runtime was read/executed. Source-owner/full-chain acceptance and actual CUDA qualification remain outstanding; actual CUDA UNRUN and server16 worker access unknown.

@@ -1,0 +1,279 @@
+{
+  "schema": "bac-p5-synthetic-contract-binding-example-v1",
+  "status": "SYNTHETIC RELATIONSHIP EXAMPLE ONLY; not an observed APP run or admitted spec/job",
+  "job_id": "cuda-core-inherited-pid",
+  "required_cases": [
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+  ],
+  "job_role_definitions": [
+    {
+      "id": "controller",
+      "role": "controller",
+      "count": 1,
+      "replacement_limit": 0,
+      "observer": "work",
+      "intra_op": 1,
+      "inter_op": 5,
+      "debug": true,
+      "torch_policy": "work",
+      "cuda_policy": "no-initialize",
+      "peak_cpu_slots": 1,
+      "cpu_reservation_basis": "accepted-case-contract",
+      "cpu_reservation_evidence": {
+        "path": "/synthetic/opaque",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "cuda_core_inherited_pid",
+      "role": "spawn-child",
+      "count": 1,
+      "replacement_limit": 0,
+      "observer": "work",
+      "intra_op": 1,
+      "inter_op": 5,
+      "debug": true,
+      "torch_policy": "work",
+      "cuda_policy": "no-initialize",
+      "peak_cpu_slots": 1,
+      "cpu_reservation_basis": "accepted-case-contract",
+      "cpu_reservation_evidence": {
+        "path": "/synthetic/opaque",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "cuda_core_inherited_pid_guard",
+      "role": "fork-guard",
+      "count": 3,
+      "replacement_limit": 0,
+      "observer": "guard-only",
+      "intra_op": 1,
+      "inter_op": 5,
+      "debug": true,
+      "torch_policy": "forbidden",
+      "cuda_policy": "forbidden",
+      "peak_cpu_slots": 1,
+      "cpu_reservation_basis": "accepted-case-contract",
+      "cpu_reservation_evidence": {
+        "path": "/synthetic/opaque",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "canonical_core_contract": {
+    "schema": "bac-hardware-v1",
+    "kind": "case-contract",
+    "obligation_kind": "strict-child-core",
+    "required_cases": [
+      "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+    ],
+    "witness_schema": {
+      "path": "/synthetic/meta/witness.json",
+      "bytes": 0,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "validator": {
+      "path": "/synthetic/opaque",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "roles": [
+      {
+        "id": "controller",
+        "role": "controller",
+        "count": 1,
+        "replacement_limit": 0,
+        "observer": "work",
+        "intra_op": 1,
+        "inter_op": 5,
+        "debug": true,
+        "torch_policy": "work",
+        "cuda_policy": "no-initialize",
+        "peak_cpu_slots": 1,
+        "cpu_reservation_basis": "accepted-case-contract",
+        "cpu_reservation_evidence": {
+          "path": "/synthetic/opaque",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "cuda_core_inherited_pid",
+        "role": "spawn-child",
+        "count": 1,
+        "replacement_limit": 0,
+        "observer": "work",
+        "intra_op": 1,
+        "inter_op": 5,
+        "debug": true,
+        "torch_policy": "work",
+        "cuda_policy": "no-initialize",
+        "peak_cpu_slots": 1,
+        "cpu_reservation_basis": "accepted-case-contract",
+        "cpu_reservation_evidence": {
+          "path": "/synthetic/opaque",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "cuda_core_inherited_pid_guard",
+        "role": "fork-guard",
+        "count": 3,
+        "replacement_limit": 0,
+        "observer": "guard-only",
+        "intra_op": 1,
+        "inter_op": 5,
+        "debug": true,
+        "torch_policy": "forbidden",
+        "cuda_policy": "forbidden",
+        "peak_cpu_slots": 1,
+        "cpu_reservation_basis": "accepted-case-contract",
+        "cpu_reservation_evidence": {
+          "path": "/synthetic/opaque",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "evidence_class": "cpu-standin",
+    "minimum_devices": 0
+  },
+  "rng_contract": {
+    "schema": "bac-hardware-v1",
+    "kind": "case-contract",
+    "obligation_kind": "rng-custody",
+    "required_cases": [
+      "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+    ],
+    "witness_schema": {
+      "path": "/synthetic/meta/witness.json",
+      "bytes": 0,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "validator": {
+      "path": "/synthetic/opaque",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "roles": [
+      {
+        "id": "controller",
+        "role": "controller",
+        "count": 1,
+        "replacement_limit": 0,
+        "observer": "work",
+        "intra_op": 1,
+        "inter_op": 5,
+        "debug": true,
+        "torch_policy": "work",
+        "cuda_policy": "no-initialize",
+        "peak_cpu_slots": 1,
+        "cpu_reservation_basis": "accepted-case-contract",
+        "cpu_reservation_evidence": {
+          "path": "/synthetic/opaque",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "cuda_core_inherited_pid",
+        "role": "spawn-child",
+        "count": 1,
+        "replacement_limit": 0,
+        "observer": "work",
+        "intra_op": 1,
+        "inter_op": 5,
+        "debug": true,
+        "torch_policy": "work",
+        "cuda_policy": "no-initialize",
+        "peak_cpu_slots": 1,
+        "cpu_reservation_basis": "accepted-case-contract",
+        "cpu_reservation_evidence": {
+          "path": "/synthetic/opaque",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "evidence_class": "cpu-standin",
+    "minimum_devices": 0
+  },
+  "fork_contract": {
+    "schema": "bac-hardware-v1",
+    "kind": "case-contract",
+    "obligation_kind": "fork-three-trials",
+    "required_cases": [
+      "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal"
+    ],
+    "witness_schema": {
+      "path": "/synthetic/meta/witness.json",
+      "bytes": 0,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "validator": {
+      "path": "/synthetic/opaque",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "roles": [
+      {
+        "id": "cuda_core_inherited_pid",
+        "role": "spawn-child",
+        "count": 1,
+        "replacement_limit": 0,
+        "observer": "work",
+        "intra_op": 1,
+        "inter_op": 5,
+        "debug": true,
+        "torch_policy": "work",
+        "cuda_policy": "no-initialize",
+        "peak_cpu_slots": 1,
+        "cpu_reservation_basis": "accepted-case-contract",
+        "cpu_reservation_evidence": {
+          "path": "/synthetic/opaque",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "cuda_core_inherited_pid_guard",
+        "role": "fork-guard",
+        "count": 3,
+        "replacement_limit": 0,
+        "observer": "guard-only",
+        "intra_op": 1,
+        "inter_op": 5,
+        "debug": true,
+        "torch_policy": "forbidden",
+        "cuda_policy": "forbidden",
+        "peak_cpu_slots": 1,
+        "cpu_reservation_basis": "accepted-case-contract",
+        "cpu_reservation_evidence": {
+          "path": "/synthetic/opaque",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "evidence_class": "cpu-standin",
+    "minimum_devices": 0
+  },
+  "resource_authority": "All placeholder references/resources are synthetic and confer no authority. Root must replace them with actual sealed grants/inventories before execution.",
+  "strict_fork_semantics": {
+    "trials": [
+      "admission",
+      "local",
+      "invocation"
+    ],
+    "action_counts": [
+      4,
+      7,
+      5
+    ]
+  }
+}

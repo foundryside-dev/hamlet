@@ -1,0 +1,15 @@
+{
+  "action": "Resume exclusively after verifying prior outputs and exact approved documentation-only delta; preserve all prior outputs and original executed manifest.",
+  "application_source_config_protected_artifact_equivalence": "PASS",
+  "at": "2026-11-14T12:43:35.225945+00:00",
+  "differences": [
+    {
+      "executed_sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371",
+      "group": "source_files",
+      "path": "docs/remediation/bac/STATUS.md",
+      "publication_sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb"
+    }
+  ],
+  "observed": "Four exact approved documentation postimages applied; subsequent all-source equality assertion failed on STATUS.md, which is included in the broad source inventory. Prior process terminal output unavailable after context transition; cause re-established by exact current hash comparison.",
+  "status": "PRIOR ATTEMPT STOPPED BEFORE MANIFEST/STAGING"
+}

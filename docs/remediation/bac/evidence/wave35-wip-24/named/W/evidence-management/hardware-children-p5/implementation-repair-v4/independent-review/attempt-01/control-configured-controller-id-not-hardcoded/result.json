@@ -1,0 +1,39 @@
+{
+  "name": "control-configured-controller-id-not-hardcoded",
+  "expected": "satisfied",
+  "mode": "pure",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+    ],
+    "evidence": [
+      {
+        "bytes": 1090,
+        "path": "/synthetic/out/a/replay-poison/evidence.json",
+        "sha256": "08be5c9def5696e028f3fa53cb3e665d15921b7606b171f40c6fe5d1f9fa9742"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 1593,
+        "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+        "sha256": "f339f9a637758d2a2dcad75df4c04de5d8c730fdc0fb2da71214b3404e418605"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 3656,
+        "path": "/synthetic/out/a/replay-poison/parent.json",
+        "sha256": "a710a6659c3b8fbc7c47d753b9ebc47eabab86ec61a70bc4852394a330d528c1"
+      }
+    ],
+    "related_attempts": []
+  },
+  "matched_expectation": true,
+  "receipt_exists": false
+}

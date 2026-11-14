@@ -1,0 +1,9 @@
+{
+  "name": "claim-time-before-launch",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "claim outside owner lifetime",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

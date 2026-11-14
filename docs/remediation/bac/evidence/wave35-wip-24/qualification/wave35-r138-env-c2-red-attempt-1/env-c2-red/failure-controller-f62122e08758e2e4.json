@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_retained_env_scope_is_nonportable",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_retained_env_scope_is_nonportable(compiled: Any) -> None:\n        \"\"\"Copies, reconstructions and another Thread cannot acquire scope authority.\"\"\"\n        rig = make_parent(compiled, \"none\", \"shared\")\n        rig.enter()\n        controller = Controller()\n>       with rig.env.retain_parent_custody() as scope:\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'VectorizedHamletEnv' object has no attribute 'retain_parent_custody'\n\ntests/test_townlet/regressions/bac/test_environment_parent_custody.py:153: AttributeError",
+  "candidate_tree": "8a2576c4ef2a45ec3b1ce958440e72df56eb3eee"
+}

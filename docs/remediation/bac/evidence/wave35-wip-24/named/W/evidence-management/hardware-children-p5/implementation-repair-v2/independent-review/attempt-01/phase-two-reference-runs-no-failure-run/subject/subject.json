@@ -1,0 +1,532 @@
+{
+  "schema": "bac-hardware-strict-validation-subject-v1",
+  "spec": {
+    "path": "/synthetic/pair/out/a/replay-poison/spec.json",
+    "bytes": 4036,
+    "sha256": "32fe98ca32d94e95e22cd88174ea5a6d2089b0100fa6b6e779dea3988e9547b9"
+  },
+  "job_id": "replay-poison",
+  "obligation_id": "strict",
+  "documents": [
+    {
+      "reference": {
+        "path": "/synthetic/pair/meta/witness.json",
+        "bytes": 44,
+        "sha256": "fb4bf5525e2ed0fbbc9c87fecdc0c5560d22b46aec3134c828fcea03495630d4"
+      },
+      "retained_content": "document-000.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/meta/contract.json",
+        "bytes": 1337,
+        "sha256": "0c9ced8dd8ea10b7493c5819db9582ba1d590eb7922b23a1b3263a5fe4f3894c"
+      },
+      "retained_content": "document-001.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/candidate.json",
+        "bytes": 4494,
+        "sha256": "03540cafeab3883ac7ef3543929960218135d699f626d2ec3b15c6e92d54b0fb"
+      },
+      "retained_content": "document-002.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/spec.json",
+        "bytes": 4036,
+        "sha256": "32fe98ca32d94e95e22cd88174ea5a6d2089b0100fa6b6e779dea3988e9547b9"
+      },
+      "retained_content": "document-003.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/evidence.json",
+        "bytes": 1430,
+        "sha256": "8110c1db687192c944afc8b510ce5bf853d989b02e73fd6df6a691e8c5ce220d"
+      },
+      "retained_content": "document-004.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/report-setup.json",
+        "bytes": 412,
+        "sha256": "8c2ed978e925e7a2b6162845ec9128bfe2efd7bdd4e09a29978a2be8b8c27356"
+      },
+      "retained_content": "document-005.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/report-call.json",
+        "bytes": 411,
+        "sha256": "427865f74f900ea0a076ec325940dc56f98668873ea69b2b4ebbae6f709fcafc"
+      },
+      "retained_content": "document-006.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/report-teardown.json",
+        "bytes": 415,
+        "sha256": "176fe09630ac92385563938e0122a031ac47770ca927b164e6a60f9ba405c744"
+      },
+      "retained_content": "document-007.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/completion.json",
+        "bytes": 2474,
+        "sha256": "31972e5ff6ad73a5bc42eeb790aa1591247bd4a4e435843ef023b78f6a6e0015"
+      },
+      "retained_content": "document-008.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/result.json",
+        "bytes": 2828,
+        "sha256": "c8407444c5bfeb31b93acdf54fc9761eb7d2d31b17124cca27b50ec3ba4b46d8"
+      },
+      "retained_content": "document-009.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/pair/out/a/replay-poison/pair-wrapper.json",
+        "bytes": 1238,
+        "sha256": "848a083ad96cef449eabef6208b681883914bb42008bb945d322f55df6f8354e"
+      },
+      "retained_content": "document-010.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/meta/witness.json",
+        "bytes": 40,
+        "sha256": "b52cd0186bd27b18106ea58790f126a88237eef9154bc92accd06029eec70d8d"
+      },
+      "retained_content": "document-011.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/meta/contract.json",
+        "bytes": 1374,
+        "sha256": "d4c4ac2ba2289b65cee44b193103324a5fac5190ff5d9a0cf367f38c801864c0"
+      },
+      "retained_content": "document-012.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/candidate.json",
+        "bytes": 3366,
+        "sha256": "4b0763e5345882795b462994845f31d45bd266da85fe1e330c833aa78444550b"
+      },
+      "retained_content": "document-013.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/spec.json",
+        "bytes": 4202,
+        "sha256": "1970bbed34a04528db0b028acb2342604773d9b5a6fc9d43179b533fef45b115"
+      },
+      "retained_content": "document-014.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/parent-raw.json",
+        "bytes": 1446,
+        "sha256": "dfac6dda487eee62c1af62b18a3014f06ad1782eebdcb3143bbee9ce633cc019"
+      },
+      "retained_content": "document-015.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/parent-source.json",
+        "bytes": 809,
+        "sha256": "72a11d879451aaf2d42ec2bdc6e164ae96a2b8b9c6066b2f7cdb247978e726ba"
+      },
+      "retained_content": "document-016.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/parent.json",
+        "bytes": 2962,
+        "sha256": "4e5759d7c5e6ce843179bb03cd13fff4de4b368cd3e713b6daf14f8fab8b197c"
+      },
+      "retained_content": "document-017.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/parent-end-raw.json",
+        "bytes": 1444,
+        "sha256": "b7ae1052f952b8b42eb49b4c192eed263032e1e61ce640c0819b0707125d1a50"
+      },
+      "retained_content": "document-018.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/parent-end-source.json",
+        "bytes": 809,
+        "sha256": "72a11d879451aaf2d42ec2bdc6e164ae96a2b8b9c6066b2f7cdb247978e726ba"
+      },
+      "retained_content": "document-019.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/parent-end.json",
+        "bytes": 2976,
+        "sha256": "7365c7b0ce8cd04e9d527b7cde7834c2703823f2379cc7699a130fbbae4775a8"
+      },
+      "retained_content": "document-020.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/launch.json",
+        "bytes": 1589,
+        "sha256": "f24e5dd6aed8186d9e26c01cfdf2b8322a22e04185856f474549cede1918ef56"
+      },
+      "retained_content": "document-021.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/child-start-raw.json",
+        "bytes": 2001,
+        "sha256": "7fe3523f3473f42ca001365e12f776e48754b26f4e3e907698bab719c08b1d7a"
+      },
+      "retained_content": "document-022.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/claim-101.json",
+        "bytes": 438,
+        "sha256": "c93e98c9a5eaadbe0966c93c63ce0f2ceb65a13cfc8d05fa48c4005bc573330f"
+      },
+      "retained_content": "document-023.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/child-start-source.json",
+        "bytes": 811,
+        "sha256": "a663d3ee71e74ea4271d7e9f22e04ca853af85b26f610fd21737b3dc4834c8ce"
+      },
+      "retained_content": "document-024.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/child-start.json",
+        "bytes": 3100,
+        "sha256": "b56c3c1e27264b524cc2653365bfbf86a59ac12f2144ef65f602e591d323b44a"
+      },
+      "retained_content": "document-025.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/child-end-raw.json",
+        "bytes": 1999,
+        "sha256": "4c8a08ecca7d6eb38f5bbf8fd674c824b44101585f70e208e4f1e34fad0d8e43"
+      },
+      "retained_content": "document-026.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/child-end-source.json",
+        "bytes": 811,
+        "sha256": "a663d3ee71e74ea4271d7e9f22e04ca853af85b26f610fd21737b3dc4834c8ce"
+      },
+      "retained_content": "document-027.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/child-end.json",
+        "bytes": 3090,
+        "sha256": "5e0a105a017fb37b698c34ff21b039506e4747fa00cc0cbf4e3dbf00b075f971"
+      },
+      "retained_content": "document-028.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/core-child-cuda_core_invocation_phase_reference.json",
+        "bytes": 1006,
+        "sha256": "3f4a043cb41afe6d06729a09ee93da0fe22332a6bd8ef8d6fd48a695a3a18017"
+      },
+      "retained_content": "document-029.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/core-result-cuda_core_invocation_phase_reference.json",
+        "bytes": 1931,
+        "sha256": "d3403847dd91a54830049a177a3d913518448d38e095b935a2c95cbbcdd142ce"
+      },
+      "retained_content": "document-030.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/evidence.json",
+        "bytes": 1253,
+        "sha256": "44fddf2945a5888fc24c9608d7dded5dc54fbb9c55bf3d3eccfc406b7a911762"
+      },
+      "retained_content": "document-031.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/report-setup.json",
+        "bytes": 445,
+        "sha256": "9c67693535c527b1e79190063672317b08871280283a87525b362b6b0076c3d7"
+      },
+      "retained_content": "document-032.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/report-call.json",
+        "bytes": 444,
+        "sha256": "abad0c4ae6f70980802063d07ad3105d1c06f3759ebc0016fdffdebda8c71f8d"
+      },
+      "retained_content": "document-033.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/report-teardown.json",
+        "bytes": 448,
+        "sha256": "b2cabdc57bf9d0143328b30492916e24df9df940217ef904a8138b3f13f5487e"
+      },
+      "retained_content": "document-034.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/completion.json",
+        "bytes": 7094,
+        "sha256": "e9ac11103ff3027b6430c707907b34e496c322fa758a51c5ca04d8c973da9c75"
+      },
+      "retained_content": "document-035.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/result.json",
+        "bytes": 7448,
+        "sha256": "2ca98492d2f84fb3b202c20d0847c68abfa4974df8d4f7bdef39f6131bfed6cf"
+      },
+      "retained_content": "document-036.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/reference/out/a/cuda-core-invocation-phase-reference/strict-receipt.json",
+        "bytes": 6633,
+        "sha256": "15c6c302e793d55159185be9639109fb1eadce1426db4eb3ccb0ad1f84908a46"
+      },
+      "retained_content": "document-037.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/meta/witness.json",
+        "bytes": 40,
+        "sha256": "b52cd0186bd27b18106ea58790f126a88237eef9154bc92accd06029eec70d8d"
+      },
+      "retained_content": "document-038.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/meta/contract.json",
+        "bytes": 1372,
+        "sha256": "01486ecfbb281f242d0cc57c22307ed275445f8876659a5fcbd4dbdbfd73f982"
+      },
+      "retained_content": "document-039.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/candidate.json",
+        "bytes": 3366,
+        "sha256": "4b0763e5345882795b462994845f31d45bd266da85fe1e330c833aa78444550b"
+      },
+      "retained_content": "document-040.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/spec.json",
+        "bytes": 4186,
+        "sha256": "9906dac4914e3e18a0d44f6df4c640f40708e83e6a9cd2c379962831d39da625"
+      },
+      "retained_content": "document-041.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/parent-raw.json",
+        "bytes": 1444,
+        "sha256": "e3b3c11ce12f8dda6457a6bfa34f96a7accabccb43cfe91ea4dc0dc9af7e5f53"
+      },
+      "retained_content": "document-042.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/parent-source.json",
+        "bytes": 807,
+        "sha256": "6b1019356f7fae2c54790d011c3b33a060d0b2b38d9d9e086f64c18397a1f28d"
+      },
+      "retained_content": "document-043.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/parent.json",
+        "bytes": 2950,
+        "sha256": "4c264363839e6c152b73c7b26d5fa610544eb8201d61ed5041fa63da3e4b459f"
+      },
+      "retained_content": "document-044.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/parent-end-raw.json",
+        "bytes": 1442,
+        "sha256": "af3d31a0f093f3f2ebcf1b7ad8de4bc5f8d1e6c8a7616b8896569e02fe78983f"
+      },
+      "retained_content": "document-045.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/parent-end-source.json",
+        "bytes": 807,
+        "sha256": "6b1019356f7fae2c54790d011c3b33a060d0b2b38d9d9e086f64c18397a1f28d"
+      },
+      "retained_content": "document-046.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/parent-end.json",
+        "bytes": 2964,
+        "sha256": "dcc5b89b49071fb2a6635cf469a1710c7de75b28c4e8c80e103028bce5dac1b4"
+      },
+      "retained_content": "document-047.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/launch.json",
+        "bytes": 1581,
+        "sha256": "427568723cca800b310a2da195e34c5fb43352ceea01078467392a685029dba2"
+      },
+      "retained_content": "document-048.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/child-start-raw.json",
+        "bytes": 1993,
+        "sha256": "5fbcf3b71cf648a5083657167b9869a55608e71d2da81385752e6f53ed1b1e14"
+      },
+      "retained_content": "document-049.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/claim-101.json",
+        "bytes": 436,
+        "sha256": "573a89a2962e348fcb2d61142a3d5f0caf9d3db3b3b04d0c03ef4f7137afbbe6"
+      },
+      "retained_content": "document-050.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/child-start-source.json",
+        "bytes": 809,
+        "sha256": "c301990e2b57e2e17ba376085bf2df7dc1206d2ac4664ec46099cf8160c94334"
+      },
+      "retained_content": "document-051.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/child-start.json",
+        "bytes": 3088,
+        "sha256": "ba25bb3791aaa2f4b4a50f432b03a4d8b9edf210a4803bd322302b40404a517d"
+      },
+      "retained_content": "document-052.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/child-end-raw.json",
+        "bytes": 1991,
+        "sha256": "49d3c299fc8ab156a852db9cbaa6513f47fef1d95f45f05fa4ee543ca888fbad"
+      },
+      "retained_content": "document-053.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/child-end-source.json",
+        "bytes": 809,
+        "sha256": "c301990e2b57e2e17ba376085bf2df7dc1206d2ac4664ec46099cf8160c94334"
+      },
+      "retained_content": "document-054.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/child-end.json",
+        "bytes": 3078,
+        "sha256": "8a00c924dacdd293fed436bf2aad60754e517ab0736ce7b789b9b6af3104b685"
+      },
+      "retained_content": "document-055.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/core-child-cuda_core_invocation_phase_reference.json",
+        "bytes": 1000,
+        "sha256": "5c015b7f7319d7764c01dafb991172d4203780e2f99c736f2950cf336dc86da2"
+      },
+      "retained_content": "document-056.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/core-result-cuda_core_invocation_phase_reference.json",
+        "bytes": 1919,
+        "sha256": "6c45023dce4bebcd3c5ae6c414ddc54ef585a3547ebe5f13fd5ce5be469cc15d"
+      },
+      "retained_content": "document-057.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/evidence.json",
+        "bytes": 1243,
+        "sha256": "b75d7ea64ddf1d31f84b50b01955fddf7b1446845e64135cb3e8581f0382c226"
+      },
+      "retained_content": "document-058.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/report-setup.json",
+        "bytes": 443,
+        "sha256": "95826327baa794c9c1073e1ad43db9231c08e06dabbb630791d0e1d25399a01a"
+      },
+      "retained_content": "document-059.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/report-call.json",
+        "bytes": 442,
+        "sha256": "b31f6ae2ac7186d2725a7caefab0889651f23b95cc886730e98094abfae01faa"
+      },
+      "retained_content": "document-060.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/report-teardown.json",
+        "bytes": 446,
+        "sha256": "b1894ee765eb07dc47206491b51ef120b307cfbb0cfbc814bd57823f864b321f"
+      },
+      "retained_content": "document-061.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/completion.json",
+        "bytes": 7022,
+        "sha256": "6be01d9816aeb81979c4d744e186c18e34d644c77bf4e53d29bc6145c759ebef"
+      },
+      "retained_content": "document-062.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/result.json",
+        "bytes": 7376,
+        "sha256": "dee13e257eb505528ae2cccf4780f9c5acde23f832cb8c03c1470e33bccba461"
+      },
+      "retained_content": "document-063.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/failure/out/a/cuda-core-invocation-phase-reference/strict-receipt.json",
+        "bytes": 6569,
+        "sha256": "dbea1a55f5d50522f70d005f3d7770efe6c54c45753140915c482372600cd6d0"
+      },
+      "retained_content": "document-064.json"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "guard-process-time-after-return",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "parent/launch/child lifetime contradiction",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

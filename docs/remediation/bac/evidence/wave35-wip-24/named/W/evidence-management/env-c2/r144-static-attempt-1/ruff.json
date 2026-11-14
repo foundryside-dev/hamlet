@@ -1,0 +1,25 @@
+{
+  "name": "ruff",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "."
+  ],
+  "cwd": "/workspace/hamlet",
+  "start_utc": "2026-11-14T11:44:06.973027+00:00",
+  "parent_pid": 233858,
+  "affinity": [
+    4
+  ],
+  "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r144-candidate.json",
+  "manifest_sha256": "42fe2729f820795f4d5f94720e73c0feb20756ecb745ace2f6fb87711fe6cec8",
+  "candidate_tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0",
+  "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+  "pid": 233884,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T11:44:07.143745+00:00",
+  "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r144-static-attempt-1/ruff.log",
+  "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+}

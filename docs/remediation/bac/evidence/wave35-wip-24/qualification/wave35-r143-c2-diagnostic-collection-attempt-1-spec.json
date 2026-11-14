@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r143-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r143-c2-diagnostic-collection-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "c2-diagnostic-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_reset_callback_reads_owned_cursors_without_export_or_mutation_rights",
+        "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_external_cursor_diagnostic_waits_at_common_admission",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r143-c2-diagnostic-collection-attempt-1",
+        "--collect-only"
+      ]
+    }
+  ]
+}

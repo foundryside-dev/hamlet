@@ -1,0 +1,1 @@
+{"at":"2026-11-14T00:00:02.000000Z","identity":{"boot_id":"synthetic-boot","host":"synthetic","pid":101,"ppid":100,"start_identity":"101"},"launch":{"bytes":1455,"path":"/synthetic/out/a/replay-poison/launch.json","sha256":"9cabfe3c87d5277086bb576d48c8ef9a32e1b749d0d0b26e6b006c04f882c582"},"monotonic_ns":2000000000,"role_id":"replay_poison","schema":"bac-hardware-owner-claim-v1"}

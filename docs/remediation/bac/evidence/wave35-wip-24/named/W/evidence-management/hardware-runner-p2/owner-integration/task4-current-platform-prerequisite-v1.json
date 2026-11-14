@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-14T12:03:22.280752+00:00",
+  "pid": 236537,
+  "scope": "Read-only current platform prerequisite observation, not P1 admission or hardware qualification",
+  "observations": {
+    "/proc/self/cgroup": "0::/",
+    "/sys/fs/cgroup/cpu.max": "400000 100000",
+    "/sys/fs/cgroup/memory.max": "17179869184",
+    "/sys/fs/cgroup/memory.current": "3053633536",
+    "/proc/self/ns/cgroup": "cgroup:[4026532214]",
+    "/proc/1/ns/cgroup": {
+      "error_type": "PermissionError",
+      "errno": 13,
+      "error": "[Errno 13] Permission denied: '/proc/1/ns/cgroup'"
+    },
+    "cgroup2_mount_rows": [
+      "92 91 0:24 /.. /sys/fs/cgroup ro,nosuid,nodev,noexec,relatime master:8 - cgroup2 cgroup2 rw,nsdelegate"
+    ],
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "disposition": "CURRENT HOST UNSUPPORTED FOR ADOPTED P1 FULL-ANCESTRY ADMISSION: membership /, mount root /.., PID1 namespace unreadable. Actual Task4 remains UNRUN. Available4CPU/16GiB remain usable for authorized local APP and inert checks.",
+  "next": "Use user-provided runner server when access and measured ancestry available; do not fabricate ancestry or relax admission checks."
+}

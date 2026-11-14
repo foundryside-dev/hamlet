@@ -1,0 +1,147 @@
+{
+  "schema": "bac-p5-independent-implementation-review-v3",
+  "disposition": "CHANGES REQUIRED",
+  "at": "2026-11-14T11:40:49.589837+00:00",
+  "reviewer": "/root/bac_p5_independent_review",
+  "author": "/root/bac_astra_p4_p5_owner_contract",
+  "independence": "Separate reviewer; v3 source delta reviewed against previously fully reviewed exact v2; independent coherent mutations and valid controls; no implementation edits",
+  "author_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/freeze-v3.json",
+    "bytes": 6340,
+    "sha256": "5e67213a22a93da7652c1cbe4ce8d61b1f9583f8161e23442c73a64ee511e858"
+  },
+  "handoff": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/HANDOFF.md",
+    "bytes": 3093,
+    "sha256": "f846fdd0a8b2aa06f23f6d9234bc3c02610b6c50de106a8adf04d15863eb0cbb"
+  },
+  "design": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P4-P5-OWNER-CONTRACT-v1.md",
+    "bytes": 27970,
+    "sha256": "960f6e1b1dec411007c9d33ab388ea9b99d560c0c701f008fe5fdf113645af97"
+  },
+  "prior_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/review-v2.json",
+    "bytes": 7408,
+    "sha256": "bbfb393ce3206730a9cbb262e235adb5d354d25402e11493100150a68bde4113"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/review-v3.md",
+    "bytes": 9270,
+    "sha256": "db7f0ae4d613611c2d6b573cf52e8b5ad469815cad96df2f929e89e62628fea4"
+  },
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/probe-v3.py",
+    "bytes": 15028,
+    "sha256": "411391537cb9cbd462676801fe05f2e8a7cd4e8cf396ded09e53dce81fcb6bb2"
+  },
+  "retained_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/review-v3-inventory.json",
+    "bytes": 847390,
+    "sha256": "4b1b83730cdbbf967e0faa66e87da53b42d0a10f71620bb7d8d2d5f93e902c05"
+  },
+  "findings": [
+    {
+      "id": "V3-R1",
+      "priority": "blocking",
+      "title": "Coherent parent-role substitution leaves no actual controller",
+      "contract_requirement": "Fixed owner job has one actual controller and one spawn child; selected actual process graph must satisfy admitted roles independently of differing contract role subsets",
+      "cases": [
+        "both-parent-phases-substitute-child-role"
+      ]
+    },
+    {
+      "id": "V3-R2",
+      "priority": "blocking",
+      "title": "Passing call/teardown can predate the child work and cleanup assertions",
+      "contract_requirement": "Final payload follows cleanup/final assertions; passing call/teardown joined through completion; source parent assertion checkpoint after_child_cleanup",
+      "interpretation": "Necessary causal lower bound using actual child START/END observations; no equation of sampler/process prefix timestamps with complete recorder return",
+      "cases": [
+        "passing-call-before-child-start",
+        "passing-call-before-child-end-standalone"
+      ]
+    }
+  ],
+  "regression_results": {
+    "previous_false_accept_mutations_now_refused": 28,
+    "valid_controls_satisfied": 10,
+    "original_negative_control_refused": 1,
+    "new_false_acceptances": 3
+  },
+  "attempts": [
+    {
+      "id": "attempt-01",
+      "scope": "finite independent42-case synthetic probe packet",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/execution.json",
+        "bytes": 2798,
+        "sha256": "a46af998f96dc881284bab9c95302fcd98bd476f0c0dc7c30bc258a4aded254a"
+      },
+      "stdout": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/stdout.log",
+        "bytes": 20198,
+        "sha256": "85edea379a8ce6d9423f7b98f1103a907e7ce869902f159bbd4f057581333c37"
+      },
+      "stderr": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "results": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-01/probe-results.json",
+        "bytes": 24947,
+        "sha256": "e12749784be2d5d76d04eb3fa8f59570bab2d250f5df0b487864636b2a96ff87"
+      },
+      "exit": 1,
+      "cases": 42
+    },
+    {
+      "id": "attempt-02",
+      "scope": "complete authored exact-freeze synthetic suite independent rerun",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-02/execution.json",
+        "bytes": 3198,
+        "sha256": "541becece7bb62b75792034e114550d5874a321392cb98474f7a50124752232c"
+      },
+      "stdout": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-02/stdout.log",
+        "bytes": 340,
+        "sha256": "5cf62dca6a98fc3fd615f420ba89ef44a59b8fddd5e6c783dfc09562ac561f93"
+      },
+      "stderr": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/attempt-02/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exit": 0,
+      "passed": 275
+    }
+  ],
+  "overlap_accounting": "Separate overlapping selections; no combined unique count or coverage claim",
+  "before_after_source_hashes_unchanged": true,
+  "body_budget": {
+    "source": 1511,
+    "tests": 1651,
+    "p0": 526,
+    "unused_historical_allowance": 752,
+    "active_probe": 287,
+    "conservative_total": 4727,
+    "maximum": 5000,
+    "historical_body_read": false
+  },
+  "inventory_validation": {
+    "files": 2217,
+    "directories": 216,
+    "symlinks": 7,
+    "hash_mismatches": 0
+  },
+  "runtime_slot": "released after attempt-02",
+  "further_exploration": "none authorized or performed after finite42 packet",
+  "implementation_modified_by_reviewer": false,
+  "limits": [
+    "No P4/APP/full-chain/hardware/source-assertion acceptance",
+    "Parent role requirement is actual owner graph binding, not false three-way equality of core/RNG/fork contracts",
+    "Report ordering uses necessary lower bounds, never inferred full-return equivalence",
+    "16-worker CUDA server expected this evening by user; access/allocation unobserved; actual CUDA UNRUN"
+  ]
+}

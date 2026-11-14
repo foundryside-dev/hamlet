@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6473,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_envelope_mutation_preserv3/output/attempt/a/command.json",
+    "sha256": "60ab6a9b2d9334d1aa56377e89da413dd5147eda8285d6b88b382215464fa576"
+  },
+  "policy": {
+    "bytes": 909,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_envelope_mutation_preserv3/metadata/identity-policy.json",
+    "sha256": "b2b19b44c0a608044383818ac230cbd1feb0873523e34cc4c767c73e0a4b3fce"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 225396,
+    "ppid": 225395,
+    "start_identity": "13246768"
+  },
+  "runner_source_start": {
+    "bytes": 3154,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_envelope_mutation_preserv3/output/attempt/source-0002.json",
+    "sha256": "8bb72b1b0760149c99a3f682e6387b3fc87ee5b9ab4e4b349e2f68a1f5427701"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13794,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_envelope_mutation_preserv3/metadata/spec.json",
+    "sha256": "86f2c718eb92cdfd8f53ef24352363e394288bdda3cd08315f5c82194cdf064f"
+  },
+  "trusted_grant": {
+    "bytes": 3298,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/fixtures/test_envelope_mutation_preserv3/metadata/grant.json",
+    "sha256": "c46319249effbc46ab7992b63c0b190dea9aeca97227c720ed7f6667f6530b5b"
+  }
+}

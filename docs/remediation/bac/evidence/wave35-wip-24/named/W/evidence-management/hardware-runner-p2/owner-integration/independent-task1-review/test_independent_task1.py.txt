@@ -1,0 +1,162 @@
+"""Independent authored-data adversarial probes; no APP, Torch, P3 or Git execution."""
+import json
+from pathlib import Path
+import pytest
+import test_run_bac_hardware_v1 as fixtures
+
+NEW_FIELDS = ['python_debug', 'python_optimize', 'torch_anomaly', 'source_method', 'recorder_mode',
+              'module_names_before_sha256', 'module_names_after_sha256', 'owner_claim', 'sampler']
+
+@pytest.mark.parametrize('key', NEW_FIELDS)
+def test_independent_task1_every_current_field_required(tmp_path, key):
+    r, c, job, rec, role, raw, env, put, seal = fixtures.owner_transport_fixture(tmp_path)
+    del raw[key]
+    seal()
+    with pytest.raises(ValueError, match='closed private'):
+        c.process_context(job, rec, role, env)
+
+@pytest.mark.parametrize('key,value', [('python_debug', 1), ('python_debug', 'true'),
+    ('python_optimize', 0.0), ('torch_loaded', 0), ('cuda_marker', 0),
+    ('owner_claim', {}), ('sampler', None), ('module_names_after_sha256', 'A'*64),
+    ('source_method', ['direct-git']), ('recorder_mode', ['ordinary'])])
+def test_independent_task1_exact_types(tmp_path, key, value):
+    r, c, job, rec, role, raw, env, put, seal = fixtures.owner_transport_fixture(tmp_path)
+    raw[key] = value
+    seal()
+    with pytest.raises(ValueError): c.process_context(job, rec, role, env)
+
+@pytest.mark.parametrize('value,reason,accept', [(False, '', True), (True, '', True),
+    (0, '', False), (1, '', False), (None, '', False), ('false', '', False),
+    (False, 'loaded Torch initialization state only, not independent proof of native device work', False)])
+def test_independent_task1_work_anomaly_exact_boolean(tmp_path, value, reason, accept):
+    r, c, job, rec, role, raw, env, put, seal = fixtures.owner_transport_fixture(tmp_path)
+    role.update(observer='work', torch_policy='work')
+    raw.update(torch_loaded=True, cuda_marker=False,
+        observation_limit='loaded Torch initialization state only, not independent proof of native device work',
+        torch_anomaly={'state':'measured','value':value,'reason':reason})
+    rec['torch_observation'] = 'work'
+    for key in ('intra_op','inter_op'): rec[key] = {'state':'measured','value':1,'reason':''}
+    seal()
+    r.validate_record('process', rec)
+    if accept: c.process_context(job, rec, role, env)
+    else:
+        with pytest.raises(ValueError, match='work anomaly'): c.process_context(job, rec, role, env)
+
+@pytest.mark.parametrize('mutation', ['reason', 'forbidden-loaded', 'cuda-no-initialize'])
+def test_independent_task1_observer_policy(tmp_path, mutation):
+    r, c, job, rec, role, raw, env, put, seal = fixtures.owner_transport_fixture(tmp_path)
+    limit = 'loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited'
+    raw.update(torch_loaded=True,cuda_marker=False,observation_limit=limit,
+        torch_anomaly={'state':'unavailable','value':None,'reason':limit})
+    role['torch_policy']='observe-loaded'; rec['torch_observation']='loaded-without-calls'
+    for key in ('intra_op','inter_op'): rec[key]['reason']=limit
+    if mutation=='reason': raw['torch_anomaly']['reason']='arbitrary no-call assertion'
+    elif mutation=='forbidden-loaded': role['torch_policy']='forbidden'
+    else: raw['cuda_marker']=True; rec['cuda_observation']='initialized'
+    seal()
+    with pytest.raises(ValueError): c.process_context(job, rec, role, env)
+
+@pytest.mark.parametrize('mutation', ['none','old-schema','optimized','wrong-mode'])
+def test_independent_task1_public_run_not_exit_zero_acceptance(tmp_path, monkeypatch, mutation):
+    code=fixtures.SUCCESS_CODE
+    if mutation=='old-schema': code=code.replace('bac-hardware-process-observation-v2','bac-hardware-process-observation-v1')
+    elif mutation=='optimized': code=code.replace("'python_optimize':sys.flags.optimize", "'python_optimize':1")
+    elif mutation=='wrong-mode': code=code.replace("'recorder_mode':'ordinary'", "'recorder_mode':'fork-guard'")
+    r=fixtures.implementation(); path,s,registry=fixtures.sealed_fixture(tmp_path,code)
+    fixtures.stub_source(monkeypatch,r,registry)
+    exit_code=r.run(path)
+    result=json.loads((Path(s['jobs'][0]['output'])/'result.json').read_text())
+    assert result['exit_code']==0
+    assert (exit_code==0)==(mutation=='none')
+    assert result['disposition']==('successful' if mutation=='none' else 'completed-unverified')
+    if mutation!='none': assert result['process_records']==[]
+
+
+def test_independent_task1_loaded_protocol_pin_is_live(tmp_path, monkeypatch):
+    r=fixtures.implementation(); path,s,registry=fixtures.sealed_fixture(tmp_path)
+    r.Custody(path)
+    fake=tmp_path/'unadopted-protocol.txt'; fake.write_text('inert unadopted bytes, never imported')
+    monkeypatch.setattr(r.protocol,'__file__',str(fake))
+    with pytest.raises(ValueError, match='loaded tool differs'): r.Custody(path)
+
+
+# Task2 additions to the same fifth logical review body. Prior exact bytes retained inertly.
+@pytest.mark.parametrize('authority', ['frozen', 'unfrozen', 'outside-root'])
+def test_independent_task2_actual_child_import_authority(tmp_path, monkeypatch, authority):
+    captured = []
+    original = fixtures.spawn_owner_transport_fixture
+    def capture(*args, **kwargs):
+        value = original(*args, **kwargs); captured.append(value); return value
+    monkeypatch.setattr(fixtures, 'spawn_owner_transport_fixture', capture)
+    fixtures.test_owner_spawn_completion_requires_one_launch_and_claim_across_phases(tmp_path, False)
+    r,c,job,rec,role,raw,env,put,seal,launch,claim = captured[0]
+    allowed = c.candidate['inventory']['source'][0]['reference']
+    if authority == 'unfrozen':
+        extra = Path(job['cwd']) / 'unfrozen-child-module.txt'
+        extra.write_text('inert bytes, never imported')
+        allowed = r.file_reference(extra)
+    elif authority == 'outside-root': allowed = c.inputs[1]
+    def mutation(value):
+        if value.get('kind') == 'process' and value.get('role') == 'spawn-child':
+            value['imports'] = [{'name': '_observed_child_extra', 'reference': allowed}]
+        return value
+    path = Path(job['output']) / 'completion.json'
+    completion = fixtures.reseal_owner_fixture(json.loads(path.read_text()), Path(job['output']), mutation)
+    path.write_text(json.dumps(completion, sort_keys=True))
+    if authority == 'frozen': assert c.evidence(job) == completion
+    else:
+        with pytest.raises(ValueError): c.evidence(job)
+
+
+@pytest.mark.parametrize('change', ['parent-source-identity','launch-source-identity','child-source-identity','parent-argv'])
+def test_independent_task2_resealed_ancestry_sources(tmp_path, change):
+    r,c,job,rec,role,raw,env,put,seal,launch,claim = fixtures.spawn_owner_transport_fixture(tmp_path)
+    reference = seal()
+    parent = json.loads(Path(launch['parent_process']['path']).read_text())
+    chosen = {'parent-source-identity':parent['source_witness']['path'],
+              'launch-source-identity':launch['source_witness']['path'],
+              'child-source-identity':rec['source_witness']['path']}
+    if change in chosen:
+        path=Path(chosen[change]); body=json.loads(path.read_text())
+        body['process_identity']={**body['process_identity'], 'start_identity':'foreign'}
+        path.write_text(json.dumps(body))
+    else:
+        path=Path(launch['parent_process']['path']);body=json.loads(path.read_text())
+        body['argv']=['/foreign'];path.write_text(json.dumps(body))
+    env=fixtures.reseal_owner_fixture(env,Path(job['output']),lambda value:value)
+    for obligation in job['obligations']:
+        for key in ('contract','validator'):
+            if Path(obligation[key]['path']).parent==Path(job['output']):
+                obligation[key]=r.file_reference(Path(obligation[key]['path']))
+    rec=json.loads(Path(reference['path']).read_text())
+    with pytest.raises(ValueError):c.process_context(job,rec,role,env)
+
+
+# Task3 independent correspondence probes in the same fifth logical body.
+@pytest.mark.parametrize('field,value', [('exit_code',False),('stdout_truncated',0),('stderr_truncated',0)])
+def test_independent_task3_diagnostic_types_match_command(tmp_path,field,value):
+    r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path)
+    assert c.evidence(job)==completion
+    path=Path(job['output'])/'sampler-spawn-end-0.json'
+    diagnostic=json.loads(path.read_text());diagnostic[field]=value
+    oldref=r.file_reference(path);newref=put(path.name,diagnostic)
+    completion['inventory']=[newref if item==oldref else item for item in completion['inventory']]
+    put('completion.json',completion)
+    with pytest.raises(ValueError):c.evidence(job)
+
+
+@pytest.mark.parametrize('endpoint', ['sampler','emission'])
+def test_independent_task3_all_source_clocks_within_actual_job_wait(tmp_path,endpoint):
+    r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path)
+    assert c.evidence(job)==completion
+    # Same-clock P2 wait is after recorded guard END entry, before retained stage/receipt endpoint.
+    c.observations[job['id']]['monotonic_end_ns']=7_000_000_050 if endpoint=='sampler' else 7_000_000_120
+    c.observations[job['id']]['end']='2026-01-01T00:00:07.000000Z'
+    with pytest.raises(ValueError):c.evidence(job)
+
+
+def test_independent_task3_git_pid_cannot_be_live_guard_pid(tmp_path):
+    def mutate(parts):
+        parts[1]['sampler']['commands'][0]['pid']=parts[1]['record']['identity']['pid']
+    r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path,mutate)
+    with pytest.raises(ValueError):c.evidence(job)

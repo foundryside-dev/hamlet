@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 1656,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_actual_spawned_affinity_i0/output/attempt/a/command.json",
+    "sha256": "104db51e8de58ef7a7216c2785c5251c916e7ec7c7d886a0c9c17a00877c1bc2"
+  },
+  "policy": {
+    "bytes": 942,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_actual_spawned_affinity_i0/metadata/identity-policy.json",
+    "sha256": "99a2014aaa5d6dd553cc8788edd1778dd1dfb051667edc26ba65ff0cb568877d"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 224641,
+    "ppid": 224640,
+    "start_identity": "13219595"
+  },
+  "runner_source_start": {
+    "bytes": 3242,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_actual_spawned_affinity_i0/output/attempt/source-0002.json",
+    "sha256": "261b2bbe23cbca0febe6c4dadbc1852ac26608d6190e830efe5eac93b7e98ba8"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 9198,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_actual_spawned_affinity_i0/metadata/spec.json",
+    "sha256": "8328c9fc6fb05c3c9d0d742467d69249bc1cd248ab0a9c196c44832e6bed0a7c"
+  },
+  "trusted_grant": {
+    "bytes": 3408,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_actual_spawned_affinity_i0/metadata/grant.json",
+    "sha256": "cc254452cd51b4009191d4c27a2a740c8d89fdc27b74456e9eab6f5b9d3af7d1"
+  }
+}

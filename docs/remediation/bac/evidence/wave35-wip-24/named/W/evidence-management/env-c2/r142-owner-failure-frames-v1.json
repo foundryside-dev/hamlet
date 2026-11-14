@@ -1,0 +1,1265 @@
+{
+  "scope": "Structured error/frame metadata only; no external source bodies or source snippets. Original traces preserved at their producing paths.",
+  "rows": [
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-46a13ada5d39bfa8.json",
+      "record_sha256": "aba5ca733386732a0a0167a4ffb52bdb7f1f55a711a7e1041611b57441ece61a"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_activate_quarantined_episode",
+      "phase": "call",
+      "error_lines": [
+        "assert (0 == 1)",
+        "+  where 0 = len([])"
+      ],
+      "production_frames": [],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-5dc228fc87228324.json",
+      "record_sha256": "e453443b2155eb0e3a4d82fff7171a1114ffac4b68e65598c29fa4175af04e00"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a30ddf4c380f6166.json",
+      "record_sha256": "6ca152592d74421285fbb34fe88261e5e5b1e1fb43c8d5a6ec76995854573342"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_roundtrip_projects_destination_and_preserves_history[INITIAL]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-4a364b9f7de3da44.json",
+      "record_sha256": "4ff2517468a45a835658732f6953552246073d88101220c8d7eacfb321aebd91"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_roundtrip_projects_destination_and_preserves_history[COMPLETED]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c7ebcc9d5a80dba7.json",
+      "record_sha256": "1501934dad7301b77f967801e4d2d60ccefc89ea3af941084efe4d2984b0724a"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-b5241db1b00153c5.json",
+      "record_sha256": "a54eab2543a524723c01435ab750aada76478ecfddc1fe5a29cb1948815beb90"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_cleanup_is_durable",
+      "phase": "call",
+      "error_lines": [
+        "assert (0 == 1)",
+        "+  where 0 = len([])"
+      ],
+      "production_frames": [],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-2b35263dd27a6650.json",
+      "record_sha256": "71e2ba29a85c576f04d28ba776b3f9159d2e5e26a6b364e951cd379e65ac9eff"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_preserves_each_genuine_healthy_phase[released-completed]",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-e1e417fa262cdf88.json",
+      "record_sha256": "39ef9a9a3700f2f09939cb2e39512cbf05893f9a9835231b0c419a922734e574"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_first_real_transition_uses_sealed_activity_and_one_service",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ab783ce1bc8f13c5.json",
+      "record_sha256": "7e55e234c28bf81d8bf1857db855e5ee97a69e51a571317a05d6f2ff3845ecd3"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_initial_snapshot_repeat_restore_and_first_real_reset",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-351ed149c99649d1.json",
+      "record_sha256": "7e5409540a8b1fec41724b4a72f1b6e3ab267d8c5178ebf7eb6fcd3c9eb78945"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_current_initial_boundary_restore_does_not_import_live_decision_authority",
+      "phase": "call",
+      "error_lines": [
+        "TypeError: Missing required keyword-only argument: 'lineage'"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/population/vectorized.py",
+          "line": 3157,
+          "function": "load_checkpoint_state"
+        },
+        {
+          "path": "src/townlet/population/vectorized.py",
+          "line": 3073,
+          "function": "prepare_checkpoint_state"
+        },
+        {
+          "path": "src/townlet/training/replay_contract.py",
+          "line": 628,
+          "function": "guarded"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a2ea06b25011437c.json",
+      "record_sha256": "26c0c916ced470ce42bd9c98f66f76a62b491b517ec3fe985dc20ecd41b52161"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-b4aee75ac7ef497b.json",
+      "record_sha256": "c4e2c1478ccf30b4b32194c676a3afd301804b923cbf43d02ad596fa4de5291f"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_return_healthy_validation",
+      "phase": "call",
+      "error_lines": [
+        "assert (0 == 1)",
+        "+  where 0 = len([])"
+      ],
+      "production_frames": [],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-7bf6ebd91dde3412.json",
+      "record_sha256": "693448e8fe2b0d5809c1434a32729caf9da501e2267e3e91ee3ffce47a9e4e70"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-a18f5663f92b6ad4.json",
+      "record_sha256": "c4a98029cc277d6ef86ad47a21e2341427b9ba1c8be2e9f814a1d47c621e1bc7"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_new_genuine_reset_invalidates_prior_reading_identity",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c19b5d201a88fea7.json",
+      "record_sha256": "6e2f76d1fd72ea5a85e9cce3e7f849637f96b3fce9554bb64b74d328a681e0b1"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-0158b641e2fda3fd.json",
+      "record_sha256": "6cf974f2281d4a3cfde90a5df033ec6c00f59caba3de52d7f8ea457c84b5e67c"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-69d8189adecd4606.json",
+      "record_sha256": "67a278c95f0ffaf681eef0a96d6da7fb05f8864ace3c8ee8cde06d5e8620e60f"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_separate_all_inactive_ordinary_step_contract_is_preserved",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-096d022ab6bea0ad.json",
+      "record_sha256": "d843c00932178baa0968f20aa1aad89fb884543ee5a928a00d779b2bf11b1140"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-4645cdd45d4d6cc7.json",
+      "record_sha256": "bb9540b1b1800083fd78c0532beccb3284eb33f533b7f665d4d6ed8278bf2e3a"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-8e4522247dc6abb1.json",
+      "record_sha256": "675f1a09b481df7500eb1c5e08a20e517fda824f9b4f534908044a4dbe9407f7"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_frozen_close_refuses_reading_without_consuming_sink_handles",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ed6677c32b0a3ba2.json",
+      "record_sha256": "75c5bb6d6fc43156e00faf7123b12da8cb70ebc0c1fe24ed51fc2d60b5c1c281"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_no_retirement_preserves_ordinary_active_transition",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-6cedb5d38e785cff.json",
+      "record_sha256": "679d6043ef77e24717a3377c15f90e8da8ef823ce795f437109c217e0330b3b7"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_two_boundaries_two_reorders_keep_historical_binding_verbatim",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-74a1703785f267c5.json",
+      "record_sha256": "9013905e221e3abbb9b3677b54c8638f690716ad917048b95e222342f0298133"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-7bf4a23926f93754.json",
+      "record_sha256": "3e362cee6ea6dfd41fbc6a02439212275899d7801f90039a42c0baea52e164f5"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_validator_accepts_later_genuine_active_lane_terminal",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-f5f43656601cfd30.json",
+      "record_sha256": "54e27fd9fa7d30174f4f33854b75fe5f2a350d5961d42d97d11e7edbda647fac"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_native_install_custody_blocks_unowned_selector_reentry",
+      "phase": "call",
+      "error_lines": [
+        "TypeError: Missing required keyword-only argument: 'lineage'"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/population/vectorized.py",
+          "line": 3073,
+          "function": "prepare_checkpoint_state"
+        },
+        {
+          "path": "src/townlet/training/replay_contract.py",
+          "line": 628,
+          "function": "guarded"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-663fe995d62b50fc.json",
+      "record_sha256": "e0e701014e596473ee6552c561f0a6920458921fe75bbd0ef23e07661f3a6209"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-ec23856865f89d93.json",
+      "record_sha256": "3e70d6a1b9ea23bc6591f895b50f128c1a43727d1dbf520bf223f9fac1f04201"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_preserves_each_genuine_healthy_phase[closed-awaiting-release]",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV continuation refused after producer callback"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1334,
+          "function": "step"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c505996050ab9ff3.json",
+      "record_sha256": "7519be5ddd6a30c4757119dc71b03aeeb120f0cf7c04243c0bf41d1581101886"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_reset_projects_reservation_before_evaluation_and_retry_never_resamples",
+      "phase": "call",
+      "error_lines": [
+        "ValueError: ENV public methods cannot reenter active work"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 30,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 2269,
+          "function": "reset"
+        },
+        {
+          "path": "src/townlet/environment/vectorized_env.py",
+          "line": 1047,
+          "function": "_reset_world_state"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 138,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-5f919173029541b6.json",
+      "record_sha256": "5e9cf5b33ff484aa853e64ef905fc6ef04f8f0df8540b99c7754001d942da062"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence]",
+      "phase": "call",
+      "error_lines": [
+        "RuntimeError: Unrelated same-thread RNG reentry is forbidden"
+      ],
+      "production_frames": [
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 767,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 1253,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/config/exploration_policy.py",
+          "line": 874,
+          "function": "_bank_call"
+        },
+        {
+          "path": "src/townlet/exploration/parent_custody.py",
+          "line": 209,
+          "function": "_forward_bank"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 157,
+          "function": "invoke"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1389,
+          "function": "prepare_restore"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1387,
+          "function": "correlate"
+        },
+        {
+          "path": "src/townlet/exploration/scoped_curiosity.py",
+          "line": 1171,
+          "function": "_correlate_parent"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 29,
+          "function": "guarded"
+        },
+        {
+          "path": "src/townlet/environment/parent_custody.py",
+          "line": 151,
+          "function": "call"
+        }
+      ],
+      "original_record": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-44e5f36ab11279a4.json",
+      "record_sha256": "6a989a61d8b244e060dcc4f9393a189be6cde13f0ad890c098adea6d99a25d54"
+    }
+  ]
+}

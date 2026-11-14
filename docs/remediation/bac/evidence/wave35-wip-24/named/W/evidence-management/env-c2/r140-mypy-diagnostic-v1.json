@@ -1,0 +1,18 @@
+{
+  "status": "FAILED DIAGNOSTIC, NOT REPOSITORY ACCEPTANCE",
+  "command": [
+    ".venv/bin/mypy",
+    "src/townlet",
+    "--show-error-codes",
+    "--no-incremental"
+  ],
+  "exit_code": 1,
+  "candidate_tree": "f5d45e7f1450ca5c39324ce7c528970a34fd3373",
+  "manifest_sha256": "db1c5c8a94e9a3e9b93c7689ff778b3ab64d90f4cb0b69513fed1ada20811297",
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r140-mypy-diagnostic-v1.log",
+  "log_sha256": "37695a9c0182c8a70138cd77a512c958adf2b1edcf75bf6833a9a9015081c4b9",
+  "source_index_after": "PASS",
+  "absolute_start_end": null,
+  "unavailable_reason": "Direct diagnostic invocation recorded by tool session; no standalone timestamped static harness used. Full final static gates remain required.",
+  "observed_at": "2026-11-14T11:05:34.987967+00:00"
+}

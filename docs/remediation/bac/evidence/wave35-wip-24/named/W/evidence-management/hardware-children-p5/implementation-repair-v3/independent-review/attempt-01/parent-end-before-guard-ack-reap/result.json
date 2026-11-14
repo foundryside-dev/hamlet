@@ -1,0 +1,9 @@
+{
+  "name": "parent-end-before-guard-ack-reap",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "custody endpoint after observing parent END",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

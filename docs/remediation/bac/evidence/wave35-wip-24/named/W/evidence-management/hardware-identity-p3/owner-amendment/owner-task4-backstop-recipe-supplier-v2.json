@@ -1,0 +1,71 @@
+{
+  "expected_partial_evidence": {
+    "not_expected": "No successful current-phase Git command diagnostic/sampler/source/process/emission/return: wrapper parks before _sampler_command receives its pid and before query completion. Absence is deliberate failure custody, not permission to fabricate partial completion. A prior successful phase, if a separately chosen END-target recipe is approved, must remain exact and distinguished.",
+    "present_before_hook": "Actual parent START and provenance; source-launch and owner-launch; actual guard owner-claim once guard passed entry checks. Any prerequisite failure earlier is a different failed setup, not this case.",
+    "retention": "Retain exact hook/test source provenance and launch argv, actual process/clock/exit logs, failed setup attempts, source pin and root lease, handshake observations, and actual P2 group/lease records. No full-chain/hardware acceptance from these two cleanup cases."
+  },
+  "predecessor": {
+    "bytes": 10493,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/owner-task4-backstop-recipe-supplier-v1.json",
+    "sha256": "c679a7703efd054ac188813bd30b0a5945db653d11023a74dc680a3c5b8f7a10"
+  },
+  "prepared_import_closure_clarification": {
+    "consumer_implication": "Reconstruct the exact explicit closure described in Task3 capsule; do not add an independently discovered module universe. A per-phase current import-path check is separate from constructing plan.refs.",
+    "fact": "_prepare_fork does NOT separately call collect() on its returned _imports(...,end) list. Explicit initial/ancestor metadata traversal collects context required-import refs plus candidate inventory and environment dependency refs. Additional observed loaded-source modules must already be authorized by those candidate/dependency inventories. No new reference is added merely because _imports returns it."
+  },
+  "prerequisites": [
+    "Use only an explicitly root-authorized synthetic test job and accepted source/command/spec/grant/environment/case-contract/role/resource metadata. Existing root checkout read-only Git identity must be pinned under an active source/index lease; no new Git checkout or fabricated source authority.",
+    "Actual P2 launch/group/lease custody must be present. Supplier has not read P2 source and does not assert a particular P2 group API; P2 owner must establish and observe controller, owner/guard, and actual Git membership in the exact owned cleanup group.",
+    "Load all fixture and recorder modules, saved real posix_spawn, /proc/pipe/clock/signal primitives, and any trap machinery before final preparation. Install the wrapper before prepare_owner_launch. Do not import, use Torch/NumPy/Queue/RNG, or unwind an inherited owner scope inside the fork guard.",
+    "Obtain actual current_process_context() from an already recorded live parent. Controller/worker parent must be inside the actual pytest_runtest_call wrapper with the exact case; nested owner must have its own actual START and authenticated inherited same-case launch. Do not fabricate _CURRENT or _CALL to bypass these requirements.",
+    "Call prepare_owner_launch with actual parent context/start, exact selected owner contract/case/child role, fresh unique instance_id, and start_method=fork. Role is fork-guard and full role object must occur in contract; selected obligation/case checks remain as in Task2 capsule.",
+    "Prepare requires exact inherited environment including PYTEST_CURRENT_TEST call phase, active grant/source freeze, admitted Git executable, exact policy in prerequisite and CPU-bound justification/grant, actual fresh parent source witness and no held inherited metadata lock. Child receives actual opaque issued handle by fork.",
+    "Actual guard invokes record_fork_process(handle,start). Before reaching Git it verifies parent identity, one actual task, module hash, environment/argv/cwd, exact input/import bytes, active grant/freeze; writes exclusive owner claim and acquires its own metadata lock. Holding the lock elsewhere stalls before Git and is insufficient for this test."
+  ],
+  "proposed_hook": [
+    "Save the real os.posix_spawn callable before replacement. Restrict the wrapper to the expected exact admitted Git executable and one of the two sealed query argvs; preserve all args, environment and file_actions. Other unexpected invocations are failures, not silently replaced executions.",
+    "Delegate once to the saved real callable. Use only the actual returned PID. Immediately send SIGSTOP to that actual PID using preloaded os.kill. Do not substitute a shell, wrapper executable, fake query, fabricated PID, stdout, or success status.",
+    "Observe /proc until bounded confirmation or failure: same live PID/start identity, stopped state from actual SIGSTOP, resolved /proc/PID/exe equal the admitted actual Git executable identity/bytes, exact cmdline query, actual PPID equal guard and expected owned PGID/session. Record actual UTC/monotonic observations and guard identity. A zombie/exited process, PID reuse, incorrect exe/group, or missed stop is a failed/UNRUN test setup, never proof of live Git.",
+    "Send a primitive pipe handshake with those actual observations; independently corroborate live/stopped Git membership from the supervisor before killing the guard. Prefer wait/poll/pipe primitives with finite test deadlines, preloaded before preparation. No Queue or imports.",
+    "Park the guard inside the wrapper after confirmed handshake and before returning Git PID to the recorder. Parent/supervisor issues SIGKILL to the exact owned guard identity only after live-Git confirmation. The stopped Git remains for actual P2 group cleanup.",
+    "Never send SIGCONT or perform supervisor cleanup to manufacture a passing cleanup result. If emergency cleanup is necessary after bounded P2 failure, record the case FAIL and clearly separate that cleanup from acceptance."
+  ],
+  "revision": "Source location correction only; preserves exact v1 bytes. Task3 capsule _sampler_command location also begins at587, not591; _prepare_fork begins524, not523. Behavioral facts unchanged.",
+  "schema": "bac-p3-owner-task4-backstop-recipe-supplier-v2",
+  "scope": "Only metadata written; no P2 or additional body read, imports/execution of source, tests, Git commands, APP/source edits, new copies/checkouts/branches/worktrees.",
+  "source_after": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "source_before": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "spawn_call_facts": {
+    "actions": "The original recorder builds two pipes and DUP2 actions to stdout/stderr, then CLOSE actions for enumerated open descriptors>2. A test hook must forward every argument and file action unchanged. A guard-owned test-handshake descriptor remains usable by the guard but the actual Git child is directed to close it.",
+    "call": "os.posix_spawn(plan[git], argv, dict(os.environ), file_actions=actions)",
+    "capture": "The plan stores resolved admitted Git path, policy, refs, interpreter/imports and other parsed metadata. It does not store/capture a posix_spawn callable. os.posix_spawn attribute is read dynamically when each actual command is started.",
+    "location": "_sampler_command begins line587; actual os.posix_spawn call line598; record_fork_process begins646.",
+    "module_checks": "The guard checks module-name hash and actual inherited import paths/bytes. It does not capture os.posix_spawn in a closure or hash Python function attributes. This mechanical hookability is not a supported production mutation API or a semantic qualification exemption.",
+    "timing": "The recorder samples command start_ns, creates pipes/actions, then calls os.posix_spawn. Assignment to its local pid occurs only after the call returns. A wrapper that parks before returning leaves recorder pid=None; guard death prevents any finally cleanup. This deliberately exercises external P2 cleanup, not recorder-owned successful cleanup."
+  },
+  "stall_limitations": {
+    "bounds": "The deliberately parked recorder cannot perform its own 3/6/8 deadline checks. This is a failure-path backstop test, never a successful guard sampler/whole-call proof. Root-approved test outer timeout and actual P2 bounded group cleanup must control the injected stop; success requires actual cleanup and lease ordering.",
+    "no_production_stall": "There is no frozen P3 API for deterministic pausing of a real Git process after exec. The proposed wrapper is explicit test-only fault injection.",
+    "ownership": "Guard /proc handshake is test observation, not a P0 completed process or signed authority. The independent supervisor must verify actual observed process identities, group and exit/reap/absence records.",
+    "race": "Even the first post-posix_spawn SIGSTOP can lose to a fast real Git exit. The hook guarantees truthful detection, not that every attempt captures a live process. A failed capture cannot be relabeled a valid backstop trial; retain it and obtain separate approval if stronger observation/exec-stop instrumentation is needed."
+  },
+  "status": "Metadata-only current-source facts and proposed root-supervised test recipe; no runtime qualification or authorization to bypass production checks",
+  "task3_facts": {
+    "bytes": 18379,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/owner-task3-sampler-facts-supplier-v1.json",
+    "sha256": "cf4d5e78c53f1c883e27f67858506b4fd443990a341baec52eb314ad2cc5ec88"
+  },
+  "two_cases": {
+    "assertions": "Both cases must correlate actual controller/guard/Git PID-start-host-boot identities, query argv, group/session, stop handshake, guard death, P2 cleanup trigger, actual Git exit/group disappearance and lease-close ordering. Observe actual available wait/reap custody according to process ancestry; a nonparent supervisor cannot claim waitpid reap it did not perform.",
+    "controller_exit": "After verified live Git and actual guard SIGKILL, drive the existing actual controller-exit path. P2 must detect its real controller terminal status, kill the owned residual group including stopped Git, observe the required exit/group-empty/reap custody, then close/release its leases. Exact controller behavior and cleanup API are P2-owned test design.",
+    "job_timeout": "After verified live Git and actual guard SIGKILL, retain the controller in a bounded inert wait so actual sealed P2 job timeout fires. P2 must perform its timeout cleanup against the same observed owned group and remove stopped Git before lease close. Do not emulate timeout by manufacturing terminal records."
+  }
+}

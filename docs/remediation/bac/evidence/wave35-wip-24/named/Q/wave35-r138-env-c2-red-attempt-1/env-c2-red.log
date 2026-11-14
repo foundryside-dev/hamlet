@@ -1,0 +1,101 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 8 items
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py .. [ 25%]
+..FFFF                                                                   [100%]
+
+=================================== FAILURES ===================================
+__________ test_bound_env_and_runtime_preserve_real_step_and_service ___________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_bound_env_and_runtime_preserve_real_step_and_service(compiled: Any) -> None:
+        """An ambient/missing lineage path cannot execute the real bound children."""
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+        controller = Controller()
+>       with rig.env.retain_parent_custody() as env_scope, rig.runtime.retain_parent_custody() as runtime_scope:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'VectorizedHamletEnv' object has no attribute 'retain_parent_custody'
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:108: AttributeError
+________________ test_retained_env_requires_binding_and_expires ________________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_retained_env_requires_binding_and_expires(compiled: Any) -> None:
+        """Retained exclusion alone and expired execution references grant no work."""
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+        controller = Controller()
+>       with rig.env.retain_parent_custody() as scope:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'VectorizedHamletEnv' object has no attribute 'retain_parent_custody'
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:126: AttributeError
+____________________ test_retained_env_scope_is_nonportable ____________________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_retained_env_scope_is_nonportable(compiled: Any) -> None:
+        """Copies, reconstructions and another Thread cannot acquire scope authority."""
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+        controller = Controller()
+>       with rig.env.retain_parent_custody() as scope:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'VectorizedHamletEnv' object has no attribute 'retain_parent_custody'
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:153: AttributeError
+_____ test_peer_waits_at_common_admission_through_outer_exit_and_consumer ______
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fd47d7d19d0>
+
+    def test_peer_waits_at_common_admission_through_outer_exit_and_consumer(compiled: Any, monkeypatch: Any) -> None:
+        """A peer must reach common admission before ENV, then wait through the final cut."""
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+        controller = Controller()
+        attempted, entered, finished = Event(), Event(), Event()
+        errors: list[BaseException] = []
+        admission = type(controller.domain).admission
+        worker: Thread
+    
+        @contextmanager
+        def observed_admission(self: Any, *, lineage: Any) -> Any:
+            peer = current_thread() is worker
+            if peer:
+                attempted.set()
+            with admission(self, lineage=lineage) as admitted:
+                if peer:
+                    entered.set()
+                yield admitted
+    
+        def peer_read() -> None:
+            try:
+                rig.env.get_action_masks()
+            except BaseException as error:
+                errors.append(error)
+            finally:
+                finished.set()
+    
+        worker = Thread(target=peer_read)
+        monkeypatch.setattr(type(controller.domain), "admission", observed_admission)
+        try:
+>           with rig.env.retain_parent_custody() as scope, rig.runtime.retain_parent_custody() as runtime_scope:
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'VectorizedHamletEnv' object has no attribute 'retain_parent_custody'
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:212: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_bound_env_and_runtime_preserve_real_step_and_service
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_retained_env_requires_binding_and_expires
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_retained_env_scope_is_nonportable
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_peer_waits_at_common_admission_through_outer_exit_and_consumer
+========================= 4 failed, 4 passed in 3.69s ==========================

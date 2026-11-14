@@ -1,0 +1,96 @@
+{
+  "schema": "bac-core-currency-supplier-v1",
+  "date": "2026-11-14",
+  "disposition": "conditional_yes",
+  "unconditional_admission_currency_neutrality": false,
+  "runtime_executed": false,
+  "implementation_permission": false,
+  "source_inventory": [
+    {
+      "path": "src/townlet/exploration/rng_custody.py",
+      "lines": 1195,
+      "sha256": "6cb01ca77b58db5f4c4784dc36da566c06cf68c2a7c2ce227bb780549f3344f8"
+    }
+  ],
+  "whole_source_lines": 1195,
+  "source_postflight_unchanged": true,
+  "inputs": [
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/restore-correlation/producer-facts-v1.md",
+      "sha256": "bdd365df98fbf5521198eeef77336002beffdb4cded61063117633301cd28116"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/restore-correlation/producer-facts-v1.json",
+      "sha256": "fa0013fbd6829135bb35c8f6c483f64bbcba11848fe6142fe069d1a1e746113c"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/restore-current-source-facts-v1.md",
+      "sha256": "787f98cdb9045218536608a7514f7a55b2f5ac2c1f48cfae978f70718f5ee7ac"
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "sha256": "c194292bf7f19bfaa6554de5095fa451a438b637f353679e1ab2a8d67cf1e181"
+    }
+  ],
+  "key_anchors": {
+    "admission": "703-725",
+    "gate_exit": "688-700",
+    "weak_retirement": "427-439,471-475",
+    "membership": "449-514,832-856",
+    "lazy_cuda_currency": "798-813",
+    "operation_entry": "1039-1109",
+    "operation_exit_and_issuer_normalization": "1115-1138",
+    "current_token": "1140-1152",
+    "validate_current": "1154-1173",
+    "status_drain": "1184-1188"
+  },
+  "admission_entry": {
+    "direct_revision_increment": false,
+    "direct_currency_increment": false,
+    "drains_idle_weak_retirement": true,
+    "can_advance_generation": true
+  },
+  "admission_exit": {
+    "direct_revision_increment": false,
+    "direct_currency_increment": false,
+    "drains_weak_retirement": false,
+    "pin_release_can_queue_later_retirement": true
+  },
+  "install_predicate": {
+    "same_participant_entered": true,
+    "same_generation": true,
+    "revision": "issued_revision + 1 for distinct install operation",
+    "currency": "issued_currency",
+    "health_and_authentic_operation": true
+  },
+  "conditions": [
+    "Successful final issuing invocation and genuine issuer-exit token normalization",
+    "Idle cohort registration between actual preparation invocations",
+    "Strong lifetime of prepared handle/token, cohort and required owners",
+    "No membership-changing drain after issuer normalization before validate_current, including unrelated registered-owner retirement",
+    "No intervening top-level operation, ordinary/failing nested currency change, lazy initialization or membership mutation",
+    "Genuine pure correlations and producer owner/material predicates at actual install",
+    "No token refresh/reprepare, shared-state restoration or ambient lineage adoption"
+  ],
+  "tests_executed": [],
+  "required_test_categories": [
+    "positive segmented actual invocation path",
+    "issuer-exit retirement normalization",
+    "post-exit retirement stale refusal via admission and install entry",
+    "admission exit no drain versus next enter drain",
+    "unrelated-owner GC despite retained cohort",
+    "cohort strong roots and missing-owner refusal",
+    "no-draw intervening operation stale revision",
+    "currency/membership/lazy-init invalidation",
+    "active-operation registration and callback admission refusals",
+    "continuous peer exclusion across ENV gaps",
+    "completion failure and poison preservation"
+  ],
+  "source_scope_exclusions": [
+    "ENV",
+    "BANK",
+    "runtime",
+    "helpers"
+  ],
+  "new_core_api_proposed": false
+}

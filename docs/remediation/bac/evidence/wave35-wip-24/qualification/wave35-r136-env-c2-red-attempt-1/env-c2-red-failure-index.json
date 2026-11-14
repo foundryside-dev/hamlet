@@ -1,0 +1,29 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "0976561f1fd373d2675ce23741188d12c0a7d77b",
+  "unique_node_phase_failures": 3,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where 0 = len([])",
+      "count": 3,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_claim_callback_cannot_enter_peer_env_work[get_action_masks]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_claim_callback_cannot_enter_peer_env_work[get_affordance_positions]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_claim_callback_cannot_enter_peer_env_work[vfs_random_state]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

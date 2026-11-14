@@ -1,0 +1,131 @@
+{
+  "status": "STATIC_READY_RUNTIME_NOT_RUN_BY_WRITER",
+  "source_bodies": [
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "lines": 1511,
+      "cap": 1600,
+      "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f",
+      "test_functions": 23,
+      "assertions": 118,
+      "admitted_calls": [
+        {
+          "line": 293,
+          "call": "bank._shared.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 300,
+          "call": "bank._owners[world].call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 791,
+          "call": "restored.prepare_serialized",
+          "standalone_lineage": true
+        },
+        {
+          "line": 794,
+          "call": "restored.load_prepared",
+          "standalone_lineage": true
+        },
+        {
+          "line": 1275,
+          "call": "target.bank._owners['A'].call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 803,
+          "call": "restored.load_for_mode",
+          "standalone_lineage": true
+        },
+        {
+          "line": 1276,
+          "call": "independent.bank._owners['A'].call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 1280,
+          "call": "target.bank._owners['A'].call",
+          "standalone_lineage": true
+        }
+      ]
+    },
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+      "lines": 1515,
+      "cap": 1650,
+      "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9",
+      "test_functions": 22,
+      "assertions": 120,
+      "admitted_calls": [
+        {
+          "line": 560,
+          "call": "owner.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 625,
+          "call": "owner.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 666,
+          "call": "owner.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 645,
+          "call": "owner.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 667,
+          "call": "owner.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 679,
+          "call": "owner.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 627,
+          "call": "owner.snapshot",
+          "standalone_lineage": true
+        },
+        {
+          "line": 681,
+          "call": "owner.call",
+          "standalone_lineage": true
+        },
+        {
+          "line": 490,
+          "call": "rng.snapshot",
+          "standalone_lineage": false
+        },
+        {
+          "line": 1178,
+          "call": "rng.snapshot",
+          "standalone_lineage": false
+        }
+      ]
+    }
+  ],
+  "red": "Root R134: 11 failed, zero errors/skips; exact source/index/import/thread custody PASS (root message).",
+  "checks": {
+    "ruff": "PASS final scoped invocation exit 0",
+    "black": "PASS final --check exit 0",
+    "ast": "PASS",
+    "test_functions_and_decorators": "unchanged",
+    "assertions": "all original expressions preserved, ignoring only explicit lineage keyword additions"
+  },
+  "scope": "Only two test bodies inspected/edited; producer files hash-only; no application imports/runtime, Git/index, branches/worktrees/checkouts, new helpers, workers, or execution copies. Inert before backups retained.",
+  "rulings": [
+    "Consumed control uses root BANK-specific membership refusal capsule, not native owner error text. Immediate reuse occurs before observations; later repeat preserves original full identity check and is explicitly also observationally stale.",
+    "Shared backend helper became callback-only; original shared-scope assertion preserved. Hook observer uses managed removal on both normal and exceptional exit, preserving original failure and noting cleanup failure.",
+    "Native ICM expected validation refusal is caught inside the managed callback; an additive standalone control in existing pristine test demonstrates subsequent owned witness availability.",
+    "First overly strict assertion audit reported removed shared helper assertion and explicit-lineage AST difference. Restored original shared assertion in callback-only helper and normalized only lineage for final preservation audit; no functional test ran."
+  ],
+  "remaining": "Genuine width-three ENV driver remains required; original ENV-dependent tests still required and cannot be called GREEN. Signed-offset/source-learning/custody nodes remain unexecuted by writer. Root owns fresh candidate/runtime/independent review and broad owner gate."
+}

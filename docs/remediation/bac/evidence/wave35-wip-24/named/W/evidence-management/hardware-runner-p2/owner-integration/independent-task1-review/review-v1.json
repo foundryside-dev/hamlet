@@ -1,0 +1,178 @@
+{
+  "schema": "bac-p2-owner-task1-independent-review-v1",
+  "at": "2026-11-14T10:07:29.709163+00:00",
+  "reviewer": "/root/bac_astra_p2_integration_review",
+  "independence": "Reviewer did not author P2 runner/test changes; wrote separate adversarial probe only.",
+  "disposition": "APPROVE TASK1",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task1-freeze-v1.json",
+    "bytes": 9105,
+    "sha256": "482f4dc58caa630336b99cd916dc4880f8fe84bea21439899c3cde2f47016466"
+  },
+  "preflight": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/preflight-v1.json",
+    "bytes": 1775,
+    "sha256": "da4a1acc442a08ab3d78e143085fb61eb2420168bf0c497f3f705028b56651cb"
+  },
+  "source_inventory": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 82822,
+      "sha256": "5f72c9e7c1cce50378f32b30fc46f4d35625f837a3980e91b9c6644753bf2953",
+      "lines": 1274
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 77658,
+      "sha256": "5aaedc415da0c1bd9efea5df78df7ccab6659ba6d8cad0cd4e869d132d1214d2",
+      "lines": 1171
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "lines": 526
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "bytes": 3635,
+      "sha256": "51ffece3829826d47be9860ef8cf039b1f25bd36b9534446952d04a343c1d1a7",
+      "lines": 73
+    }
+  ],
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py",
+    "bytes": 4846,
+    "sha256": "ee6dd59678ed95b03d3975de2793ce2f0640a14a9cd62719c7e5abf8da9a13c5"
+  },
+  "body_budget": {
+    "bodies": 5,
+    "lines": 3124,
+    "ceiling": 5000
+  },
+  "findings": [],
+  "unresolved_p1_p2": [],
+  "static_assessment": [
+    "Current P0 exact e4f31e pin is checked against the loaded protocol file and sealed tool refs; obsolete adc8ef pin/fallback not retained.",
+    "Raw-v2 fields are closed and mandatory. Python debug is exact true, optimize exact int zero; source_method direct-git, recorder_mode ordinary; owner/sampler evidence is rejected in this Task1 branch.",
+    "Measured Python debug is independent from Torch loading and exact-bool anomaly. False anomaly on loaded work is valid. Loaded observer/unloaded runtime facts require the exact adopted no-call reasons and null unavailable values; loaded-forbidden and no-initialize violations reject.",
+    "Work END cannot use absent-Torch unavailable facts. Measured process thread/debug values are compared with admitted role configuration in evidence(); P0 also enforces exact types and measured/unavailable shapes.",
+    "Owner branches remain unsupported pending separate Task2 grant. No Task2/3/4 acceptance inferred from authored future tests."
+  ],
+  "independent_execution": {
+    "terminal": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/run02/execution.json",
+      "bytes": 4587,
+      "sha256": "0b074dd95766bd01dd8058e9513a36059fa8b6049cf4c9f367da322c6a50b144"
+    },
+    "log": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/run02/output.log",
+      "bytes": 114,
+      "sha256": "9486b45bdbb24931055799472c991d601503ec66badef5a9b8023904e93185d8"
+    },
+    "result": "57 PASS,89 deselected = 23 Task1 producer-authored checks plus34 independently authored probes; original73 and future16 deselected.",
+    "adversarial_coverage": [
+      "All nine new raw fields independently omitted and resealed.",
+      "Exact-type rejection for assertions/optimization, Torch loaded/CUDA marker, owner lists, module digest and source/mode.",
+      "Loaded-work anomaly False and True accepted; numeric/string/null values and nonempty measured reason rejected.",
+      "Observer arbitrary reason, loaded-forbidden policy and initialized CUDA under no-initialize rejected.",
+      "Public runner with actual inert subprocess exit0 accepts valid raw-v2; rejects old schema, optimized declaration and wrong mode as completed-unverified with empty process evidence. Git/source observations explicitly stubbed.",
+      "Actual loaded protocol metadata mismatch rejects at loaded-tool equality; positive exact adopted P0 initialization passes."
+    ],
+    "custody": "Actual controller PID220971/start13010832, kernel argv/UTC/duration and before/after source hashes in execution; affinity[0,1],serial0workers,thread env1,4GiB per-process RLIMIT_AS. No aggregate memory qualification.",
+    "source_unchanged": true,
+    "probe_and_wrapper_rehashed_after": true
+  },
+  "retained_independent_failure": {
+    "execution": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/run01/execution.json",
+      "bytes": 4343,
+      "sha256": "752889d9cadec3aa0243450dd9c9a8e5b3e271014c82c689d1842629248576cb"
+    },
+    "reason": "run01 exit4 pytest configuration discovery pulled repository addopts (--cov) while plugins disabled; no tests executed. Fresh run02 used -c /dev/null --noconftest; failure retained, not relabelled."
+  },
+  "attempt_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/attempt-inventory-v1.json",
+    "bytes": 721208,
+    "sha256": "b381b4c69f842941e4e9976d53f91ed1e6c1b34f72ff4aed60f40d02222f8f47"
+  },
+  "author_evidence": {
+    "checks": [
+      {
+        "name": "collection02",
+        "reference": {
+          "bytes": 3497,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/collection02/execution.json",
+          "sha256": "00573f82f7a0d1dd0f07b61ac3ee780c80f8d4a22406aa229ed952f59cc736e8"
+        },
+        "result": "112 collected; no test execution"
+      },
+      {
+        "name": "red01",
+        "reference": {
+          "bytes": 3705,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/red01/execution.json",
+          "sha256": "d3eda294d6d2b977135205533b16615cd911f05992c71462f129cc5f4b2b1d5a"
+        },
+        "result": "5 expected failure,18PASS,89deselected; stale P0 and raw-v1 gates demonstrated"
+      },
+      {
+        "name": "green01",
+        "reference": {
+          "bytes": 3711,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/green01/execution.json",
+          "sha256": "d18b38964d096b82a35853fbe40eed0a872098a2c55a9555780d34f47aab3a72"
+        },
+        "result": "22PASS,1FAIL effective_cpu_capacity fixture mismatch,89deselected; retained"
+      },
+      {
+        "name": "green02",
+        "reference": {
+          "bytes": 3725,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/green02/execution.json",
+          "sha256": "5d899d075d0974c6d501f192cb1ddd192ecc4026bb1a32d56affe809ff48ecaa"
+        },
+        "result": "23PASS,89deselected"
+      },
+      {
+        "name": "full03",
+        "reference": {
+          "bytes": 3628,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/execution.json",
+          "sha256": "ab1955b7eeb9be1007e7212afffdcda64154809539b3e9c85602ecf029e23904"
+        },
+        "result": "96PASS,16deselected = original73 plus Task1 current23; overlapping green02 not added"
+      }
+    ],
+    "terminal": {
+      "bytes": 3628,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/execution.json",
+      "sha256": "ab1955b7eeb9be1007e7212afffdcda64154809539b3e9c85602ecf029e23904"
+    },
+    "result": "Author full03 96PASS = original73+Task1 23, future16deselected; reviewed hash-bound record, not claimed independently replayed. No addition of overlapping23 to independent57.",
+    "retained": "Original missing-pytest bootstrap, RED5 failures and oneCPU capacity failure remain in immutable producer inventory."
+  },
+  "metadata_read_inventory": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task1-freeze-v1.json",
+      "bytes": 9105,
+      "sha256": "482f4dc58caa630336b99cd916dc4880f8fe84bea21439899c3cde2f47016466"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/execution.json",
+      "bytes": 3628,
+      "sha256": "ab1955b7eeb9be1007e7212afffdcda64154809539b3e9c85602ecf029e23904"
+    },
+    {
+      "bytes": 9203,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/observation-reason-literals-supplier-v1.json",
+      "sha256": "ad597f75000940593c1c1aca7784372557ae7f7bba96cc0779108afb6d837a5d"
+    }
+  ],
+  "remaining": [
+    "Task2 requires root grant; Tasks2-4 not qualified.",
+    "Actual P3/source/Git backstop remains UNRUN pending current source lease and exact stall/reaper recipe.",
+    "P4/P5 source-owned timing, APP instrumentation and real CUDA/hardware remain unqualified."
+  ],
+  "preservation": "No production/source/test edits, APP/P3/P4/P5 body reads/imports, real Git commands, source leases, branches/worktrees/checkouts or new repos. Only independent probe and immutable review artifacts created."
+}

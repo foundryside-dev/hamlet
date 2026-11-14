@@ -1,0 +1,26 @@
+{
+  "draft_plan_v4_failure": "hash mismatch: Q/capture_bac_hardware_v1.py; resolved exact preexisting inert bytes",
+  "freeze": {
+    "bytes": 5059,
+    "path": "evidence-management/hardware-admission-p1/freeze-v2.json",
+    "root": "W",
+    "sha256": "d8b4a363cc8f7d585e1d8fade9226a454ce54672995e08fc8dbb4bee30b30342"
+  },
+  "resolutions": [
+    {
+      "original": {
+        "bytes": 59888,
+        "path": "capture_bac_hardware_v1.py",
+        "root": "Q",
+        "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a"
+      },
+      "retained_alias": {
+        "bytes": 59888,
+        "path": "evidence-management/hardware-admission-p1/green-review-final-v1-source/capture_bac_hardware_v1.py.txt",
+        "root": "W",
+        "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a"
+      }
+    }
+  ],
+  "scope": "Historical P1 supplier only; newer repair excluded."
+}

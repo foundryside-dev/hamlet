@@ -1,0 +1,150 @@
+{
+  "fork_clock_exception": {
+    "monotonic": "Fork process START.monotonic_ns and sampler.start_ns use begin sampled on recorder entry BEFORE creating its claim. Thus fork START.monotonic_ns <= claim.monotonic_ns, opposite the ordinary claim-before-START-monotonic ordering. Claim still precedes source sampling and final process emission.",
+    "scope": "This exception is provided to prevent an invalid universal consumer ordering rule; Task2 spawn/work facts above are unchanged.",
+    "source_function": "record_fork_process",
+    "source_lines": [
+      646,
+      649,
+      664,
+      665,
+      666,
+      667,
+      679,
+      702,
+      713,
+      725
+    ],
+    "utc": "Fork claim.at is sampled at claim creation. The eventual fork process/raw at uses a later UTC sample after source verification. Fork end elapsed is its entry begin minus start entry begin. Do not apply ordinary sample alignment to guard records."
+  },
+  "inherited_imports": {
+    "additional_entries": "Then inspect actual sys.modules items: every exact ModuleType with an absolute string __file__ under authorized_root must be frozen/authorized and inside an import root; append an unlisted module name/reference. Unrequested modules outside authorized_root are not automatically included. No imports are forced.",
+    "authority": "Allowed map is candidate.inventory entry references keyed by reference.path, updated with environment.dependencies references. Each included path must match its exact allowed byte reference. Any declared/observed path under candidate.authorized_root must also lie under at least one candidate.import_roots entry.",
+    "child_relation": "The derived child context copies parent required_imports unchanged. Ordinary child START/END observes its own modules at its actual phase. A spawned child is not required to have the entire parent launch list already loaded at START. Actual fork plan separately checks inherited module names/origins and hashes.",
+    "exact_invocation": "_imports(parent_context, candidate, environment, 'end')",
+    "ordering": "Present required entries retain declared required_imports order; additional source-root entries follow actual sys.modules iteration order. Names are unique. This is not a sorted inventory or an alias-normalized list.",
+    "parent_start_relation": "No equality, subset or superset check compares launch.inherited_imports to parent START imports. Modules loaded after START may appear. A module no longer present and not required at end may be absent. A consumer must not impose unconditional array equality or universal START inclusion as a claimed current producer invariant.",
+    "required_entries": "Each parent_context.required_imports entry has exact {name,reference,phases}; unique names; phases is nonempty unique subset of {start,end}. At launch the selected phase is end. If actual sys.modules[name] is absent/None, end-required entries refuse and non-end-required entries may be omitted. A present entry must be exact ModuleType with string __file__ whose actual file reference equals the declaration. Present entries are included even if their phases list does not include end.",
+    "sampling_order": "Called before the fresh launch source witness. Returned list is assigned directly to launch.inherited_imports. Fork preparation later performs its own _imports(...,end) for the opaque prepared plan. Final module_names_sha256 is sampled after source/preparation; do not describe inherited_imports as a new simultaneous post-source import sample.",
+    "source_functions": {
+      "_imports": 123,
+      "prepare_owner_launch": 839
+    },
+    "source_lines": [
+      123,
+      124,
+      125,
+      128,
+      132,
+      134,
+      136,
+      138,
+      140,
+      142,
+      144,
+      145,
+      147,
+      150,
+      154,
+      156,
+      159,
+      160,
+      161,
+      849,
+      850,
+      851,
+      854,
+      859
+    ]
+  },
+  "interface": {
+    "bytes": 10566,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/interface-contract-v5.json",
+    "sha256": "a0130f27c50305cf5917bebd792fd904ef123be551ce4b246ad09822858b6d87"
+  },
+  "launch_source": {
+    "clock_note": "Monotonic causal order is actual source execution/launch ordering. UTC observations are separately sampled and can be compared as recorded; wall-clock nondecrease is not established by merely calling _utc. Do not synthesize a monotonic source time or assert UTC/monotonic numerical comparability.",
+    "currently_checked_on_owner_load": "_owner_info validates parsed source-witness, same actual parent identity, exact candidate/source-freeze refs, and source.at<=launch.at. It also checks launch environment against parent lineage and launch.parent_argv==parent START.argv.",
+    "emission_order": "Successful parent START emission -> active actual parent registry -> import sample -> fresh launch source query/witness emission -> optional fork preparation -> launch.monotonic_ns -> launch.at -> exclusive owner-launch emission -> actual child launch. The source-witness schema has UTC at only, no source monotonic timestamp.",
+    "exact_reference_bindings": "launch.source_witness is the exact returned ref. Source witness candidate==spec.candidate, source_freeze==spec.source_freeze, process_identity==launch.parent_identity==actual parent START.identity; head/tree/ordered inventory follow the same candidate/grant checks.",
+    "filename": "Exact fresh exclusive job.output/source-launch-{instance_id}.json produced by prepare_owner_launch. It is not the parent START process source-{parent_process_id}-start.json.",
+    "not_explicitly_checked_on_owner_load": "_owner_info does not separately enforce source-launch filename, ref inequality from parent START.source_witness, or a source.at>=parent START.at bound. The exact fresh filename and new witness are emitted by prepare_owner_launch; do not conflate this emission behavior with an existing rejection predicate.",
+    "observation": "The actual launcher calls _source with its actual sampled identity. It validates exact grant/freeze/candidate/ordered-input authority and intervals, hashes candidate inputs, acquires/releases the recorder index lock, performs actual read-only Git HEAD/index checks, samples observed_at=_utc() after the checks, and exclusively emits a P0 source-witness with that observed_at and its own identity.",
+    "process_source_distinction": "Ordinary record_process samples process.monotonic_ns/at before its own _source query; process.source_witness.at can therefore be later than process.at. This differs from launch.source_witness.at preceding launch.at and must not be reversed by one shared rule.",
+    "source_functions": {
+      "_owner_info": 780,
+      "_source": 203,
+      "prepare_owner_launch": 839
+    }
+  },
+  "ordinary_owner_claim": {
+    "bindings": "schema='bac-hardware-owner-claim-v1'; launch==context.lifecycle[0]; identity==actual emitter identity used in its process record; role_id==context.role_id.",
+    "causal_order": "record_process validates authority/environment and actual parent, then calls _claim. START claim samples at=_utc() FIRST and monotonic_ns=time.monotonic_ns() SECOND, exclusively writes/flushes/hashes the claim, and returns. Only THEN record_process samples process START monotonic_ns, followed by process START at. Imports/Torch facts/source query/raw/process writes follow.",
+    "checked_vs_emitted": "The creation order is source-observed behavior. Current _claim does not independently validate a numeric claim-time relation at END; a consumer must not mistake a relation inferred from this code path for an explicit P3 predicate.",
+    "controller_worker": "Controller/worker paths have empty owner_claim. A worker has its own worker lifecycle; inherited worker environment keys do not turn an owner child into a worker.",
+    "end_binding": "_claim END rehashes the named claim, checks exact keys/schema/identity/launch/role, loads the actual same-process START and its raw observation, and requires START raw.owner_claim==[same claim ref]. It returns that same ref without rewriting or resampling claim clocks. record_process also checks END/START actual identity/spec/role/parent/replacement and nondecreasing process monotonic time.",
+    "fields": [
+      "schema",
+      "launch",
+      "identity",
+      "role_id",
+      "at",
+      "monotonic_ns"
+    ],
+    "filename": "Exclusive job.output/owner-claim-{instance_id}.json; same exact reference is carried in raw.owner_claim at START and END.",
+    "monotonic_relation": "For a successful ordinary spawn/work START on the same host/boot clock domain: launch.monotonic_ns <= claim.monotonic_ns <= process START.monotonic_ns. The claim is not allowed to be created by the parent. Do not require equal timestamps.",
+    "source_functions": {
+      "_claim": 821,
+      "record_process": 386
+    },
+    "utc_relation": "Sampling calls place claim.at before process START.at and launch.at before both, but UTC can jump. No explicit claim<=START timestamp comparison is coded in _claim; independent current consumer chronology checks must use observed values and its accepted clock contract, not a guessed UTC-to-monotonic conversion."
+  },
+  "protocol": {
+    "bytes": 34654,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+    "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+  },
+  "role_and_contract": {
+    "consumer_decision": "Enforcing a strict-kind-only selected owner contract may be required by independent strict semantics, but it must be attributed to the accepted consumer/root contract rather than invented as an existing P3 check. This supplier authorizes no producer or P0 change.",
+    "current_job_level_kind_requirements": {
+      "fork-guard": "P0 job must contain a fork-three-trials obligation.",
+      "spawn-child": "P0 job must contain at least one strict-child-core OR strict-child-producer obligation.",
+      "work-child": "P0 job must contain at least one strict-child-core OR strict-child-producer obligation."
+    },
+    "full_role_equality": "Find exactly one job.roles entry with id==child_role_id. Require that entire parsed role dictionary is equal to an element of parsed contract.roles, not a field subset. P0 validates both role shapes/types; contract.roles IDs are unique.",
+    "important_enforcement_boundary": "These are JOB-LEVEL presence checks in P0, not a P3 selected-owner-contract kind restriction. Current P3 _contract has no additional role->allowed-kind table. If some other selected obligation kind references a matching valid case-contract with the full child role and selected case, _contract itself does not reject solely because of that kind. Do not claim the current producer verifies a stronger selected-kind relation.",
+    "protocol_lines": [
+      351,
+      373,
+      374,
+      375,
+      376,
+      393,
+      394,
+      395,
+      396,
+      397,
+      398
+    ],
+    "role_exclusions": "Selected role.role cannot be controller or worker. prepare_owner_launch requires start_method in {spawn,fork} and (role.role==fork-guard) iff (start_method==fork). It does not independently narrow nonfork owner roles to only spawn-child/work-child.",
+    "selected_obligation": "Exactly one job.obligations entry must simultaneously have contract==the supplied exact owner_contract reference and kind==parsed case-contract.obligation_kind. case_id must occur in that selected obligation.required_cases, contract.required_cases, and job.required_collected_ids.",
+    "source_functions": {
+      "_contract": 769,
+      "_owner_info": 780,
+      "prepare_owner_launch": 839
+    }
+  },
+  "schema": "bac-p3-owner-task2-ancestry-supplier-v1",
+  "scope": "Read-only extraction from already-owned P3/P0 bodies and existing metadata. No P2 body read, module import/test/runtime, source edit, APP/Git/index mutation, checkout/branch/worktree operation.",
+  "source_after": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "source_before": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "status": "Exact current producer facts only; no code/contract expansion or qualification claim"
+}

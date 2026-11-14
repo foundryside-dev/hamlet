@@ -1,0 +1,163 @@
+{
+  "schema": "bac-p2-owner-task3-independent-review-v1",
+  "at": "2026-11-14T11:07:00.956524+00:00",
+  "reviewer": "/root/bac_astra_p2_integration_review",
+  "independence": "Separate reviewer; no producer edits. Six probes added only to previously owned fifth logical test body, with previous exact probe bytes retained inertly.",
+  "disposition": "CHANGES REQUIRED",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-freeze-v1.json",
+    "bytes": 15627,
+    "sha256": "7c54f456107ee8474ebb8d8427bb73f3efcbd48a8efc31eb724bf4a4f102234c"
+  },
+  "source_inventory": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 110168,
+      "sha256": "05afd0f982915da45439543038c55f0abb3dcfe53a2c53630ce08fa9d04d19ec",
+      "lines": 1597
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 132244,
+      "sha256": "952aa84da7d3526085b9d1eac7d7785d617207c5b87b9d948e0416567bb474eb",
+      "lines": 1895
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "lines": 526
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "bytes": 3778,
+      "sha256": "3cf8269324c5407bad4d3ceacfea1489f57b04ab3371e2ac9840a2d86453d650",
+      "lines": 75
+    }
+  ],
+  "preflight": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/preflight-v1.json",
+    "bytes": 2032,
+    "sha256": "b0ebc5c0fe1db4b1a5f7981387a246aaefa56ed900536c1a4a17e386297a1891"
+  },
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py",
+    "bytes": 9545,
+    "sha256": "c5e7541e431be102f1e4c1e2b53fd1b60c46f65ab4d2a22976517d5c1dacf4c1"
+  },
+  "historical_probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/test_independent_task1.py.task2-history.py.txt",
+    "bytes": 7883,
+    "sha256": "459226845107e8fd9844742d72312e19286fde173a717dd7d3dd139ed59cd042"
+  },
+  "body_budget": {
+    "bodies": 5,
+    "lines": 4255
+  },
+  "findings": [
+    {
+      "id": "P2-TASK3-DIAGNOSTIC-1",
+      "priority": "P2",
+      "location": "owner_sampler diagnostic equality (~1408)",
+      "problem": "Retained diagnostic JSON is compared using plain Python == to the validated embedded command row. Python equates False with0, so malformed diagnostic exit_code=False or stdout_truncated/stderr_truncated=0 passes, despite the exact typed current command schema. Nested reference numeric fields are subject to the same equality pitfall.",
+      "proof": "Three independently resealed full-completion negatives changed one diagnostic field at its fixed file and refreshed completion.inventory. All were accepted by Custody.evidence; expected rejection DIDNOTRAISE.",
+      "required_correction": "Validate retained diagnostic with the same closed command-row/type/reference rules, or compare recursively with exact types, then require exact correspondence. Do not let bool/int substitutions in nested refs evade the retained-row contract."
+    },
+    {
+      "id": "P2-TASK3-WAIT-CLOCK-1",
+      "priority": "P2",
+      "location": "owner_sampler sampler/emission chronology (~1373)",
+      "problem": "Sampler/command/emission endpoints are bounded by launch cutoff but not the actual P2 job post-cleanup wait endpoint. A completed source stage or emission observation after the owned job has ended is accepted, while only its process entry timestamp is enclosed by P2 lifetime.",
+      "proof": "Two full-completion probes retain END process entry at7,000,000,000; actual job monotonic_end is7,000,000,050 (before sampler end) or7,000,000,120 (after sampler end but before emission). Corresponding source/process UTC remains within observed window. Custody.evidence accepts both impossible same-clock enclosures.",
+      "required_correction": "Bind the ordered source-stage/emission endpoints to the actual P2 observed job window, including emission_end_ns <= observations[job_id].monotonic_end_ns. Existing chronology then encloses commands/sampler. This is actual transport lifetime checking, not whole-call return/ack/reap validation."
+    },
+    {
+      "id": "P2-TASK3-COMMAND-PID-1",
+      "priority": "P2",
+      "location": "owner_sampler command PID checks (~1392)",
+      "problem": "A sampler Git command can claim the same PID as its still-live guard recorder. A direct child created by the guard cannot share that live parent PID; current positive-int-only check accepts this contradictory command identity.",
+      "proof": "A resealed END command0 row and its diagnostic set pid to record.identity.pid. Full completion passes Custody.evidence (DIDNOTRAISE).",
+      "required_correction": "Reject a command PID equal to its live guard identity PID. Do not impose distinct PIDs between sequential Git commands: reuse after reap may be legal. No extra field, fabricated start-token or actual source execution is requested."
+    }
+  ],
+  "unresolved_p1_p2": [
+    "P2-TASK3-DIAGNOSTIC-1",
+    "P2-TASK3-WAIT-CLOCK-1",
+    "P2-TASK3-COMMAND-PID-1"
+  ],
+  "other_assessment": [
+    "Prerequisite dispatch recognizes only exact sampler-policy schema in prerequisites; all other prerequisite/timing records go through P0 receipt validation. Unknown schemas do not become acceptance. Exact one policy for guard jobs, exact role/bound/grant/workload and ordered input correspondence preserved.",
+    "Fixed policy10/8/6/3, reserved profile constants, CPU/scratch checks and max_input byte closure are explicit. Git executable is pinned by named dependency; exact two argv, typed row exit/truncation, fixed logs/caps and source HEAD/staged-tree correspondence are checked.",
+    "Owner raw/claim/ancestry/source/import semantics and ordinary/guard completion inventory closure remain explicit. Duplicate producer inventory paths reject; later result snapshots cannot repair missing producer declarations; five copied arrays remain unchanged in order/value.",
+    "Emission clock and cumulative sampling interval are correctly labelled source-stage observations, never complete-call return,ack orreap. P4/P5 external actual timing and Task4 cleanup remain outstanding."
+  ],
+  "execution": {
+    "reference": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/execution.json",
+      "bytes": 4602,
+      "sha256": "3059cd03ebf9547fde1eba4c5520fa5dc4487fc3f707091b68e9ea725790fbe5"
+    },
+    "log": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/output.log",
+      "bytes": 8248,
+      "sha256": "1afd2b017db6d783b29f5c948f9bf46bb769cb7afd3b92854074f6be8b25a503"
+    },
+    "result": "70PASS,6FAIL,203deselected. All six new independent correspondence negatives fail by DID NOT RAISE; existing valid guard pair/policy/closure and selected adversarial transport cases pass.",
+    "actual_custody": {
+      "pid": 228665,
+      "start_identity": "13362187",
+      "utc_start": "2026-11-14T11:05:11.594216+00:00",
+      "utc_end": "2026-11-14T11:05:27.187789+00:00",
+      "elapsed_seconds": 15.592877789982595,
+      "affinity": [
+        0,
+        1
+      ],
+      "ram_limit_bytes": 4294967296,
+      "xdist_workers": 0
+    },
+    "source_unchanged": true,
+    "slot_grant": "Held until root explicitly released2CPU after APP postflight; root1CPU mypy and P5oneCPU could coexist. Runtime finished and slot released.",
+    "limits": "Pure authored data; no APP/P3/Git execution/source lease.4GiB RLIMIT_AS per process, not aggregate enforcement. No3CPU public/admission replay in this grant."
+  },
+  "attempt_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/attempt-inventory-v1.json",
+    "bytes": 1967407,
+    "sha256": "5d41fbe4255aa45bc94c5b8a1489b26c1c673bbfa418a4842bbdff6cd6725853"
+  },
+  "author_evidence": {
+    "terminal_results": [
+      {
+        "bytes": 3697,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-full07/execution.json",
+        "sha256": "ba1b0ff1c53c2182c374804ab65de436eea61837414a7ece2d7a1873ff8cfff2"
+      },
+      {
+        "bytes": 3720,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-admission08/execution.json",
+        "sha256": "499b161aaeaaadeafda6754b6db585802141482c36131b2abae7b862a4c2ab36"
+      }
+    ],
+    "terminal_selections": {
+      "bytes": 64647,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-terminal-selections-v1.json",
+      "sha256": "00fe9a957890aba97d8bb6febba3751508c7b264dbdc269f0c5f19537d5763cd"
+    },
+    "attempt_inventory": {
+      "bytes": 6671474,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-attempt-inventory-v1.json",
+      "sha256": "bd76f40817f40d5d453965d1aece6cb97dcf3c63d6f8b21c4a5dc357e9ab5ebf"
+    },
+    "result": "Attributed disjoint223PASS2CPU+9PASS3CPU/all232; not added to independent70 and does not close these new negatives."
+  },
+  "supplier_metadata": {
+    "bytes": 18379,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/owner-task3-sampler-facts-supplier-v1.json",
+    "sha256": "cf4d5e78c53f1c883e27f67858506b4fd443990a341baec52eb314ad2cc5ec88"
+  },
+  "remaining": [
+    "Repair the three finite correspondence gaps and freeze exact candidate for focused review.",
+    "Full actual P3/P2/source/hardware chain, P4/P5 strict semantics/whole-call timing and Task4 live-Git cleanup remain unqualified."
+  ],
+  "preservation": "Historical reviews/attempts/snapshots retained; no producer edits,extra implementation bodies,APP/P3/P4/P5 imports,Git/index,source lease,branches/worktrees or duplicate execution copies."
+}

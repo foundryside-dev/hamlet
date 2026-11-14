@@ -1,0 +1,157 @@
+........................................................................ [ 26%]
+........................................................................ [ 52%]
+........................................................................ [ 78%]
+...................................................FF..FFF               [100%]
+=================================== FAILURES ===================================
+______________ test_review_v2_source_lifetime_joins[guard_return] ______________
+
+mutation = 'guard_return'
+
+    @pytest.mark.parametrize('mutation', ['guard_return','guard_custody','report_early','report_late','parent_role','inherited_alias','required_alias'])
+    def test_review_v2_source_lifetime_joins(mutation):
+        b = Bundle('inherited_pid' if mutation.startswith('guard') or mutation == 'inherited_alias' else 'replay_poison')
+        if mutation.startswith('guard'):
+            ns = 10000000000 if mutation == 'guard_return' else 11000000000
+            b.named['child-end']['monotonic_ns'] = ns
+            b.named['child-end']['elapsed_ns']['value'] = ns - 2000000000
+        elif mutation.startswith('report'):
+            for phase in ('setup','call','teardown'):
+                b.named['report-'+phase]['at'] = '2026-11-13T00:00:00Z' if mutation == 'report_early' else '2026-11-15T00:00:00Z'
+        elif mutation == 'parent_role':
+            b.named['parent-end']['role_id'] = b.role
+            b.named['parent-end']['role'] = 'spawn-child'
+            b.named['parent-end-raw']['context']['role_id'] = b.role
+        elif mutation == 'inherited_alias':
+            b.named['admission-launch']['inherited_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source}]
+        else:
+            for obj in b.named.values():
+                if isinstance(obj,dict) and obj.get('schema') == 'bac-hardware-process-observation-v2':
+                    obj['context']['required_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source,'phases':['start','end']}]
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1632: Failed
+_____________ test_review_v2_source_lifetime_joins[guard_custody] ______________
+
+mutation = 'guard_custody'
+
+    @pytest.mark.parametrize('mutation', ['guard_return','guard_custody','report_early','report_late','parent_role','inherited_alias','required_alias'])
+    def test_review_v2_source_lifetime_joins(mutation):
+        b = Bundle('inherited_pid' if mutation.startswith('guard') or mutation == 'inherited_alias' else 'replay_poison')
+        if mutation.startswith('guard'):
+            ns = 10000000000 if mutation == 'guard_return' else 11000000000
+            b.named['child-end']['monotonic_ns'] = ns
+            b.named['child-end']['elapsed_ns']['value'] = ns - 2000000000
+        elif mutation.startswith('report'):
+            for phase in ('setup','call','teardown'):
+                b.named['report-'+phase]['at'] = '2026-11-13T00:00:00Z' if mutation == 'report_early' else '2026-11-15T00:00:00Z'
+        elif mutation == 'parent_role':
+            b.named['parent-end']['role_id'] = b.role
+            b.named['parent-end']['role'] = 'spawn-child'
+            b.named['parent-end-raw']['context']['role_id'] = b.role
+        elif mutation == 'inherited_alias':
+            b.named['admission-launch']['inherited_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source}]
+        else:
+            for obj in b.named.values():
+                if isinstance(obj,dict) and obj.get('schema') == 'bac-hardware-process-observation-v2':
+                    obj['context']['required_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source,'phases':['start','end']}]
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1632: Failed
+______________ test_review_v2_source_lifetime_joins[parent_role] _______________
+
+mutation = 'parent_role'
+
+    @pytest.mark.parametrize('mutation', ['guard_return','guard_custody','report_early','report_late','parent_role','inherited_alias','required_alias'])
+    def test_review_v2_source_lifetime_joins(mutation):
+        b = Bundle('inherited_pid' if mutation.startswith('guard') or mutation == 'inherited_alias' else 'replay_poison')
+        if mutation.startswith('guard'):
+            ns = 10000000000 if mutation == 'guard_return' else 11000000000
+            b.named['child-end']['monotonic_ns'] = ns
+            b.named['child-end']['elapsed_ns']['value'] = ns - 2000000000
+        elif mutation.startswith('report'):
+            for phase in ('setup','call','teardown'):
+                b.named['report-'+phase]['at'] = '2026-11-13T00:00:00Z' if mutation == 'report_early' else '2026-11-15T00:00:00Z'
+        elif mutation == 'parent_role':
+            b.named['parent-end']['role_id'] = b.role
+            b.named['parent-end']['role'] = 'spawn-child'
+            b.named['parent-end-raw']['context']['role_id'] = b.role
+        elif mutation == 'inherited_alias':
+            b.named['admission-launch']['inherited_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source}]
+        else:
+            for obj in b.named.values():
+                if isinstance(obj,dict) and obj.get('schema') == 'bac-hardware-process-observation-v2':
+                    obj['context']['required_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source,'phases':['start','end']}]
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1632: Failed
+____________ test_review_v2_source_lifetime_joins[inherited_alias] _____________
+
+mutation = 'inherited_alias'
+
+    @pytest.mark.parametrize('mutation', ['guard_return','guard_custody','report_early','report_late','parent_role','inherited_alias','required_alias'])
+    def test_review_v2_source_lifetime_joins(mutation):
+        b = Bundle('inherited_pid' if mutation.startswith('guard') or mutation == 'inherited_alias' else 'replay_poison')
+        if mutation.startswith('guard'):
+            ns = 10000000000 if mutation == 'guard_return' else 11000000000
+            b.named['child-end']['monotonic_ns'] = ns
+            b.named['child-end']['elapsed_ns']['value'] = ns - 2000000000
+        elif mutation.startswith('report'):
+            for phase in ('setup','call','teardown'):
+                b.named['report-'+phase]['at'] = '2026-11-13T00:00:00Z' if mutation == 'report_early' else '2026-11-15T00:00:00Z'
+        elif mutation == 'parent_role':
+            b.named['parent-end']['role_id'] = b.role
+            b.named['parent-end']['role'] = 'spawn-child'
+            b.named['parent-end-raw']['context']['role_id'] = b.role
+        elif mutation == 'inherited_alias':
+            b.named['admission-launch']['inherited_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source}]
+        else:
+            for obj in b.named.values():
+                if isinstance(obj,dict) and obj.get('schema') == 'bac-hardware-process-observation-v2':
+                    obj['context']['required_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source,'phases':['start','end']}]
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1632: Failed
+_____________ test_review_v2_source_lifetime_joins[required_alias] _____________
+
+mutation = 'required_alias'
+
+    @pytest.mark.parametrize('mutation', ['guard_return','guard_custody','report_early','report_late','parent_role','inherited_alias','required_alias'])
+    def test_review_v2_source_lifetime_joins(mutation):
+        b = Bundle('inherited_pid' if mutation.startswith('guard') or mutation == 'inherited_alias' else 'replay_poison')
+        if mutation.startswith('guard'):
+            ns = 10000000000 if mutation == 'guard_return' else 11000000000
+            b.named['child-end']['monotonic_ns'] = ns
+            b.named['child-end']['elapsed_ns']['value'] = ns - 2000000000
+        elif mutation.startswith('report'):
+            for phase in ('setup','call','teardown'):
+                b.named['report-'+phase]['at'] = '2026-11-13T00:00:00Z' if mutation == 'report_early' else '2026-11-15T00:00:00Z'
+        elif mutation == 'parent_role':
+            b.named['parent-end']['role_id'] = b.role
+            b.named['parent-end']['role'] = 'spawn-child'
+            b.named['parent-end-raw']['context']['role_id'] = b.role
+        elif mutation == 'inherited_alias':
+            b.named['admission-launch']['inherited_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source}]
+        else:
+            for obj in b.named.values():
+                if isinstance(obj,dict) and obj.get('schema') == 'bac-hardware-process-observation-v2':
+                    obj['context']['required_imports'] = [{'name':'townlet.exploration.rng_custody','reference':b.owner_source,'phases':['start','end']}]
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1632: Failed
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v2_source_lifetime_joins[guard_return]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v2_source_lifetime_joins[guard_custody]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v2_source_lifetime_joins[parent_role]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v2_source_lifetime_joins[inherited_alias]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v2_source_lifetime_joins[required_alias]
+5 failed, 269 passed in 4.18s

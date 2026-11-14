@@ -1,0 +1,38 @@
+{
+  "name": "claim-time-before-launch",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+    ],
+    "evidence": [
+      {
+        "bytes": 1090,
+        "path": "/synthetic/out/a/replay-poison/evidence.json",
+        "sha256": "a4eec2022bb61442ec364e9bcc7b3efc2e2bca4b6318a25886a4b5f6c9c2c712"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 1593,
+        "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+        "sha256": "679f27ba0f08980eda8bce02693b42749396ea0d2680939711dff728a13a00c1"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 3644,
+        "path": "/synthetic/out/a/replay-poison/parent.json",
+        "sha256": "6db0ad0f5de1859769cfa3343d7a5c4d41d91d325e847eefef759d099e235468"
+      }
+    ],
+    "related_attempts": []
+  },
+  "matched_expectation": false
+}

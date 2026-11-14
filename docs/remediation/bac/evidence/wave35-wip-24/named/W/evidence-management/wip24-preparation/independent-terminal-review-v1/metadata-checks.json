@@ -1,0 +1,24 @@
+{
+  "named_ref_checks": 88871,
+  "errors": [],
+  "interval_actual": 92,
+  "interval_declared": 92,
+  "interval_difference": [
+    [],
+    []
+  ],
+  "status_counts": {
+    "UNRUN": 24,
+    "PASSED": 26,
+    "FAILED": 8
+  },
+  "custody_records_compared": 34,
+  "custody_errors": [],
+  "draft_objects_rehashed": 62988,
+  "draft_new_objects": 62944,
+  "draft_reused_objects": 44,
+  "draft_selected_bytes": 370100107,
+  "draft_object_hash_errors": 0,
+  "scope": "Metadata-only terminal audit; no APP body read or execution; draft selection is not qualification.",
+  "seven_symlink_observations": "Retained as observations; excluded from following/hash claims."
+}

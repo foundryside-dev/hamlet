@@ -1,0 +1,86 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 4 items
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py .F [ 50%]
+FF                                                                       [100%]
+
+=================================== FAILURES ===================================
+_______ test_claim_callback_cannot_enter_peer_env_work[get_action_masks] _______
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3f467efa80>
+peer_method = 'get_action_masks'
+
+    @pytest.mark.parametrize("peer_method", ["get_action_masks", "get_affordance_positions", "vfs_random_state"])
+    def test_claim_callback_cannot_enter_peer_env_work(compiled: Any, monkeypatch: Any, peer_method: str) -> None:
+        """A general callback reentry exemption would allow these independent reads."""
+        seen = _observe_claim(monkeypatch, peer_method)
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+    
+        result, candidate = _real_component_step(rig)
+    
+        # The actual POP callback still runs once and earns its genuine validation;
+        # the refused probe cannot replace it or consume that validation slot.
+        assert len(seen["claims"]) == len(seen["checks"]) == 1
+>       assert len(seen["peer_errors"]) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:83: AssertionError
+___ test_claim_callback_cannot_enter_peer_env_work[get_affordance_positions] ___
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3f467760f0>
+peer_method = 'get_affordance_positions'
+
+    @pytest.mark.parametrize("peer_method", ["get_action_masks", "get_affordance_positions", "vfs_random_state"])
+    def test_claim_callback_cannot_enter_peer_env_work(compiled: Any, monkeypatch: Any, peer_method: str) -> None:
+        """A general callback reentry exemption would allow these independent reads."""
+        seen = _observe_claim(monkeypatch, peer_method)
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+    
+        result, candidate = _real_component_step(rig)
+    
+        # The actual POP callback still runs once and earns its genuine validation;
+        # the refused probe cannot replace it or consume that validation slot.
+        assert len(seen["claims"]) == len(seen["checks"]) == 1
+>       assert len(seen["peer_errors"]) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:83: AssertionError
+_______ test_claim_callback_cannot_enter_peer_env_work[vfs_random_state] _______
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f3f46634c00>
+peer_method = 'vfs_random_state'
+
+    @pytest.mark.parametrize("peer_method", ["get_action_masks", "get_affordance_positions", "vfs_random_state"])
+    def test_claim_callback_cannot_enter_peer_env_work(compiled: Any, monkeypatch: Any, peer_method: str) -> None:
+        """A general callback reentry exemption would allow these independent reads."""
+        seen = _observe_claim(monkeypatch, peer_method)
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+    
+        result, candidate = _real_component_step(rig)
+    
+        # The actual POP callback still runs once and earns its genuine validation;
+        # the refused probe cannot replace it or consume that validation slot.
+        assert len(seen["claims"]) == len(seen["checks"]) == 1
+>       assert len(seen["peer_errors"]) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:83: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_claim_callback_cannot_enter_peer_env_work[get_action_masks]
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_claim_callback_cannot_enter_peer_env_work[get_affordance_positions]
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_claim_callback_cannot_enter_peer_env_work[vfs_random_state]
+========================= 3 failed, 1 passed in 3.67s ==========================

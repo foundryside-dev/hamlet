@@ -1,0 +1,55 @@
+{
+  "schema": "bac-restore-correlation-supplier-v1",
+  "date": "2026-11-14",
+  "status": "proposed_finite_C3_contract_requires_independent_ENV_review",
+  "implementation_permission": false,
+  "runtime_executed": false,
+  "source_inventory": [
+    {"path": "src/townlet/config/exploration_policy.py", "lines": 1343, "sha256": "5c5410d8bf6213f42cab3b18925efb164eec4670dd7f8c10b31af305f8a32363"},
+    {"path": "src/townlet/exploration/scoped_curiosity.py", "lines": 1492, "sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c"},
+    {"path": "src/townlet/exploration/parent_custody.py", "lines": 239, "sha256": "1b911c653ed1b1738c4de19b646bd1965cc0825b6f85e814e5ba25a43e02944f"}
+  ],
+  "whole_source_lines": 3074,
+  "whole_source_files": 3,
+  "source_postflight_unchanged": true,
+  "observed_failure_attribution": "Root G3: 16 healthy prerequisites fail effectful authority.restored inside BANK correlation; registration failure is not the observed traceback.",
+  "confirmed_constraints": [
+    "Bound runtime and BANK cohort preparation/private initialization/install refuse before body.",
+    "Unbound retained runtime/BANK custody cannot enter guarded public work.",
+    "BANK examination and native preparation invocations are separated by operation-idle replacement registration.",
+    "Final BANK currency seals after final preparation correlation and is validated at install before publication.",
+    "Runtime post-BANK cadence correlation runs after BANK currency sealing."
+  ],
+  "successful_parent_correlated_callback_counts": {
+    "bank_prepare": 3,
+    "bank_install": 1,
+    "runtime_prepare_cadence": 2,
+    "runtime_install_cadence": 1,
+    "total_if_each_uses_ENV_pure_check": 7,
+    "qualification": "Successful ordinary real-parent or private-initialization path; early refusal stops later calls; live/None-parent modes differ."
+  },
+  "proposed_new_API_not_existing": "EnvParentCustody.validate_prepared_restore(*, prepared: WorldRecord) -> None",
+  "received_current_ENV_supplier": {
+    "attribution": "Root relays independent ENV reviewer; no ENV/helper body read by this author.",
+    "ENV_reported_hash_prefix_suffix": "aefccf...9b22",
+    "helper_reported_hash_prefix_suffix": "bc83c8...6022",
+    "facts": ["Ordinary guard and retention use admission plus ENV lock, no operation/device_invocation/register/enroll/token API.", "Retention pin/expiry and restored release issuance do not change ENV generation/revision; restored performs no install or phase change.", "Unbound retained ENV rejects every ordinary guarded call including restored, requiring the explicit scope-exit gaps."],
+    "remaining": "Core/BANK currency, weak retirement and actual intervening-operation proof; outer idle admission does not refresh currency."
+  },
+  "proposed_composition": [
+    "Hold idle public domain.admission(None) through final component disposition.",
+    "Ordinary ENV preparation; actual independent source/journal/ledger authentication.",
+    "Retain ENV unbound before standalone runtime preparation; pure scope checks in genuine callbacks; no active parent invocation.",
+    "Exit ENV retention but keep idle domain gate; issue genuine joint release only after actual candidate qualification.",
+    "Re-retain ENV unbound; standalone runtime install repeats genuine correlation and currency validation.",
+    "Exit ENV retention, install ENV under still-held idle gate, then consume actual final success/failure and release."
+  ],
+  "unmet_contracts": [
+    "Independent ENV-source approval of pure prepared-parent currentness semantics and scope authenticity.",
+    "Exact proof of currency-neutral ENV scope/record-issuance cuts and weak-retirement behavior.",
+    "Actual earned joint-boundary attestation and failure disposition in consumer choreography.",
+    "Healthy original 16 prerequisites and retained negative/currency/concurrency controls."
+  ],
+  "early_release_before_BANK_prepare": "not_selected_without_proof_of_lawful_joint_attestation_and_failed_candidate_release_safety",
+  "preserved": ["standalone_restore", "initial_None_parent_pair", "live_accepted_correlation", "private_initialization", "bound_cohort_refusal", "C2_finite_reverse_permissions", "core_currency", "idle_registration", "programme_28_38_66"]
+}

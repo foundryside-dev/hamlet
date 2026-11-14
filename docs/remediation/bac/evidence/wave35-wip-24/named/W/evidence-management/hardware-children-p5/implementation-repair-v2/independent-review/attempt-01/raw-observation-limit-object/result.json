@@ -1,0 +1,9 @@
+{
+  "name": "raw-observation-limit-object",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "text: string required",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

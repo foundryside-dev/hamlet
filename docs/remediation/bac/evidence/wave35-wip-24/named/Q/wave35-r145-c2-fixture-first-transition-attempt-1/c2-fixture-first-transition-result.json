@@ -1,0 +1,26 @@
+{
+  "name": "c2-fixture-first-transition",
+  "exit_code": 0,
+  "seconds": 11.427787016989896,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_first_real_transition_uses_sealed_activity_and_one_service",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r145-c2-fixture-first-transition-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition.log",
+  "sha256": "c64f9ee54e1123d35d3d0994d751852ddc37dbb763ce0955cd527e48244ae246",
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "manifest_sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

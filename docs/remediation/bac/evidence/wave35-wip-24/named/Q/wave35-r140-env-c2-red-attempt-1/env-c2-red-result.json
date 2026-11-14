@@ -1,0 +1,30 @@
+{
+  "name": "env-c2-red",
+  "exit_code": 1,
+  "seconds": 14.765740957984235,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r140-env-c2-red-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r140-env-c2-red-attempt-1/env-c2-red.log",
+  "sha256": "66922fd5f271c424d9410523c1864434f590d6d81816ecf2ba6835c4b396f954",
+  "candidate_tree": "f5d45e7f1450ca5c39324ce7c528970a34fd3373",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "manifest_sha256": "db1c5c8a94e9a3e9b93c7689ff778b3ab64d90f4cb0b69513fed1ada20811297",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

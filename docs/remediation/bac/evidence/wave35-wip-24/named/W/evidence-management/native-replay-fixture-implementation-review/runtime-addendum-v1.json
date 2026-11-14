@@ -1,0 +1,505 @@
+{
+  "schema": "native-replay-fixture-runtime-review-v1",
+  "reviewer": "/root/bac_astra_native_fixture_review",
+  "disposition": "ACCEPT_BOUNDED_EXECUTED_NATIVE_REPLAY_COMPONENT_ONLY",
+  "candidate": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r135-candidate.json",
+    "bytes": 207754,
+    "sha256": "d3e679145ed8be6c6a4227504f7ad30ef65ffb3846d8fddb4d49a49adfc2d524"
+  },
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+  "attempts": [
+    {
+      "name": "collection",
+      "result": {
+        "name": "native-fixture-collection",
+        "exit_code": 0,
+        "seconds": 4.166503108019242,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses[seed]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[icm]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_coherent_incompatible_targets",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_historical_current_captured_replay_control",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r135-native-fixture-collection-attempt-1",
+          "--collect-only"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection.log",
+        "sha256": "4e29ea89d0513a2836becdb4e63a9a14a5a552e811109fec1b93daf87b0ef7e3",
+        "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "manifest_sha256": "d3e679145ed8be6c6a4227504f7ad30ef65ffb3846d8fddb4d49a49adfc2d524",
+        "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+      },
+      "custody": {
+        "job": "native-fixture-collection",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+        "exit_code": 0,
+        "counts": {
+          "passed": 0,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 4.166503108019242,
+        "source_guards": 822,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "outer": {
+        "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1-spec.json",
+        "spec_sha256": "81c70ec682bfdc93d44aee9fe0a157f29e3d8017f0b5d183777766fdace93239",
+        "argv": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-B",
+          "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+          "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1-spec.json"
+        ],
+        "start_utc": "2026-11-14T10:37:09.263861+00:00",
+        "orchestrator_pid": 223683,
+        "script_sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+        "environment_delta": {},
+        "scope": "Outer launcher observations; original job results and import custody remain separate",
+        "launcher_pid": 223687,
+        "launcher_start_ticks": 13193960,
+        "exit_code": 0,
+        "end_utc": "2026-11-14T10:37:13.730616+00:00",
+        "elapsed_seconds": 4.466743658005726
+      },
+      "process_identities": [
+        {
+          "sha": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+          "module": "/workspace/hamlet/src/townlet/__init__.py",
+          "worker": "controller",
+          "torch": "2.11.0+cu130",
+          "threads": 1
+        }
+      ],
+      "collection_only": true
+    },
+    {
+      "name": "positive",
+      "result": {
+        "name": "native-fixture-positive",
+        "exit_code": 0,
+        "seconds": 15.991284201008966,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_coherent_incompatible_targets",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_historical_current_captured_replay_control",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r135-native-fixture-positive-attempt-1",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive.log",
+        "sha256": "4a24acaadd4ae72db49e1582d76ca935bb79317f4119cf17fc06aa58565af8d4",
+        "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "manifest_sha256": "d3e679145ed8be6c6a4227504f7ad30ef65ffb3846d8fddb4d49a49adfc2d524",
+        "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+      },
+      "custody": {
+        "job": "native-fixture-positive",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+        "exit_code": 0,
+        "counts": {
+          "passed": 12,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 15.991284201008966,
+        "source_guards": 822,
+        "process_identities": 3,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      },
+      "outer": {
+        "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1-spec.json",
+        "spec_sha256": "7b26a156f650e67a7e876731802160b322634ceef0a95c7ae31e16c33a2ec1da",
+        "argv": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-B",
+          "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+          "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1-spec.json"
+        ],
+        "start_utc": "2026-11-14T10:37:27.117782+00:00",
+        "orchestrator_pid": 223819,
+        "script_sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+        "environment_delta": {},
+        "scope": "Outer launcher observations; original job results and import custody remain separate",
+        "launcher_pid": 223822,
+        "launcher_start_ticks": 13195745,
+        "exit_code": 0,
+        "end_utc": "2026-11-14T10:37:43.551990+00:00",
+        "elapsed_seconds": 16.434215846995357
+      },
+      "process_identities": [
+        {
+          "sha": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+          "module": "/workspace/hamlet/src/townlet/__init__.py",
+          "worker": "controller",
+          "torch": "2.11.0+cu130",
+          "threads": 1
+        },
+        {
+          "sha": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+          "module": "/workspace/hamlet/src/townlet/__init__.py",
+          "worker": "gw0",
+          "torch": "2.11.0+cu130",
+          "threads": 1
+        },
+        {
+          "sha": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+          "module": "/workspace/hamlet/src/townlet/__init__.py",
+          "worker": "gw1",
+          "torch": "2.11.0+cu130",
+          "threads": 1
+        }
+      ],
+      "collection_only": false
+    },
+    {
+      "name": "progression",
+      "result": {
+        "name": "native-fixture-progression",
+        "exit_code": 1,
+        "seconds": 16.885531136009376,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses[seed]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]",
+          "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[icm]",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r135-native-fixture-progression-attempt-1",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression.log",
+        "sha256": "b23703e7c37af06fb874b6e53ebe71b267fe9165657c5eb07569ea2fc3a6d78d",
+        "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "manifest_sha256": "d3e679145ed8be6c6a4227504f7ad30ef65ffb3846d8fddb4d49a49adfc2d524",
+        "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+      },
+      "custody": {
+        "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+        "exit_code": 1,
+        "counts": {
+          "failed": 6,
+          "passed": 5,
+          "skipped": 0,
+          "errors": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "summary": "========================= 6 failed, 5 passed in 13.00s =========================",
+        "wall_seconds": 16.885531136009376,
+        "source_guards": 822,
+        "process_identities": 3,
+        "configs": 573,
+        "artifacts": 13,
+        "registry": 14,
+        "available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "unique_node_phase_failures": 6,
+        "affected_files": 1,
+        "signature_groups": 1,
+        "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+      },
+      "outer": {
+        "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1-spec.json",
+        "spec_sha256": "42b28c08118c06ddb62213bc7ed1c3ef8526147d514a0804a79056556053910f",
+        "argv": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-B",
+          "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+          "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1-spec.json"
+        ],
+        "start_utc": "2026-11-14T10:38:17.989739+00:00",
+        "orchestrator_pid": 224053,
+        "script_sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+        "environment_delta": {},
+        "scope": "Outer launcher observations; original job results and import custody remain separate",
+        "launcher_pid": 224056,
+        "launcher_start_ticks": 13200833,
+        "exit_code": 1,
+        "end_utc": "2026-11-14T10:38:35.235763+00:00",
+        "elapsed_seconds": 17.246019143000012
+      },
+      "process_identities": [
+        {
+          "sha": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+          "module": "/workspace/hamlet/src/townlet/__init__.py",
+          "worker": "controller",
+          "torch": "2.11.0+cu130",
+          "threads": 1
+        },
+        {
+          "sha": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+          "module": "/workspace/hamlet/src/townlet/__init__.py",
+          "worker": "gw0",
+          "torch": "2.11.0+cu130",
+          "threads": 1
+        },
+        {
+          "sha": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+          "module": "/workspace/hamlet/src/townlet/__init__.py",
+          "worker": "gw1",
+          "torch": "2.11.0+cu130",
+          "threads": 1
+        }
+      ],
+      "collection_only": false
+    }
+  ],
+  "inventory": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r135-candidate.json",
+      "bytes": 207754,
+      "sha256": "d3e679145ed8be6c6a4227504f7ad30ef65ffb3846d8fddb4d49a49adfc2d524"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation-review/review-v1.json",
+      "bytes": 3599,
+      "sha256": "f98bfd8e4fe6eb22ccd68f6f78d9a6490f252c8352c30f284a2679d36f46d0dc"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation-review/review-v1.md",
+      "bytes": 5055,
+      "sha256": "4f106aa586d1f6b18c54959b10ddb520d9861b98fb68befcf35829c0758f5a91"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection/identity-controller.json",
+      "bytes": 246,
+      "sha256": "11ee7df82e6aac5fcbffe6566162e151a685f583f6aa8ac4ba07e06cc36b54d6"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection-custody.json",
+      "bytes": 656,
+      "sha256": "fff82e6ff5c8bde98735d6281a98b151888efa86536b64f872d47ea1e2908cdf"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection-result.json",
+      "bytes": 2892,
+      "sha256": "bf5469a0bd0541c2297d96c1d06b5ca68fccefb08578a37e1bacf01e007074bf"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection.log",
+      "bytes": 2438,
+      "sha256": "4e29ea89d0513a2836becdb4e63a9a14a5a552e811109fec1b93daf87b0ef7e3"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1-spec.json",
+      "bytes": 2694,
+      "sha256": "81c70ec682bfdc93d44aee9fe0a157f29e3d8017f0b5d183777766fdace93239"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/wave35-r135-native-fixture-collection-attempt-1-outer.json",
+      "bytes": 933,
+      "sha256": "e175f76b0758abe6439646d96292dd1a161ae3c6f894f06b8c2d8bfb2f4a9591"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive/identity-controller.json",
+      "bytes": 246,
+      "sha256": "11ee7df82e6aac5fcbffe6566162e151a685f583f6aa8ac4ba07e06cc36b54d6"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive/identity-gw0.json",
+      "bytes": 239,
+      "sha256": "82fc729598b072a647cd8cfaa441c7a3490d91bba9b7ca85ead06c2328107b31"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive/identity-gw1.json",
+      "bytes": 239,
+      "sha256": "710ddf9c02dc3daa79741faf63f72e6902715a3da2a65f46c47dfe6e1574fce6"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive-custody.json",
+      "bytes": 656,
+      "sha256": "21f4432fc6103974659852f989572dbf85c4350924e559202506e1f3f74bd9c5"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive-result.json",
+      "bytes": 1471,
+      "sha256": "9804a77214123265bfd22e0b4963df00dbedcc0b44bafddcd5c24476af9f336d"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive.log",
+      "bytes": 602,
+      "sha256": "4a24acaadd4ae72db49e1582d76ca935bb79317f4119cf17fc06aa58565af8d4"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1-spec.json",
+      "bytes": 1246,
+      "sha256": "7b26a156f650e67a7e876731802160b322634ceef0a95c7ae31e16c33a2ec1da"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/wave35-r135-native-fixture-positive-attempt-1-outer.json",
+      "bytes": 930,
+      "sha256": "97e346a80d6390d1b20c41c0e889b6eaf8a5e7aebecc85ceef7bb788d5d804a9"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression/identity-controller.json",
+      "bytes": 246,
+      "sha256": "11ee7df82e6aac5fcbffe6566162e151a685f583f6aa8ac4ba07e06cc36b54d6"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression/identity-gw0.json",
+      "bytes": 239,
+      "sha256": "82fc729598b072a647cd8cfaa441c7a3490d91bba9b7ca85ead06c2328107b31"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression/identity-gw1.json",
+      "bytes": 239,
+      "sha256": "710ddf9c02dc3daa79741faf63f72e6902715a3da2a65f46c47dfe6e1574fce6"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-failure-index.json",
+      "bytes": 1819,
+      "sha256": "5d578f7c86d36b88654df222a732eadbe179cb75438fa2a77afe5d36b05ea2f4"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-negative-custody.json",
+      "bytes": 959,
+      "sha256": "72b030be91c2c7f8f5a464a62821b596843da4fc7620e5729dcf05edee5a69e5"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-result.json",
+      "bytes": 2564,
+      "sha256": "26e0da100a012612d1756a1f986c610fccc64b1d2daa7f488d182af82f090523"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression.log",
+      "bytes": 14455,
+      "sha256": "b23703e7c37af06fb874b6e53ebe71b267fe9165657c5eb07569ea2fc3a6d78d"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1-spec.json",
+      "bytes": 2364,
+      "sha256": "42b28c08118c06ddb62213bc7ed1c3ef8526147d514a0804a79056556053910f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/pop-standalone-step/wave35-r135-native-fixture-progression-attempt-1-outer.json",
+      "bytes": 936,
+      "sha256": "5ed4e9221b68839f77806e3e36c89791e39c6995388282eeb6d9ccfb4f4ef8b8"
+    }
+  ],
+  "required_failed_nodes": [
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+      "phase": "call"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]",
+      "phase": "call"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]",
+      "phase": "call"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]",
+      "phase": "call"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]",
+      "phase": "call"
+    },
+    {
+      "nodeid": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]",
+      "phase": "call"
+    }
+  ],
+  "remaining_runtime": [
+    "Conversion prepared initialization custody stale/foreign/copied/used, including immediate consumed retry and paired valid install.",
+    "Restore token/input custody entire matrix, including consumed/copy/foreign and valid countercontrols.",
+    "Real shared source learning each family; actual installed training hook batch and post-service witnesses.",
+    "Real signed Adam +1/-2 offset capture/step/rewind and subsequent update.",
+    "Gradient None/zero/nonzero, source/B/private-RNG isolation, FIFO/archive/exclusion and restore publication/continuation matrices beyond executed pristine controls.",
+    "Genuine width-three ENV driver, six preserved failures, all original affected owner assertions, unchanged broad owner gate."
+  ],
+  "accounting": "Collection 22 is not runtime coverage. Positive 12 and progression 5 passes overlap; no sum is a unique test total. Progression remains failed with six required nodes.",
+  "limitations": [
+    "Reviewer read named execution metadata/logs only; no new application execution or implementation body inspection.",
+    "Verifier custody PASS is reviewed evidence, not a rerun of verifier implementation.",
+    "No CUDA/hardware/full C1/BAC qualification, no change to 28/38/66 accounting."
+  ]
+}

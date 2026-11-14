@@ -1,0 +1,49 @@
+........................................................................ [ 25%]
+........................................................................ [ 51%]
+........................................................................ [ 77%]
+............................................................FFF          [100%]
+=================================== FAILURES ===================================
+__________________ test_review_v3_actual_controller_required ___________________
+
+    def test_review_v3_actual_controller_required():
+        b = Bundle('replay_poison')
+        for name in ('parent','parent-end'):
+            b.named[name]['role_id'] = b.role
+            b.named[name]['role'] = 'spawn-child'
+            b.named[name+'-raw']['context']['role_id'] = b.role
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1681: Failed
+________________ test_review_v3_call_before_child_start_refuses ________________
+
+    def test_review_v3_call_before_child_start_refuses():
+        b, stamp = separated_utc_bundle()
+        b.named['report-call']['at'] = stamp(1.75)
+        b.named['report-teardown']['at'] = stamp(1.8)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1689: Failed
+_____________ test_review_v3_call_before_child_end_cannot_publish ______________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/red2/pytest/test_review_v3_call_before_chi0')
+
+    def test_review_v3_call_before_child_end_cannot_publish(tmp_path):
+        b, stamp = separated_utc_bundle()
+        b.named['report-call']['at'] = stamp(14)
+        b.named['report-teardown']['at'] = stamp(14.5)
+        spec = materialize(b, tmp_path)
+        dest = tmp_path / 'receipt.json'
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:1699: Failed
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v3_actual_controller_required
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v3_call_before_child_start_refuses
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_review_v3_call_before_child_end_cannot_publish
+3 failed, 276 passed in 5.10s

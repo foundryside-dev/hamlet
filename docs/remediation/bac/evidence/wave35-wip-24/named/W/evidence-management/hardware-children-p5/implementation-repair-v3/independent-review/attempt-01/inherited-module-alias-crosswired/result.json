@@ -1,0 +1,9 @@
+{
+  "name": "inherited-module-alias-crosswired",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "inherited import differs from parent",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

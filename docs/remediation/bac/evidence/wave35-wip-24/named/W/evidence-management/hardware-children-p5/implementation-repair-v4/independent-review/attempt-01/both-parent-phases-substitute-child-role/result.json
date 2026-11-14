@@ -1,0 +1,9 @@
+{
+  "name": "both-parent-phases-substitute-child-role",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "actual outer parent must be configured controller",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

@@ -1,0 +1,12 @@
+Scanning 200 Python file(s)...
+Progress: 1/200 files scannedProgress: 10/200 files scannedProgress: 20/200 files scannedProgress: 30/200 files scannedProgress: 40/200 files scannedProgress: 50/200 files scannedProgress: 60/200 files scannedProgress: 70/200 files scannedProgress: 80/200 files scannedProgress: 90/200 files scannedProgress: 100/200 files scannedProgress: 110/200 files scannedProgress: 120/200 files scannedProgress: 130/200 files scannedProgress: 140/200 files scannedProgress: 150/200 files scannedProgress: 160/200 files scannedProgress: 170/200 files scannedProgress: 180/200 files scannedProgress: 190/200 files scannedProgress: 200/200 files scanned
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+
+=== Non-Whitelisted Violations ===
+src/townlet/environment/parent_custody.py:20:20: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/environment/parent_custody.py:21:14: ASG002: Ternary expression used as a default (x = a if cond else b)
+
+2 violation(s) found.
+(600 violation(s) whitelisted)

@@ -1,0 +1,27 @@
+{
+  "name": "c2-diagnostic-runtime",
+  "exit_code": 1,
+  "seconds": 13.26785442000255,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_reset_callback_reads_owned_cursors_without_export_or_mutation_rights",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_external_cursor_diagnostic_waits_at_common_admission",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r143-c2-diagnostic-runtime-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r143-c2-diagnostic-runtime-attempt-1/c2-diagnostic-runtime.log",
+  "sha256": "37e2602d04672deb513013276fab447dbc6cda23b65ec7f2ba7769edec26b92a",
+  "candidate_tree": "f65eaf09849e4672e16c28e4d477a4dfc9e6efaf",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "manifest_sha256": "21e51ac98e4114bc59d2dc6c139aa22de7dd4994956bc48a28fc87f23d56d308",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

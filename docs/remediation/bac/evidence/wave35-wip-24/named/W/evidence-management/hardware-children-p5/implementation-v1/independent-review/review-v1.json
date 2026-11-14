@@ -1,0 +1,145 @@
+{
+  "schema": "bac-p5-independent-implementation-review-v1",
+  "disposition": "CHANGES REQUIRED",
+  "at": "2026-11-14T11:11:29.177317+00:00",
+  "reviewer": "/root/bac_p5_independent_review",
+  "author": "/root/bac_astra_p4_p5_owner_contract",
+  "independence": "Separate reviewer task; own actual source/design reading and resealed adversarial cases; no implementation edits",
+  "author_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/freeze-v1.json",
+    "bytes": 14251,
+    "sha256": "ef7c4935eac1fa2cdc88a61b47a2361b995b16793bff6c34534ee055a6c0ea21"
+  },
+  "design": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P4-P5-OWNER-CONTRACT-v1.md",
+    "bytes": 27970,
+    "sha256": "960f6e1b1dec411007c9d33ab388ea9b99d560c0c701f008fe5fdf113645af97"
+  },
+  "root_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-contract-preparation/root-design-adoption-v1.json",
+    "bytes": 2067,
+    "sha256": "1bfd632c5f890a0eee0748ccc75c72ea3c09c133e739527ca2e3117865deb50a"
+  },
+  "approved_interface_correction": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/interface-correction-v1.md",
+    "bytes": 4102,
+    "sha256": "e685af9bf32907371aabc676fb7988a47633a906765e033bf36b37e7bf92d9bd"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/review-v1.md",
+    "bytes": 10130,
+    "sha256": "845a98149a0df327f33f4c7156aad42db62805020db316182d1a26422c59caea"
+  },
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/probe-v1.py",
+    "bytes": 10201,
+    "sha256": "4a28229c955395c697aacbe28fda4d2af918625c1a0118b714da193f16276195"
+  },
+  "retained_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/review-v1-inventory.json",
+    "bytes": 474344,
+    "sha256": "58c5ca12752a5dd415a7ae7c874722488d9071bbee0c9c4438f1922eac912301"
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "blocking",
+      "title": "Phase wrapper label not bound to actual recomputed subject case/job",
+      "cases": [
+        "phase-two-reference-runs-no-failure-run",
+        "phase-swapped-jobs-relabelled-wrapper"
+      ]
+    },
+    {
+      "id": "F2",
+      "priority": "blocking",
+      "title": "Incomplete recursive private transport types and reference closure",
+      "cases": [
+        "standalone-malformed-launch-and-grant",
+        "launch-source-witness-foreign",
+        "sampler-commands-malformed"
+      ]
+    },
+    {
+      "id": "F3",
+      "priority": "blocking",
+      "title": "Missing process/claim/sampler causal clock correspondence",
+      "cases": [
+        "guard-process-time-after-return",
+        "parent-end-before-child-start",
+        "claim-time-before-launch",
+        "sampler-lock-reversed"
+      ]
+    }
+  ],
+  "attempts": [
+    {
+      "id": "attempt-01",
+      "scope": "independent synthetic adversarial probes",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-01/execution.json",
+        "bytes": 2776,
+        "sha256": "c67c699a94aa75d4f7c01fc26af97531acd5cefb70c5a225d7d3a22dbc812ad0"
+      },
+      "stdout": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-01/stdout.log",
+        "bytes": 26104,
+        "sha256": "4bfbb40cbcd32cbc5d424b0eac9b10a7e7035db92b93b7e7c23f219cdf69f43c"
+      },
+      "stderr": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-01/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "results": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-01/probe-results.json",
+        "bytes": 33325,
+        "sha256": "21fb08336a1c88d005ab8bcb697112a8caaeb73ab4981eb38bae7c0554f18930"
+      },
+      "exit": 1,
+      "cases": 26,
+      "unexpected_satisfied": 20,
+      "valid_controls": 5,
+      "refusal_controls": 1
+    },
+    {
+      "id": "attempt-02",
+      "scope": "authored exact-freeze synthetic suite independent rerun",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-02/execution.json",
+        "bytes": 3170,
+        "sha256": "854e829790d8479e72377a935df32452c8c7191dbc368566ce0000c3ca86fa48"
+      },
+      "stdout": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-02/stdout.log",
+        "bytes": 180,
+        "sha256": "21394473739b39d474ac01d2df752f25ba3cd02ab0febb728af25934e3c2cecd"
+      },
+      "stderr": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-02/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exit": 0,
+      "passed": 125
+    }
+  ],
+  "overlap_accounting": "Selections remain separate; no summed unique count or coverage claim",
+  "body_budget": {
+    "actually_read_source_lines": 3136,
+    "probe_lines": 208,
+    "actual_total_lines": 3344,
+    "charged_with_unused_historical_allowance": 4096,
+    "maximum": 5000,
+    "historical_body_read": false
+  },
+  "runtime_slot": "released after attempt-02",
+  "implementation_modified_by_reviewer": false,
+  "limits": [
+    "Pure phase counterexamples use inert author fixture graphs, not live P0/source-root qualification",
+    "Standalone malformed private records independently reach live-reader satisfied receipt",
+    "No P4/APP/full-chain/hardware/source-assertion acceptance",
+    "Author early defaulttmp ancillary fixtures not separately inventoried; retained limitation not repaired or relabelled",
+    "Root owns APP/index; no source writer authorization exercised by reviewer"
+  ]
+}

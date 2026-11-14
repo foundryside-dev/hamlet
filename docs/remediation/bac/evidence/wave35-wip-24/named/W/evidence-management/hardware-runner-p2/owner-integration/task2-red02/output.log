@@ -1,0 +1,74 @@
+F...............................F                                        [100%]
+=================================== FAILURES ===================================
+____ test_owner_spawn_context_accepts_only_authenticated_parent_derivation _____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red02/fixtures/test_owner_spawn_context_accep0')
+
+    def test_owner_spawn_context_accepts_only_authenticated_parent_derivation(tmp_path):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1061: in process_context
+    _require(raw['owner_claim'] == [] and raw['sampler'] == [], 'ordinary delegated process has owner evidence')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'ordinary delegated process has owner evidence'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: ordinary delegated process has owner evidence
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+_______ test_owner_spawn_nested_context_keeps_immediate_parent_and_case ________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red02/fixtures/test_owner_spawn_nested_contex0')
+
+    def test_owner_spawn_nested_context_keeps_immediate_parent_and_case(tmp_path):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        parent_ref = seal(); parent = json.loads(json.dumps(record)); parent_raw = json.loads(json.dumps(raw))
+        nested_role = {**role, 'id': 'nested'}; selected['roles'].append(nested_role)
+        old_contract = json.loads(Path(launch['owner_contract']['path']).read_text())
+        old_contract['roles'] = [nested_role]
+        contract = put('nested-contract.json', old_contract)
+        selected['obligations'].append({**selected['obligations'][-1], 'id': 'nested-owner', 'contract': contract})
+        nested_launch = {**launch, 'owner_contract': contract, 'parent_process': parent_ref,
+            'parent_identity': parent['identity'], 'parent_argv': parent['argv'], 'source_witness': parent['source_witness'],
+            'child_role_id': 'nested', 'instance_id': 'nested-one', 'environment': parent['environment'],
+            'at': '2026-01-01T00:00:04.000000Z', 'monotonic_ns': 4_000_000_000}
+        nested_launch_ref = put('owner-launch-nested-one.json', nested_launch)
+        nested_identity = {**parent['identity'], 'pid': 1002, 'ppid': 1001, 'start_identity': '102'}
+        nested_claim = {**claim, 'launch': nested_launch_ref, 'identity': nested_identity, 'role_id': 'nested',
+            'at': '2026-01-01T00:00:05.000000Z', 'monotonic_ns': 5_000_000_000}
+        nested_claim_ref = put('owner-claim-nested-one.json', nested_claim)
+        source = json.loads(Path(parent['source_witness']['path']).read_text())
+        source.update(process_identity=nested_identity, at=nested_claim['at'])
+        source_ref = put('source-nested-start.json', source)
+        raw.update(identity=nested_identity, at=nested_claim['at'], owner_claim=[nested_claim_ref],
+            context={**parent_raw['context'], 'role_id': 'nested', 'parent_start': [parent_ref], 'lifecycle': [nested_launch_ref]})
+        record.update(process_id='nested', role_id='nested', identity=nested_identity, parent_identity=[parent['identity']],
+            source_witness=source_ref, at=nested_claim['at'], monotonic_ns=nested_claim['monotonic_ns'])
+        envelope['inventory'] += [contract, nested_launch_ref, nested_claim_ref, source_ref]
+        envelope['source_witnesses'].append(source_ref); seal()
+>       custody.process_context(selected, record, nested_role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1224: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1061: in process_context
+    _require(raw['owner_claim'] == [] and raw['sampler'] == [], 'ordinary delegated process has owner evidence')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'ordinary delegated process has owner evidence'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: ordinary delegated process has owner evidence
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_context_accepts_only_authenticated_parent_derivation
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_nested_context_keeps_immediate_parent_and_case
+2 failed, 31 passed, 96 deselected in 2.02s

@@ -1,0 +1,91 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py F. [100%]
+
+=================================== FAILURES ===================================
+__ test_reset_callback_reads_owned_cursors_without_export_or_mutation_rights ___
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f361f565e00>
+
+    def test_reset_callback_reads_owned_cursors_without_export_or_mutation_rights(compiled: Any, monkeypatch: Any) -> None:
+        """Provisional reset diagnostics must not become healthy exports or reentry rights."""
+        evaluate = VectorizedHamletEnv._evaluate_vfs_profiles
+        observed: list[Any] = []
+        layout: dict[str, Any] = {}
+    
+        def observe(self: Any) -> None:
+            if self.world_phase == "resetting":
+                cursors = self.accepted_episode_seqs
+                assert dict(cursors) == dict.fromkeys(IDS, 0)
+                assert self.vfs_randomness.context.world_ids == IDS
+                assert self.vfs_randomness.context.world_episode_seqs == (1,) * len(IDS)
+                with pytest.raises(TypeError):
+                    cursors[IDS[0]] = 99
+                with pytest.raises(ValueError):
+                    self.vfs_random_state()
+                with pytest.raises(ValueError):
+                    self.set_affordance_positions(layout)
+                assert dict(self.accepted_episode_seqs) == dict.fromkeys(IDS, 0)
+                observed.append(cursors)
+            return evaluate(self)
+    
+        monkeypatch.setattr(VectorizedHamletEnv, "_evaluate_vfs_profiles", observe)
+        rig = make_parent(compiled, "none", "shared")
+        layout.update(rig.env.get_affordance_positions())
+>       reservation, _ = begin(rig, retired=IDS[1:])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:781: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_population.py:56: in begin
+    rig.record, activation = rig.population.reset(reservation=reservation, retired_world_ids=retired)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/population/vectorized.py:1147: in reset
+    record = self.env.reset(reservation=reservation)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:2269: in reset
+    observation = self._reset_world_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1047: in _reset_world_state
+    self._evaluate_vfs_profiles()
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:764: in observe
+    cursors = self.accepted_episode_seqs
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:138: in call
+    with self._reverse_entry(name, arguments):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f361f36ef90>
+name = 'accepted_episode_seqs', arguments = {}
+
+    @contextmanager
+    def _reverse_entry(self, name: str, arguments: dict[str, Any]) -> Iterator[None]:
+        record = self.reverse
+        if record is None:
+>           raise ValueError("ENV public methods cannot reenter active work")
+E           ValueError: ENV public methods cannot reenter active work
+
+src/townlet/environment/parent_custody.py:180: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_reset_callback_reads_owned_cursors_without_export_or_mutation_rights
+========================= 1 failed, 1 passed in 7.08s ==========================

@@ -1,0 +1,217 @@
+........................................................................ [ 64%]
+..........................FF.......FFFF                                  [100%]
+=================================== FAILURES ===================================
+_ test_one_canonical_launch_with_distinct_obligation_role_subsets[rng-custody] _
+
+kind = 'rng-custody'
+
+    @pytest.mark.parametrize('kind',['rng-custody','fork-three-trials'])
+    def test_one_canonical_launch_with_distinct_obligation_role_subsets(kind):
+        b=Bundle('inherited_pid',kind=kind)
+        subset=b.roles[:2] if kind=='rng-custody' else b.roles[1:]
+        add_canonical_owner(b,subset)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:442: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:570: in validate_child_obligation
+    check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:195: in __init__
+    equal(self.contract['roles'], self.job['roles'], 'contract roles differ')
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:64: in equal
+    require(same(a, b), why)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'contract roles differ'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: contract roles differ
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:45: ValueError
+_ test_one_canonical_launch_with_distinct_obligation_role_subsets[fork-three-trials] _
+
+kind = 'fork-three-trials'
+
+    @pytest.mark.parametrize('kind',['rng-custody','fork-three-trials'])
+    def test_one_canonical_launch_with_distinct_obligation_role_subsets(kind):
+        b=Bundle('inherited_pid',kind=kind)
+        subset=b.roles[:2] if kind=='rng-custody' else b.roles[1:]
+        add_canonical_owner(b,subset)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:442: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:570: in validate_child_obligation
+    check=Check(documents,subject['spec'],subject['job_id'],subject['obligation_id'])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:195: in __init__
+    equal(self.contract['roles'], self.job['roles'], 'contract roles differ')
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:64: in equal
+    require(same(a, b), why)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'contract roles differ'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: contract roles differ
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:45: ValueError
+__ test_retained_unexecuted_or_failed_transport_never_satisfies[unrun-unrun] ___
+
+status = 'unrun', expected = 'unrun'
+
+    @pytest.mark.parametrize('status,expected',[('unrun','unrun'),('refused','unrun'),('completed-failed','unsatisfied'),('interrupted','unsatisfied')])
+    def test_retained_unexecuted_or_failed_transport_never_satisfies(status,expected):
+        b=Bundle();keep={'spec','candidate','witness','contract','completion','result'};b.items=[i for i in b.items if i[0] in keep]
+        for obj in (b.named['completion'],b.named['result']):
+            for k in ('collected_ids','outcomes','process_records','obligation_records','source_witnesses'):obj[k]=[]
+            obj['inventory']=[copy.deepcopy(OPAQUE)]
+        r=b.named['result'];r.update(disposition=status,reason='synthetic retained '+status,exit_code=1 if status=='completed-failed' else None,signal=9 if status=='interrupted' else 0)
+        if status in ('unrun','refused'):
+            for key in ('end','elapsed_ns'):r[key]={'state':'unavailable','value':None,'reason':'not executed'}
+>       out=api().validate_child_obligation(b.subject())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:467: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:571: in validate_child_obligation
+    result=check.run();documents.finish();return result
+           ^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:527: in run
+    for _,e in self.execution():
+               ^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:301: in execution
+    require(result['disposition']=='successful' and type(result['exit_code']) is int and result['exit_code']==0 and result['signal']==0,'execution not successful')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'execution not successful'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: execution not successful
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:45: ValueError
+_ test_retained_unexecuted_or_failed_transport_never_satisfies[refused-unrun] __
+
+status = 'refused', expected = 'unrun'
+
+    @pytest.mark.parametrize('status,expected',[('unrun','unrun'),('refused','unrun'),('completed-failed','unsatisfied'),('interrupted','unsatisfied')])
+    def test_retained_unexecuted_or_failed_transport_never_satisfies(status,expected):
+        b=Bundle();keep={'spec','candidate','witness','contract','completion','result'};b.items=[i for i in b.items if i[0] in keep]
+        for obj in (b.named['completion'],b.named['result']):
+            for k in ('collected_ids','outcomes','process_records','obligation_records','source_witnesses'):obj[k]=[]
+            obj['inventory']=[copy.deepcopy(OPAQUE)]
+        r=b.named['result'];r.update(disposition=status,reason='synthetic retained '+status,exit_code=1 if status=='completed-failed' else None,signal=9 if status=='interrupted' else 0)
+        if status in ('unrun','refused'):
+            for key in ('end','elapsed_ns'):r[key]={'state':'unavailable','value':None,'reason':'not executed'}
+>       out=api().validate_child_obligation(b.subject())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:467: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:571: in validate_child_obligation
+    result=check.run();documents.finish();return result
+           ^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:527: in run
+    for _,e in self.execution():
+               ^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:301: in execution
+    require(result['disposition']=='successful' and type(result['exit_code']) is int and result['exit_code']==0 and result['signal']==0,'execution not successful')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'execution not successful'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: execution not successful
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:45: ValueError
+_ test_retained_unexecuted_or_failed_transport_never_satisfies[completed-failed-unsatisfied] _
+
+status = 'completed-failed', expected = 'unsatisfied'
+
+    @pytest.mark.parametrize('status,expected',[('unrun','unrun'),('refused','unrun'),('completed-failed','unsatisfied'),('interrupted','unsatisfied')])
+    def test_retained_unexecuted_or_failed_transport_never_satisfies(status,expected):
+        b=Bundle();keep={'spec','candidate','witness','contract','completion','result'};b.items=[i for i in b.items if i[0] in keep]
+        for obj in (b.named['completion'],b.named['result']):
+            for k in ('collected_ids','outcomes','process_records','obligation_records','source_witnesses'):obj[k]=[]
+            obj['inventory']=[copy.deepcopy(OPAQUE)]
+        r=b.named['result'];r.update(disposition=status,reason='synthetic retained '+status,exit_code=1 if status=='completed-failed' else None,signal=9 if status=='interrupted' else 0)
+        if status in ('unrun','refused'):
+            for key in ('end','elapsed_ns'):r[key]={'state':'unavailable','value':None,'reason':'not executed'}
+>       out=api().validate_child_obligation(b.subject())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:467: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:571: in validate_child_obligation
+    result=check.run();documents.finish();return result
+           ^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:527: in run
+    for _,e in self.execution():
+               ^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:301: in execution
+    require(result['disposition']=='successful' and type(result['exit_code']) is int and result['exit_code']==0 and result['signal']==0,'execution not successful')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'execution not successful'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: execution not successful
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:45: ValueError
+_ test_retained_unexecuted_or_failed_transport_never_satisfies[interrupted-unsatisfied] _
+
+status = 'interrupted', expected = 'unsatisfied'
+
+    @pytest.mark.parametrize('status,expected',[('unrun','unrun'),('refused','unrun'),('completed-failed','unsatisfied'),('interrupted','unsatisfied')])
+    def test_retained_unexecuted_or_failed_transport_never_satisfies(status,expected):
+        b=Bundle();keep={'spec','candidate','witness','contract','completion','result'};b.items=[i for i in b.items if i[0] in keep]
+        for obj in (b.named['completion'],b.named['result']):
+            for k in ('collected_ids','outcomes','process_records','obligation_records','source_witnesses'):obj[k]=[]
+            obj['inventory']=[copy.deepcopy(OPAQUE)]
+        r=b.named['result'];r.update(disposition=status,reason='synthetic retained '+status,exit_code=1 if status=='completed-failed' else None,signal=9 if status=='interrupted' else 0)
+        if status in ('unrun','refused'):
+            for key in ('end','elapsed_ns'):r[key]={'state':'unavailable','value':None,'reason':'not executed'}
+>       out=api().validate_child_obligation(b.subject())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:467: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:571: in validate_child_obligation
+    result=check.run();documents.finish();return result
+           ^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:527: in run
+    for _,e in self.execution():
+               ^^^^^^^^^^^^^^^^
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:301: in execution
+    require(result['disposition']=='successful' and type(result['exit_code']) is int and result['exit_code']==0 and result['signal']==0,'execution not successful')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+ok = False, why = 'execution not successful'
+
+    def require(ok, why):
+        if not ok:
+>           raise ValueError(why)
+E           ValueError: execution not successful
+
+bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py:45: ValueError
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_one_canonical_launch_with_distinct_obligation_role_subsets[rng-custody]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_one_canonical_launch_with_distinct_obligation_role_subsets[fork-three-trials]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_retained_unexecuted_or_failed_transport_never_satisfies[unrun-unrun]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_retained_unexecuted_or_failed_transport_never_satisfies[refused-unrun]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_retained_unexecuted_or_failed_transport_never_satisfies[completed-failed-unsatisfied]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_retained_unexecuted_or_failed_transport_never_satisfies[interrupted-unsatisfied]
+6 failed, 105 passed in 2.05s

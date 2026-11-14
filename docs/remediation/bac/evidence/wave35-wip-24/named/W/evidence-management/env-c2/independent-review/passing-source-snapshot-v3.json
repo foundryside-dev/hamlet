@@ -1,0 +1,9 @@
+{
+  "schema": "env-c2-independent-passing-source-v3",
+  "source_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+  "inert_snapshot": "test_env_c2_independent-passing-r142-v3.py.txt",
+  "sha256": "35329d5ee96e74d0c74affdc9d06fdc8df0f9b2ec5ea55138ded34acc1cb059c",
+  "lines": 393,
+  "freeze_sha256": "7a621e5bf17b14938cc24bb4348f81836468f2a54120e9aa88cf80da516cd54b",
+  "status": "Historical R142 attempt2 nine PASS; inert snapshot never executed as copy"
+}

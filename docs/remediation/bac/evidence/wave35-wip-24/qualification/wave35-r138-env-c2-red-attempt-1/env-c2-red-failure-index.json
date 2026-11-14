@@ -1,0 +1,33 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "8a2576c4ef2a45ec3b1ce958440e72df56eb3eee",
+  "unique_node_phase_failures": 4,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: 'VectorizedHamletEnv' object has no attribute 'retain_parent_custody'",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_retained_env_scope_is_nonportable",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_bound_env_and_runtime_preserve_real_step_and_service",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_peer_waits_at_common_admission_through_outer_exit_and_consumer",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_retained_env_requires_binding_and_expires",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

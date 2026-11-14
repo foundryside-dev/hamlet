@@ -1,0 +1,27 @@
+F...............                                                         [100%]
+=================================== FAILURES ===================================
+____ test_owner_spawn_context_accepts_only_authenticated_parent_derivation _____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red01/fixtures/test_owner_spawn_context_accep0')
+
+    def test_owner_spawn_context_accepts_only_authenticated_parent_derivation(tmp_path):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+>       custody.process_context(selected, record, role, envelope)
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1061: in process_context
+    _require(raw['owner_claim'] == [] and raw['sampler'] == [], 'ordinary delegated process has owner evidence')
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'ordinary delegated process has owner evidence'
+
+    def _require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: ordinary delegated process has owner evidence
+
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:31: ValueError
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_context_accepts_only_authenticated_parent_derivation
+1 failed, 15 passed, 96 deselected in 1.23s

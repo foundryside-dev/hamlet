@@ -1,0 +1,7 @@
+{
+  "probe": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+  "sha256": "26688b80918d2fdd910ba6316ac85a58faa1c8b3bee52aa00ff863a9b01ae37f",
+  "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-independent-collection-attempt-1-spec.json",
+  "scope": "Root auxiliary probe byte check before actual attempt; manifest remains unchanged, postflight required."
+}

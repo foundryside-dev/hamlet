@@ -1,0 +1,3 @@
+worktree /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-worker08/fixtures/test_owner_spawn_resealed_cont22/source
+HEAD aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+

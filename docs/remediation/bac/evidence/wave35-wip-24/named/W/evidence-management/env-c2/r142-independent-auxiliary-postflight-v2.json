@@ -1,0 +1,12 @@
+{
+  "probe": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+  "sha256": "35329d5ee96e74d0c74affdc9d06fdc8df0f9b2ec5ea55138ded34acc1cb059c",
+  "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+  "attempts": [
+    "collection-attempt-2",
+    "runtime-attempt-2"
+  ],
+  "reason": "Repair unstable marshal representation witness; real source/identity/refusal checks preserved.",
+  "source_before_after": "PASS",
+  "scope": "Auxiliary source postflight for R142 collection/runtime attempt2; nine independent cases passed. Auxiliary probe is separately bound, not an APP manifest member."
+}

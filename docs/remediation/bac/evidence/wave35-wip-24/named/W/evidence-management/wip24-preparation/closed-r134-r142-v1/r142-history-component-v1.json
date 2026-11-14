@@ -1,0 +1,2758 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "collected_count": 9,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-s",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-independent-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 657,
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection-custody.json",
+              "sha256": "7b404c7c8e3005d17466cdceb9d982e0aff8f86823ee99b7880af67f57828949",
+              "type": "file"
+            },
+            {
+              "bytes": 1131,
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection-result.json",
+              "sha256": "da8f69967180ed219330d1f12827784f5a6ea240701ef4ebf61c2c0a48b83e3c",
+              "type": "file"
+            },
+            {
+              "bytes": 1653,
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection.log",
+              "sha256": "dba9685adb5c1b53a138af15f64d6c2432f741974ee0d1624e84aaefa59e7014",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 2.9892240219924133,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-c2-independent-collection-attempt-1--c2-independent-collection",
+          "log_paths": [
+            {
+              "bytes": 1653,
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection.log",
+              "root": "Q",
+              "sha256": "dba9685adb5c1b53a138af15f64d6c2432f741974ee0d1624e84aaefa59e7014"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 933,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "5cffe69130a122e7d1044751f0814b57089a7267c30fa104bbfa6026b64c0345"
+          },
+          "path": "wave35-r142-c2-independent-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1131,
+            "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection-result.json",
+            "root": "Q",
+            "sha256": "da8f69967180ed219330d1f12827784f5a6ea240701ef4ebf61c2c0a48b83e3c"
+          },
+          "record_id": "c2-independent-collection",
+          "result": {
+            "bytes": 1131,
+            "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection-result.json",
+            "root": "Q",
+            "sha256": "da8f69967180ed219330d1f12827784f5a6ea240701ef4ebf61c2c0a48b83e3c"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 657,
+            "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection-custody.json",
+            "root": "Q",
+            "sha256": "7b404c7c8e3005d17466cdceb9d982e0aff8f86823ee99b7880af67f57828949"
+          }
+        }
+      ],
+      "check": "wave35-r142-c2-independent-collection-attempt-1--c2-independent-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r142-c2-independent-collection-attempt-1--c2-independent-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "collected_count": 9,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-s",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-independent-collection-attempt-2",
+            "--collect-only"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 655,
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection-custody.json",
+              "sha256": "578975a93058b2fef05b7ea91b195e922ded052d5ad3031015ecb6308284d440",
+              "type": "file"
+            },
+            {
+              "bytes": 1129,
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection-result.json",
+              "sha256": "4e1a8afa2a6c05f1cbb8a739b40e53b08300d33b2c80a556481817c23cd90bc3",
+              "type": "file"
+            },
+            {
+              "bytes": 1653,
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection.log",
+              "sha256": "d47c56f02cb6b3c0fdcb7ef4473a57c6496ad2018b95d3364c05bd5608b49608",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.91712048597401,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-c2-independent-collection-attempt-2--c2-independent-collection",
+          "log_paths": [
+            {
+              "bytes": 1653,
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection.log",
+              "root": "Q",
+              "sha256": "d47c56f02cb6b3c0fdcb7ef4473a57c6496ad2018b95d3364c05bd5608b49608"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 932,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-2-outer.json",
+            "root": "W",
+            "sha256": "464e6ff1e534bb08dac221a52b80a40ed42c484d621073c35e60d905845c04bf"
+          },
+          "path": "wave35-r142-c2-independent-collection-attempt-2",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1129,
+            "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection-result.json",
+            "root": "Q",
+            "sha256": "4e1a8afa2a6c05f1cbb8a739b40e53b08300d33b2c80a556481817c23cd90bc3"
+          },
+          "record_id": "c2-independent-collection",
+          "result": {
+            "bytes": 1129,
+            "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection-result.json",
+            "root": "Q",
+            "sha256": "4e1a8afa2a6c05f1cbb8a739b40e53b08300d33b2c80a556481817c23cd90bc3"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 655,
+            "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection-custody.json",
+            "root": "Q",
+            "sha256": "578975a93058b2fef05b7ea91b195e922ded052d5ad3031015ecb6308284d440"
+          }
+        }
+      ],
+      "check": "wave35-r142-c2-independent-collection-attempt-2--c2-independent-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r142-c2-independent-collection-attempt-2--c2-independent-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-s",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-independent-runtime-attempt-1"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 1,
+            "passed": 8,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime",
+              "type": "directory"
+            },
+            {
+              "bytes": 11936,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime/failure-controller-c43249a642da52b3.json",
+              "sha256": "f4a3d5d0064ff4c43d5c0584d99b977b3ce1ff096836e37afd778220a3178551",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 804,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-failure-index.json",
+              "sha256": "fc34adc4c94c0f87d73b299e9b911aa7bb850b54217a89de10cd70c0d27057f9",
+              "type": "file"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-negative-custody.json",
+              "sha256": "22c5b242cae4412982ee10f2c039a91fa00507c76efae1cf189afbf7cb0a74f2",
+              "type": "file"
+            },
+            {
+              "bytes": 1096,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-result.json",
+              "sha256": "1df90063b2f31cf4662b4de6f51582596cd5ced27b9ee8fa8b5a24c7b8b2e0ef",
+              "type": "file"
+            },
+            {
+              "bytes": 12329,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime.log",
+              "sha256": "453bdaabfb609921c2dd0694a6f857b1d7fbbd1712b6f96d370465803275df9b",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 9.032022291008616,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-c2-independent-runtime-attempt-1--c2-independent-runtime",
+          "log_paths": [
+            {
+              "bytes": 12329,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime.log",
+              "root": "Q",
+              "sha256": "453bdaabfb609921c2dd0694a6f857b1d7fbbd1712b6f96d370465803275df9b"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 927,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "0e064aeaa633f7899cff99e92a002ebe9f9d760821d3cb0d4c0c6dddac369f2c"
+          },
+          "path": "wave35-r142-c2-independent-runtime-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1096,
+            "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-result.json",
+            "root": "Q",
+            "sha256": "1df90063b2f31cf4662b4de6f51582596cd5ced27b9ee8fa8b5a24c7b8b2e0ef"
+          },
+          "record_id": "c2-independent-runtime",
+          "result": {
+            "bytes": 1096,
+            "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-result.json",
+            "root": "Q",
+            "sha256": "1df90063b2f31cf4662b4de6f51582596cd5ced27b9ee8fa8b5a24c7b8b2e0ef"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 958,
+            "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-negative-custody.json",
+            "root": "Q",
+            "sha256": "22c5b242cae4412982ee10f2c039a91fa00507c76efae1cf189afbf7cb0a74f2"
+          }
+        }
+      ],
+      "check": "wave35-r142-c2-independent-runtime-attempt-1--c2-independent-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r142-c2-independent-runtime-attempt-1--c2-independent-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "-s",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-independent-runtime-attempt-2"
+          ],
+          "counts": {
+            "passed": 9,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 654,
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime-custody.json",
+              "sha256": "995bb7af2c93ab6e8f10e4acd2c0fe616b08cbc2af4b5012245154c2498d8276",
+              "type": "file"
+            },
+            {
+              "bytes": 1097,
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime-result.json",
+              "sha256": "2b05076a50e39346e547d68f92736e17420e5dd28b4f6d9ca565a50f0876647d",
+              "type": "file"
+            },
+            {
+              "bytes": 32038,
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime.log",
+              "sha256": "f49e95d3b719f85b7e2d90a70304fafdba59bea15b2b3a53d7e24b65c4c627a4",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 11.508824963006191,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-c2-independent-runtime-attempt-2--c2-independent-runtime",
+          "log_paths": [
+            {
+              "bytes": 32038,
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime.log",
+              "root": "Q",
+              "sha256": "f49e95d3b719f85b7e2d90a70304fafdba59bea15b2b3a53d7e24b65c4c627a4"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 927,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-2-outer.json",
+            "root": "W",
+            "sha256": "198d630f2c1c3b460dc68427f8da82b1897696a4fdce73206a7af2fd8d4ce59f"
+          },
+          "path": "wave35-r142-c2-independent-runtime-attempt-2",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1097,
+            "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime-result.json",
+            "root": "Q",
+            "sha256": "2b05076a50e39346e547d68f92736e17420e5dd28b4f6d9ca565a50f0876647d"
+          },
+          "record_id": "c2-independent-runtime",
+          "result": {
+            "bytes": 1097,
+            "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime-result.json",
+            "root": "Q",
+            "sha256": "2b05076a50e39346e547d68f92736e17420e5dd28b4f6d9ca565a50f0876647d"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 654,
+            "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime-custody.json",
+            "root": "Q",
+            "sha256": "995bb7af2c93ab6e8f10e4acd2c0fe616b08cbc2af4b5012245154c2498d8276"
+          }
+        }
+      ],
+      "check": "wave35-r142-c2-independent-runtime-attempt-2--c2-independent-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r142-c2-independent-runtime-attempt-2--c2-independent-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "collected_count": 268,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+            "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+            "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-owner-regressions-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 661,
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection-custody.json",
+              "sha256": "f15a668020e2f628db96f3290c31bde1858494b2a4d68ef07947301842b5c38c",
+              "type": "file"
+            },
+            {
+              "bytes": 1290,
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection-result.json",
+              "sha256": "5fb681dd3b3675973eab4d6f094a25fea0106fac698b3579d957e4e5d31c504f",
+              "type": "file"
+            },
+            {
+              "bytes": 26263,
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection.log",
+              "sha256": "f84530f944875915d58d8733054af21ced4aff28e43b6ad3453021ccf7640730",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 3.85236187899136,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-c2-owner-regressions-collection-attempt-1--c2-owner-regressions-collection",
+          "log_paths": [
+            {
+              "bytes": 26263,
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection.log",
+              "root": "Q",
+              "sha256": "f84530f944875915d58d8733054af21ced4aff28e43b6ad3453021ccf7640730"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 944,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "f0cf041dc9a0f8de326274f3ca733cdb81fae6846e06384f9cefed578fada6b7"
+          },
+          "path": "wave35-r142-c2-owner-regressions-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1290,
+            "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection-result.json",
+            "root": "Q",
+            "sha256": "5fb681dd3b3675973eab4d6f094a25fea0106fac698b3579d957e4e5d31c504f"
+          },
+          "record_id": "c2-owner-regressions-collection",
+          "result": {
+            "bytes": 1290,
+            "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection-result.json",
+            "root": "Q",
+            "sha256": "5fb681dd3b3675973eab4d6f094a25fea0106fac698b3579d957e4e5d31c504f"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 661,
+            "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection-custody.json",
+            "root": "Q",
+            "sha256": "f15a668020e2f628db96f3290c31bde1858494b2a4d68ef07947301842b5c38c"
+          }
+        }
+      ],
+      "check": "wave35-r142-c2-owner-regressions-collection-attempt-1--c2-owner-regressions-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r142-c2-owner-regressions-collection-attempt-1--c2-owner-regressions-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+            "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+            "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+            "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-owner-regressions-runtime-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 30,
+            "passed": 234,
+            "skipped": 4,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime",
+              "type": "directory"
+            },
+            {
+              "bytes": 6142,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-0158b641e2fda3fd.json",
+              "sha256": "6cf974f2281d4a3cfde90a5df033ec6c00f59caba3de52d7f8ea457c84b5e67c",
+              "type": "file"
+            },
+            {
+              "bytes": 4605,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-096d022ab6bea0ad.json",
+              "sha256": "2f28eba8e3490dbf33e713e1f2f1610e156749dd2d9d278c5873ee2549416bf7",
+              "type": "file"
+            },
+            {
+              "bytes": 1621,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-2b35263dd27a6650.json",
+              "sha256": "74c0ff369ddae98a1b2345f159e5e221314e34737b82fd2e3525a7d1051d352e",
+              "type": "file"
+            },
+            {
+              "bytes": 5164,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-351ed149c99649d1.json",
+              "sha256": "7e5409540a8b1fec41724b4a72f1b6e3ab267d8c5178ebf7eb6fcd3c9eb78945",
+              "type": "file"
+            },
+            {
+              "bytes": 6128,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-44e5f36ab11279a4.json",
+              "sha256": "cdffebab9035cf7ddcad7160d0def60e5d142535834d05bb05d20fdb97817953",
+              "type": "file"
+            },
+            {
+              "bytes": 6128,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-4645cdd45d4d6cc7.json",
+              "sha256": "bb9540b1b1800083fd78c0532beccb3284eb33f533b7f665d4d6ed8278bf2e3a",
+              "type": "file"
+            },
+            {
+              "bytes": 6575,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-46a13ada5d39bfa8.json",
+              "sha256": "d15df12cc22bc6beac8d5af8ab2f4d2cdbbce349f00c92c3bd282dc5c4db547f",
+              "type": "file"
+            },
+            {
+              "bytes": 5846,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-4a364b9f7de3da44.json",
+              "sha256": "4ff2517468a45a835658732f6953552246073d88101220c8d7eacfb321aebd91",
+              "type": "file"
+            },
+            {
+              "bytes": 1587,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-5dc228fc87228324.json",
+              "sha256": "e43cf8a1a295c86b6be75a8d2b20c27532274bc401139a14eb75d1846c8734dc",
+              "type": "file"
+            },
+            {
+              "bytes": 3775,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-5f919173029541b6.json",
+              "sha256": "5e9cf5b33ff484aa853e64ef905fc6ef04f8f0df8540b99c7754001d942da062",
+              "type": "file"
+            },
+            {
+              "bytes": 2207,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-663fe995d62b50fc.json",
+              "sha256": "e0e701014e596473ee6552c561f0a6920458921fe75bbd0ef23e07661f3a6209",
+              "type": "file"
+            },
+            {
+              "bytes": 6120,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-69d8189adecd4606.json",
+              "sha256": "44a60df1b3c79496083778d7dc315f0c8a8993fd400791f4edb8c21fc056b1a9",
+              "type": "file"
+            },
+            {
+              "bytes": 4485,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-6cedb5d38e785cff.json",
+              "sha256": "679d6043ef77e24717a3377c15f90e8da8ef823ce795f437109c217e0330b3b7",
+              "type": "file"
+            },
+            {
+              "bytes": 4658,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-74a1703785f267c5.json",
+              "sha256": "0570261e4386ac1637ea00ea1baaa55851107bcc6ba8779dacbef8163ef05d3b",
+              "type": "file"
+            },
+            {
+              "bytes": 6132,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-7bf4a23926f93754.json",
+              "sha256": "3e362cee6ea6dfd41fbc6a02439212275899d7801f90039a42c0baea52e164f5",
+              "type": "file"
+            },
+            {
+              "bytes": 1753,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-7bf6ebd91dde3412.json",
+              "sha256": "693448e8fe2b0d5809c1434a32729caf9da501e2267e3e91ee3ffce47a9e4e70",
+              "type": "file"
+            },
+            {
+              "bytes": 6575,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-8e4522247dc6abb1.json",
+              "sha256": "675f1a09b481df7500eb1c5e08a20e517fda824f9b4f534908044a4dbe9407f7",
+              "type": "file"
+            },
+            {
+              "bytes": 6579,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a18f5663f92b6ad4.json",
+              "sha256": "b5df63021402f43cfea25dbc4658160fc91d01f2277924e85a07beed35e5d2f4",
+              "type": "file"
+            },
+            {
+              "bytes": 2151,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a2ea06b25011437c.json",
+              "sha256": "26c0c916ced470ce42bd9c98f66f76a62b491b517ec3fe985dc20ecd41b52161",
+              "type": "file"
+            },
+            {
+              "bytes": 6126,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a30ddf4c380f6166.json",
+              "sha256": "6ca152592d74421285fbb34fe88261e5e5b1e1fb43c8d5a6ec76995854573342",
+              "type": "file"
+            },
+            {
+              "bytes": 5446,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ab783ce1bc8f13c5.json",
+              "sha256": "7e55e234c28bf81d8bf1857db855e5ee97a69e51a571317a05d6f2ff3845ecd3",
+              "type": "file"
+            },
+            {
+              "bytes": 6573,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-b4aee75ac7ef497b.json",
+              "sha256": "c4e2c1478ccf30b4b32194c676a3afd301804b923cbf43d02ad596fa4de5291f",
+              "type": "file"
+            },
+            {
+              "bytes": 6589,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-b5241db1b00153c5.json",
+              "sha256": "efa30e1abd102597c4678cc9e89f39450b1171922c1507d557afe2966561728f",
+              "type": "file"
+            },
+            {
+              "bytes": 4694,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c19b5d201a88fea7.json",
+              "sha256": "6e2f76d1fd72ea5a85e9cce3e7f849637f96b3fce9554bb64b74d328a681e0b1",
+              "type": "file"
+            },
+            {
+              "bytes": 5396,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c505996050ab9ff3.json",
+              "sha256": "7519be5ddd6a30c4757119dc71b03aeeb120f0cf7c04243c0bf41d1581101886",
+              "type": "file"
+            },
+            {
+              "bytes": 5850,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c7ebcc9d5a80dba7.json",
+              "sha256": "1501934dad7301b77f967801e4d2d60ccefc89ea3af941084efe4d2984b0724a",
+              "type": "file"
+            },
+            {
+              "bytes": 5386,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-e1e417fa262cdf88.json",
+              "sha256": "39ef9a9a3700f2f09939cb2e39512cbf05893f9a9835231b0c419a922734e574",
+              "type": "file"
+            },
+            {
+              "bytes": 6567,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ec23856865f89d93.json",
+              "sha256": "484b5e82f2bc22df0d8a26449d4d4516398ad0e99ba954844f6de436cae9b979",
+              "type": "file"
+            },
+            {
+              "bytes": 4704,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ed6677c32b0a3ba2.json",
+              "sha256": "75c5bb6d6fc43156e00faf7123b12da8cb70ebc0c1fe24ed51fc2d60b5c1c281",
+              "type": "file"
+            },
+            {
+              "bytes": 4759,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-f5f43656601cfd30.json",
+              "sha256": "523f530993092960c44886a9418678438edb27c04dafa53b130dd3243c601da0",
+              "type": "file"
+            },
+            {
+              "bytes": 4598,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-096d022ab6bea0ad.json",
+              "sha256": "d843c00932178baa0968f20aa1aad89fb884543ee5a928a00d779b2bf11b1140",
+              "type": "file"
+            },
+            {
+              "bytes": 1614,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-2b35263dd27a6650.json",
+              "sha256": "71e2ba29a85c576f04d28ba776b3f9159d2e5e26a6b364e951cd379e65ac9eff",
+              "type": "file"
+            },
+            {
+              "bytes": 6121,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-44e5f36ab11279a4.json",
+              "sha256": "6a989a61d8b244e060dcc4f9393a189be6cde13f0ad890c098adea6d99a25d54",
+              "type": "file"
+            },
+            {
+              "bytes": 6121,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-4645cdd45d4d6cc7.json",
+              "sha256": "9bec26b061a73a389cd9425845e54393560db552ec6216805b92c21038d9bf09",
+              "type": "file"
+            },
+            {
+              "bytes": 5839,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-4a364b9f7de3da44.json",
+              "sha256": "86e9c608ede36f2749201db2083e607becc56533c47e93ba103f257d84bb740d",
+              "type": "file"
+            },
+            {
+              "bytes": 1580,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-5dc228fc87228324.json",
+              "sha256": "e453443b2155eb0e3a4d82fff7171a1114ffac4b68e65598c29fa4175af04e00",
+              "type": "file"
+            },
+            {
+              "bytes": 3768,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-5f919173029541b6.json",
+              "sha256": "0a8cd2aa3b5a4b9c648b322af4083e5e026471b603515aed5a430cd186a7a93f",
+              "type": "file"
+            },
+            {
+              "bytes": 6113,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-69d8189adecd4606.json",
+              "sha256": "67a278c95f0ffaf681eef0a96d6da7fb05f8864ace3c8ee8cde06d5e8620e60f",
+              "type": "file"
+            },
+            {
+              "bytes": 4478,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-6cedb5d38e785cff.json",
+              "sha256": "6f7300aad92cbe1d7c8385089c9ff64a3871e3283b3c39a3e9df212f57c54d69",
+              "type": "file"
+            },
+            {
+              "bytes": 6125,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-7bf4a23926f93754.json",
+              "sha256": "cdae52032d38b277025b31458fbac6bdc66117ae05d9f792aeba15d2b2653961",
+              "type": "file"
+            },
+            {
+              "bytes": 1746,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-7bf6ebd91dde3412.json",
+              "sha256": "c53a8a80b196b31f99ff31d2535e22a48a457ad100a34167cdb9835f64e76c47",
+              "type": "file"
+            },
+            {
+              "bytes": 6119,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-a30ddf4c380f6166.json",
+              "sha256": "3dda6551544c3b6085ef75db5500ee2cc5acebf13649dff219cd898ba29ae025",
+              "type": "file"
+            },
+            {
+              "bytes": 5439,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-ab783ce1bc8f13c5.json",
+              "sha256": "a197bc734daf81e854528d56c66bba5225367b412619d25c14bec57c44177010",
+              "type": "file"
+            },
+            {
+              "bytes": 4687,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-c19b5d201a88fea7.json",
+              "sha256": "cdb28a57c76a0ce6de35df11360bedf0771608f046be814c2caf865611597f8e",
+              "type": "file"
+            },
+            {
+              "bytes": 5389,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-c505996050ab9ff3.json",
+              "sha256": "a8e88bbc462952f4947eae44a8e382068a399c26ffc85ecc0bbd273e3460461f",
+              "type": "file"
+            },
+            {
+              "bytes": 5843,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-c7ebcc9d5a80dba7.json",
+              "sha256": "7a799d30b8f2ad127820354dd58f1f85d22b16df83353e756921dea448edfeae",
+              "type": "file"
+            },
+            {
+              "bytes": 5379,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-e1e417fa262cdf88.json",
+              "sha256": "37fbe60898072f565e26fc6ffe4299ac3853e7cc8bf8f9206077316c9dff2bac",
+              "type": "file"
+            },
+            {
+              "bytes": 4697,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-ed6677c32b0a3ba2.json",
+              "sha256": "517e998aa1e289f8a2dec65a79d3d882bcc6c7d6d0195fe28a8165126bebe6ce",
+              "type": "file"
+            },
+            {
+              "bytes": 4752,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-f5f43656601cfd30.json",
+              "sha256": "54e27fd9fa7d30174f4f33854b75fe5f2a350d5961d42d97d11e7edbda647fac",
+              "type": "file"
+            },
+            {
+              "bytes": 6135,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-0158b641e2fda3fd.json",
+              "sha256": "b6a25f9eb1d4b1aeb2e1145b30d8654f72787ecd12928fdc41c8b8aab5aad2cc",
+              "type": "file"
+            },
+            {
+              "bytes": 5157,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-351ed149c99649d1.json",
+              "sha256": "ab86eae5604b13f41d3b43d6ed6f4ac3afa8019fbcc67ae74607a3a65048eddc",
+              "type": "file"
+            },
+            {
+              "bytes": 6568,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-46a13ada5d39bfa8.json",
+              "sha256": "aba5ca733386732a0a0167a4ffb52bdb7f1f55a711a7e1041611b57441ece61a",
+              "type": "file"
+            },
+            {
+              "bytes": 2200,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-663fe995d62b50fc.json",
+              "sha256": "2e0c456c7adaf25f86455826440c1dd6e17794d6217ba390aff30b83ca503354",
+              "type": "file"
+            },
+            {
+              "bytes": 4651,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-74a1703785f267c5.json",
+              "sha256": "9013905e221e3abbb9b3677b54c8638f690716ad917048b95e222342f0298133",
+              "type": "file"
+            },
+            {
+              "bytes": 6568,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-8e4522247dc6abb1.json",
+              "sha256": "533bc17440143e35dea003efbd392a643d4baf4add75eff44f1ce0c106897161",
+              "type": "file"
+            },
+            {
+              "bytes": 6572,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-a18f5663f92b6ad4.json",
+              "sha256": "c4a98029cc277d6ef86ad47a21e2341427b9ba1c8be2e9f814a1d47c621e1bc7",
+              "type": "file"
+            },
+            {
+              "bytes": 2144,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-a2ea06b25011437c.json",
+              "sha256": "33fe0788e03be2b5a168904ad53e66bd9b9843fa9474a73e463b8cba7577584a",
+              "type": "file"
+            },
+            {
+              "bytes": 6566,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-b4aee75ac7ef497b.json",
+              "sha256": "227a6aa691c12b94424c3dcecf32520fa88ed3bf9df2f6656af502d258652e1e",
+              "type": "file"
+            },
+            {
+              "bytes": 6582,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-b5241db1b00153c5.json",
+              "sha256": "a54eab2543a524723c01435ab750aada76478ecfddc1fe5a29cb1948815beb90",
+              "type": "file"
+            },
+            {
+              "bytes": 6560,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-ec23856865f89d93.json",
+              "sha256": "3e70d6a1b9ea23bc6591f895b50f128c1a43727d1dbf520bf223f9fac1f04201",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-gw0.json",
+              "sha256": "7132660414094f30949cc5ba63a2631f71cee450681c0eee59bbcaf98e6c4d0f",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-gw1.json",
+              "sha256": "76e8b2f1d645308dd9c14dda2d88e5f797abd44136e7cae6e1a135747c8a0759",
+              "type": "file"
+            },
+            {
+              "bytes": 7624,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-failure-index.json",
+              "sha256": "3e539b580e6b94555d34f1fd43184e99bf0b68d601f79976d568910332c35767",
+              "type": "file"
+            },
+            {
+              "bytes": 962,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-negative-custody.json",
+              "sha256": "2d9f32fa6068c8baa65164baacb987d6349589c69e243eb96e1ec5369ed82417",
+              "type": "file"
+            },
+            {
+              "bytes": 1307,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-result.json",
+              "sha256": "fe99d4f04e0780a2d1569b07e16d95365ebe58b4a7f3894ac226251ff5276b2c",
+              "type": "file"
+            },
+            {
+              "bytes": 147204,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime.log",
+              "sha256": "4d762d80e952329e0d279bcd85324f00af71682ce5f232a5f52ededfa834d7c3",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 40.66267937197699,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-c2-owner-regressions-runtime-attempt-1--c2-owner-regressions-runtime",
+          "log_paths": [
+            {
+              "bytes": 147204,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime.log",
+              "root": "Q",
+              "sha256": "4d762d80e952329e0d279bcd85324f00af71682ce5f232a5f52ededfa834d7c3"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 940,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-runtime-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "4ff1a3f3185100afa59e28eff2b5de2a047321a0069c150d65781a72ca19ccf9"
+          },
+          "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "7132660414094f30949cc5ba63a2631f71cee450681c0eee59bbcaf98e6c4d0f"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "76e8b2f1d645308dd9c14dda2d88e5f797abd44136e7cae6e1a135747c8a0759"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1307,
+            "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-result.json",
+            "root": "Q",
+            "sha256": "fe99d4f04e0780a2d1569b07e16d95365ebe58b4a7f3894ac226251ff5276b2c"
+          },
+          "record_id": "c2-owner-regressions-runtime",
+          "result": {
+            "bytes": 1307,
+            "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-result.json",
+            "root": "Q",
+            "sha256": "fe99d4f04e0780a2d1569b07e16d95365ebe58b4a7f3894ac226251ff5276b2c"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 962,
+            "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-negative-custody.json",
+            "root": "Q",
+            "sha256": "2d9f32fa6068c8baa65164baacb987d6349589c69e243eb96e1ec5369ed82417"
+          }
+        }
+      ],
+      "check": "wave35-r142-c2-owner-regressions-runtime-attempt-1--c2-owner-regressions-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r142-c2-owner-regressions-runtime-attempt-1--c2-owner-regressions-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r142-collection-spec.json",
+              "sha256": "1df22875ba70b75c4e0637a66b01170e9357e643240c226ba4fe200087fc9d53",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r142-collection-spec.json--unrun",
+          "path": "wave35-r142-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 142,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r142-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r142-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "collected_count": 60,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_coherent_incompatible_targets",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_historical_current_captured_replay_control",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-env-c2-native-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 656,
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection-custody.json",
+              "sha256": "7c67348d65909a6da33af9322bf363c9006fa950242b7a3df1e3b4ec568206d0",
+              "type": "file"
+            },
+            {
+              "bytes": 1524,
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection-result.json",
+              "sha256": "945dc9d7e673130e76b7704d950cca6fab9c10c72197d19b2d168992ac23c038",
+              "type": "file"
+            },
+            {
+              "bytes": 6301,
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection.log",
+              "sha256": "85561e8099d39a87273c0baaee878fced20ccbad85db75fab4974c48505d771e",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 3.8855121360102203,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-env-c2-native-collection-attempt-1--env-c2-native-collection",
+          "log_paths": [
+            {
+              "bytes": 6301,
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection.log",
+              "root": "Q",
+              "sha256": "85561e8099d39a87273c0baaee878fced20ccbad85db75fab4974c48505d771e"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 932,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "ef425c63cf79cf0bc8ff1444b0986c515e775cd2ab283bf06b69bc8994809a50"
+          },
+          "path": "wave35-r142-env-c2-native-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1524,
+            "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection-result.json",
+            "root": "Q",
+            "sha256": "945dc9d7e673130e76b7704d950cca6fab9c10c72197d19b2d168992ac23c038"
+          },
+          "record_id": "env-c2-native-collection",
+          "result": {
+            "bytes": 1524,
+            "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection-result.json",
+            "root": "Q",
+            "sha256": "945dc9d7e673130e76b7704d950cca6fab9c10c72197d19b2d168992ac23c038"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 656,
+            "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection-custody.json",
+            "root": "Q",
+            "sha256": "7c67348d65909a6da33af9322bf363c9006fa950242b7a3df1e3b4ec568206d0"
+          }
+        }
+      ],
+      "check": "wave35-r142-env-c2-native-collection-attempt-1--env-c2-native-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r142-env-c2-native-collection-attempt-1--env-c2-native-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+            "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_coherent_incompatible_targets",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control",
+            "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_historical_current_captured_replay_control",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-env-c2-native-runtime-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "passed": 60,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-controller.json",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-gw0.json",
+              "sha256": "7132660414094f30949cc5ba63a2631f71cee450681c0eee59bbcaf98e6c4d0f",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-gw1.json",
+              "sha256": "76e8b2f1d645308dd9c14dda2d88e5f797abd44136e7cae6e1a135747c8a0759",
+              "type": "file"
+            },
+            {
+              "bytes": 653,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime-custody.json",
+              "sha256": "36275b28e4a86c3a6742767e7a94003b4fa14f7ef254b0ff989fd4a53e8af8f1",
+              "type": "file"
+            },
+            {
+              "bytes": 1539,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime-result.json",
+              "sha256": "63530d094bb11f2fa67455adeb970bfece10e0e95118f81d1ff16654908d932f",
+              "type": "file"
+            },
+            {
+              "bytes": 602,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime.log",
+              "sha256": "0dd9828f5159539e5b7250b5830961297ce80bd762cfe9c3123993537255ee25",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 22.50944248100859,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r142-env-c2-native-runtime-attempt-1--env-c2-native-runtime",
+          "log_paths": [
+            {
+              "bytes": 602,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime.log",
+              "root": "Q",
+              "sha256": "0dd9828f5159539e5b7250b5830961297ce80bd762cfe9c3123993537255ee25"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 926,
+            "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-runtime-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "3e1c112a390c70c7eddee26b7c98f776d1bc03a75dce32287cef974fb444d202"
+          },
+          "path": "wave35-r142-env-c2-native-runtime-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "7132660414094f30949cc5ba63a2631f71cee450681c0eee59bbcaf98e6c4d0f"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "76e8b2f1d645308dd9c14dda2d88e5f797abd44136e7cae6e1a135747c8a0759"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1539,
+            "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime-result.json",
+            "root": "Q",
+            "sha256": "63530d094bb11f2fa67455adeb970bfece10e0e95118f81d1ff16654908d932f"
+          },
+          "record_id": "env-c2-native-runtime",
+          "result": {
+            "bytes": 1539,
+            "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime-result.json",
+            "root": "Q",
+            "sha256": "63530d094bb11f2fa67455adeb970bfece10e0e95118f81d1ff16654908d932f"
+          },
+          "round": 142,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 653,
+            "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime-custody.json",
+            "root": "Q",
+            "sha256": "36275b28e4a86c3a6742767e7a94003b4fa14f7ef254b0ff989fd4a53e8af8f1"
+          }
+        }
+      ],
+      "check": "wave35-r142-env-c2-native-runtime-attempt-1--env-c2-native-runtime",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r142-env-c2-native-runtime-attempt-1--env-c2-native-runtime"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 208900,
+            "path": "wave35/r142-candidate.json",
+            "root": "W",
+            "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+          },
+          "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r142-owned-spec.json",
+              "sha256": "4ba182fb1005a9c981483b110a81e7e22305aaf6b344fa5c8f35adff33da3ef9",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r142-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r142-owned-spec.json--unrun",
+          "path": "wave35-r142-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 142,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r142-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r142-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_manifest": {
+    "bytes": 208900,
+    "path": "wave35/r142-candidate.json",
+    "root": "W",
+    "sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f"
+  },
+  "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+  "fixture_preflight": {
+    "bytes": 5533,
+    "path": "wave35/r142-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "3634ff824acde3af930f103bfad73acb16d5786a07681e29321e544bc4f95acd"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-c2-independent-collection-attempt-1",
+      "round": 142,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-c2-independent-collection-attempt-1-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-c2-independent-collection-attempt-2",
+      "round": 142,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-c2-independent-collection-attempt-2-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-c2-independent-runtime-attempt-1",
+      "round": 142,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-c2-independent-runtime-attempt-1-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-c2-independent-runtime-attempt-2",
+      "round": 142,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-c2-independent-runtime-attempt-2-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-c2-owner-regressions-collection-attempt-1",
+      "round": 142,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-c2-owner-regressions-collection-attempt-1-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1",
+      "round": 142,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-collection-spec.json",
+      "round": 142,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-env-c2-native-collection-attempt-1",
+      "round": 142,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-env-c2-native-collection-attempt-1-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-env-c2-native-runtime-attempt-1",
+      "round": 142,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r142-env-c2-native-runtime-attempt-1-spec.json",
+      "round": 142,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r142-owned-spec.json",
+      "round": 142,
+      "status": "UNRUN"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r142-c2-independent-collection-attempt-1": [
+      {
+        "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 657,
+        "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection-custody.json",
+        "sha256": "7b404c7c8e3005d17466cdceb9d982e0aff8f86823ee99b7880af67f57828949",
+        "type": "file"
+      },
+      {
+        "bytes": 1131,
+        "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection-result.json",
+        "sha256": "da8f69967180ed219330d1f12827784f5a6ea240701ef4ebf61c2c0a48b83e3c",
+        "type": "file"
+      },
+      {
+        "bytes": 1653,
+        "path": "wave35-r142-c2-independent-collection-attempt-1/c2-independent-collection.log",
+        "sha256": "dba9685adb5c1b53a138af15f64d6c2432f741974ee0d1624e84aaefa59e7014",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-independent-collection-attempt-1-spec.json": [
+      {
+        "bytes": 884,
+        "path": "wave35-r142-c2-independent-collection-attempt-1-spec.json",
+        "sha256": "663dd02a56b03bb59185eb13ae47b10dc718faac438a7887b38bc9f6970cc8e4",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-independent-collection-attempt-2": [
+      {
+        "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 655,
+        "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection-custody.json",
+        "sha256": "578975a93058b2fef05b7ea91b195e922ded052d5ad3031015ecb6308284d440",
+        "type": "file"
+      },
+      {
+        "bytes": 1129,
+        "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection-result.json",
+        "sha256": "4e1a8afa2a6c05f1cbb8a739b40e53b08300d33b2c80a556481817c23cd90bc3",
+        "type": "file"
+      },
+      {
+        "bytes": 1653,
+        "path": "wave35-r142-c2-independent-collection-attempt-2/c2-independent-collection.log",
+        "sha256": "d47c56f02cb6b3c0fdcb7ef4473a57c6496ad2018b95d3364c05bd5608b49608",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-independent-collection-attempt-2-spec.json": [
+      {
+        "bytes": 884,
+        "path": "wave35-r142-c2-independent-collection-attempt-2-spec.json",
+        "sha256": "4e71635aa250fe63a7f61c9a2f3153f09ae5a8ec880929664f0674065a6b11ab",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-independent-runtime-attempt-1": [
+      {
+        "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime",
+        "type": "directory"
+      },
+      {
+        "bytes": 11936,
+        "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime/failure-controller-c43249a642da52b3.json",
+        "sha256": "f4a3d5d0064ff4c43d5c0584d99b977b3ce1ff096836e37afd778220a3178551",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 804,
+        "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-failure-index.json",
+        "sha256": "fc34adc4c94c0f87d73b299e9b911aa7bb850b54217a89de10cd70c0d27057f9",
+        "type": "file"
+      },
+      {
+        "bytes": 958,
+        "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-negative-custody.json",
+        "sha256": "22c5b242cae4412982ee10f2c039a91fa00507c76efae1cf189afbf7cb0a74f2",
+        "type": "file"
+      },
+      {
+        "bytes": 1096,
+        "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime-result.json",
+        "sha256": "1df90063b2f31cf4662b4de6f51582596cd5ced27b9ee8fa8b5a24c7b8b2e0ef",
+        "type": "file"
+      },
+      {
+        "bytes": 12329,
+        "path": "wave35-r142-c2-independent-runtime-attempt-1/c2-independent-runtime.log",
+        "sha256": "453bdaabfb609921c2dd0694a6f857b1d7fbbd1712b6f96d370465803275df9b",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-independent-runtime-attempt-1-spec.json": [
+      {
+        "bytes": 849,
+        "path": "wave35-r142-c2-independent-runtime-attempt-1-spec.json",
+        "sha256": "23cc251651ff88388d8e25db3701a7185fb2a7409a05435213ce35e23e4a8307",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-independent-runtime-attempt-2": [
+      {
+        "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 654,
+        "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime-custody.json",
+        "sha256": "995bb7af2c93ab6e8f10e4acd2c0fe616b08cbc2af4b5012245154c2498d8276",
+        "type": "file"
+      },
+      {
+        "bytes": 1097,
+        "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime-result.json",
+        "sha256": "2b05076a50e39346e547d68f92736e17420e5dd28b4f6d9ca565a50f0876647d",
+        "type": "file"
+      },
+      {
+        "bytes": 32038,
+        "path": "wave35-r142-c2-independent-runtime-attempt-2/c2-independent-runtime.log",
+        "sha256": "f49e95d3b719f85b7e2d90a70304fafdba59bea15b2b3a53d7e24b65c4c627a4",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-independent-runtime-attempt-2-spec.json": [
+      {
+        "bytes": 849,
+        "path": "wave35-r142-c2-independent-runtime-attempt-2-spec.json",
+        "sha256": "fe7548dedaf5cf6bbaca48a60992b12f4da16ad24bda9bda2851fad25515410e",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-owner-regressions-collection-attempt-1": [
+      {
+        "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 661,
+        "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection-custody.json",
+        "sha256": "f15a668020e2f628db96f3290c31bde1858494b2a4d68ef07947301842b5c38c",
+        "type": "file"
+      },
+      {
+        "bytes": 1290,
+        "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection-result.json",
+        "sha256": "5fb681dd3b3675973eab4d6f094a25fea0106fac698b3579d957e4e5d31c504f",
+        "type": "file"
+      },
+      {
+        "bytes": 26263,
+        "path": "wave35-r142-c2-owner-regressions-collection-attempt-1/c2-owner-regressions-collection.log",
+        "sha256": "f84530f944875915d58d8733054af21ced4aff28e43b6ad3453021ccf7640730",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-owner-regressions-collection-attempt-1-spec.json": [
+      {
+        "bytes": 1047,
+        "path": "wave35-r142-c2-owner-regressions-collection-attempt-1-spec.json",
+        "sha256": "5353b9aaf7c8f52888f38d9221375d48bf326210c2bc84c8526a5bb4e25bc8f4",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-owner-regressions-runtime-attempt-1": [
+      {
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime",
+        "type": "directory"
+      },
+      {
+        "bytes": 6142,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-0158b641e2fda3fd.json",
+        "sha256": "6cf974f2281d4a3cfde90a5df033ec6c00f59caba3de52d7f8ea457c84b5e67c",
+        "type": "file"
+      },
+      {
+        "bytes": 4605,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-096d022ab6bea0ad.json",
+        "sha256": "2f28eba8e3490dbf33e713e1f2f1610e156749dd2d9d278c5873ee2549416bf7",
+        "type": "file"
+      },
+      {
+        "bytes": 1621,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-2b35263dd27a6650.json",
+        "sha256": "74c0ff369ddae98a1b2345f159e5e221314e34737b82fd2e3525a7d1051d352e",
+        "type": "file"
+      },
+      {
+        "bytes": 5164,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-351ed149c99649d1.json",
+        "sha256": "7e5409540a8b1fec41724b4a72f1b6e3ab267d8c5178ebf7eb6fcd3c9eb78945",
+        "type": "file"
+      },
+      {
+        "bytes": 6128,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-44e5f36ab11279a4.json",
+        "sha256": "cdffebab9035cf7ddcad7160d0def60e5d142535834d05bb05d20fdb97817953",
+        "type": "file"
+      },
+      {
+        "bytes": 6128,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-4645cdd45d4d6cc7.json",
+        "sha256": "bb9540b1b1800083fd78c0532beccb3284eb33f533b7f665d4d6ed8278bf2e3a",
+        "type": "file"
+      },
+      {
+        "bytes": 6575,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-46a13ada5d39bfa8.json",
+        "sha256": "d15df12cc22bc6beac8d5af8ab2f4d2cdbbce349f00c92c3bd282dc5c4db547f",
+        "type": "file"
+      },
+      {
+        "bytes": 5846,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-4a364b9f7de3da44.json",
+        "sha256": "4ff2517468a45a835658732f6953552246073d88101220c8d7eacfb321aebd91",
+        "type": "file"
+      },
+      {
+        "bytes": 1587,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-5dc228fc87228324.json",
+        "sha256": "e43cf8a1a295c86b6be75a8d2b20c27532274bc401139a14eb75d1846c8734dc",
+        "type": "file"
+      },
+      {
+        "bytes": 3775,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-5f919173029541b6.json",
+        "sha256": "5e9cf5b33ff484aa853e64ef905fc6ef04f8f0df8540b99c7754001d942da062",
+        "type": "file"
+      },
+      {
+        "bytes": 2207,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-663fe995d62b50fc.json",
+        "sha256": "e0e701014e596473ee6552c561f0a6920458921fe75bbd0ef23e07661f3a6209",
+        "type": "file"
+      },
+      {
+        "bytes": 6120,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-69d8189adecd4606.json",
+        "sha256": "44a60df1b3c79496083778d7dc315f0c8a8993fd400791f4edb8c21fc056b1a9",
+        "type": "file"
+      },
+      {
+        "bytes": 4485,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-6cedb5d38e785cff.json",
+        "sha256": "679d6043ef77e24717a3377c15f90e8da8ef823ce795f437109c217e0330b3b7",
+        "type": "file"
+      },
+      {
+        "bytes": 4658,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-74a1703785f267c5.json",
+        "sha256": "0570261e4386ac1637ea00ea1baaa55851107bcc6ba8779dacbef8163ef05d3b",
+        "type": "file"
+      },
+      {
+        "bytes": 6132,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-7bf4a23926f93754.json",
+        "sha256": "3e362cee6ea6dfd41fbc6a02439212275899d7801f90039a42c0baea52e164f5",
+        "type": "file"
+      },
+      {
+        "bytes": 1753,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-7bf6ebd91dde3412.json",
+        "sha256": "693448e8fe2b0d5809c1434a32729caf9da501e2267e3e91ee3ffce47a9e4e70",
+        "type": "file"
+      },
+      {
+        "bytes": 6575,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-8e4522247dc6abb1.json",
+        "sha256": "675f1a09b481df7500eb1c5e08a20e517fda824f9b4f534908044a4dbe9407f7",
+        "type": "file"
+      },
+      {
+        "bytes": 6579,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a18f5663f92b6ad4.json",
+        "sha256": "b5df63021402f43cfea25dbc4658160fc91d01f2277924e85a07beed35e5d2f4",
+        "type": "file"
+      },
+      {
+        "bytes": 2151,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a2ea06b25011437c.json",
+        "sha256": "26c0c916ced470ce42bd9c98f66f76a62b491b517ec3fe985dc20ecd41b52161",
+        "type": "file"
+      },
+      {
+        "bytes": 6126,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-a30ddf4c380f6166.json",
+        "sha256": "6ca152592d74421285fbb34fe88261e5e5b1e1fb43c8d5a6ec76995854573342",
+        "type": "file"
+      },
+      {
+        "bytes": 5446,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ab783ce1bc8f13c5.json",
+        "sha256": "7e55e234c28bf81d8bf1857db855e5ee97a69e51a571317a05d6f2ff3845ecd3",
+        "type": "file"
+      },
+      {
+        "bytes": 6573,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-b4aee75ac7ef497b.json",
+        "sha256": "c4e2c1478ccf30b4b32194c676a3afd301804b923cbf43d02ad596fa4de5291f",
+        "type": "file"
+      },
+      {
+        "bytes": 6589,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-b5241db1b00153c5.json",
+        "sha256": "efa30e1abd102597c4678cc9e89f39450b1171922c1507d557afe2966561728f",
+        "type": "file"
+      },
+      {
+        "bytes": 4694,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c19b5d201a88fea7.json",
+        "sha256": "6e2f76d1fd72ea5a85e9cce3e7f849637f96b3fce9554bb64b74d328a681e0b1",
+        "type": "file"
+      },
+      {
+        "bytes": 5396,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c505996050ab9ff3.json",
+        "sha256": "7519be5ddd6a30c4757119dc71b03aeeb120f0cf7c04243c0bf41d1581101886",
+        "type": "file"
+      },
+      {
+        "bytes": 5850,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-c7ebcc9d5a80dba7.json",
+        "sha256": "1501934dad7301b77f967801e4d2d60ccefc89ea3af941084efe4d2984b0724a",
+        "type": "file"
+      },
+      {
+        "bytes": 5386,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-e1e417fa262cdf88.json",
+        "sha256": "39ef9a9a3700f2f09939cb2e39512cbf05893f9a9835231b0c419a922734e574",
+        "type": "file"
+      },
+      {
+        "bytes": 6567,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ec23856865f89d93.json",
+        "sha256": "484b5e82f2bc22df0d8a26449d4d4516398ad0e99ba954844f6de436cae9b979",
+        "type": "file"
+      },
+      {
+        "bytes": 4704,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-ed6677c32b0a3ba2.json",
+        "sha256": "75c5bb6d6fc43156e00faf7123b12da8cb70ebc0c1fe24ed51fc2d60b5c1c281",
+        "type": "file"
+      },
+      {
+        "bytes": 4759,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-controller-f5f43656601cfd30.json",
+        "sha256": "523f530993092960c44886a9418678438edb27c04dafa53b130dd3243c601da0",
+        "type": "file"
+      },
+      {
+        "bytes": 4598,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-096d022ab6bea0ad.json",
+        "sha256": "d843c00932178baa0968f20aa1aad89fb884543ee5a928a00d779b2bf11b1140",
+        "type": "file"
+      },
+      {
+        "bytes": 1614,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-2b35263dd27a6650.json",
+        "sha256": "71e2ba29a85c576f04d28ba776b3f9159d2e5e26a6b364e951cd379e65ac9eff",
+        "type": "file"
+      },
+      {
+        "bytes": 6121,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-44e5f36ab11279a4.json",
+        "sha256": "6a989a61d8b244e060dcc4f9393a189be6cde13f0ad890c098adea6d99a25d54",
+        "type": "file"
+      },
+      {
+        "bytes": 6121,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-4645cdd45d4d6cc7.json",
+        "sha256": "9bec26b061a73a389cd9425845e54393560db552ec6216805b92c21038d9bf09",
+        "type": "file"
+      },
+      {
+        "bytes": 5839,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-4a364b9f7de3da44.json",
+        "sha256": "86e9c608ede36f2749201db2083e607becc56533c47e93ba103f257d84bb740d",
+        "type": "file"
+      },
+      {
+        "bytes": 1580,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-5dc228fc87228324.json",
+        "sha256": "e453443b2155eb0e3a4d82fff7171a1114ffac4b68e65598c29fa4175af04e00",
+        "type": "file"
+      },
+      {
+        "bytes": 3768,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-5f919173029541b6.json",
+        "sha256": "0a8cd2aa3b5a4b9c648b322af4083e5e026471b603515aed5a430cd186a7a93f",
+        "type": "file"
+      },
+      {
+        "bytes": 6113,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-69d8189adecd4606.json",
+        "sha256": "67a278c95f0ffaf681eef0a96d6da7fb05f8864ace3c8ee8cde06d5e8620e60f",
+        "type": "file"
+      },
+      {
+        "bytes": 4478,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-6cedb5d38e785cff.json",
+        "sha256": "6f7300aad92cbe1d7c8385089c9ff64a3871e3283b3c39a3e9df212f57c54d69",
+        "type": "file"
+      },
+      {
+        "bytes": 6125,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-7bf4a23926f93754.json",
+        "sha256": "cdae52032d38b277025b31458fbac6bdc66117ae05d9f792aeba15d2b2653961",
+        "type": "file"
+      },
+      {
+        "bytes": 1746,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-7bf6ebd91dde3412.json",
+        "sha256": "c53a8a80b196b31f99ff31d2535e22a48a457ad100a34167cdb9835f64e76c47",
+        "type": "file"
+      },
+      {
+        "bytes": 6119,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-a30ddf4c380f6166.json",
+        "sha256": "3dda6551544c3b6085ef75db5500ee2cc5acebf13649dff219cd898ba29ae025",
+        "type": "file"
+      },
+      {
+        "bytes": 5439,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-ab783ce1bc8f13c5.json",
+        "sha256": "a197bc734daf81e854528d56c66bba5225367b412619d25c14bec57c44177010",
+        "type": "file"
+      },
+      {
+        "bytes": 4687,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-c19b5d201a88fea7.json",
+        "sha256": "cdb28a57c76a0ce6de35df11360bedf0771608f046be814c2caf865611597f8e",
+        "type": "file"
+      },
+      {
+        "bytes": 5389,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-c505996050ab9ff3.json",
+        "sha256": "a8e88bbc462952f4947eae44a8e382068a399c26ffc85ecc0bbd273e3460461f",
+        "type": "file"
+      },
+      {
+        "bytes": 5843,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-c7ebcc9d5a80dba7.json",
+        "sha256": "7a799d30b8f2ad127820354dd58f1f85d22b16df83353e756921dea448edfeae",
+        "type": "file"
+      },
+      {
+        "bytes": 5379,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-e1e417fa262cdf88.json",
+        "sha256": "37fbe60898072f565e26fc6ffe4299ac3853e7cc8bf8f9206077316c9dff2bac",
+        "type": "file"
+      },
+      {
+        "bytes": 4697,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-ed6677c32b0a3ba2.json",
+        "sha256": "517e998aa1e289f8a2dec65a79d3d882bcc6c7d6d0195fe28a8165126bebe6ce",
+        "type": "file"
+      },
+      {
+        "bytes": 4752,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw0-f5f43656601cfd30.json",
+        "sha256": "54e27fd9fa7d30174f4f33854b75fe5f2a350d5961d42d97d11e7edbda647fac",
+        "type": "file"
+      },
+      {
+        "bytes": 6135,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-0158b641e2fda3fd.json",
+        "sha256": "b6a25f9eb1d4b1aeb2e1145b30d8654f72787ecd12928fdc41c8b8aab5aad2cc",
+        "type": "file"
+      },
+      {
+        "bytes": 5157,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-351ed149c99649d1.json",
+        "sha256": "ab86eae5604b13f41d3b43d6ed6f4ac3afa8019fbcc67ae74607a3a65048eddc",
+        "type": "file"
+      },
+      {
+        "bytes": 6568,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-46a13ada5d39bfa8.json",
+        "sha256": "aba5ca733386732a0a0167a4ffb52bdb7f1f55a711a7e1041611b57441ece61a",
+        "type": "file"
+      },
+      {
+        "bytes": 2200,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-663fe995d62b50fc.json",
+        "sha256": "2e0c456c7adaf25f86455826440c1dd6e17794d6217ba390aff30b83ca503354",
+        "type": "file"
+      },
+      {
+        "bytes": 4651,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-74a1703785f267c5.json",
+        "sha256": "9013905e221e3abbb9b3677b54c8638f690716ad917048b95e222342f0298133",
+        "type": "file"
+      },
+      {
+        "bytes": 6568,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-8e4522247dc6abb1.json",
+        "sha256": "533bc17440143e35dea003efbd392a643d4baf4add75eff44f1ce0c106897161",
+        "type": "file"
+      },
+      {
+        "bytes": 6572,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-a18f5663f92b6ad4.json",
+        "sha256": "c4a98029cc277d6ef86ad47a21e2341427b9ba1c8be2e9f814a1d47c621e1bc7",
+        "type": "file"
+      },
+      {
+        "bytes": 2144,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-a2ea06b25011437c.json",
+        "sha256": "33fe0788e03be2b5a168904ad53e66bd9b9843fa9474a73e463b8cba7577584a",
+        "type": "file"
+      },
+      {
+        "bytes": 6566,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-b4aee75ac7ef497b.json",
+        "sha256": "227a6aa691c12b94424c3dcecf32520fa88ed3bf9df2f6656af502d258652e1e",
+        "type": "file"
+      },
+      {
+        "bytes": 6582,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-b5241db1b00153c5.json",
+        "sha256": "a54eab2543a524723c01435ab750aada76478ecfddc1fe5a29cb1948815beb90",
+        "type": "file"
+      },
+      {
+        "bytes": 6560,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/failure-gw1-ec23856865f89d93.json",
+        "sha256": "3e70d6a1b9ea23bc6591f895b50f128c1a43727d1dbf520bf223f9fac1f04201",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-gw0.json",
+        "sha256": "7132660414094f30949cc5ba63a2631f71cee450681c0eee59bbcaf98e6c4d0f",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime/identity-gw1.json",
+        "sha256": "76e8b2f1d645308dd9c14dda2d88e5f797abd44136e7cae6e1a135747c8a0759",
+        "type": "file"
+      },
+      {
+        "bytes": 7624,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-failure-index.json",
+        "sha256": "3e539b580e6b94555d34f1fd43184e99bf0b68d601f79976d568910332c35767",
+        "type": "file"
+      },
+      {
+        "bytes": 962,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-negative-custody.json",
+        "sha256": "2d9f32fa6068c8baa65164baacb987d6349589c69e243eb96e1ec5369ed82417",
+        "type": "file"
+      },
+      {
+        "bytes": 1307,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime-result.json",
+        "sha256": "fe99d4f04e0780a2d1569b07e16d95365ebe58b4a7f3894ac226251ff5276b2c",
+        "type": "file"
+      },
+      {
+        "bytes": 147204,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1/c2-owner-regressions-runtime.log",
+        "sha256": "4d762d80e952329e0d279bcd85324f00af71682ce5f232a5f52ededfa834d7c3",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-c2-owner-regressions-runtime-attempt-1-spec.json": [
+      {
+        "bytes": 1078,
+        "path": "wave35-r142-c2-owner-regressions-runtime-attempt-1-spec.json",
+        "sha256": "1be94e3c33220c85284885cb1c1cf7e83b55eccff170e253f11a60c3246409aa",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r142-collection-spec.json",
+        "sha256": "1df22875ba70b75c4e0637a66b01170e9357e643240c226ba4fe200087fc9d53",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-env-c2-native-collection-attempt-1": [
+      {
+        "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 656,
+        "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection-custody.json",
+        "sha256": "7c67348d65909a6da33af9322bf363c9006fa950242b7a3df1e3b4ec568206d0",
+        "type": "file"
+      },
+      {
+        "bytes": 1524,
+        "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection-result.json",
+        "sha256": "945dc9d7e673130e76b7704d950cca6fab9c10c72197d19b2d168992ac23c038",
+        "type": "file"
+      },
+      {
+        "bytes": 6301,
+        "path": "wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection.log",
+        "sha256": "85561e8099d39a87273c0baaee878fced20ccbad85db75fab4974c48505d771e",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-env-c2-native-collection-attempt-1-spec.json": [
+      {
+        "bytes": 1290,
+        "path": "wave35-r142-env-c2-native-collection-attempt-1-spec.json",
+        "sha256": "63bb05a042e9947c469878ce7226e66b33ee50c10f0f6038b348b1f8e0310179",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-env-c2-native-runtime-attempt-1": [
+      {
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-controller.json",
+        "sha256": "a736639fd44add9db621dd569b3ac6daba002d151371242d50d164778dad364b",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-gw0.json",
+        "sha256": "7132660414094f30949cc5ba63a2631f71cee450681c0eee59bbcaf98e6c4d0f",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime/identity-gw1.json",
+        "sha256": "76e8b2f1d645308dd9c14dda2d88e5f797abd44136e7cae6e1a135747c8a0759",
+        "type": "file"
+      },
+      {
+        "bytes": 653,
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime-custody.json",
+        "sha256": "36275b28e4a86c3a6742767e7a94003b4fa14f7ef254b0ff989fd4a53e8af8f1",
+        "type": "file"
+      },
+      {
+        "bytes": 1539,
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime-result.json",
+        "sha256": "63530d094bb11f2fa67455adeb970bfece10e0e95118f81d1ff16654908d932f",
+        "type": "file"
+      },
+      {
+        "bytes": 602,
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1/env-c2-native-runtime.log",
+        "sha256": "0dd9828f5159539e5b7250b5830961297ce80bd762cfe9c3123993537255ee25",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-env-c2-native-runtime-attempt-1-spec.json": [
+      {
+        "bytes": 1321,
+        "path": "wave35-r142-env-c2-native-runtime-attempt-1-spec.json",
+        "sha256": "a4928a184fb35f7d87d7e1f5528117a4ec1baaecdb0e3e34cc6587ac73dc22b4",
+        "type": "file"
+      }
+    ],
+    "wave35-r142-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r142-owned-spec.json",
+        "sha256": "4ba182fb1005a9c981483b110a81e7e22305aaf6b344fa5c8f35adff33da3ef9",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 142,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN"
+}

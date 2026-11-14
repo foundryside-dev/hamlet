@@ -1,0 +1,115 @@
+......................................................................FF [ 94%]
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+____ test_independent_task3_diagnostic_types_match_command[exit_code-False] ____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/fixtures/test_independent_task3_diagnos0')
+field = 'exit_code', value = False
+
+    @pytest.mark.parametrize('field,value', [('exit_code',False),('stdout_truncated',0),('stderr_truncated',0)])
+    def test_independent_task3_diagnostic_types_match_command(tmp_path,field,value):
+        r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path)
+        assert c.evidence(job)==completion
+        path=Path(job['output'])/'sampler-spawn-end-0.json'
+        diagnostic=json.loads(path.read_text());diagnostic[field]=value
+        oldref=r.file_reference(path);newref=put(path.name,diagnostic)
+        completion['inventory']=[newref if item==oldref else item for item in completion['inventory']]
+        put('completion.json',completion)
+>       with pytest.raises(ValueError):c.evidence(job)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:145: Failed
+__ test_independent_task3_diagnostic_types_match_command[stdout_truncated-0] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/fixtures/test_independent_task3_diagnos1')
+field = 'stdout_truncated', value = 0
+
+    @pytest.mark.parametrize('field,value', [('exit_code',False),('stdout_truncated',0),('stderr_truncated',0)])
+    def test_independent_task3_diagnostic_types_match_command(tmp_path,field,value):
+        r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path)
+        assert c.evidence(job)==completion
+        path=Path(job['output'])/'sampler-spawn-end-0.json'
+        diagnostic=json.loads(path.read_text());diagnostic[field]=value
+        oldref=r.file_reference(path);newref=put(path.name,diagnostic)
+        completion['inventory']=[newref if item==oldref else item for item in completion['inventory']]
+        put('completion.json',completion)
+>       with pytest.raises(ValueError):c.evidence(job)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:145: Failed
+__ test_independent_task3_diagnostic_types_match_command[stderr_truncated-0] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/fixtures/test_independent_task3_diagnos2')
+field = 'stderr_truncated', value = 0
+
+    @pytest.mark.parametrize('field,value', [('exit_code',False),('stdout_truncated',0),('stderr_truncated',0)])
+    def test_independent_task3_diagnostic_types_match_command(tmp_path,field,value):
+        r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path)
+        assert c.evidence(job)==completion
+        path=Path(job['output'])/'sampler-spawn-end-0.json'
+        diagnostic=json.loads(path.read_text());diagnostic[field]=value
+        oldref=r.file_reference(path);newref=put(path.name,diagnostic)
+        completion['inventory']=[newref if item==oldref else item for item in completion['inventory']]
+        put('completion.json',completion)
+>       with pytest.raises(ValueError):c.evidence(job)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:145: Failed
+___ test_independent_task3_all_source_clocks_within_actual_job_wait[sampler] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/fixtures/test_independent_task3_all_sou0')
+endpoint = 'sampler'
+
+    @pytest.mark.parametrize('endpoint', ['sampler','emission'])
+    def test_independent_task3_all_source_clocks_within_actual_job_wait(tmp_path,endpoint):
+        r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path)
+        assert c.evidence(job)==completion
+        # Same-clock P2 wait is after recorded guard END entry, before retained stage/receipt endpoint.
+        c.observations[job['id']]['monotonic_end_ns']=7_000_000_050 if endpoint=='sampler' else 7_000_000_120
+        c.observations[job['id']]['end']='2026-01-01T00:00:07.000000Z'
+>       with pytest.raises(ValueError):c.evidence(job)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:155: Failed
+__ test_independent_task3_all_source_clocks_within_actual_job_wait[emission] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/fixtures/test_independent_task3_all_sou1')
+endpoint = 'emission'
+
+    @pytest.mark.parametrize('endpoint', ['sampler','emission'])
+    def test_independent_task3_all_source_clocks_within_actual_job_wait(tmp_path,endpoint):
+        r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path)
+        assert c.evidence(job)==completion
+        # Same-clock P2 wait is after recorded guard END entry, before retained stage/receipt endpoint.
+        c.observations[job['id']]['monotonic_end_ns']=7_000_000_050 if endpoint=='sampler' else 7_000_000_120
+        c.observations[job['id']]['end']='2026-01-01T00:00:07.000000Z'
+>       with pytest.raises(ValueError):c.evidence(job)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:155: Failed
+___________ test_independent_task3_git_pid_cannot_be_live_guard_pid ____________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/run01/fixtures/test_independent_task3_git_pid0')
+
+    def test_independent_task3_git_pid_cannot_be_live_guard_pid(tmp_path):
+        def mutate(parts):
+            parts[1]['sampler']['commands'][0]['pid']=parts[1]['record']['identity']['pid']
+        r,c,job,completion,put,parts=fixtures.owner_sampler_fixture(tmp_path,mutate)
+>       with pytest.raises(ValueError):c.evidence(job)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:162: Failed
+=========================== short test summary info ============================
+FAILED ../dev::test_independent_task3_diagnostic_types_match_command[exit_code-False]
+FAILED ../dev::test_independent_task3_diagnostic_types_match_command[stdout_truncated-0]
+FAILED ../dev::test_independent_task3_diagnostic_types_match_command[stderr_truncated-0]
+FAILED ../dev::test_independent_task3_all_source_clocks_within_actual_job_wait[sampler]
+FAILED ../dev::test_independent_task3_all_source_clocks_within_actual_job_wait[emission]
+FAILED ../dev::test_independent_task3_git_pid_cannot_be_live_guard_pid - Fail...
+6 failed, 70 passed, 203 deselected in 15.38s

@@ -1,0 +1,164 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+  "unique_node_phase_failures": 30,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+    "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+    "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py"
+  ],
+  "signatures": [
+    {
+      "error": "RuntimeError: Unrelated same-thread RNG reentry is forbidden",
+      "count": 16,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_roundtrip_projects_destination_and_preserves_history[INITIAL]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_roundtrip_projects_destination_and_preserves_history[COMPLETED]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_initial_snapshot_repeat_restore_and_first_real_reset",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_two_boundaries_two_reorders_keep_historical_binding_verbatim",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: ENV continuation refused after producer callback",
+      "count": 8,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_preserves_each_genuine_healthy_phase[released-completed]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_first_real_transition_uses_sealed_activity_and_one_service",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_new_genuine_reset_invalidates_prior_reading_identity",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_separate_all_inactive_ordinary_step_contract_is_preserved",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_frozen_close_refuses_reading_without_consuming_sink_handles",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_no_retirement_preserves_ordinary_active_transition",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_validator_accepts_later_genuine_active_lane_terminal",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_preserves_each_genuine_healthy_phase[closed-awaiting-release]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where 0 = len([])",
+      "count": 3,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_activate_quarantined_episode",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_cleanup_is_durable",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_return_healthy_validation",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: Missing required keyword-only argument: 'lineage'",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_current_initial_boundary_restore_does_not_import_live_decision_authority",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_native_install_custody_blocks_unowned_selector_reentry",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: ENV public methods cannot reenter active work",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_reset_projects_reservation_before_evaluation_and_retry_never_resamples",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

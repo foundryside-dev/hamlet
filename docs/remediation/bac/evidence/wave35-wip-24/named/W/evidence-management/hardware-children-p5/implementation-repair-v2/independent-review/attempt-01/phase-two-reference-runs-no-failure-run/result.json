@@ -1,0 +1,9 @@
+{
+  "name": "phase-two-reference-runs-no-failure-run",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "phase wrapper actual case mismatch",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

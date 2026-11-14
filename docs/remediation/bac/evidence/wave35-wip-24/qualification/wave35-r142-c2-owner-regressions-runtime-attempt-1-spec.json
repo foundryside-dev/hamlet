@@ -1,0 +1,32 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r142-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-c2-owner-regressions-runtime-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "c2-owner-regressions-runtime",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+        "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+        "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+        "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-c2-owner-regressions-runtime-attempt-1",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

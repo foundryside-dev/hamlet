@@ -1,0 +1,28 @@
+src/townlet/environment/parent_custody.py:44: error: Argument 1 of "__reduce_ex__" is incompatible with supertype "builtins.object"; supertype defines the argument type as "SupportsIndex"  [override]
+src/townlet/environment/parent_custody.py:44: note: This violates the Liskov substitution principle
+src/townlet/environment/parent_custody.py:44: note: See https://mypy.readthedocs.io/en/stable/common_issues.html#incompatible-overrides
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Missing named argument "vector_step" for "step" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:128: note: "step" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+src/townlet/population/vectorized.py:698: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:698: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:698: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:698: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:699: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:699: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:699: error: Missing named argument "lineage" for "prepare_archived_import" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:699: note: "prepare_archived_import" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:701: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:701: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:702: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:702: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/demo/runner.py:605: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:724: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 13 errors in 3 files (checked 200 source files)

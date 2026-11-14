@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-14T12:43:35.226441+00:00",
+  "document_approval": {
+    "bytes": 3362,
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/ROOT-DOCUMENT-REVIEW-v1.json",
+    "sha256": "3d9a7e27350fc026ce8e9cffd035be3bd5f49da2f589af43558a042f66f0fad1"
+  },
+  "documents": [
+    {
+      "before_sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371",
+      "bytes": 117706,
+      "destination": "docs/remediation/bac/STATUS.md",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/STATUS.diff",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/STATUS.md",
+      "sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb"
+    },
+    {
+      "before_sha256": "68e427f83864e3b463e48565b820cce8debbe73976589ccd3491b6472cb7fafd",
+      "bytes": 28729,
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/EVIDENCE-INDEX.diff",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/EVIDENCE-INDEX.md",
+      "sha256": "6c8bd92c3d12727328775ca0875049358e403fbe177438de0e3d03c7f860dbc6"
+    },
+    {
+      "before_sha256": "a055986ffc6f1901bce6819cb759b48e0b92fd940d2d347e97e8e02d6f06214f",
+      "bytes": 33606,
+      "destination": "README.md",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/README.diff",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/README.md",
+      "sha256": "643bbcd6b1668cd734f4ca67ab71c91a70c649e7f39c062c1a6715823218e8ad"
+    },
+    {
+      "before_sha256": "80389141f88757ec09b5503aca379248e018aa6b3724bb8c1edf26edef764206",
+      "bytes": 12191,
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "diff": "evidence-management/wip24-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.diff",
+      "postimage": "evidence-management/wip24-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "sha256": "dcb18bef329b2161fb5b3a5a0aed3791b685bd1d0fa4d8dc54a7a6a0d54e73f0"
+    }
+  ],
+  "execution_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "inventory_document_differences": [
+    {
+      "executed_sha256": "9b328325028a8026bd5928ab6e0926f7c5fb60958a2f73c61a1809c76ee74371",
+      "group": "source_files",
+      "path": "docs/remediation/bac/STATUS.md",
+      "publication_sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb"
+    }
+  ],
+  "scope": "Only four reviewed documentation postimages applied; runtime sources remain exact R145.",
+  "source_config_artifact_before_after": "PASS EXCEPT EXPLICIT APPROVED STATUS DOCUMENT UPDATE",
+  "status": "PASS"
+}

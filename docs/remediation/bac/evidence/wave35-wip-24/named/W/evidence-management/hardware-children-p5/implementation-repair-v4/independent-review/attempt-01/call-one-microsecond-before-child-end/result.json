@@ -1,0 +1,9 @@
+{
+  "name": "call-one-microsecond-before-child-end",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "passing source assertion precedes observed child execution",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

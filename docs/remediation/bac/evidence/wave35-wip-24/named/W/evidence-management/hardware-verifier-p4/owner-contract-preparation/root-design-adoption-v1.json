@@ -1,0 +1,26 @@
+{
+  "schema": "bac-hardware-p4-p5-owner-contract-root-adoption-v1",
+  "at": "2026-11-14T10:37:57.790665+00:00",
+  "owner": "/root",
+  "contract": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P4-P5-OWNER-CONTRACT-v1.md",
+    "bytes": 27970,
+    "sha256": "960f6e1b1dec411007c9d33ab388ea9b99d560c0c701f008fe5fdf113645af97"
+  },
+  "independent_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-contract-preparation/independent-review/review-v1.json",
+    "bytes": 13023,
+    "sha256": "4e416ffb25167c31c7da36033fddf740cf025c69cfa82eba51225cd2798d4363"
+  },
+  "disposition": "ADOPT FINITE DESIGN FOR IMPLEMENTATION",
+  "execution": "UNRUN; design adoption is not implementation or hardware qualification",
+  "requirements": [
+    "Closed schemas and actual source-owner observations; no invented timing, identities or capability waiver",
+    "3s each/6s cumulative complete recorder calls, 8s return, 10s acknowledgement/reap; preserve valid7.9/8.1 and reap-before-ack",
+    "P5 pure fixed dispatch then separately reviewed P4 wiring; actual source instrumentation and full-chain adversarial evidence required",
+    "No new branches/worktrees/source-execution copies; one root APP/index owner; preserve all failed/historical evidence"
+  ],
+  "granted_slice": "P5 pure semantics and standalone transport only; bounded source1500/tests2000 + historical verifier752/current P0526 (four bodies4778). Author must confirm exact historical path/hash from existing handoff before body read. No P4/P2/P3/APP source edit or imports. Inert source fixtures only.",
+  "resource_grant": "Pure inert tooling tests up to1CPU/4GiB only after root scheduling release; initial implementation/static work may proceed now.",
+  "remaining": "P4 current owner dispatch, source-owner instrumentation, actual P3-P2-P4-P5 chain, abrupt guard death/live Git, all real CUDA groups, repository-wide BAC acceptance remain required."
+}

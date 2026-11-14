@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Mapping
+from contextlib import AbstractContextManager
 from numbers import Number, Real
 from pathlib import Path
 from types import MappingProxyType
@@ -42,6 +43,7 @@ from townlet.environment.action_mask_builder import ActionMaskBuilder
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
 from townlet.environment.observation_encoder import build_token_observation_encoder
+from townlet.environment.parent_custody import EnvCustody, EnvParentCustody, env_guard
 from townlet.environment.reward_calculator import RewardCalculator
 from townlet.environment.token_publishers import (
     EffectSlotBatch,
@@ -131,6 +133,7 @@ class WorldBoundaryAuthority:
         self._env._check_committed_participation()
         return self._env
 
+    @env_guard
     def bootstrap(self, *, first_batch_episode: int) -> WorldRecord:
         env = self._bound_env()
         exact_integer(first_batch_episode, 0, "first batch")
@@ -142,6 +145,7 @@ class WorldBoundaryAuthority:
         env._world_bootstrap = env._record("release", {"release_kind": "bootstrap", "next_batch_episode": first_batch_episode})
         return env._world_bootstrap
 
+    @env_guard
     def completed(self, *, closure: WorldRecord, effects: WorldOwnerReceipt) -> WorldRecord:
         env = self._bound_env()
         env._require_phase("closed-awaiting-release", "released-completed")
@@ -191,6 +195,7 @@ class WorldBoundaryAuthority:
             },
         )
 
+    @env_guard
     def prepare_initial_snapshot(self, *, release: WorldRecord, owners: WorldOwnerReceipt) -> WorldRecord:
         env = self._bound_env()
         env._require_phase("bootstrap-ready")
@@ -222,6 +227,7 @@ class WorldBoundaryAuthority:
                 raise ValueError("initial owner role or correlation disagrees")
         return env._record("initial_snapshot", {"release": release, "owners": owners})
 
+    @env_guard
     def restored(self, *, restore: WorldRecord, boundary: WorldOwnerReceipt) -> WorldRecord:
         env = self._bound_env()
         env._require_phase("fresh-bound")
@@ -290,6 +296,7 @@ class VectorizedHamletEnv:
             - Behavioral parameters (grid size, observability, energy costs, affordance selection)
               now flow exclusively from the compiled universe
         """
+        self._env_custody = EnvCustody(self)
         self._initialize_world_identity(world_roster, training_seed, lane_world_ids, num_agents, universe.execution_hash)
         if device is None:
             raise ValueError("VectorizedHamletEnv requires an explicit device; cannot default to CPU/GPU.")
@@ -560,7 +567,7 @@ class VectorizedHamletEnv:
         # enabled_affordances gating via training.yaml.
         self._affordance_layout_cache: tuple[torch.Tensor, torch.Tensor] | None = None
         if self.randomize_affordances:
-            self.randomize_affordance_positions()
+            self._randomize_affordance_positions()
         else:
             self._apply_configured_affordance_positions()
 
@@ -608,11 +615,17 @@ class VectorizedHamletEnv:
             effect_slots=self._effect_slot_batch(),
         )
 
+    @env_guard
     def attach_runtime_registry(self, registry: AgentRuntimeRegistry) -> None:
         """Attach runtime registry for telemetry tracking."""
         self._participation_ingress()
         self.runtime_registry = registry
 
+    def retain_parent_custody(self) -> AbstractContextManager[EnvParentCustody]:
+        """Retain ENV exclusion through explicit parent execution and its consumer."""
+        return self._env_custody.retain()
+
+    @env_guard
     def set_exploration_runtime(self, *, exploration: ExplorationRuntime, claim_vector_step: Callable[..., int]) -> None:
         """Bind once before world role custody freezes; equal rebinding also refuses."""
         self._participation_ingress()
@@ -926,6 +939,7 @@ class VectorizedHamletEnv:
 
         return deltas
 
+    @env_guard
     def get_action_label_names(self) -> dict[int, str]:
         """Get action label names for current substrate.
 
@@ -938,7 +952,7 @@ class VectorizedHamletEnv:
             >>> print(labels)
             {0: 'UP', 1: 'DOWN', 2: 'LEFT', 3: 'RIGHT', 4: 'INTERACT', 5: 'WAIT'}
         """
-        return self.action_labels.get_all_labels()
+        return dict(self.action_labels.get_all_labels())
 
     @property
     def bars(self) -> dict[str, torch.Tensor]:
@@ -975,7 +989,7 @@ class VectorizedHamletEnv:
         # Refresh affordance layout each episode so randomization/configured layouts stay in sync.
         # randomize_affordance_positions() returns agent positions clear of every affordance.
         if self.randomize_affordances:
-            agent_positions = self.randomize_affordance_positions()
+            agent_positions = self._randomize_affordance_positions()
             self.positions = (
                 agent_positions
                 if agent_positions is not None
@@ -1252,6 +1266,7 @@ class VectorizedHamletEnv:
             return None
         return self._velocity
 
+    @env_guard
     def get_action_masks(self) -> torch.Tensor:
         """Compute valid-action masks for the current tick.
 
@@ -1274,6 +1289,7 @@ class VectorizedHamletEnv:
             affordance_open=self._affordance_open_mask,
         )
 
+    @env_guard
     def step(
         self,
         actions: torch.Tensor,  # [num_agents]
@@ -1315,7 +1331,10 @@ class VectorizedHamletEnv:
         predecessor = self._get_observations().detach().clone()
         actions = actions.detach().clone()
         active_on_entry = ~self.dones.detach().clone()
-        vector_tick = self._claim_vector_step(
+        vector_tick = self._env_custody.outcall(
+            "claim",
+            self._claim_vector_step,
+            owner=self._world_role_owners["population"],
             prepared=vector_step,
             accepted=accepted,
             world_ids=self.world_ids,
@@ -1452,7 +1471,7 @@ class VectorizedHamletEnv:
         observations = self._get_observations()
         # Build only after all successor state, retirement and the next action's hour
         # have committed. Completed rows may be empty; a live row must be selectable.
-        successor_action_masks = self.get_action_masks().clone()
+        successor_action_masks = self._build_action_masks().clone()
         live_empty = ~self.dones & ~successor_action_masks.any(dim=1)
         if live_empty.any():
             agent_ids = torch.nonzero(live_empty, as_tuple=False).flatten().tolist()
@@ -1565,7 +1584,11 @@ class VectorizedHamletEnv:
             world_episode_seqs=tuple(self._world_cursors[world_id] for world_id in self.world_ids),
         )
 
+    @env_guard
     def vfs_random_state(self) -> dict[str, Any]:
+        return self._vfs_random_state()
+
+    def _vfs_random_state(self) -> dict[str, Any]:
         """Export owned current identity data, excluding provisional or failed attempts."""
         self._participation_ingress()
         if self._world_phase in ("resetting", "restoring", "quarantined"):
@@ -1574,6 +1597,7 @@ class VectorizedHamletEnv:
             raise ValueError("VFS native context contradicts ENV world identity")
         return self.vfs_randomness.state()
 
+    @env_guard
     def restore_vfs_random_state(self, state: Mapping[str, Any]) -> None:
         """Validate/reinstall only the current projection; joint restore owns cursor changes."""
         self._require_phase("fresh-unbound", "fresh-bound", "bootstrap-ready", "released-completed")
@@ -1831,6 +1855,7 @@ class VectorizedHamletEnv:
             return self._unique_affordances_count
         return torch.zeros(self.num_agents, device=self.device)
 
+    @env_guard
     def get_affordance_positions(self) -> dict:
         """Get current affordance positions (substrate-agnostic checkpointing).
 
@@ -1860,6 +1885,7 @@ class VectorizedHamletEnv:
             "position_dim": self.substrate.position_dim,  # For validation
         }
 
+    @env_guard
     def set_affordance_positions(self, checkpoint_data: dict) -> None:
         """Set affordance positions from checkpoint.
 
@@ -1870,12 +1896,16 @@ class VectorizedHamletEnv:
             ValueError: If the checkpoint layout or any position is invalid.
         """
         self._participation_ingress()
-        validated_positions = self.validate_affordance_positions(checkpoint_data)
+        validated_positions = self._validate_affordance_positions(checkpoint_data)
         for name in self.affordances:
             self.affordances[name] = validated_positions[name]
         self._affordance_layout_cache = None
 
+    @env_guard
     def validate_affordance_positions(self, checkpoint_data: dict) -> dict[str, torch.Tensor]:
+        return self._validate_affordance_positions(checkpoint_data)
+
+    def _validate_affordance_positions(self, checkpoint_data: dict) -> dict[str, torch.Tensor]:
         """Validate checkpoint affordance positions without mutating environment state."""
         self._participation_ingress()
         expected_keys = {"positions", "ordering", "position_dim"}
@@ -1938,7 +1968,11 @@ class VectorizedHamletEnv:
 
         return validated_positions
 
+    @env_guard
     def randomize_affordance_positions(self) -> torch.Tensor | None:
+        return self._randomize_affordance_positions()
+
+    def _randomize_affordance_positions(self) -> torch.Tensor | None:
         """Randomize affordance positions and return agent spawn positions.
 
         Returns:
@@ -2067,10 +2101,12 @@ class VectorizedHamletEnv:
         return self._world_ids
 
     @property
+    @env_guard
     def accepted_episode_seqs(self) -> Mapping[str, int]:
         return MappingProxyType(dict(self._world_cursors))
 
     @property
+    @env_guard
     def world_phase(self) -> str:
         return self._world_phase
 
@@ -2113,6 +2149,7 @@ class VectorizedHamletEnv:
         if release is not self._world_release:
             raise ValueError("world operation requires the installed release")
 
+    @env_guard
     def bind_boundary_authority(self, *, owner: object, role_owners: Mapping[str, object]) -> WorldBoundaryAuthority:
         self._participation_ingress()
         if not isinstance(role_owners, Mapping) or set(role_owners) != _WORLD_ROLES or any(value is None for value in role_owners.values()):
@@ -2129,6 +2166,7 @@ class VectorizedHamletEnv:
         self._world_phase = "fresh-bound"
         return self._world_authority
 
+    @env_guard
     def install_boundary_release(self, release: WorldRecord) -> WorldRecord:
         self._participation_ingress()
         self._check_committed_participation()
@@ -2151,7 +2189,11 @@ class VectorizedHamletEnv:
         self._world_release, self._world_phase = release, phase
         return release
 
+    @env_guard
     def prepare_episode(self, *, batch_episode: int, release: WorldRecord) -> WorldEpisodeReservation:
+        return self._prepare_episode(batch_episode=batch_episode, release=release)
+
+    def _prepare_episode(self, *, batch_episode: int, release: WorldRecord) -> WorldEpisodeReservation:
         self._require_phase("bootstrap-ready", "released-completed")
         self._check_committed_participation()
         self._require_release(release)
@@ -2167,7 +2209,11 @@ class VectorizedHamletEnv:
             release,
         )
 
+    @env_guard
     def validate_episode_reservation(self, reservation: WorldEpisodeReservation) -> None:
+        self._validate_episode_reservation(reservation)
+
+    def _validate_episode_reservation(self, reservation: WorldEpisodeReservation) -> None:
         self._require_phase("bootstrap-ready", "released-completed")
         if not isinstance(reservation, WorldEpisodeReservation) or reservation._owner is not self:
             raise ValueError("reservation belongs to another world authority")
@@ -2176,7 +2222,7 @@ class VectorizedHamletEnv:
         for sequence in reservation.world_episode_seqs:
             exact_integer(sequence, 1, "reserved sequence")
         self._require_release(reservation._release)
-        expected = self.prepare_episode(batch_episode=reservation.batch_episode, release=reservation._release)
+        expected = self._prepare_episode(batch_episode=reservation.batch_episode, release=reservation._release)
         if (
             reservation._generation != expected._generation
             or reservation.world_ids != expected.world_ids
@@ -2184,6 +2230,7 @@ class VectorizedHamletEnv:
         ):
             raise ValueError("reservation identity or cursor disagrees")
 
+    @env_guard
     def reset(self, *, reservation: WorldEpisodeReservation) -> WorldRecord:
         self._participation_ingress()
         self._check_committed_participation()
@@ -2204,7 +2251,7 @@ class VectorizedHamletEnv:
         if self._world_reset is not None and duplicate:
             self._require_phase("active-awaiting-activation", "active", "closed-awaiting-release", "released-completed")
             return self._world_reset
-        self.validate_episode_reservation(reservation)
+        self._validate_episode_reservation(reservation)
         self._participation_pending = self._participation_committed = self._participation_reset_state = None
         self._participation_failed = False
         candidate = VFSWorldContext(
@@ -2337,6 +2384,7 @@ class VectorizedHamletEnv:
         ):
             raise ValueError("initial participation requires an unactivated genuine reset")
 
+    @env_guard
     def prepare_initial_participation(self, *, accepted: WorldAcceptedEpisode, intent: WorldOwnerReceipt) -> WorldRecord:
         """Stage an owner-issued pre-first-transition retirement without publishing it."""
         try:
@@ -2450,6 +2498,7 @@ class VectorizedHamletEnv:
             raise ValueError("initial participation preparation is stale")
         self._check_participation_state(pending["before"])
 
+    @env_guard
     def commit_initial_participation(self, *, prepared: WorldRecord, population_ready: WorldOwnerReceipt) -> WorldRecord:
         """Publish a single staged decision; every fallible operation precedes dones."""
         try:
@@ -2591,6 +2640,7 @@ class VectorizedHamletEnv:
             reading = observation.detach().clone()
             committed["state"], committed["observation"], committed["revision"] = state, reading, self._world_revision
 
+    @env_guard
     def validate_initial_participation(
         self, *, accepted: WorldAcceptedEpisode, participation: WorldRecord, predecessor: torch.Tensor
     ) -> None:
@@ -2598,6 +2648,7 @@ class VectorizedHamletEnv:
         self._require_phase("active")
         self._validate_participation_reading(accepted=accepted, participation=participation, predecessor=predecessor)
 
+    @env_guard
     def validate_initial_participation_reading(
         self, *, accepted: WorldAcceptedEpisode, participation: WorldRecord, predecessor: torch.Tensor
     ) -> None:
@@ -2623,6 +2674,7 @@ class VectorizedHamletEnv:
         finally:
             self._participation_busy = False
 
+    @env_guard
     def activate_episode(
         self, *, accepted: WorldAcceptedEpisode, population_receipt: WorldOwnerReceipt, curiosity_receipt: WorldOwnerReceipt
     ) -> WorldRecord:
@@ -2642,6 +2694,7 @@ class VectorizedHamletEnv:
         self._world_consumers, self._world_phase = owners, "active"
         return result
 
+    @env_guard
     def prepare_episode_close(
         self,
         *,
@@ -2684,6 +2737,7 @@ class VectorizedHamletEnv:
         }
         return self._record("prepared_close", payload)
 
+    @env_guard
     def freeze_episode_close(self, prepared: WorldRecord) -> WorldRecord:
         self._require_phase("active", "boundary-pending", "closed-awaiting-release", "released-completed")
         self._check_committed_participation()
@@ -2696,6 +2750,7 @@ class VectorizedHamletEnv:
         self._world_frozen, self._world_phase = prepared, "boundary-pending"
         return prepared
 
+    @env_guard
     def close_episode(self, prepared: WorldRecord, *, dispositions: WorldOwnerReceipt) -> WorldRecord:
         self._require_phase("boundary-pending", "closed-awaiting-release", "released-completed")
         self._check_committed_participation()
@@ -2720,6 +2775,7 @@ class VectorizedHamletEnv:
         self._world_closure, self._world_phase = closure, "closed-awaiting-release"
         return closure
 
+    @env_guard
     def abandon_episode(self, *, accepted: WorldAcceptedEpisode, reason: str) -> WorldRecord:
         self._accepted(accepted)
         if reason == "runtime_failure" and accepted is self._world_accepted:
@@ -2745,7 +2801,8 @@ class VectorizedHamletEnv:
                 method = getattr(owner, "prepare_empty_episode_evidence", None)
                 if not callable(method):
                     raise ValueError("owner lacks the required empty-episode proof")
-                evidence = WorldReceiptIssuer.validate(method(accepted=accepted), "empty_episode", owner)
+                proof = self._env_custody.outcall("empty", method, owner=owner, accepted=accepted)
+                evidence = WorldReceiptIssuer.validate(proof, "empty_episode", owner)
                 if set(evidence.payload) != {"accepted", "participated_world_ids", "events"} or evidence.accepted is not accepted:
                     raise ValueError("empty-episode proof identity disagrees")
                 if evidence.participated_world_ids or evidence.events:
@@ -2754,6 +2811,7 @@ class VectorizedHamletEnv:
         self._world_phase = "quarantined"
         return result
 
+    @env_guard
     def checkpoint_world_state(
         self, *, kind: str, release: WorldRecord, retained_binding_batches: tuple[int, ...], initial: WorldRecord | None
     ) -> dict[str, Any]:
@@ -2799,9 +2857,10 @@ class VectorizedHamletEnv:
             "last_closed_episode": owned_value(self._world_last_closed),
             "completed_boundary_key": None if self._world_last_closed is None else self._world_last_closed["batch_episode"],
             "accepted_bindings": [owned_value(self._world_bindings[batch]) for batch in retained_binding_batches],
-            "vfs_random_context": self.vfs_random_state(),
+            "vfs_random_context": self._vfs_random_state(),
         }
 
+    @env_guard
     def prepare_world_restore(
         self,
         *,
@@ -2835,6 +2894,7 @@ class VectorizedHamletEnv:
             },
         )
 
+    @env_guard
     def install_world_restore(self, *, prepared: WorldRecord, release: WorldRecord) -> WorldRecord:
         if self._world_restored is not None and self._world_restored == (prepared, release):
             self._require_phase("bootstrap-ready", "released-completed")

@@ -1,0 +1,204 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 9 items
+
+.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py F........
+
+=================================== FAILURES ===================================
+________ test_actual_inherited_pid_refuses_before_domain_and_owner_lock ________
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f157b5e3e10>
+
+    @pytest.mark.skipif(not hasattr(os, "fork"), reason="requires an actual POSIX fork")
+    def test_actual_inherited_pid_refuses_before_domain_and_owner_lock(compiled: Any, monkeypatch: Any) -> None:
+        claim = VectorizedPopulation.claim_vector_step
+        commit = VectorizedHamletEnv.commit_initial_participation
+        state: dict[str, Any] = {}
+        reports = []
+    
+        def capture_commit(self: Any, **kwargs: Any) -> Any:
+            result = commit(self, **kwargs)
+            state["participation"] = result
+            return result
+    
+        def observed_claim(self: Any, **kwargs: Any) -> int:
+            assert self.env._env_custody.reverse is not None
+            reports.append(_fork_refusals(
+                self.env, state["scope"], state["operation"], kwargs["accepted"],
+                state["participation"], kwargs["predecessor"],
+            ))
+            return claim(self, **kwargs)
+    
+        monkeypatch.setattr(VectorizedHamletEnv, "commit_initial_participation", capture_commit)
+        monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observed_claim)
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+        controller = Controller()
+        with rig.env.retain_parent_custody() as scope, rig.runtime.retain_parent_custody() as runtime_scope:
+            invocation = controller.invocation()
+            with invocation as operation:
+                state.update(scope=scope, operation=operation)
+                with scope.bind_operation(operation=operation), runtime_scope.bind_operation(operation=operation):
+                    candidate = rig.candidate()
+                    prepared = rig.population.prepare_vector_step(**candidate)
+>                   result = rig.env.step(candidate["actions"], vector_step=prepared)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py:236: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+src/townlet/environment/parent_custody.py:242: in outcall
+    result = callback(**arguments)
+             ^^^^^^^^^^^^^^^^^^^^^
+.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py:218: in observed_claim
+    reports.append(_fork_refusals(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f157b55f620>
+scope = <townlet.environment.parent_custody.EnvParentCustody object at 0x7f15704cf0e0>
+operation = <townlet.exploration.rng_custody.RNGOperation object at 0x7f1570640f80>
+accepted = WorldAcceptedEpisode(world_ids=('parent-A', 'parent-B', 'parent-C', 'parent-D', 'parent-E', 'parent-F', 'parent-G', 'p...tch_episode=0, _owner=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f157b55f620>, _generation=1)
+participation = WorldRecord(kind='initial_participation', _owner=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7...      [ True,  True,  True,  True, False,  True,  True],
+        [ True,  True,  True,  True, False,  True,  True]])}))
+predecessor = tensor([[1.0000, 0.8571, 0.1429,  ..., 1.0000, 0.0000, 0.0000],
+        [1.0000, 0.4286, 0.4286,  ..., 1.0000, 0.0000,...1.0000, 0.4286, 0.4286,  ..., 1.0000, 0.0000, 0.0000],
+        [1.0000, 0.7143, 0.4286,  ..., 1.0000, 0.0000, 0.0000]])
+
+    def _fork_refusals(env: Any, scope: Any, operation: Any, accepted: Any, participation: Any, predecessor: Any) -> dict[str, Any]:
+        """Child performs no tensor work and never unwinds inherited contexts."""
+        parent_pid = os.getpid()
+        source_identity = {
+            "env": id(env), "scope": id(scope), "operation": id(operation),
+            "accepted": id(accepted), "reverse": id(env._env_custody.reverse),
+        }
+        parent_sources = _loaded_sources()
+        candidate_binding = _candidate_binding(parent_sources)
+        read_fd, write_fd = os.pipe()
+        try:
+            child_pid = os.fork()
+        except BaseException:
+            os.close(read_fd)
+            os.close(write_fd)
+            raise
+        if child_pid == 0:
+            # Never return from this branch: outer pytest/domain/RLock contexts belong
+            # to the parent. Only inherited descriptors and child-local tripwires run.
+            os.close(read_fd)
+            exit_code = 91
+            try:
+                attempts: list[str] = []
+    
+                class LockTripwire:
+                    def __enter__(self) -> Any:
+                        attempts.append("owner-lock")
+                        raise AssertionError("inherited owner lock reached")
+    
+                    def __exit__(self, *args: Any) -> None:
+                        raise AssertionError("inherited owner lock exit reached")
+    
+                def domain_tripwire() -> Any:
+                    attempts.append("domain")
+                    raise AssertionError("inherited domain lookup reached")
+    
+                # No PID spoofing and no authority replacement: these child-only
+                # negative tripwires establish the refusal cut before either lock.
+                env._env_custody.lock = LockTripwire()
+                parent_custody.process_rng_domain = domain_tripwire
+                checks = {
+                    "ordinary_read": lambda: env.get_action_masks(),
+                    "phase_diagnostic": lambda: env.world_phase,
+                    "retention": lambda: env.retain_parent_custody().__enter__(),
+                    "binding": lambda: scope.bind_operation(operation=operation).__enter__(),
+                    "reverse_validation": lambda: env.validate_initial_participation(
+                        accepted=accepted, participation=participation, predecessor=predecessor
+                    ),
+                    "reverse_cleanup": lambda: env.abandon_episode(accepted=accepted, reason="runtime_failure"),
+                }
+                outcomes = {}
+                for name, check in checks.items():
+                    try:
+                        check()
+                    except ValueError as error:
+                        outcomes[name] = {"type": type(error).__name__, "message": str(error)}
+                    else:
+                        raise AssertionError(f"inherited {name} succeeded")
+                report = {
+                    "parent_pid": parent_pid, "child_pid": os.getpid(), "child_ppid": os.getppid(),
+                    "source_identity": source_identity,
+                    "child_identity": {
+                        "env": id(env), "scope": id(scope), "operation": id(operation),
+                        "accepted": id(accepted), "reverse": id(env._env_custody.reverse),
+                    },
+                    "creator_pid": env._env_custody.pid, "scope_pid": scope._pid,
+                    "refusals": outcomes, "lock_or_domain_attempts": attempts,
+                    "code_provenance": "inherited already-loaded parent modules and code objects; no fresh child APP import",
+                    "parent_before_fork_sources": parent_sources,
+                    "child_after_refusals_sources": _loaded_sources(),
+                    "parent_candidate_binding": candidate_binding,
+                    "child_candidate_binding": _candidate_binding(_loaded_sources()),
+                }
+                payload = json.dumps(report, sort_keys=True).encode()
+                assert len(payload) < 65536
+                offset = 0
+                while offset < len(payload):
+                    written = os.write(write_fd, payload[offset:])
+                    assert written > 0
+                    offset += written
+                exit_code = 0
+            except BaseException:
+                exit_code = 92
+            finally:
+                os.close(write_fd)
+                os._exit(exit_code)
+        os.close(write_fd)
+        reaped = False
+        payload = bytearray()
+        status = None
+        deadline = time.monotonic() + 8
+        try:
+            eof = False
+            while time.monotonic() < deadline and not (reaped and eof):
+                if not eof:
+                    ready, _, _ = select.select([read_fd], [], [], 0.05)
+                    if ready:
+                        chunk = os.read(read_fd, 4096)
+                        payload.extend(chunk)
+                        eof = not chunk
+                        assert len(payload) < 65536
+                if not reaped:
+                    waited_pid, observed_status = os.waitpid(child_pid, os.WNOHANG)
+                    if waited_pid == child_pid:
+                        reaped, status = True, observed_status
+            assert reaped and eof, "owned fork did not terminate and close its evidence pipe"
+            assert status is not None and os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0
+            report = json.loads(payload)
+            assert report["child_pid"] == child_pid != parent_pid
+            assert report["parent_pid"] == report["child_ppid"] == parent_pid
+            assert report["creator_pid"] == report["scope_pid"] == parent_pid
+            assert report["source_identity"] == report["child_identity"] == source_identity
+            assert len(report["refusals"]) == 6
+            assert all("another process" in outcome["message"] for outcome in report["refusals"].values())
+            assert report["lock_or_domain_attempts"] == []
+>           assert report["parent_before_fork_sources"] == report["child_after_refusals_sources"] == parent_sources
+E           AssertionError: assert {'env': {'cod...ngHook', ...}} == {'env': {'cod...ngHook', ...}}
+E             
+E             Omitting 1 identical items, use -vv to show
+E             Differing items:
+E             {'helper': {'code_filename': '/workspace/hamlet/src/townlet/environment/parent_custody.py', 'code_id': 139730250631296...e_sha256': 'b7542c68e53ee9ffc0ebfa8067496714c7f7735e4e98e1ea1c6d10ed82245bb0', 'loader_type': 'SourceFileLoader', ...}} != {'helper': {'code_filename': '/workspace/hamlet/src/townlet/environment/parent_custody.py', 'code_id': 139730250631296...e_sha256': 'f4aed1a5a03de901d3cffcce40af57a57933892a04e640fd9320048bb489ddd1', 'loader_type': 'SourceFileLoader', ...}}
+E             {'probe': {'code_filename': '/wor...
+E             
+E             ...Full output truncated (2 lines hidden), use '-vv' to show
+
+.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py:188: AssertionError
+=========================== short test summary info ============================
+FAILED .superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py::test_actual_inherited_pid_refuses_before_domain_and_owner_lock
+========================= 1 failed, 8 passed in 5.29s ==========================

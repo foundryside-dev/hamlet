@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_bound_env_and_runtime_preserve_real_step_and_service",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_bound_env_and_runtime_preserve_real_step_and_service(compiled: Any) -> None:\n        \"\"\"An ambient/missing lineage path cannot execute the real bound children.\"\"\"\n        rig = make_parent(compiled, \"none\", \"shared\")\n        rig.enter()\n        controller = Controller()\n>       with rig.env.retain_parent_custody() as env_scope, rig.runtime.retain_parent_custody() as runtime_scope:\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       AttributeError: 'VectorizedHamletEnv' object has no attribute 'retain_parent_custody'\n\ntests/test_townlet/regressions/bac/test_environment_parent_custody.py:108: AttributeError",
+  "candidate_tree": "8a2576c4ef2a45ec3b1ce958440e72df56eb3eee"
+}

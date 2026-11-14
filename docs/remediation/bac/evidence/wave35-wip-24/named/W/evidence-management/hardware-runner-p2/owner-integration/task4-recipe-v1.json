@@ -1,0 +1,92 @@
+{
+  "at": "2026-11-14T11:35:14.452994+00:00",
+  "body_inventory": [
+    {
+      "bytes": 110631,
+      "lines": 1603,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+    },
+    {
+      "bytes": 134250,
+      "lines": 1926,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "5d557f459a8d349360bc33d20b2de5a09cd2f32fdde19de0325fa1b37d4c52e3"
+    },
+    {
+      "bytes": 34654,
+      "lines": 526,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 3778,
+      "lines": 75,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "sha256": "3cf8269324c5407bad4d3ceacfea1489f57b04ab3371e2ac9840a2d86453d650"
+    }
+  ],
+  "cases": [
+    "test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[controller-exit]",
+    "test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[job-timeout]"
+  ],
+  "current_bodies": 4,
+  "current_lines": 4130,
+  "git_read_only_hash_discovery": {
+    "bytes": 19295504,
+    "path": "/usr/local/bin/git",
+    "sha256": "9dae295c1a4ffae4ee772e6205fcf22b26e1bfeeb5ee98f278b5139bda7ca22f"
+  },
+  "maximum_bodies": 5,
+  "maximum_lines": 5000,
+  "predecessor_adoption": {
+    "bytes": 1820,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/root-task3-adoption-v1.json",
+    "sha256": "99557032bb471d7af538ce96c540c32ba41119d87563218ddeaba883ebca2c99"
+  },
+  "predecessor_freeze": {
+    "bytes": 11033,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-freeze-v2.json",
+    "sha256": "1449655fec7f34c09057b5ded121c02cb22a0bc7e58a6f944b313556848a6717"
+  },
+  "preservation": "Only this Markdown and metadata written. Four source bodies unchanged; no P3/P4/P5/APP body opened, no Git command, test/source execution, repository/index/worktree/branch mutation or source execution copy.",
+  "projected_additional_lines": {
+    "existing_wrapper": 50,
+    "runner_corrective_only_after_RED": 150,
+    "tests": 450
+  },
+  "projected_total_lines": 4780,
+  "recipe": {
+    "bytes": 13650,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-TASK4-BACKSTOP-RECIPE-v1.md",
+    "sha256": "c8fd6245cf2b80f423121fe3bf7047d19c8ade07dcdef3445da73c716167999d"
+  },
+  "required_execution_lease": {
+    "instrumentation": "Preloaded disarmed wrapper delegates real posix_spawn then guard-armed SIGSTOP/pipe/park; actual live exe/PID/PGID verification mandatory. Test supervisor subreaper observes/reaps actual orphan; cannot clean on behalf of P2 to manufacture pass.",
+    "resources": "Exclusive4CPU, proposed8GiB total allocation (runner2+job6),2GiB AS inherited per process, threads1; root may replace only with measured accepted bounds before run",
+    "retention": "Runner64MiB1024inodes plus job128MiB4096inodes proposed, unique external evidence paths; compute explicit prepared input cap; approximately2minute source window",
+    "source": "Root-current exact HEAD/staged-tree/ordered inputs/import roots and active real source/index no-writer lease; no overlapping APP/Git/index writer/timing jobs. Root supplies candidate at grant, no historical label substituted.",
+    "timeouts": "Two serial cases,15s job timeout,0.1s termination grace,30s failure watchdog per case; original sampler10/8/6/3 unchanged",
+    "tooling": "Final exact P0/P2/P3/test/wrapper/interpreter/pytest/Git refs; real P1 admission/root CPU bound/contract/policy/runtime and source grant; no synthetic source/admission facts"
+  },
+  "schema": "bac-p2-task4-backstop-recipe-v1",
+  "status": "METADATA/TEST DESIGN ONLY; NO IMPLEMENTATION OR ACTUAL EXECUTION GRANT",
+  "supplier": {
+    "bytes": 11059,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/owner-task4-backstop-recipe-supplier-v2.json",
+    "sha256": "3f413a3ca2b6c62cd8fe07605d402eac93c51c17435dcdba1bf90f2a44141bd9"
+  },
+  "supplier_api_confirmation": {
+    "actor": "/root/bac_hardware_identity_p3",
+    "evidence": "Supplier direct confirmation message after source-bounded v2 capsule; no additional body read or runtime",
+    "facts": "Exact -p bac_hardware_identity_v1 --bac-identity-policy PATH --bac-identity-policy-sha256 SHA. pytest_configure validates flags and emits START. Actual pytest_runtest_call supplies case binding. current_process_context returns deep copied {context,start} or None for actual identity; same imported module instance; no duplicate START or private _CALL injection.",
+    "source_sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "unrun": [
+    "Test implementation/collection",
+    "Actual controller-exit backstop",
+    "Actual job-timeout backstop",
+    "Independent exact-freeze Task4 review",
+    "Full P3/P2/P4/P5/APP/hardware chain"
+  ]
+}

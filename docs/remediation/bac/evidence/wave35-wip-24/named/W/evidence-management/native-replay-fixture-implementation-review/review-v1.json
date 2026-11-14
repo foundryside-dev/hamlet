@@ -1,0 +1,74 @@
+{
+  "schema": "native-replay-fixture-independent-review-v1",
+  "reviewer": "/root/bac_astra_native_fixture_review",
+  "date": "2026-11-14",
+  "disposition": "APPROVE_STATIC_COMPONENT_RUNTIME_PENDING",
+  "implementation": [
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f",
+      "bytes": 72479,
+      "whole_lines": 1511,
+      "test_functions": 23,
+      "assertions": 118
+    },
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+      "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9",
+      "bytes": 69095,
+      "whole_lines": 1515,
+      "test_functions": 22,
+      "assertions": 120
+    }
+  ],
+  "metadata": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-NATIVE-REPLAY-FIXTURE-REPAIR-PLAN-v2.md",
+      "bytes": 24729,
+      "sha256": "6fd634250e3ae50e7924775a0e3209c34a0554c89a0194482446d7be34124bf3"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-LOAD-FOR-MODE-SUPPLIER-v1.md",
+      "bytes": 7540,
+      "sha256": "2875f7c00fcf454d8091358ef06068edfd4aa17429389b2c78333f9b1aede79d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-NATIVE-CURRENT-SUPPLIER.md",
+      "bytes": 28678,
+      "sha256": "7cb54762da2ecffae75091d06725afac71d83097f615cd364fc79ed1f54f0ba9"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/implementation-static-handoff-v1.json",
+      "bytes": 4751,
+      "sha256": "485b7a11d0e1e0738452d26682392beaa07dec27de1130cf17ba84ffe2533bd5"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/bank-install-consumption-supplier-v1.json",
+      "bytes": 2178,
+      "sha256": "d2a573de70d4dbf093c75143659221ac8797feada934d063896895b652cce12d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/install-identity-supplier-v1.json",
+      "bytes": 12475,
+      "sha256": "f2130f289a9742e63ae2947f2cd46b584f7b2ff50ec4d9dc0dbc3ceb31eac27b"
+    }
+  ],
+  "whole_body_budget": {
+    "files": 2,
+    "lines": 3026,
+    "producer_bodies": 0
+  },
+  "blocking_findings": [],
+  "runtime": {
+    "status": "PENDING_ROOT_R135",
+    "executed_by_reviewer": false
+  },
+  "preservation": "Current test-function/assertion counts independently checked by AST; unchanged decorators and preservation of every original assertion are writer-audit attribution, supplemented by direct review of the modified managed witness/custody regions and prior plan-review observations. No baseline source body/copy read in this review.",
+  "limits": [
+    "No whole owner/C1/BAC qualification.",
+    "Original ENV width-three routes remain required and unresolved.",
+    "Immediate consumed-refusal causality and full installed-identity before/after evidence are separate checks; current public producer API supplies no revision-neutral combined observer.",
+    "No source/Git/index modifications, application imports/tests, producer body reads, source copies, or workers.",
+    "R135 candidate/runtime custody not yet reviewed."
+  ]
+}

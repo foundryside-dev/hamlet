@@ -1,0 +1,1 @@
+{"cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-full07/fixtures/test_failure_and_exact_environ0", "env": {"OMP_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OPENBLAS_NUM_THREADS": "1", "CUDA_VISIBLE_DEVICES": "", "PYTHONHASHSEED": "17", "LC_CTYPE": "C.UTF-8"}, "argv": ["-c"]}

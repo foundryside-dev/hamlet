@@ -1,0 +1,100 @@
+"""Allocated P2 pytest custody; actual Task4 requires a separate root source lease."""
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import resource
+import sys
+import time
+import traceback
+
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+E = Path(__file__).parent
+cpu_slots = int(os.environ['BAC_P2_TEST_CPU_SLOTS'])
+ram_bytes = int(os.environ['BAC_P2_TEST_RAM_BYTES'])
+task4 = cpu_slots == 4
+task4_lease = None
+assert cpu_slots in (2, 3, 4) and ram_bytes == (2 if task4 else 4) * 1024**3, 'exact current root resource grant required'
+if task4:
+    lease_path = Path(os.environ['BAC_P2_TASK4_LEASE'])
+    lease_bytes = lease_path.read_bytes()
+    assert hashlib.sha256(lease_bytes).hexdigest() == os.environ['BAC_P2_TASK4_LEASE_SHA256']
+    task4_lease = json.loads(lease_bytes)
+    assert task4_lease['schema'] == 'bac-p2-task4-execution-lease-v1' and task4_lease['authority'] == 'root'
+    now = datetime.datetime.now(datetime.timezone.utc)
+    assert datetime.datetime.fromisoformat(task4_lease['start']) <= now < datetime.datetime.fromisoformat(task4_lease['end'])
+    nodes = [str(Q / 'test_run_bac_hardware_v1.py') + '::test_owner_actual_git_backstop[' + mode + ']'
+             for mode in ('controller-exit', 'job-timeout')]
+    assert sys.argv[2:] == nodes, 'four CPU mode allows precisely the two actual Task4 cases'
+    assert task4_lease['ram_limit_bytes'] == ram_bytes and len(task4_lease['cpu_ids']) == 4
+    assert set(task4_lease['cpu_ids']) <= os.sched_getaffinity(0)
+if cpu_slots == 3:
+    assert sys.argv[2:] == ['-k', 'owner_public_run_observes'], 'three CPUs reserved for the single public owner test'
+assert Path(sys.argv[1]).name == sys.argv[1] and sys.argv[1] not in ('.', '..'), 'simple unique attempt id required'
+attempt = (Path(task4_lease['execution_root']) / 'runs' if task4 else E) / sys.argv[1]
+attempt.mkdir(exist_ok=False)
+os.sched_setaffinity(0, set(task4_lease['cpu_ids'] if task4 else sorted(os.sched_getaffinity(0))[:cpu_slots]))
+assert len(os.sched_getaffinity(0)) == cpu_slots
+resource.setrlimit(resource.RLIMIT_AS, (ram_bytes, ram_bytes))
+sys.dont_write_bytecode = True
+for key in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS'):
+    os.environ[key] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
+os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
+os.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
+sys.path.insert(0, str(Q))
+
+def ref(path):
+    data = path.read_bytes()
+    return {'path': str(path), 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+
+def pins():
+    if task4: return [ref(Path(item['path'])) for item in task4_lease['pins']]
+    return [ref(Q / name) for name in ('run_bac_hardware_v1.py', 'test_run_bac_hardware_v1.py', 'bac_hardware_protocol_v1.py')]
+
+def utc():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+args = ['-q', '-p', 'no:cacheprovider', '--confcutdir=' + str(Q),
+        '--basetemp=' + str(attempt / 'fixtures'), str(Q / 'test_run_bac_hardware_v1.py'), *sys.argv[2:]]
+if task4:
+    assert pins() == task4_lease['pins'], 'root-leased bytes changed'
+    assert ref(Path(__file__)) in task4_lease['pins'], 'wrapper not root pinned'
+    args = ['-q', '-p', 'no:cacheprovider', '--rootdir=' + str(Q), '--confcutdir=' + str(Q),
+            '--basetemp=' + str(attempt / 'fixtures'), *nodes]
+record = {'status': 'RUNNING', 'scope': 'Pure authored-data/inert-process P2 tooling only; no APP/source/Git/hardware qualification',
+    'argv': sys.argv, 'kernel_argv': Path('/proc/self/cmdline').read_bytes().split(b'\0')[:-1],
+    'pytest_args': args, 'pid': os.getpid(), 'ppid': os.getppid(), 'utc_start': utc(),
+    'affinity': sorted(os.sched_getaffinity(0)), 'ram_limit_bytes': ram_bytes,
+    'thread_environment': {key: os.environ[key] for key in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS')},
+    'before': pins(), 'runner': ref(Path(__file__)), 'xdist_workers': 0}
+if task4:
+    record.update(scope='Actual negative P3/Git Task4 backstop only; no full-chain/APP/CUDA acceptance',
+                  root_execution_lease=ref(lease_path))
+record['kernel_argv'] = [x.decode() for x in record['kernel_argv']]
+record['proc_stat_start_identity'] = Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()[19]
+start = time.monotonic()
+with (attempt / 'output.log').open('x') as log:
+    old_out, old_err = sys.stdout, sys.stderr
+    sys.stdout = sys.stderr = log
+    try:
+        import pytest
+        record['pytest_version'] = pytest.__version__
+        code = int(pytest.main(args))
+    except Exception as exc:
+        code = 1
+        record['bootstrap_error'] = repr(exc)
+        traceback.print_exc()
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
+record.update(status='PASSED' if code == 0 else 'FAILED', exit_code=code, utc_end=utc(),
+              elapsed_seconds=time.monotonic() - start, after=pins(), log=ref(attempt / 'output.log'),
+              final_affinity=sorted(os.sched_getaffinity(0)),
+              imported_project_modules={name: str(getattr(module, '__file__', '')) for name, module in sys.modules.items()
+                                        if name.startswith(('bac_', 'run_bac_', 'test_run_bac_', 'townlet', 'torch'))})
+record['source_unchanged'] = record['before'] == record['after']
+with (attempt / 'execution.json').open('x') as output:
+    json.dump(record, output, indent=2, sort_keys=True); output.write('\n')
+print(json.dumps({'attempt': str(attempt), 'exit_code': code, 'source_unchanged': record['source_unchanged']}))
+raise SystemExit(code)

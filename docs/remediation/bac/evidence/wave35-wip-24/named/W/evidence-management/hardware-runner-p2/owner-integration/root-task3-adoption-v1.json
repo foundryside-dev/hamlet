@@ -1,0 +1,30 @@
+{
+  "schema": "bac-hardware-p2-task3-root-adoption-v1",
+  "owner": "/root",
+  "at": "2026-11-14T11:21:20.919227+00:00",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-freeze-v2.json",
+    "bytes": 11033,
+    "sha256": "1449655fec7f34c09057b5ded121c02cb22a0bc7e58a6f944b313556848a6717"
+  },
+  "independent_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task3-review/review-v2.json",
+    "bytes": 8021,
+    "sha256": "4b2e4916c0b1f3caaf0c7ddab62e5d551d9cec00e6ee9382207125fe9d293e21"
+  },
+  "current_source_rehash": "PASS all4 bodies",
+  "disposition": "ADOPT BOUNDED TASK3 TRANSPORT; NO ACTUAL BACKSTOP/FULL CHAIN/HARDWARE ACCEPTANCE",
+  "author_tests": "242 distinct current-byte:233 under2CPU plus9 separately3CPU; targeted10 overlap.",
+  "independent_tests": "86 PASS including original6 negatives and exact-type/clock/PID controls; overlap, not additive unique coverage.",
+  "resolved": [
+    "Exact nested diagnostic JSON types",
+    "Sampler/emission endpoints contained in actual observed job lifetime, equality accepted",
+    "Git command PID differs from its contemporaneous guard; legitimate sequential Git PID reuse remains accepted"
+  ],
+  "remaining": [
+    "Task4 actual adopted Git abrupt-death owned-group cleanup, source/resource lease and qualification",
+    "P4/P5 strict whole-call/parent timing, APP instrumentation and complete chain",
+    "CUDA/provider/final BAC gates"
+  ],
+  "next": "Prepare concrete Task4 two-case backstop recipe only; root must grant exact source/runtime lease before actual execution. No new worktree/branch/checkout/source execution copy."
+}

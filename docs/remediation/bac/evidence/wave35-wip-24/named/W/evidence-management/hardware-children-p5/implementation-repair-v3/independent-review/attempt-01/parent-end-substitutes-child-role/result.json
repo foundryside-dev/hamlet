@@ -1,0 +1,9 @@
+{
+  "name": "parent-end-substitutes-child-role",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "wrong process role",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

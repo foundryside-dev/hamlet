@@ -1,0 +1,22 @@
+{
+  "phase": "RED",
+  "argv": [
+    "-q",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "-p",
+    "no:cacheprovider",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py"
+  ],
+  "pid": 224772,
+  "ppid": 224769,
+  "affinity": [
+    0
+  ],
+  "ram_limit": 4294967296,
+  "start": "2026-11-14T10:41:56.607757+00:00",
+  "end": "2026-11-14T10:41:57.987722+00:00",
+  "elapsed": 1.37994928000262,
+  "exit": 1,
+  "test_sha256": "79832c1b435e49e8994d206258c7c36e6809d6f05afcbc6bd9c68936076186ad",
+  "scope": "synthetic P5 only; no application or hardware"
+}

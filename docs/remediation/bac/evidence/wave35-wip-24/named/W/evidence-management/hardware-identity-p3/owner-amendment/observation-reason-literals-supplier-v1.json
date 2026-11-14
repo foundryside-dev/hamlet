@@ -1,0 +1,206 @@
+{
+  "elapsed_field_distinction": {
+    "end": {
+      "reason": "",
+      "state": "measured",
+      "value": "actual monotonic elapsed integer"
+    },
+    "note": "Do not apply the guard runtime-slot reason to elapsed_ns. Elapsed has observed shape without provenance.",
+    "source_line": 715,
+    "start": {
+      "reason": "process start has no elapsed interval",
+      "state": "unavailable",
+      "value": null
+    }
+  },
+  "measured_work": {
+    "condition": "Already-loaded work role with actual permitted getters; successful observed values typed/validated.",
+    "fields": {
+      "process.intra_op / process.inter_op / process.debug": "measured, reason empty, provenance exact raw ref",
+      "raw.observation_limit": "loaded Torch initialization state only, not independent proof of native device work",
+      "raw.torch_anomaly": {
+        "reason": "",
+        "state": "measured",
+        "value": "actual bool; False is valid"
+      }
+    },
+    "source_lines": [
+      278,
+      279,
+      289,
+      290,
+      300,
+      302,
+      303,
+      304,
+      305,
+      306,
+      307,
+      449,
+      450
+    ],
+    "warning": "Do not require measured anomaly.reason == raw.observation_limit. The anomaly reason is empty while the observation-limit disclaimer is nonempty. Python debug True is independent of anomaly False."
+  },
+  "normative_design": {
+    "bytes": 35319,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P3-OWNER-AMENDMENT-PROPOSAL-v2.md",
+    "sha256": "223951b0bbefb319892ecbd9c1b37b1cf686aea929546acffd652f9f68de57b3"
+  },
+  "protocol": {
+    "bytes": 34654,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+    "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+  },
+  "raw_schema": "bac-hardware-process-observation-v2",
+  "schema": "bac-p3-observation-reason-literals-supplier-v1",
+  "scope": "Only existing owned P3/P0 bodies and owned metadata were read. No P2 body read, code import, test/runtime, source edit, Git/index mutation, branch or worktree operation.",
+  "source_after": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "source_before": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "status": "Metadata-only exact current producer facts; no source/schema/authority change",
+  "unavailable_cases": [
+    {
+      "condition": "type(sys.modules.get('torch')) is not types.ModuleType (missing or non-exact-module entry). work := role.observer == 'work' OR role.torch_policy == 'work'. START permitted; END permitted only when not work; work END refuses before emission.",
+      "entry": "record_process -> _torch -> _anomaly",
+      "fields": {
+        "process.cuda_observation": "uninitialized",
+        "process.debug": {
+          "provenance": "exact raw reference",
+          "reason": "",
+          "state": "measured",
+          "value": true
+        },
+        "process.intra_op / process.inter_op": {
+          "provenance": "exact raw reference",
+          "reason": "Torch absent; no import or runtime configuration observation",
+          "state": "unavailable",
+          "value": null
+        },
+        "process.torch_observation": "not-loaded",
+        "raw.cuda_marker": null,
+        "raw.observation_limit": "Torch absent; no import or runtime configuration observation",
+        "raw.torch_anomaly": {
+          "reason": "Torch absent; no import or runtime configuration observation",
+          "state": "unavailable",
+          "value": null
+        },
+        "raw.torch_loaded": false
+      },
+      "id": "ordinary-torch-not-loaded",
+      "no_call": "No Torch import or runtime/anomaly getter. Uninitialized here is the producer observation category, not independent proof of every native CUDA context.",
+      "source_lines": [
+        259,
+        261,
+        265,
+        266,
+        267,
+        268,
+        300,
+        307,
+        443,
+        448,
+        449,
+        450
+      ]
+    },
+    {
+      "condition": "Torch is exact ModuleType and not work. torch.cuda must already be exact ModuleType; vars(cuda)['_initialized'] must be exact bool. Missing/nonbool refuses; no-initialize policy refuses True. Forbidden Torch policy refuses. No getter/import is used.",
+      "entry": "record_process -> _torch -> _anomaly",
+      "fields": {
+        "process.cuda_observation": "initialized iff marker True, otherwise uninitialized",
+        "process.debug": {
+          "provenance": "exact raw reference",
+          "reason": "",
+          "state": "measured",
+          "value": true
+        },
+        "process.intra_op / process.inter_op": {
+          "provenance": "exact raw reference",
+          "reason": "loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited",
+          "state": "unavailable",
+          "value": null
+        },
+        "process.torch_observation": "loaded-without-calls",
+        "raw.cuda_marker": "actual loaded bool marker",
+        "raw.observation_limit": "loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited",
+        "raw.torch_anomaly": {
+          "reason": "loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited",
+          "state": "unavailable",
+          "value": null
+        },
+        "raw.torch_loaded": true
+      },
+      "id": "ordinary-loaded-observer",
+      "no_call": "Loaded module dictionary observation only; no Torch/CUDA/anomaly runtime calls.",
+      "source_lines": [
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        291,
+        292,
+        293,
+        300,
+        307,
+        443,
+        450
+      ]
+    },
+    {
+      "condition": "Valid prepared fork handle and actual fork-guard role, at START or END. Torch presence does not change this reason; the child never calls Torch, CUDA or anomaly getters.",
+      "entry": "record_fork_process (ordinary record_process refuses fork-guard)",
+      "fields": {
+        "process.cuda_observation": "forbidden",
+        "process.intra_op / process.inter_op / process.debug": {
+          "provenance": "exact raw reference",
+          "reason": "guard-only: no Torch/CUDA calls permitted",
+          "state": "unavailable",
+          "value": null
+        },
+        "process.torch_observation": "forbidden-inherited-module-witness",
+        "raw.cuda_marker": null,
+        "raw.observation_limit": "guard-only: no Torch/CUDA calls permitted",
+        "raw.recorder_mode": "fork-guard",
+        "raw.torch_anomaly": {
+          "reason": "guard-only: no Torch/CUDA calls permitted",
+          "state": "unavailable",
+          "value": null
+        },
+        "raw.torch_loaded": "actual type(sys.modules.get('torch')) is types.ModuleType bool"
+      },
+      "helper_note": "_torch also has the same guard literal at264, but current public ordinary recorder rejects guard before calling it. Accepted guard emission comes from prepared kernel707..722.",
+      "id": "prepared-fork-guard",
+      "source_lines": [
+        404,
+        405,
+        707,
+        708,
+        710,
+        711,
+        712,
+        714,
+        717,
+        721,
+        722
+      ]
+    }
+  ],
+  "wording_authority": {
+    "current_P3_private": "Accepted owner proposal v2 lines218..219 says unavailable null/exact no-call reason; lines237..238 repeat unavailable with the exact reason. This capsule supplies the exact current dee985 producer mapping omitted from high-level metadata.",
+    "generic_P0": "P0 observed/fact checks at224..237 require measured reason empty and unavailable value null/nonblank reason; guard process semantics460..463 require unavailable intra_op/inter_op/debug. P0 does NOT enumerate these reason literals.",
+    "guard_P0_correspondence": "The accepted prose requires guard runtime slots unavailable with reasons, not a separately enumerated P0 string. Current pinned producer uses the same guard literal in raw.observation_limit, raw.torch_anomaly.reason, and all three P0 runtime-slot reasons. Exact current producer/raw correspondence may check that equality/literal; this is not a new P0 transport enum.",
+    "recommendation": "For this exact adopted producer, compare current private raw unavailable reason to the mapped literal and validate the stated role/phase/loaded branch plus raw/P0 correspondence. Do not accept arbitrary prose as no-call proof or broaden unavailable to avoid required work-end measurement.",
+    "semantic_limit": "Reason text explains the observation policy; text alone does not prove no Torch/CUDA/native work. Required source, role, ancestry, phase and independent custody checks remain necessary. A future producer wording change requires explicit current-interface rebinding; no legacy aliases/fallback are proposed."
+  }
+}

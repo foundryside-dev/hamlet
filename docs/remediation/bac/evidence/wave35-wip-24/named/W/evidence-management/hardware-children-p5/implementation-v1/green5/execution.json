@@ -1,0 +1,38 @@
+{
+  "phase": "green5",
+  "argv": [
+    "-q",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/green5/pytest",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "-p",
+    "no:cacheprovider",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py"
+  ],
+  "pid": 226772,
+  "ppid": 226769,
+  "affinity": [
+    0
+  ],
+  "ram_limit": 4294967296,
+  "start": "2026-11-14T10:52:06.615496+00:00",
+  "end": "2026-11-14T10:52:08.677943+00:00",
+  "elapsed": 2.06242802599445,
+  "exit": 0,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "bytes": 49273,
+      "sha256": "1962c576af535b73feb3a5a976709bcf16aa3e1cbea1f9c10d0ea768409a39a7"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py",
+      "bytes": 36825,
+      "sha256": "2916d4f37db9efa137adb8da0ef224c85232d76ce00a9157c883a9020aa05010"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ]
+}

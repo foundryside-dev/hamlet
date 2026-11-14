@@ -1,0 +1,277 @@
+...FFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+_____ test_owner_sampler_review_correspondence_gaps[diagnostic-exit-bool] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-red10/fixtures/test_owner_sampler_review_corr3')
+mutation = 'diagnostic-exit-bool'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+        'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+        'first-git-is-guard', 'second-git-is-guard'])
+    def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+        def alter(parts):
+            for part in parts:
+                rows = part['sampler']['commands']
+                if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+                elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                    rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+        if mutation.startswith('diagnostic-'):
+            name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+            if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+            elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+            else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+            changed = put(name, diagnostic)
+            completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+            put('completion.json', completion)
+        elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+            last = parts[1]
+            endpoint = last['emission']['emission_end_ns']
+            if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+            elif mutation == 'emission-after-wait': endpoint -= 1
+            custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+        if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1926: Failed
+___ test_owner_sampler_review_correspondence_gaps[diagnostic-truncation-int] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-red10/fixtures/test_owner_sampler_review_corr4')
+mutation = 'diagnostic-truncation-int'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+        'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+        'first-git-is-guard', 'second-git-is-guard'])
+    def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+        def alter(parts):
+            for part in parts:
+                rows = part['sampler']['commands']
+                if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+                elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                    rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+        if mutation.startswith('diagnostic-'):
+            name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+            if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+            elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+            else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+            changed = put(name, diagnostic)
+            completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+            put('completion.json', completion)
+        elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+            last = parts[1]
+            endpoint = last['emission']['emission_end_ns']
+            if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+            elif mutation == 'emission-after-wait': endpoint -= 1
+            custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+        if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1926: Failed
+_ test_owner_sampler_review_correspondence_gaps[diagnostic-nested-bytes-float] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-red10/fixtures/test_owner_sampler_review_corr5')
+mutation = 'diagnostic-nested-bytes-float'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+        'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+        'first-git-is-guard', 'second-git-is-guard'])
+    def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+        def alter(parts):
+            for part in parts:
+                rows = part['sampler']['commands']
+                if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+                elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                    rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+        if mutation.startswith('diagnostic-'):
+            name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+            if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+            elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+            else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+            changed = put(name, diagnostic)
+            completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+            put('completion.json', completion)
+        elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+            last = parts[1]
+            endpoint = last['emission']['emission_end_ns']
+            if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+            elif mutation == 'emission-after-wait': endpoint -= 1
+            custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+        if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1926: Failed
+______ test_owner_sampler_review_correspondence_gaps[sampler-after-wait] _______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-red10/fixtures/test_owner_sampler_review_corr6')
+mutation = 'sampler-after-wait'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+        'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+        'first-git-is-guard', 'second-git-is-guard'])
+    def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+        def alter(parts):
+            for part in parts:
+                rows = part['sampler']['commands']
+                if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+                elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                    rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+        if mutation.startswith('diagnostic-'):
+            name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+            if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+            elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+            else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+            changed = put(name, diagnostic)
+            completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+            put('completion.json', completion)
+        elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+            last = parts[1]
+            endpoint = last['emission']['emission_end_ns']
+            if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+            elif mutation == 'emission-after-wait': endpoint -= 1
+            custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+        if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1926: Failed
+______ test_owner_sampler_review_correspondence_gaps[emission-after-wait] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-red10/fixtures/test_owner_sampler_review_corr7')
+mutation = 'emission-after-wait'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+        'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+        'first-git-is-guard', 'second-git-is-guard'])
+    def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+        def alter(parts):
+            for part in parts:
+                rows = part['sampler']['commands']
+                if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+                elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                    rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+        if mutation.startswith('diagnostic-'):
+            name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+            if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+            elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+            else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+            changed = put(name, diagnostic)
+            completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+            put('completion.json', completion)
+        elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+            last = parts[1]
+            endpoint = last['emission']['emission_end_ns']
+            if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+            elif mutation == 'emission-after-wait': endpoint -= 1
+            custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+        if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1926: Failed
+______ test_owner_sampler_review_correspondence_gaps[first-git-is-guard] _______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-red10/fixtures/test_owner_sampler_review_corr8')
+mutation = 'first-git-is-guard'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+        'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+        'first-git-is-guard', 'second-git-is-guard'])
+    def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+        def alter(parts):
+            for part in parts:
+                rows = part['sampler']['commands']
+                if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+                elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                    rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+        if mutation.startswith('diagnostic-'):
+            name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+            if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+            elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+            else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+            changed = put(name, diagnostic)
+            completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+            put('completion.json', completion)
+        elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+            last = parts[1]
+            endpoint = last['emission']['emission_end_ns']
+            if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+            elif mutation == 'emission-after-wait': endpoint -= 1
+            custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+        if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1926: Failed
+______ test_owner_sampler_review_correspondence_gaps[second-git-is-guard] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-red10/fixtures/test_owner_sampler_review_corr9')
+mutation = 'second-git-is-guard'
+
+    @pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+        'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+        'first-git-is-guard', 'second-git-is-guard'])
+    def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+        def alter(parts):
+            for part in parts:
+                rows = part['sampler']['commands']
+                if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+                elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                    rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+        if mutation.startswith('diagnostic-'):
+            name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+            if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+            elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+            else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+            changed = put(name, diagnostic)
+            completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+            put('completion.json', completion)
+        elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+            last = parts[1]
+            endpoint = last['emission']['emission_end_ns']
+            if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+            elif mutation == 'emission-after-wait': endpoint -= 1
+            custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+        if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+            assert custody.evidence(selected) == completion
+        else:
+>           with pytest.raises(ValueError): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1926: Failed
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[diagnostic-exit-bool]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[diagnostic-truncation-int]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[diagnostic-nested-bytes-float]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[sampler-after-wait]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[emission-after-wait]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[first-git-is-guard]
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[second-git-is-guard]
+7 failed, 3 passed, 232 deselected in 3.45s

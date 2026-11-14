@@ -1,0 +1,78 @@
+........................................................................ [ 38%]
+........................................................................ [ 76%]
+......................................FF....                             [100%]
+=================================== FAILURES ===================================
+________ test_independent_task2_actual_child_import_authority[unfrozen] ________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_independent_task2_actual_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2e3b7329e0>
+authority = 'unfrozen'
+
+    @pytest.mark.parametrize('authority', ['frozen', 'unfrozen', 'outside-root'])
+    def test_independent_task2_actual_child_import_authority(tmp_path, monkeypatch, authority):
+        captured = []
+        original = fixtures.spawn_owner_transport_fixture
+        def capture(*args, **kwargs):
+            value = original(*args, **kwargs); captured.append(value); return value
+        monkeypatch.setattr(fixtures, 'spawn_owner_transport_fixture', capture)
+        fixtures.test_owner_spawn_completion_requires_one_launch_and_claim_across_phases(tmp_path, False)
+        r,c,job,rec,role,raw,env,put,seal,launch,claim = captured[0]
+        allowed = c.candidate['inventory']['source'][0]['reference']
+        if authority == 'unfrozen':
+            extra = Path(job['cwd']) / 'unfrozen-child-module.txt'
+            extra.write_text('inert bytes, never imported')
+            allowed = r.file_reference(extra)
+        elif authority == 'outside-root': allowed = c.inputs[1]
+        def mutation(value):
+            if value.get('kind') == 'process' and value.get('role') == 'spawn-child':
+                value['imports'] = [{'name': '_observed_child_extra', 'reference': allowed}]
+            return value
+        path = Path(job['output']) / 'completion.json'
+        completion = fixtures.reseal_owner_fixture(json.loads(path.read_text()), Path(job['output']), mutation)
+        path.write_text(json.dumps(completion, sort_keys=True))
+        if authority == 'frozen': assert c.evidence(job) == completion
+        else:
+>           with pytest.raises(ValueError): c.evidence(job)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:108: Failed
+______ test_independent_task2_actual_child_import_authority[outside-root] ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_independent_task2_actual_2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2e3b80a5f0>
+authority = 'outside-root'
+
+    @pytest.mark.parametrize('authority', ['frozen', 'unfrozen', 'outside-root'])
+    def test_independent_task2_actual_child_import_authority(tmp_path, monkeypatch, authority):
+        captured = []
+        original = fixtures.spawn_owner_transport_fixture
+        def capture(*args, **kwargs):
+            value = original(*args, **kwargs); captured.append(value); return value
+        monkeypatch.setattr(fixtures, 'spawn_owner_transport_fixture', capture)
+        fixtures.test_owner_spawn_completion_requires_one_launch_and_claim_across_phases(tmp_path, False)
+        r,c,job,rec,role,raw,env,put,seal,launch,claim = captured[0]
+        allowed = c.candidate['inventory']['source'][0]['reference']
+        if authority == 'unfrozen':
+            extra = Path(job['cwd']) / 'unfrozen-child-module.txt'
+            extra.write_text('inert bytes, never imported')
+            allowed = r.file_reference(extra)
+        elif authority == 'outside-root': allowed = c.inputs[1]
+        def mutation(value):
+            if value.get('kind') == 'process' and value.get('role') == 'spawn-child':
+                value['imports'] = [{'name': '_observed_child_extra', 'reference': allowed}]
+            return value
+        path = Path(job['output']) / 'completion.json'
+        completion = fixtures.reseal_owner_fixture(json.loads(path.read_text()), Path(job['output']), mutation)
+        path.write_text(json.dumps(completion, sort_keys=True))
+        if authority == 'frozen': assert c.evidence(job) == completion
+        else:
+>           with pytest.raises(ValueError): c.evidence(job)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py:108: Failed
+=========================== short test summary info ============================
+FAILED ../dev::test_independent_task2_actual_child_import_authority[unfrozen]
+FAILED ../dev::test_independent_task2_actual_child_import_authority[outside-root]
+2 failed, 186 passed, 1 deselected in 18.93s

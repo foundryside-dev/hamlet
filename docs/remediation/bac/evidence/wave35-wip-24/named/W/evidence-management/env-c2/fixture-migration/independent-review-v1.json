@@ -1,0 +1,192 @@
+{
+  "schema": "bac-c2-fixture-independent-review-v1",
+  "reviewer": "/root/bac_c2_owner_failure_reconciliation",
+  "writer": "/root/bac_c2_fixture_migration",
+  "spec": "APPROVED_BOUNDED_G1_G2",
+  "quality": "APPROVED_BOUNDED_G1_G2",
+  "material_findings": [],
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "source": {
+    "path": "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+    "lines": 1343,
+    "sha256": "80a9ef90c939214b9d709b94e7f058041e4cfa24cfaa0421b8cb0d31a0c327d1"
+  },
+  "reviewer_total_source_bodies": 4,
+  "reviewer_total_source_lines": 4983,
+  "source_budget_remaining": 17,
+  "admitted_bodies": [
+    {
+      "path": "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+      "lines": 1343,
+      "sha256": "80a9ef90c939214b9d709b94e7f058041e4cfa24cfaa0421b8cb0d31a0c327d1"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_initial_participation_population.py",
+      "lines": 775,
+      "sha256": "0db498e53d21f62f98ea53d6cf801476a1cac73b29a4710760a68d269dc78566"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_world_episode_identity.py",
+      "lines": 1685,
+      "sha256": "bd2c9d0c68caa3096b674a48143804dc39f8e419af9a0018e8e8c6e1e62002cc"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py",
+      "lines": 1180,
+      "sha256": "ea5ce4c3c3d6fa69c110ca59aae0c1be2047f7e36c8d2fa3448430c4f458b534"
+    }
+  ],
+  "prior_test_functions_retained": 39,
+  "current_test_functions": 40,
+  "changed_source_nodes": [
+    "ComponentPopulation",
+    "test_observation_cleanup_cannot_activate_quarantined_episode",
+    "test_observation_cleanup_cannot_return_healthy_validation",
+    "test_reading_validator_cleanup_is_durable"
+  ],
+  "added_source_nodes": [
+    "observe_refused_encoder_cleanup",
+    "test_real_claim_validates_current_owned_reading_once_before_publication"
+  ],
+  "removed_source_nodes": [],
+  "resolved_original_failures": 11,
+  "groups": {
+    "G1": {
+      "failures": 8,
+      "assessment": "Actual committed claim validates exactly once before publication; no-decision zero; original registry/content checks and all original G1 assertions retained."
+    },
+    "G2": {
+      "failures": 3,
+      "assessment": "Nested cleanup refusal before own effects is distinct from actual completed permitted after-unwind cleanup; original durable quarantine/authority/no-change assertions retained."
+    }
+  },
+  "root_owned_runtime_evidence": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-result.json",
+      "sha256": "683898c234e2022fc35cdb5e4dfe8ab9d9c0f82b57644b6b73da63182eff62f6",
+      "record": {
+        "name": "c2-fixture-owner",
+        "exit_code": 0,
+        "seconds": 23.08596162701724,
+        "command": [
+          "/workspace/hamlet/.venv/bin/python",
+          "-m",
+          "pytest",
+          "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+          "--no-cov",
+          "-p",
+          "no:cacheprovider",
+          "-p",
+          "no:benchmark",
+          "-p",
+          "bac_source_identity",
+          "-q",
+          "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r145-c2-fixture-owner-attempt-1",
+          "-n",
+          "2",
+          "--dist",
+          "worksteal"
+        ],
+        "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner.log",
+        "sha256": "68915d1766a5657c88c59493726fd611b4893051a690fbd5026dd56f7e84cd64",
+        "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "manifest_sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53",
+        "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+      }
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-custody.json",
+      "sha256": "7b856f28809cfbf1c72ac66c2a842aa0712518f4fb39fee3c637c3bae5aee30f",
+      "record": {
+        "job": "c2-fixture-owner",
+        "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+        "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+        "exit_code": 0,
+        "counts": {
+          "passed": 82,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 23.08596162701724,
+        "source_guards": 824,
+        "process_identities": 3,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    }
+  ],
+  "root_additional_verification": {
+    "collection": 82,
+    "first_transition_passed": 1,
+    "do_not_sum_overlap": true,
+    "all_11_original_G1_G2_and_both_new_claim_controls_included": true
+  },
+  "remaining_restore_failures": 18,
+  "original_full_owner_gate": "OWED_NOT_RERUN_BEFORE_CAUSAL_REPAIR",
+  "package_counts_unchanged": [
+    28,
+    38,
+    66
+  ],
+  "reviewer_application_execution": false,
+  "reviewer_application_edits": false,
+  "reviewer_git_operations": false,
+  "limitations": [
+    "No extra producer/helper body or production traceback snippet read.",
+    "No whole-program or full-C2 acceptance.",
+    "No false 268-green claim; focused1 overlaps full-file82."
+  ],
+  "original_R142_skips": {
+    "observed_count": 4,
+    "observed_summary": "30 failed, 234 passed, 4 skipped",
+    "source_declared_test": "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_vectorized_uniform_normal_shapes_match_independent_domain_spec",
+    "source_line": 504,
+    "source_declared_parameter": "cuda",
+    "source_declared_condition": "not torch.cuda.is_available()",
+    "source_declared_reason": "CUDA unavailable",
+    "shape_argument_shape_cases": [
+      [
+        [
+          2
+        ],
+        []
+      ],
+      [
+        [
+          2,
+          3
+        ],
+        []
+      ],
+      [
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      [
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          4
+        ]
+      ]
+    ],
+    "observed_per_node_reason_verified": false,
+    "limitation": "Consumed summary/custody metadata has count only; source-declared four CUDA cases match count, but observed per-node mapping and physical hardware cause are not established. No CUDA probe or rerun. All four remain skipped/unqualified."
+  }
+}

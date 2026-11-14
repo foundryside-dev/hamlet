@@ -1,0 +1,9 @@
+{
+  "name": "required-import-alias-crosswired",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "required import observation mismatch",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

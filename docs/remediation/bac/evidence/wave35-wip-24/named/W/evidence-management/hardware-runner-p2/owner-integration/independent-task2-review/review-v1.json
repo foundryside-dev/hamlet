@@ -1,0 +1,146 @@
+{
+  "schema": "bac-p2-owner-task2-independent-review-v1",
+  "at": "2026-11-14T10:42:53.109645+00:00",
+  "reviewer": "/root/bac_astra_p2_integration_review",
+  "independence": "No implementation authorship; separate probes appended only to existing fifth logical body with root permission; previous exact probe retained inertly.",
+  "disposition": "CHANGES REQUIRED",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-freeze-v1.json",
+    "bytes": 19981,
+    "sha256": "9e00ed1256cd77ccd69a62fb681b0053dc8eda8711d01005bb6808ddd195b3b4"
+  },
+  "source_inventory": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 96403,
+      "sha256": "1e8295790793ad09156d14056f56c283b7cb139d5ef4cd1ab3a352f8af08a4b8",
+      "lines": 1433
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 112237,
+      "sha256": "98752d29342ffe564677c499eb21bab956ddb51031bf394d0c0e737989b0d3af",
+      "lines": 1609
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "lines": 526
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "bytes": 3778,
+      "sha256": "3cf8269324c5407bad4d3ceacfea1489f57b04ab3371e2ac9840a2d86453d650",
+      "lines": 75
+    }
+  ],
+  "preflight": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/preflight-v1.json",
+    "bytes": 1968,
+    "sha256": "cc4ab949a5d915f5365674d784d471711c14824e7bb61d96bc75aa60af391049"
+  },
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py",
+    "bytes": 7883,
+    "sha256": "459226845107e8fd9844742d72312e19286fde173a717dd7d3dd139ed59cd042"
+  },
+  "historical_probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/test_independent_task1.py.task1-history.py.txt",
+    "bytes": 4846,
+    "sha256": "ee6dd59678ed95b03d3975de2793ce2f0640a14a9cd62719c7e5abf8da9a13c5"
+  },
+  "body_budget": {
+    "bodies": 5,
+    "lines": 3775
+  },
+  "findings": [
+    {
+      "id": "P2-TASK2-IMPORT-1",
+      "priority": "P2",
+      "location": "run_bac_hardware_v1.py owner_context imported-module authority block (~1202); evidence process loop (~1325)",
+      "problem": "The new owner branch checks launch.inherited_imports against frozen candidate/dependencies and import roots, but does not apply this authority check to the ordinary owner actual START/END process.imports arrays. _process_context only requires declared phase imports to be present. Additional child modules can point to unapproved source bytes or frozen files outside import roots and the complete owner evidence still passes.",
+      "evidence": "Independent full-completion probes reseal owner START/END process refs and completion after adding _observed_child_extra: unfrozen source/unfrozen-child-module.txt and frozen source/configs.txt outside import_roots=[source/source.txt] are both accepted by Custody.evidence (DID NOT RAISE). The frozen source/source.txt positive passes. This is semantic acceptance, not stale-digest failure.",
+      "required_correction": "For admitted ordinary owners validate every actual process import at its own phase against candidate/dependency byte authority and source import-root containment (plus required-name/ref rules for external imports). Preserve phase-required presence and unique names. Do not require child import-array equality/subset with launch.inherited_imports or parent START; the supplier explicitly permits ordinary child modules to differ. Add resealed full-completion negatives and retain the valid frozen-source positive. Scope to Task2 owners without unrelated consumer expansion.",
+      "basis": "Approved Task2 binds actual child imports/source; adopted producer _imports enforces frozen/import-root authority for observed ordinary process modules. The supplier capsule distinguishes independently sampled child imports from launch imports; it does not authorize unpinned child imports."
+    }
+  ],
+  "unresolved_p1_p2": [
+    "P2-TASK2-IMPORT-1"
+  ],
+  "other_assessment": [
+    "Actual controller identity/argv/cwd anchors recursion; immediate parent PPID/full identity/host/boot, job/case/role/unique selected obligation and fixed launch/claim/source paths are enforced.",
+    "Parent-derived environment and worker inheritance are retained; nested owner case must match; START/END claim/context/launch/argv/cwd association is enforced.",
+    "Launch import sampling correctly permits differences from parent START and ordinary child sampling. Fresh launch source and ordinary source-after-process UTC distinction follow attributed supplier facts.",
+    "Public fork still refuses raw recorder mode before sampler acceptance; private ancestry helper does not qualify guard sampler/actions.",
+    "Existing 147 twoCPU cases passed independently in the same run; threeCPU public owner case was not independently run after concrete defects were established. Author exact same-source public22 remains attributed."
+  ],
+  "execution": {
+    "terminal": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/execution.json",
+      "bytes": 4504,
+      "sha256": "9a07bf5ff3ab2b832f365cd2b7574941a383911026df80eb30012a67ba022ed5"
+    },
+    "log": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/output.log",
+      "bytes": 5147,
+      "sha256": "acdc0642383e3b126acdbb58c8408a7223aacff99498a21b6a2a9b68b2291954"
+    },
+    "result": "186PASS,2FAIL,1deselected; failures are the two independent child-import authority negatives. 147 current authored twoCPU cases +34 prior independent Task1 probes +7 new independent Task2 probes; original authored public3CPU test deselected. No overlapping author runs added.",
+    "actual_custody": {
+      "pid": 224641,
+      "start_identity": "13219595",
+      "utc_start": "2026-11-14T10:41:25.709719+00:00",
+      "utc_end": "2026-11-14T10:41:44.848953+00:00",
+      "elapsed_seconds": 19.138122498989105,
+      "affinity": [
+        0,
+        1
+      ],
+      "ram_limit_bytes": 4294967296,
+      "xdist_workers": 0
+    },
+    "source_unchanged": true,
+    "limitations": "Pure authored data/inert subprocess tooling. Git/source/admission stubbed, no APP/P3/P4/P5 imports or actual source qualification. RLIMIT_AS per-process, not aggregate. Dynamic exec_module source pinning retained; sys.modules list not exhaustive."
+  },
+  "attempt_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/attempt-inventory-v1.json",
+    "bytes": 2379434,
+    "sha256": "dca576bb2bd2af75a13c74bd4845d76d84354ea162ae942c975be15cb0fcef9a"
+  },
+  "author_evidence": {
+    "terminal_results": [
+      {
+        "bytes": 3695,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-full21/execution.json",
+        "sha256": "d485e11f918a3898c9027e1b06adec5906873ad082eab31768e8088351bde652"
+      },
+      {
+        "bytes": 3706,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-public22/execution.json",
+        "sha256": "23aa437196f880c6852db1961d10955cd81b030fadd73097cafaed619151c8ea"
+      }
+    ],
+    "terminal_selections": {
+      "bytes": 22489,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-terminal-selections-v1.json",
+      "sha256": "0229ad44c6e0e1c7c6444de073722a86a066df2a8e3b407db465199eb30eec83"
+    },
+    "attempt_inventory": {
+      "bytes": 9049980,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-attempt-inventory-v1.json",
+      "sha256": "92ffbf428d236cb0c44d3ae3a4ec4a8f503841c28bd02d3812afedf69519acbb"
+    },
+    "result": "Author disjoint147PASS2CPU+1PASS3CPU/all148 exact selection recorded; all23 attempts retained. These do not close the newly reproduced import-authority defect."
+  },
+  "supplier_metadata": {
+    "bytes": 12549,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/owner-task2-ancestry-facts-supplier-v1.json",
+    "sha256": "389849276d2bd689f9f994c278e67430b229ab54411bdbc9f14b5d2a91bcd76b"
+  },
+  "remaining": [
+    "Repair one concrete import-authority finding and freeze exact new bytes for focused verification/root adoption.",
+    "Task3 guard sampler/emission, Task4 actual live-Git cleanup, P4/P5 timing/actions, source-owner instrumentation and hardware remain unqualified."
+  ],
+  "preservation": "No production/test edits, Git/index/source leases, branches/worktrees/checkout/new repos, P3/P4/P5/APP bodies or source execution copies. Root-authorized historical probe inert snapshot retained; existing attempts untouched."
+}

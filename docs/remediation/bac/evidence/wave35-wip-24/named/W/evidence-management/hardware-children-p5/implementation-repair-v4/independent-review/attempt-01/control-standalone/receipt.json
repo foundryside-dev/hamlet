@@ -1,0 +1,203 @@
+{
+  "schema": "bac-hardware-strict-child-receipt-v1",
+  "spec": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/spec.json",
+    "bytes": 9631,
+    "sha256": "dce3ac49191a44f00fbf7ac852f2659186f723366616b197198314b5b9f26abf"
+  },
+  "job_id": "replay-poison",
+  "obligation_id": "strict",
+  "validator": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+    "bytes": 79319,
+    "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+  },
+  "validator_dependencies": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "contract": {
+    "bytes": 1950,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/meta/contract.json",
+    "sha256": "1b061f6591f743b7e8e3c1e15b2fd538009fb2ab845290d7933bcc3e70d515e2"
+  },
+  "witness_schema": {
+    "bytes": 42,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/meta/witness.json",
+    "sha256": "66c13cb20edb4fae98d424bc3c352d1b5e79ae2a70224861a67fdc01babc2b61"
+  },
+  "documents": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/spec.json",
+      "bytes": 9631,
+      "sha256": "dce3ac49191a44f00fbf7ac852f2659186f723366616b197198314b5b9f26abf"
+    },
+    {
+      "bytes": 1950,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/meta/contract.json",
+      "sha256": "1b061f6591f743b7e8e3c1e15b2fd538009fb2ab845290d7933bcc3e70d515e2"
+    },
+    {
+      "bytes": 42,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/meta/witness.json",
+      "sha256": "66c13cb20edb4fae98d424bc3c352d1b5e79ae2a70224861a67fdc01babc2b61"
+    },
+    {
+      "bytes": 10317,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/candidate.json",
+      "sha256": "dd7db3067a11ed0a5b0ce5ef72c90f0400c94fe8f38f8e0f3f5e44ee984d8fb9"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/completion.json",
+      "bytes": 12387,
+      "sha256": "948d1b76920ca5465ea693bf8b302101cfd8b7a4d1f6e4d97b41e39d401c6f9e"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/result.json",
+      "bytes": 12922,
+      "sha256": "5abc6d5c20b762a530bb2e43db051c31aaed46c199b30dcd08c87284935be1a4"
+    },
+    {
+      "bytes": 591,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/report-setup.json",
+      "sha256": "7d1ce0984a9c79f5c7b5d0d300e029164153d55635243a779a0241982f99ebbe"
+    },
+    {
+      "bytes": 590,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/report-call.json",
+      "sha256": "e078e1d41203da74681c2e8ee2dd66a5072c695c5707d9ce26a9703ef4b9504e"
+    },
+    {
+      "bytes": 594,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/report-teardown.json",
+      "sha256": "ee05967b752d93e64e6e5a1fcc681b794f299474ef520bb65e0f289374b4d619"
+    },
+    {
+      "bytes": 1882,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/evidence.json",
+      "sha256": "3a359cd5b85b7e1ae976123f9e348f481dd259d1d498c7b1483aeacdf2ff0ff8"
+    },
+    {
+      "bytes": 2861,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/replay-result-replay_poison.json",
+      "sha256": "c994d880dd769e3e23ff6c4ecf882ff3d7e906a78ed2bb5e5d5bfea610525cf2"
+    },
+    {
+      "bytes": 6837,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/child-start.json",
+      "sha256": "ad53f57dfe1a1a13ed07a641fe9b0927aef80e0d1ad5e293b4173e3fa727dfd8"
+    },
+    {
+      "bytes": 2909,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/child-start-raw.json",
+      "sha256": "7bd5e496f73077e48962fbd41602716317e669c9bb53803f3d9e6f8e04e923fa"
+    },
+    {
+      "bytes": 1322,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/child-start-source.json",
+      "sha256": "78a73d1d23115053d133e032a0de807c7bcaef810840ece600e7427f3b944549"
+    },
+    {
+      "bytes": 6827,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/child-end.json",
+      "sha256": "26e9415948af783fb18672eb39df5af5cee34f1992ce804946f932dce52b6f12"
+    },
+    {
+      "bytes": 2907,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/child-end-raw.json",
+      "sha256": "4d0a0581a344471012a8d6fbcb625f60db03536f77d4e4c67ea5671cd8d4d180"
+    },
+    {
+      "bytes": 1322,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/child-end-source.json",
+      "sha256": "78a73d1d23115053d133e032a0de807c7bcaef810840ece600e7427f3b944549"
+    },
+    {
+      "bytes": 6722,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent.json",
+      "sha256": "30aa36d3aa32ea64ff7aa4c956ac99fa480c953fb9fa2645ccb9a2fcf000dca4"
+    },
+    {
+      "bytes": 1933,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent-raw.json",
+      "sha256": "3eb93f1aead7c12407387e9bfd243937bf10d33763c96baf2f004bd7e7d82349"
+    },
+    {
+      "bytes": 1320,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent-source.json",
+      "sha256": "1f26bff08ae473ded086eaa34e66b5dbe6921a42ceb9e964d1b71f5427391ded"
+    },
+    {
+      "bytes": 2542,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/launch.json",
+      "sha256": "98294163942d2b14b20b6ee89c25b8e6348e2f57275f23fdc87af0737b8ec179"
+    },
+    {
+      "bytes": 6736,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent-end.json",
+      "sha256": "43d3d82203e6742ece4ce759de300f9dcda87b059886d2af6811c33250e92035"
+    },
+    {
+      "bytes": 1931,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent-end-raw.json",
+      "sha256": "405a5e2d128c69f00742c1b279f1584c965e61f90ac22c614d7cfd2ad7ca77fe"
+    },
+    {
+      "bytes": 1320,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent-end-source.json",
+      "sha256": "1f26bff08ae473ded086eaa34e66b5dbe6921a42ceb9e964d1b71f5427391ded"
+    },
+    {
+      "bytes": 563,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/claim-101.json",
+      "sha256": "8269d68309106232ce6c48baf6f3dc162d725401cad5f9fa307d5da1c081afca"
+    },
+    {
+      "bytes": 1635,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/replay-child-replay_poison.json",
+      "sha256": "191d8452c347ae9d2c4ea5cda04a7ff0b63b77fa319eda93d60ab344dc6b01b0"
+    }
+  ],
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+    ],
+    "evidence": [
+      {
+        "bytes": 1882,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/evidence.json",
+        "sha256": "3a359cd5b85b7e1ae976123f9e348f481dd259d1d498c7b1483aeacdf2ff0ff8"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 2861,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/replay-result-replay_poison.json",
+        "sha256": "c994d880dd769e3e23ff6c4ecf882ff3d7e906a78ed2bb5e5d5bfea610525cf2"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 6722,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/attempt-01/control-standalone/inert/out/a/replay-poison/parent.json",
+        "sha256": "30aa36d3aa32ea64ff7aa4c956ac99fa480c953fb9fa2645ccb9a2fcf000dca4"
+      }
+    ],
+    "related_attempts": []
+  },
+  "validation_identity": {
+    "pid": 233995,
+    "ppid": 233994,
+    "start_identity": "13599987",
+    "host": "51d55c80f0b0",
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db"
+  },
+  "validated_at": "2026-11-14T11:44:50.372390Z"
+}

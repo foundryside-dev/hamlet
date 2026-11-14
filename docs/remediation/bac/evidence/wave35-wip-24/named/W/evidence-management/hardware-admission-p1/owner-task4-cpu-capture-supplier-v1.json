@@ -1,0 +1,71 @@
+{
+  "schema": "bac-p1-task4-supplier-capsule-v1",
+  "at": "2026-11-14T12:01:40.741974+00:00",
+  "status": "METADATA ONLY; REAL TASK4 BLOCKED; NO CODE AMENDMENT OR RUNTIME EXECUTION",
+  "capsule": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/owner-task4-cpu-capture-supplier-v1.md",
+    "bytes": 14767,
+    "sha256": "7dcdf5ac3cd1205c21699fbde469a41a6fe3180800d1fa07b9264a73eb5e2fbf"
+  },
+  "current_owned_sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 59888,
+      "sha256": "edfb69054e8e89d65499fe18bfa53c2623dea0ca3eccaa9999e1b6a67d38c66a",
+      "lines": 922
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 49564,
+      "sha256": "95a09f542de871dae1cb35638128876a2d167a46174b01c77af5db6db8dbb02b",
+      "lines": 756
+    }
+  ],
+  "prior_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/root-adoption-v1.json",
+    "bytes": 12233,
+    "sha256": "6235ac38bb563d5676420cf932cdb09d7d54187ec1a60546aefe99f13ded6c96"
+  },
+  "prior_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/freeze-v2.json",
+    "bytes": 5059,
+    "sha256": "d8b4a363cc8f7d585e1d8fade9226a454ce54672995e08fc8dbb4bee30b30342"
+  },
+  "output_interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+    "bytes": 5867,
+    "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+  },
+  "governing_recipe": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task4-recipe-v1.json",
+      "bytes": 5358,
+      "sha256": "8ec54e08008118d0d2285a7f07c8d2c369c93e0449189936eb1935202dd8e197"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-TASK4-BACKSTOP-RECIPE-v1.md",
+      "bytes": 13650,
+      "sha256": "c8fd6245cf2b80f423121fe3bf7047d19c8ade07dcdef3445da73c716167999d"
+    }
+  ],
+  "api": "capture(candidate: pathlib.Path, admission_request: pathlib.Path, destination: pathlib.Path) -> dict",
+  "cli": null,
+  "required_terminal_gate": "result.json admitted; reasons []; exact spec/admission references",
+  "confirmed_gaps": [
+    "Current-only P0 digest differs from root-current adopted protocol.",
+    "Native git dependency is currently misrouted to Python distribution metadata; source Git executable selected via PATH.",
+    "Logical venv launch path is conflated with resolved interpreter identity; isolated discovery does not inherit PYTHONPATH package context.",
+    "Root/P3 must supply genuine imported dependency/runtime file closure; distribution origin records do not establish it."
+  ],
+  "two_gap_proposal_budget": {
+    "bodies": 4,
+    "current_lines": 2307,
+    "capture_max_added": 120,
+    "tests_max_added": 180,
+    "proposed_total": 2607,
+    "limit": 2800,
+    "remaining": 193,
+    "logical_interpreter_amendment_included": false
+  },
+  "observations_scope": "Only existing authorized P1 source and metadata inspected; no APP/plugin body read/import, actual Git version query, real discovery, CUDA query, test run, source mutation, index mutation or environment creation."
+}

@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-14T12:44:06.253673+00:00",
+  "exact_execution_subtrees": "PASS",
+  "execution_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "manifest": {
+    "bytes": 85192298,
+    "path": "docs/remediation/bac/evidence/wave35-wip-24.json",
+    "sha256": "9afafa9a66289b5a766aacfea2a95c43517c78b8661d764aa0c9f0292da74d83"
+  },
+  "metrics": {
+    "input_paths": 89044,
+    "new_objects": 62948,
+    "reused_objects": 44,
+    "unique_objects": 62992
+  },
+  "publication_tree": "738922dad2526324b39402292e892d328785df89",
+  "staged_paths": 62967,
+  "status": "STAGED; COMMIT/PUSH NOT YET PERFORMED"
+}

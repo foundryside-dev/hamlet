@@ -1,0 +1,52 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_owner_spawn_completion_requires_one_launch_and_claim_across_phases[True] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red09/fixtures/test_owner_spawn_completion_re1')
+changed_launch = True
+
+    @pytest.mark.parametrize('changed_launch', [False, True])
+    def test_owner_spawn_completion_requires_one_launch_and_claim_across_phases(tmp_path, changed_launch):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+        def read(reference): return json.loads(Path(reference['path']).read_text())
+        for start_ref in list(envelope['process_records']):
+            end = read(start_ref); end_raw = read(end['intra_op']['provenance'])
+            end.update(phase='end', at='2026-01-01T00:00:07.000000Z', monotonic_ns=7_000_000_000,
+                elapsed_ns={'state': 'measured', 'value': 7_000_000_000 - end['monotonic_ns'], 'reason': ''})
+            end_raw.update(phase='end', at=end['at'])
+            if changed_launch and end['role'] == 'spawn-child':
+                another_launch = {**launch, 'instance_id': 'spawn-other'}
+                another_ref = put('owner-launch-spawn-other.json', another_launch)
+                another_claim = put('owner-claim-spawn-other.json', {**claim, 'launch': another_ref})
+                end_raw['context']['lifecycle'] = [another_ref]; end_raw['owner_claim'] = [another_claim]
+                envelope['inventory'] += [another_ref, another_claim]
+            source = read(end['source_witness']); source['at'] = end['at']
+            source_ref = put('source-' + end['process_id'] + '-end.json', source); end['source_witness'] = source_ref
+            raw_ref = put('process-' + end['process_id'] + '-observation-end.json', end_raw)
+            for key in ('intra_op', 'inter_op', 'debug'): end[key]['provenance'] = raw_ref
+            end_ref = put('process-' + end['process_id'] + '-end.json', end)
+            envelope['process_records'].append(end_ref); envelope['source_witnesses'].append(source_ref)
+            envelope['inventory'] += [source_ref, raw_ref, end_ref]
+        obligations = []
+        for item in selected['obligations']:
+            obligations.append(put('obligation-' + item['id'] + '.json', {'schema': 'bac-hardware-v1', 'kind': 'obligation-evidence',
+                'attempt_id': custody.spec['attempt_id'], 'job_id': selected['id'], 'spec': custody.spec_ref,
+                'obligation_id': item['id'], 'obligation_kind': item['kind'], 'contract': item['contract'],
+                'validator': item['validator'], 'case_id': 'synthetic::case', 'evidence_class': 'cpu',
+                'payload': record['source_witness'], 'producer_process': envelope['process_records'][0], 'related_attempts': []}))
+        envelope['inventory'] += obligations
+        completion = {'schema': 'bac-hardware-v1', 'kind': 'job-evidence', 'attempt_id': custody.spec['attempt_id'],
+            'job_id': selected['id'], 'spec': custody.spec_ref, 'command': custody.commands[selected['id']],
+            'collected_ids': ['synthetic::case'], 'outcomes': [{'case_id': 'synthetic::case', 'setup': 'passed',
+                'call': 'passed', 'teardown': 'passed', 'evidence': [record['source_witness']]}],
+            'obligation_records': obligations, **envelope}
+        put('completion.json', completion)
+        if changed_launch:
+>           with pytest.raises(ValueError, match='owner phase'): custody.evidence(selected)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1362: Failed
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_completion_requires_one_launch_and_claim_across_phases[True]
+1 failed, 1 passed, 131 deselected in 1.17s

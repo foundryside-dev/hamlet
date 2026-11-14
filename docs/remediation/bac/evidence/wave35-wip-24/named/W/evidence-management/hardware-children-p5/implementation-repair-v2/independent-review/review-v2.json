@@ -1,0 +1,157 @@
+{
+  "schema": "bac-p5-independent-implementation-review-v2",
+  "disposition": "CHANGES REQUIRED",
+  "at": "2026-11-14T11:29:30.501886+00:00",
+  "reviewer": "/root/bac_p5_independent_review",
+  "author": "/root/bac_astra_p4_p5_owner_contract",
+  "independence": "Separate reviewer task; full repaired implementation read; independently resealed new cases; original semantics reconstructed on corrected current controls; no implementation edits",
+  "author_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/freeze-v2.json",
+    "bytes": 8449,
+    "sha256": "ff756a6e2f351312ecb6efb0b866fb616ac06c82fe46cfcb075d8f610b745ecb"
+  },
+  "handoff": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/HANDOFF.md",
+    "bytes": 5149,
+    "sha256": "ac3241b2032de3654293f84fe9fb2101c6d5727a0cca9f033b86dcc9117dc04a"
+  },
+  "design": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P4-P5-OWNER-CONTRACT-v1.md",
+    "bytes": 27970,
+    "sha256": "960f6e1b1dec411007c9d33ab388ea9b99d560c0c701f008fe5fdf113645af97"
+  },
+  "prior_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/review-v1.json",
+    "bytes": 6965,
+    "sha256": "743ab5cac75a497fa83f5a2a07a27979be34ab292e51797d20d8f8535841bbf6"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/review-v2.md",
+    "bytes": 10029,
+    "sha256": "e7fa6458e09509fe54ee13adf1ad0f1a1dce62f5027f20427011067e73f433ed"
+  },
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/probe-v2.py",
+    "bytes": 12084,
+    "sha256": "411eaf8d077f43f866f305cda99c8a45b1651ff514a01aadc65421f569352214"
+  },
+  "retained_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/review-v2-inventory.json",
+    "bytes": 666625,
+    "sha256": "064d0b6e6c994eaba69dfdd8400d8c632d731a54ec3dd4082aff7639bdc3dcb2"
+  },
+  "findings": [
+    {
+      "id": "R1",
+      "priority": "blocking",
+      "title": "Guard return and parent acknowledgement/reap may follow observing parent END",
+      "cases": [
+        "parent-end-before-guard-return",
+        "parent-end-before-guard-ack-reap"
+      ]
+    },
+    {
+      "id": "R2",
+      "priority": "blocking",
+      "title": "Report lifetime and actual parent END role joins remain incomplete",
+      "cases": [
+        "reports-after-parent-end",
+        "reports-before-parent-start",
+        "parent-end-substitutes-child-role",
+        "standalone-reports-after-parent-end"
+      ]
+    },
+    {
+      "id": "R3",
+      "priority": "blocking",
+      "title": "Named required/inherited module origins can contradict actual imports",
+      "cases": [
+        "inherited-module-alias-crosswired",
+        "required-import-alias-crosswired"
+      ]
+    }
+  ],
+  "original_regression_results": {
+    "original_false_accept_mutations_reconstructed_on_current_valid_fixtures": 20,
+    "now_refused": 20,
+    "valid_controls_satisfied": 5,
+    "negative_control_refused": 1,
+    "old_exact_subjects": "retained immutable in v1; not altered or substituted as current valid baseline"
+  },
+  "attempts": [
+    {
+      "id": "attempt-01",
+      "scope": "independent synthetic probes",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/attempt-01/execution.json",
+        "bytes": 2798,
+        "sha256": "a0e0d1215198f08ea34e2aa784c9491ba3f0f02e1a764d22bf31857a40f6f789"
+      },
+      "stdout": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/attempt-01/stdout.log",
+        "bytes": 18446,
+        "sha256": "6be4f9a2cfb6649d3c366a9c144339020818b41c5c28efefc51be2c7ed3c6642"
+      },
+      "stderr": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/attempt-01/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "results": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/attempt-01/probe-results.json",
+        "bytes": 22915,
+        "sha256": "140931abbafef23ed99f8d1182ef4f9c5212e5e34e98bff06cdec0a649b648f7"
+      },
+      "exit": 1,
+      "cases": 34,
+      "unexpected_satisfied": 8
+    },
+    {
+      "id": "attempt-02",
+      "scope": "complete authored exact-freeze synthetic suite independent rerun",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/attempt-02/execution.json",
+        "bytes": 3198,
+        "sha256": "7d3121102fdcfe643048bc4f6cfdddb56d397e71891d10595cc5d7cd33d11fe4"
+      },
+      "stdout": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/attempt-02/stdout.log",
+        "bytes": 340,
+        "sha256": "8f8221bf959d6196f7c6ed3ff0e51083324341473863aba9763225e8f4f50584"
+      },
+      "stderr": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/attempt-02/stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exit": 0,
+      "passed": 267
+    }
+  ],
+  "overlap_accounting": "Separate overlapping selections; no combined count or coverage claim",
+  "before_after_source_hashes_unchanged": true,
+  "body_budget": {
+    "source": 1475,
+    "tests": 1610,
+    "p0": 526,
+    "unused_historical_allowance": 752,
+    "probe": 238,
+    "conservative_total": 4601,
+    "maximum": 5000,
+    "historical_body_read": false
+  },
+  "inventory_validation": {
+    "files": 1749,
+    "directories": 172,
+    "symlinks": 6,
+    "hash_mismatches": 0
+  },
+  "runtime_slot": "released after attempt-02",
+  "implementation_modified_by_reviewer": false,
+  "limits": [
+    "No P4/APP/full-chain/hardware/source-assertion acceptance",
+    "Synthetic source-shaped data and command descriptions never executed as APP/Git/producer code",
+    "Source/test/P0 pins unchanged in both attempts; later author changes require fresh review",
+    "Pure phase graphs not live source-root qualification; late-report standalone additionally reaches public live-reader acceptance"
+  ]
+}

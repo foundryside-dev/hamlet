@@ -1,0 +1,133 @@
+"""Root materialization of reviewed WIP24 metadata; no commit or network action."""
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib
+import json
+import subprocess
+
+R = Path('/workspace/hamlet')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+E = Path(__file__).parent
+archive = R / 'docs/remediation/bac/evidence/wave35-wip-24'
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+git = lambda *args: subprocess.check_output(['git', *args], cwd=R).decode().strip()
+now = lambda: datetime.now(timezone.utc).isoformat()
+
+def read(path):
+    return json.loads(path.read_bytes())
+
+def ref(path):
+    return dict(path=str(path.relative_to(R)), bytes=path.stat().st_size, sha256=sha(path))
+
+def write(path, data):
+    with path.open('x') as stream:
+        json.dump(data, stream, indent=2, sort_keys=True)
+        stream.write('\n')
+    assert path.stat().st_size < 100 * 1024**2, path
+
+def copy(source, destination):
+    with destination.open('xb') as stream:
+        stream.write(source.read_bytes())
+    assert sha(source) == sha(destination)
+    assert destination.stat().st_size < 100 * 1024**2
+
+manifest_path = W / 'wave35/r145-candidate.json'
+m = read(manifest_path)
+plan_path = E / 'root-selection-plan-v1.json'
+plan = read(plan_path)
+assembly_path = E / 'root-assembly-report-v1.json'
+assembly = read(assembly_path)
+receipt = read(E / 'root-terminal-receipt-v1.json')
+draft = read(E / 'root-reviewed-receipt-draft-v1.json')
+docs = read(E / 'ROOT-DOCUMENT-REVIEW-v1.json')
+chain_path = R / 'docs/remediation/bac/evidence/checkpoint-chain.json'
+chain = read(chain_path)
+assert plan['status'] == 'READY FOR ROOT PUBLICATION CHECKS'
+assert assembly['selection_plan_sha256'] == sha(plan_path)
+assert assembly['chain_prior_sha256'] == sha(chain_path)
+assert assembly['candidate_tree'] == plan['candidate_tree'] == m['candidate_tree']
+assert len(assembly['copied']) == plan['metrics']['new_objects']
+assert git('branch', '--show-current') == 'project-recovery-bac-2026-11-01'
+assert git('rev-parse', 'HEAD') == m['base_commit'] == 'a42d61920ab302e16a4aab885fbbd44640e5d908'
+assert git('write-tree') == m['candidate_tree']
+assert subprocess.run(['git', 'diff', '--quiet'], cwd=R).returncode == 0
+assert git('config', 'user.email') == '544926+tachyon-beep@users.noreply.github.com'
+
+allowed_deltas = {'status', 'reviews', 'dependencies', 'root_seal_utc'}
+assert {k: v for k, v in receipt.items() if k not in allowed_deltas} == {
+    k: v for k, v in draft.items() if k not in allowed_deltas}
+assert receipt['dependencies'][:-1] == draft['dependencies']
+assert len(receipt['reviews']) == 1 and receipt['reviews'][0]['disposition'] == 'APPROVE BOUNDED PUBLICATION'
+assert receipt['status'] == 'SEALED FOR EVIDENCE SELECTION'
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == digest, path
+for row in docs['files']:
+    assert sha(R / row['destination']) == row['before_sha256']
+    assert sha(W / row['postimage']) == row['sha256']
+    assert row['destination'] not in m['artifacts']
+
+copy(plan_path, archive / 'selection-plan.json')
+copy(assembly_path, archive / 'assembly-report.json')
+copy(Path(__file__), archive / 'root-publication-helper.py.txt')
+comparison = dict(status='PASS', at=now(), draft_sha256=sha(E / 'root-reviewed-receipt-draft-v1.json'),
+                  final_sha256=sha(E / 'root-terminal-receipt-v1.json'),
+                  changes='Only actual terminal review, its verification dependency, final status and seal UTC added; frozen subject and qualification unchanged.')
+write(archive / 'final-seal-comparison.json', comparison)
+for row in docs['files']:
+    (R / row['destination']).write_bytes((W / row['postimage']).read_bytes())
+    assert sha(R / row['destination']) == row['sha256']
+for group in ('source_files', 'configs', 'artifacts'):
+    for path, digest in m[group].items():
+        assert sha(R / path) == digest, path
+write(archive / 'root-document-application-v1.json', dict(
+    at=now(), status='PASS', document_approval=ref(E / 'ROOT-DOCUMENT-REVIEW-v1.json'),
+    documents=docs['files'], execution_tree=m['candidate_tree'],
+    source_config_artifact_before_after='PASS', scope='Only four reviewed documentation postimages applied; runtime sources remain exact R145.'))
+
+keys = ('checkpoint_id', 'series', 'interval', 'contract', 'catalog', 'required_components',
+        'review_subject', 'candidate_manifest', 'receipt', 'base_commit', 'candidate_tree',
+        'execution_subtrees', 'inputs', 'objects')
+publication = {key: plan[key] for key in keys}
+publication.update(schema='bac-checkpoint-publication-v1', round=145,
+    previous_record=plan['previous_checkpoint'], selection_plan=ref(archive / 'selection-plan.json'),
+    prepared_at_utc=now(), status='UNRELEASED WIP; bounded ENV/fixture and tooling repairs reviewed; full BAC/global/hardware gates open',
+    package_accounting=receipt['package_accounting'], metrics=plan['metrics'],
+    assembly_report=ref(archive / 'assembly-report.json'),
+    root_final_seal_comparison=ref(archive / 'final-seal-comparison.json'),
+    publication_source_guard=ref(archive / 'root-document-application-v1.json'),
+    publication_helper=ref(archive / 'root-publication-helper.py.txt'),
+    summary='R145 affected fixture suite82 PASS resolves11 G1/G2 failures; R14451 targeted and9 independent PASS remain own-source scopes.18 restore gaps/full-owner rerun/four prior skipped cases remain. P2Tasks1-3/P5v4 tooling adopted; Task4/P4 checkpoint preparation unqualified. Mypy12FAIL, full/default/coverage/slow/hardware/finalCI remain required.',
+    publication=dict(existing_branch='project-recovery-bac-2026-11-01',
+        prior_remote_sha_verified_before_publication=m['base_commit'],
+        method='Root observed exact ls-remote before materialization; exact new remote SHA and CI checked separately after authorized push.',
+        no_new_branch_or_worktree=True, no_PR_or_merge=True),
+    metadata_limitations=receipt['required_next'])
+publication_path = R / 'docs/remediation/bac/evidence/wave35-wip-24.json'
+write(publication_path, publication)
+entry = dict(id='wave35-wip-24', manifest=ref(publication_path), previous_record=publication['previous_record'],
+    previous_catalog_entry='wave35-wip-23', identity=dict(evidence_base_commit=m['base_commit'],
+    evidence_candidate_tree=m['candidate_tree'], execution_subtrees=plan['execution_subtrees']),
+    status=publication['status'], packet='ENV custody, native/participation fixture repair and bounded hardware tooling',
+    round=145, receipt_pointer='#/receipt', package_accounting=receipt['package_accounting'],
+    qualified_progress='28 qualified /38 remaining /66 original packages unchanged',
+    selection_plan=publication['selection_plan'], publication='WIP checkpoint; exact remote/CI verification separate')
+assert chain['entries'][-1]['id'] == 'wave35-wip-23'
+chain['entries'].append(entry)
+chain['current_checkpoint'] = {**ref(publication_path), 'candidate_tree': m['candidate_tree'], 'publication': entry['publication']}
+chain['current_local_candidate'] = m['candidate_tree']
+chain['latest_verified_remote_publication_at_assembly'] = 'wave35-wip-23'
+chain['latest_verified_remote_commit_at_assembly'] = m['base_commit']
+chain_path.write_text(json.dumps(chain, indent=2) + '\n')
+paths = [*m['changed_paths'], *(row['destination'] for row in docs['files']),
+         str(publication_path.relative_to(R)), str(chain_path.relative_to(R)), str(archive.relative_to(R))]
+subprocess.run(['git', 'add', '-f', '--', *paths], cwd=R, check=True)
+tree = git('write-tree')
+for name, expected in plan['execution_subtrees'].items():
+    assert git('rev-parse', f'{tree}:{name}') == expected, name
+assert subprocess.run(['git', 'diff', '--quiet'], cwd=R).returncode == 0
+write(E / 'root-publication-stage-v1.json', dict(at=now(), status='STAGED; COMMIT/PUSH NOT YET PERFORMED',
+    publication_tree=tree, execution_tree=m['candidate_tree'], manifest=ref(publication_path),
+    exact_execution_subtrees='PASS', metrics=plan['metrics'],
+    staged_paths=len(git('diff', '--cached', '--name-only').splitlines())))
+print(json.dumps(read(E / 'root-publication-stage-v1.json')))

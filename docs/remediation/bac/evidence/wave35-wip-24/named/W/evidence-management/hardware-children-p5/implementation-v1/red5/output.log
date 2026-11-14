@@ -1,0 +1,125 @@
+........................................................................ [ 61%]
+.......................................FFFFF.                            [100%]
+=================================== FAILURES ===================================
+_______ test_closed_locator_and_validator_dependencies[outside_payload] ________
+
+mutation = 'outside_payload'
+
+    @pytest.mark.parametrize('mutation',['outside_payload','wrong_filename','extra_strict_inventory','tool_pin','protocol_dependency','json_overflow'])
+    def test_closed_locator_and_validator_dependencies(mutation):
+        if mutation=='protocol_dependency':
+            b,subs=pair_bundle();subs[1][0].named['strict-receipt']['validator_dependencies']=[{**OPAQUE,'path':'/synthetic/foreign-protocol'}]
+        else:b=Bundle()
+        if mutation=='outside_payload':b.payload['path']='/synthetic/outside/replay-result-replay_poison.json'
+        elif mutation=='wrong_filename':b.payload['path']=b.job['output']+'/different.json'
+        elif mutation=='extra_strict_inventory':b.named['completion']['inventory'].append({**OPAQUE,'path':b.job['output']+'/core-child-foreign.json'})
+        elif mutation=='tool_pin':b.named['spec']['tools'][-1]['reference']={**OPAQUE,'path':'/synthetic/foreign-validator'}
+        subject=b.subject()
+        if mutation=='json_overflow':
+            row=next(r for r in subject['documents'] if r['reference']['path']==b.contract['path'])
+            data=row['content'].replace(b'"minimum_devices":0',b'"minimum_devices":1e999')
+            row['content']=data;row['reference']['bytes']=len(data);row['reference']['sha256']=hashlib.sha256(data).hexdigest()
+>       with pytest.raises(ValueError):api().validate_child_obligation(subject)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:492: Failed
+________ test_closed_locator_and_validator_dependencies[wrong_filename] ________
+
+mutation = 'wrong_filename'
+
+    @pytest.mark.parametrize('mutation',['outside_payload','wrong_filename','extra_strict_inventory','tool_pin','protocol_dependency','json_overflow'])
+    def test_closed_locator_and_validator_dependencies(mutation):
+        if mutation=='protocol_dependency':
+            b,subs=pair_bundle();subs[1][0].named['strict-receipt']['validator_dependencies']=[{**OPAQUE,'path':'/synthetic/foreign-protocol'}]
+        else:b=Bundle()
+        if mutation=='outside_payload':b.payload['path']='/synthetic/outside/replay-result-replay_poison.json'
+        elif mutation=='wrong_filename':b.payload['path']=b.job['output']+'/different.json'
+        elif mutation=='extra_strict_inventory':b.named['completion']['inventory'].append({**OPAQUE,'path':b.job['output']+'/core-child-foreign.json'})
+        elif mutation=='tool_pin':b.named['spec']['tools'][-1]['reference']={**OPAQUE,'path':'/synthetic/foreign-validator'}
+        subject=b.subject()
+        if mutation=='json_overflow':
+            row=next(r for r in subject['documents'] if r['reference']['path']==b.contract['path'])
+            data=row['content'].replace(b'"minimum_devices":0',b'"minimum_devices":1e999')
+            row['content']=data;row['reference']['bytes']=len(data);row['reference']['sha256']=hashlib.sha256(data).hexdigest()
+>       with pytest.raises(ValueError):api().validate_child_obligation(subject)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:492: Failed
+____ test_closed_locator_and_validator_dependencies[extra_strict_inventory] ____
+
+mutation = 'extra_strict_inventory'
+
+    @pytest.mark.parametrize('mutation',['outside_payload','wrong_filename','extra_strict_inventory','tool_pin','protocol_dependency','json_overflow'])
+    def test_closed_locator_and_validator_dependencies(mutation):
+        if mutation=='protocol_dependency':
+            b,subs=pair_bundle();subs[1][0].named['strict-receipt']['validator_dependencies']=[{**OPAQUE,'path':'/synthetic/foreign-protocol'}]
+        else:b=Bundle()
+        if mutation=='outside_payload':b.payload['path']='/synthetic/outside/replay-result-replay_poison.json'
+        elif mutation=='wrong_filename':b.payload['path']=b.job['output']+'/different.json'
+        elif mutation=='extra_strict_inventory':b.named['completion']['inventory'].append({**OPAQUE,'path':b.job['output']+'/core-child-foreign.json'})
+        elif mutation=='tool_pin':b.named['spec']['tools'][-1]['reference']={**OPAQUE,'path':'/synthetic/foreign-validator'}
+        subject=b.subject()
+        if mutation=='json_overflow':
+            row=next(r for r in subject['documents'] if r['reference']['path']==b.contract['path'])
+            data=row['content'].replace(b'"minimum_devices":0',b'"minimum_devices":1e999')
+            row['content']=data;row['reference']['bytes']=len(data);row['reference']['sha256']=hashlib.sha256(data).hexdigest()
+>       with pytest.raises(ValueError):api().validate_child_obligation(subject)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:492: Failed
+___________ test_closed_locator_and_validator_dependencies[tool_pin] ___________
+
+mutation = 'tool_pin'
+
+    @pytest.mark.parametrize('mutation',['outside_payload','wrong_filename','extra_strict_inventory','tool_pin','protocol_dependency','json_overflow'])
+    def test_closed_locator_and_validator_dependencies(mutation):
+        if mutation=='protocol_dependency':
+            b,subs=pair_bundle();subs[1][0].named['strict-receipt']['validator_dependencies']=[{**OPAQUE,'path':'/synthetic/foreign-protocol'}]
+        else:b=Bundle()
+        if mutation=='outside_payload':b.payload['path']='/synthetic/outside/replay-result-replay_poison.json'
+        elif mutation=='wrong_filename':b.payload['path']=b.job['output']+'/different.json'
+        elif mutation=='extra_strict_inventory':b.named['completion']['inventory'].append({**OPAQUE,'path':b.job['output']+'/core-child-foreign.json'})
+        elif mutation=='tool_pin':b.named['spec']['tools'][-1]['reference']={**OPAQUE,'path':'/synthetic/foreign-validator'}
+        subject=b.subject()
+        if mutation=='json_overflow':
+            row=next(r for r in subject['documents'] if r['reference']['path']==b.contract['path'])
+            data=row['content'].replace(b'"minimum_devices":0',b'"minimum_devices":1e999')
+            row['content']=data;row['reference']['bytes']=len(data);row['reference']['sha256']=hashlib.sha256(data).hexdigest()
+>       with pytest.raises(ValueError):api().validate_child_obligation(subject)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:492: Failed
+_____ test_closed_locator_and_validator_dependencies[protocol_dependency] ______
+
+mutation = 'protocol_dependency'
+
+    @pytest.mark.parametrize('mutation',['outside_payload','wrong_filename','extra_strict_inventory','tool_pin','protocol_dependency','json_overflow'])
+    def test_closed_locator_and_validator_dependencies(mutation):
+        if mutation=='protocol_dependency':
+            b,subs=pair_bundle();subs[1][0].named['strict-receipt']['validator_dependencies']=[{**OPAQUE,'path':'/synthetic/foreign-protocol'}]
+        else:b=Bundle()
+        if mutation=='outside_payload':b.payload['path']='/synthetic/outside/replay-result-replay_poison.json'
+        elif mutation=='wrong_filename':b.payload['path']=b.job['output']+'/different.json'
+        elif mutation=='extra_strict_inventory':b.named['completion']['inventory'].append({**OPAQUE,'path':b.job['output']+'/core-child-foreign.json'})
+        elif mutation=='tool_pin':b.named['spec']['tools'][-1]['reference']={**OPAQUE,'path':'/synthetic/foreign-validator'}
+        subject=b.subject()
+        if mutation=='json_overflow':
+            row=next(r for r in subject['documents'] if r['reference']['path']==b.contract['path'])
+            data=row['content'].replace(b'"minimum_devices":0',b'"minimum_devices":1e999')
+            row['content']=data;row['reference']['bytes']=len(data);row['reference']['sha256']=hashlib.sha256(data).hexdigest()
+>       with pytest.raises(ValueError):api().validate_child_obligation(subject)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:492: Failed
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_closed_locator_and_validator_dependencies[outside_payload]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_closed_locator_and_validator_dependencies[wrong_filename]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_closed_locator_and_validator_dependencies[extra_strict_inventory]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_closed_locator_and_validator_dependencies[tool_pin]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_closed_locator_and_validator_dependencies[protocol_dependency]
+5 failed, 112 passed in 1.88s

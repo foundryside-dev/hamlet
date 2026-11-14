@@ -1,0 +1,9 @@
+{
+  "name": "launch-command-bool",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "exact fields required: path bytes sha256",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

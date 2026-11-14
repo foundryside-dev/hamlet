@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-14T10:06:16.210688+00:00",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task1-freeze-v1.json",
+    "bytes": 9105,
+    "sha256": "482f4dc58caa630336b99cd916dc4880f8fe84bea21439899c3cde2f47016466"
+  },
+  "files": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 82822,
+      "sha256": "5f72c9e7c1cce50378f32b30fc46f4d35625f837a3980e91b9c6644753bf2953"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 77658,
+      "sha256": "5aaedc415da0c1bd9efea5df78df7ccab6659ba6d8cad0cd4e869d132d1214d2"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "bytes": 3635,
+      "sha256": "51ffece3829826d47be9860ef8cf039b1f25bd36b9534446952d04a343c1d1a7"
+    }
+  ],
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py",
+    "bytes": 4846,
+    "sha256": "ee6dd59678ed95b03d3975de2793ce2f0640a14a9cd62719c7e5abf8da9a13c5"
+  },
+  "budget": {
+    "bodies": 5,
+    "lines": 3124,
+    "ceiling": 5000
+  },
+  "scope": "Independent Task1 only; authored pure-data fixture tests and inert public-run subprocess -c; Git stubbed; no APP/P3 import."
+}

@@ -1,0 +1,240 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [11 items]
+
+FF..FFFF...                                                              [100%]
+=================================== FAILURES ===================================
+_ test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', choice = 'clone_learned_archive_pending'
+mode = 'paced_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_current_captured_replay_is_preserved(compiled, family, choice, mode):
+        """Catches confusing curiosity's inactive tail archive with active captured REPLAY."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:837: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:431: in trained_source
+    source.step(batch * 10 + step, (True, step < 5))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_pw_scope_conversion.Rig object at 0x7fbbe1802120>, tick = 1
+active = (True, True)
+
+    def step(self, tick, active=(True, True)):
+        # Actual ENV supplies participation and authority; curiosity uses explicit synthetic geometry.
+        for index, eligible in enumerate(active):
+            if not eligible:
+                self.env.dones[index] = True
+        actions = self.env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:169: TypeError
+_ test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', choice = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    def test_initial_conversion_has_no_episode_or_closing_history(compiled, family, choice):
+        """Catches an INITIAL template inventing an accepted episode or completed history."""
+        source = Rig(compiled, policy(compiled, family, "shared", "paced_fifo"))
+        state = source.bank.checkpoint_state()
+        target = Rig(compiled, policy(compiled, family, "per_world", "paced_fifo"))
+        token = target.bank.prepare_private_initialization(
+            state=state,
+            initialization=choice,
+            parent_restore=None,
+            validate_parent_restore=None,
+        )
+        target.bank.install_restore(prepared=token)
+        saved = target.bank.checkpoint_state()
+        assert saved["bank_phase"] == "initial" and saved["curiosity_epoch"] == 1
+        assert saved["completion"] is None and saved["dispatch_identity"] is None
+        for world in IDS:
+            snapshot = target.bank.snapshot_world(world_id=world)
+            assert snapshot["cursor"]["accepted_episode_seq"] == 0
+            assert snapshot["accepted_identity"] is None and snapshot["phase_cache"] == {}
+            assert_future(snapshot, family, 0, 0)
+        target.begin(0)
+>       _, stamp, _, _ = target.step(1)
+                         ^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:891: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_pw_scope_conversion.Rig object at 0x7f5bb24da990>, tick = 1
+active = (True, True)
+
+    def step(self, tick, active=(True, True)):
+        # Actual ENV supplies participation and authority; curiosity uses explicit synthetic geometry.
+        for index, eligible in enumerate(active):
+            if not eligible:
+                self.env.dones[index] = True
+        actions = self.env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:169: TypeError
+_ test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', choice = 'fresh_private', mode = 'occupancy_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, choice, mode):
+        """Catches dropped/reordered archives and any archive-to-active service route."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:706: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:431: in trained_source
+    source.step(batch * 10 + step, (True, step < 5))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_pw_scope_conversion.Rig object at 0x7f5ba703e710>, tick = 1
+active = (True, True)
+
+    def step(self, tick, active=(True, True)):
+        # Actual ENV supplies participation and authority; curiosity uses explicit synthetic geometry.
+        for index, eligible in enumerate(active):
+            if not eligible:
+                self.env.dones[index] = True
+        actions = self.env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:169: TypeError
+_ test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', choice = 'fresh_private', mode = 'paced_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, choice, mode):
+        """Catches dropped/reordered archives and any archive-to-active service route."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:706: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:431: in trained_source
+    source.step(batch * 10 + step, (True, step < 5))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_pw_scope_conversion.Rig object at 0x7f5ba6f4dba0>, tick = 1
+active = (True, True)
+
+    def step(self, tick, active=(True, True)):
+        # Actual ENV supplies participation and authority; curiosity uses explicit synthetic geometry.
+        for index, eligible in enumerate(active):
+            if not eligible:
+                self.env.dones[index] = True
+        actions = self.env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:169: TypeError
+_____________ test_fixture_actual_private_callback_witnesses[none] _____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_fixture_actual_private_callback_witnesses(compiled, family):
+        """Reject copied-provider evidence: stable installed addresses and real service hooks."""
+        rig = Rig(compiled, policy(compiled, family, "per_world", "paced_fifo"))
+        before = live(rig.bank)
+        equal(live(rig.bank), before)
+        other = live(rig.bank, "B")
+        assert before["provider_id"] != other["provider_id"]
+        assert set(before["storage_ids"]).isdisjoint(other["storage_ids"])
+        rng = rig.bank.snapshot_world(world_id="B")["backend"]["rng"]
+        if family in TRAINABLE:
+            assert before["storage_ids"]
+        with observe_training(rig.bank, family) if family in TRAINABLE else nullcontext([]) as batches:
+            rig.begin(0)
+>           first, _, _, _ = rig.step(1, (True, False))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1420: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_pw_scope_conversion.Rig object at 0x7f5ba6b84050>, tick = 1
+active = (True, False)
+
+    def step(self, tick, active=(True, True)):
+        # Actual ENV supplies participation and authority; curiosity uses explicit synthetic geometry.
+        for index, eligible in enumerate(active):
+            if not eligible:
+                self.env.dones[index] = True
+        actions = self.env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:169: TypeError
+_ test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', choice = 'clone_learned_archive_pending'
+mode = 'occupancy_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, choice, mode):
+        """Catches dropped/reordered archives and any archive-to-active service route."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:706: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:431: in trained_source
+    source.step(batch * 10 + step, (True, step < 5))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_pw_scope_conversion.Rig object at 0x7f5ba6eb85f0>, tick = 1
+active = (True, True)
+
+    def step(self, tick, active=(True, True)):
+        # Actual ENV supplies participation and authority; curiosity uses explicit synthetic geometry.
+        for index, eligible in enumerate(active):
+            if not eligible:
+                self.env.dones[index] = True
+        actions = self.env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:169: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]
+========================= 6 failed, 5 passed in 13.00s =========================

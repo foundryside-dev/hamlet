@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 9 items
+
+<Dir hamlet>
+  <Dir .superpowers>
+    <Dir sdd>
+      <Dir 2026-11-01-bac-remediation-upgrades>
+        <Dir evidence-management>
+          <Dir env-c2>
+            <Dir independent-review>
+              <Module test_env_c2_independent_v1.py>
+                <Function test_actual_inherited_pid_refuses_before_domain_and_owner_lock>
+                <Function test_callback_lifecycle_refusal_and_record_reference_expiry[none]>
+                <Function test_callback_lifecycle_refusal_and_record_reference_expiry[before]>
+                <Function test_callback_lifecycle_refusal_and_record_reference_expiry[after]>
+                <Function test_wrong_layout_or_device_reaches_real_validator_and_stays_denied[False-layout]>
+                <Function test_wrong_layout_or_device_reaches_real_validator_and_stays_denied[False-device]>
+                <Function test_wrong_layout_or_device_reaches_real_validator_and_stays_denied[True-layout]>
+                <Function test_wrong_layout_or_device_reaches_real_validator_and_stays_denied[True-device]>
+                <Function test_real_prior_revision_reading_refuses_with_same_accepted_and_participation>
+
+========================== 9 tests collected in 0.99s ==========================

@@ -1,0 +1,5 @@
+ERROR: usage: run-inert-v1.py [options] [file_or_dir] [file_or_dir] [...]
+run-inert-v1.py: error: unrecognized arguments: --cov=townlet --cov-branch --cov-report=term-missing /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py
+  inifile: /workspace/hamlet/pyproject.toml
+  rootdir: /workspace/hamlet
+

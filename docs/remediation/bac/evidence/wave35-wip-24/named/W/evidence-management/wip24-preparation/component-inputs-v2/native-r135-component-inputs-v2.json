@@ -1,0 +1,267 @@
+{
+  "fixture_verification_summary": {
+    "bytes": 0,
+    "exact_named_files_verified": 0,
+    "scope": "All literal file references were hash-checked in v1. Reuse original named inventories rather than duplicate fixture trees or treat embedded synthetic candidate claims as production dependencies."
+  },
+  "independence": "Existing producer, independent reviewer and root adoption identities retained without assuming this metadata inventory is an independent review.",
+  "metadata_and_named_dependency_files": [
+    {
+      "bytes": 5148,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-component-adoption-v1.json",
+      "root": "W",
+      "sha256": "640082546621b7e36416d7deb44022640e6140b96bc1b7e40970e69067efd9c1"
+    },
+    {
+      "bytes": 207754,
+      "path": "wave35/r135-candidate.json",
+      "root": "W",
+      "sha256": "d3e679145ed8be6c6a4227504f7ad30ef65ffb3846d8fddb4d49a49adfc2d524"
+    },
+    {
+      "bytes": 1799,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-static-v1.json",
+      "root": "W",
+      "sha256": "86fc792e0e85a8f807e7e96f5783a42de776c48b632fc7138bfc687475f01f56"
+    },
+    {
+      "bytes": 3599,
+      "path": "evidence-management/native-replay-fixture-implementation-review/review-v1.json",
+      "root": "W",
+      "sha256": "f98bfd8e4fe6eb22ccd68f6f78d9a6490f252c8352c30f284a2679d36f46d0dc"
+    },
+    {
+      "bytes": 26159,
+      "path": "evidence-management/native-replay-fixture-implementation-review/runtime-addendum-v1.json",
+      "root": "W",
+      "sha256": "2e4c51570104548cdf25376880fc4dc5e7303fbeea6282a31010e67324a8dd20"
+    },
+    {
+      "bytes": 2892,
+      "path": "wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection-result.json",
+      "root": "Q",
+      "sha256": "bf5469a0bd0541c2297d96c1d06b5ca68fccefb08578a37e1bacf01e007074bf"
+    },
+    {
+      "bytes": 656,
+      "path": "wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection-custody.json",
+      "root": "Q",
+      "sha256": "fff82e6ff5c8bde98735d6281a98b151888efa86536b64f872d47ea1e2908cdf"
+    },
+    {
+      "bytes": 1471,
+      "path": "wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive-result.json",
+      "root": "Q",
+      "sha256": "9804a77214123265bfd22e0b4963df00dbedcc0b44bafddcd5c24476af9f336d"
+    },
+    {
+      "bytes": 656,
+      "path": "wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive-custody.json",
+      "root": "Q",
+      "sha256": "21f4432fc6103974659852f989572dbf85c4350924e559202506e1f3f74bd9c5"
+    },
+    {
+      "bytes": 2564,
+      "path": "wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-result.json",
+      "root": "Q",
+      "sha256": "26e0da100a012612d1756a1f986c610fccc64b1d2daa7f488d182af82f090523"
+    },
+    {
+      "bytes": 959,
+      "path": "wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-negative-custody.json",
+      "root": "Q",
+      "sha256": "72b030be91c2c7f8f5a464a62821b596843da4fc7620e5729dcf05edee5a69e5"
+    },
+    {
+      "bytes": 72479,
+      "path": "evidence-management/native-replay-fixture-implementation/test_pw_scope_conversion.py.r135.9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f.py.txt",
+      "root": "W",
+      "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"
+    },
+    {
+      "bytes": 69095,
+      "path": "evidence-management/native-replay-fixture-implementation/test_pw_scope_restore.py.r135.ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9.py.txt",
+      "root": "W",
+      "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9"
+    },
+    {
+      "bytes": 24729,
+      "path": "wave35-preparation/T18e-R0-NATIVE-REPLAY-FIXTURE-REPAIR-PLAN-v2.md",
+      "root": "W",
+      "sha256": "6fd634250e3ae50e7924775a0e3209c34a0554c89a0194482446d7be34124bf3"
+    },
+    {
+      "bytes": 7540,
+      "path": "wave35-preparation/T18e-R0-REPLAY-LOAD-FOR-MODE-SUPPLIER-v1.md",
+      "root": "W",
+      "sha256": "2875f7c00fcf454d8091358ef06068edfd4aa17429389b2c78333f9b1aede79d"
+    },
+    {
+      "bytes": 28678,
+      "path": "wave35-preparation/T18e-R0-PARENT-NATIVE-CURRENT-SUPPLIER.md",
+      "root": "W",
+      "sha256": "7cb54762da2ecffae75091d06725afac71d83097f615cd364fc79ed1f54f0ba9"
+    },
+    {
+      "bytes": 4751,
+      "path": "evidence-management/native-replay-fixture-implementation/implementation-static-handoff-v1.json",
+      "root": "W",
+      "sha256": "485b7a11d0e1e0738452d26682392beaa07dec27de1130cf17ba84ffe2533bd5"
+    },
+    {
+      "bytes": 2178,
+      "path": "evidence-management/native-replay-fixture-implementation/bank-install-consumption-supplier-v1.json",
+      "root": "W",
+      "sha256": "d2a573de70d4dbf093c75143659221ac8797feada934d063896895b652cce12d"
+    },
+    {
+      "bytes": 12475,
+      "path": "evidence-management/native-replay-fixture-implementation/install-identity-supplier-v1.json",
+      "root": "W",
+      "sha256": "f2130f289a9742e63ae2947f2cd46b584f7b2ff50ec4d9dc0dbc3ceb31eac27b"
+    },
+    {
+      "bytes": 5055,
+      "path": "evidence-management/native-replay-fixture-implementation-review/review-v1.md",
+      "root": "W",
+      "sha256": "4f106aa586d1f6b18c54959b10ddb520d9861b98fb68befcf35829c0758f5a91"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection/identity-controller.json",
+      "root": "Q",
+      "sha256": "11ee7df82e6aac5fcbffe6566162e151a685f583f6aa8ac4ba07e06cc36b54d6"
+    },
+    {
+      "bytes": 2438,
+      "path": "wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection.log",
+      "root": "Q",
+      "sha256": "4e29ea89d0513a2836becdb4e63a9a14a5a552e811109fec1b93daf87b0ef7e3"
+    },
+    {
+      "bytes": 2694,
+      "path": "wave35-r135-native-fixture-collection-attempt-1-spec.json",
+      "root": "Q",
+      "sha256": "81c70ec682bfdc93d44aee9fe0a157f29e3d8017f0b5d183777766fdace93239"
+    },
+    {
+      "bytes": 933,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "e175f76b0758abe6439646d96292dd1a161ae3c6f894f06b8c2d8bfb2f4a9591"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive/identity-controller.json",
+      "root": "Q",
+      "sha256": "11ee7df82e6aac5fcbffe6566162e151a685f583f6aa8ac4ba07e06cc36b54d6"
+    },
+    {
+      "bytes": 239,
+      "path": "wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive/identity-gw0.json",
+      "root": "Q",
+      "sha256": "82fc729598b072a647cd8cfaa441c7a3490d91bba9b7ca85ead06c2328107b31"
+    },
+    {
+      "bytes": 239,
+      "path": "wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive/identity-gw1.json",
+      "root": "Q",
+      "sha256": "710ddf9c02dc3daa79741faf63f72e6902715a3da2a65f46c47dfe6e1574fce6"
+    },
+    {
+      "bytes": 602,
+      "path": "wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive.log",
+      "root": "Q",
+      "sha256": "4a24acaadd4ae72db49e1582d76ca935bb79317f4119cf17fc06aa58565af8d4"
+    },
+    {
+      "bytes": 1246,
+      "path": "wave35-r135-native-fixture-positive-attempt-1-spec.json",
+      "root": "Q",
+      "sha256": "7b26a156f650e67a7e876731802160b322634ceef0a95c7ae31e16c33a2ec1da"
+    },
+    {
+      "bytes": 930,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-positive-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "97e346a80d6390d1b20c41c0e889b6eaf8a5e7aebecc85ceef7bb788d5d804a9"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression/identity-controller.json",
+      "root": "Q",
+      "sha256": "11ee7df82e6aac5fcbffe6566162e151a685f583f6aa8ac4ba07e06cc36b54d6"
+    },
+    {
+      "bytes": 239,
+      "path": "wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression/identity-gw0.json",
+      "root": "Q",
+      "sha256": "82fc729598b072a647cd8cfaa441c7a3490d91bba9b7ca85ead06c2328107b31"
+    },
+    {
+      "bytes": 239,
+      "path": "wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression/identity-gw1.json",
+      "root": "Q",
+      "sha256": "710ddf9c02dc3daa79741faf63f72e6902715a3da2a65f46c47dfe6e1574fce6"
+    },
+    {
+      "bytes": 1819,
+      "path": "wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-failure-index.json",
+      "root": "Q",
+      "sha256": "5d578f7c86d36b88654df222a732eadbe179cb75438fa2a77afe5d36b05ea2f4"
+    },
+    {
+      "bytes": 14455,
+      "path": "wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression.log",
+      "root": "Q",
+      "sha256": "b23703e7c37af06fb874b6e53ebe71b267fe9165657c5eb07569ea2fc3a6d78d"
+    },
+    {
+      "bytes": 2364,
+      "path": "wave35-r135-native-fixture-progression-attempt-1-spec.json",
+      "root": "Q",
+      "sha256": "42b28c08118c06ddb62213bc7ed1c3ef8526147d514a0804a79056556053910f"
+    },
+    {
+      "bytes": 936,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-progression-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "5ed4e9221b68839f77806e3e36c89791e39c6995388282eeb6d9ccfb4f4ef8b8"
+    },
+    {
+      "bytes": 28678,
+      "path": "evidence-management/native-replay-fixture-implementation/../../wave35-preparation/T18e-R0-PARENT-NATIVE-CURRENT-SUPPLIER.md",
+      "root": "W",
+      "sha256": "7cb54762da2ecffae75091d06725afac71d83097f615cd364fc79ed1f54f0ba9"
+    },
+    {
+      "bytes": 8724,
+      "path": "evidence-management/native-replay-fixture-implementation/../../wave35-preparation/T18e-R0-NATIVE-FAILED-DIAGNOSTIC-CAPTURE-FACTS-v1.md",
+      "root": "W",
+      "sha256": "1be66aa7f93495b6c0304fa22974af4abbe4804a740bb32536130283b8079611"
+    }
+  ],
+  "named_fixture_inventories": [],
+  "prior_preparation": {
+    "bytes": 20008,
+    "path": "evidence-management/wip24-preparation/component-inputs-v1/native-r135-component-inputs-v1.json",
+    "root": "W",
+    "sha256": "ada7e8461aed10113ca8620bc5e6e629634bc7710fbf9fb65e52dc1680a2f5be"
+  },
+  "publication_scope": "Preparation input only; no contract/receipt/seal/selection/current-docs or count change.",
+  "schema": "bac-wip24-bounded-component-inputs-v2",
+  "seed_references": [
+    {
+      "bytes": 5148,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-component-adoption-v1.json",
+      "root": "W",
+      "sha256": "640082546621b7e36416d7deb44022640e6140b96bc1b7e40970e69067efd9c1"
+    }
+  ],
+  "source_alias_resolutions": [],
+  "source_boundary": "No APP source bodies read/copied/executed. Original source hashes retained in manifests/reviews; historical tasks snapshots are provenance only, not new closure expansion.",
+  "source_declarations_retained_in_prior": 11,
+  "status": "ROOT ADOPTED BOUNDED NATIVE/REPLAY ONLY; ORIGINAL OWNER GATE FAILED",
+  "synthetic_payload_claims": [],
+  "unresolved": []
+}

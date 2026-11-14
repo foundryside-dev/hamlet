@@ -1,0 +1,24 @@
+{
+  "exact_retained": {
+    "bytes": 19644,
+    "path": "evidence-management/env-c2/independent-review/test_env_c2_independent-passing-r142-v3.py.txt",
+    "root": "W",
+    "sha256": "35329d5ee96e74d0c74affdc9d06fdc8df0f9b2ec5ea55138ded34acc1cb059c"
+  },
+  "next_reference_only_freeze": {
+    "bytes": 1894,
+    "path": "evidence-management/env-c2/independent-review/probe-freeze-v4.json",
+    "root": "W",
+    "sha256": "4993c10a5d062eca12e0ea7e1c444321d261b37634c4bcd5496833106ddfbbf4"
+  },
+  "original": "evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+  "scope": "Additive resolution of prior pending preservation note; R142 passing bytes remain exact and separate from R144 reference-only update. No copies or APP reads.",
+  "sha256": "35329d5ee96e74d0c74affdc9d06fdc8df0f9b2ec5ea55138ded34acc1cb059c",
+  "snapshot_record": {
+    "bytes": 564,
+    "path": "evidence-management/env-c2/independent-review/passing-source-snapshot-v3.json",
+    "root": "W",
+    "sha256": "2f8573998949f08db92b01c0d2fb16cd3e67569c3869559e509b2d2eade9c16c"
+  },
+  "status": "RESOLVED EXACT HISTORICAL AUXILIARY BYTES; NOT LOST"
+}

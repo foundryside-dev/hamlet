@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 14333,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-public28/fixtures/test_owner_public_run_observes0/output/attempt/a/command.json",
+    "sha256": "a5286aafc65942962f77e56e1c18077192d4d54adf0ebbf34f031f50dad8e600"
+  },
+  "policy": {
+    "bytes": 915,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-public28/fixtures/test_owner_public_run_observes0/metadata/identity-policy.json",
+    "sha256": "08b49d49aecd12bef8e751ce660234aa367b376b7a216919d66af5c00cfc0986"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 225545,
+    "ppid": 225544,
+    "start_identity": "13249546"
+  },
+  "runner_source_start": {
+    "bytes": 3170,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-public28/fixtures/test_owner_public_run_observes0/output/attempt/source-0002.json",
+    "sha256": "520008272b016ec27ca0b5ff852a3ef29771c985c0937e2e06faea03b228ee30"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 23142,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-public28/fixtures/test_owner_public_run_observes0/metadata/spec.json",
+    "sha256": "981727e64c9cbdc6bc742fc0f9642b9d700fbede2a4134191f6a607aa2ece669"
+  },
+  "trusted_grant": {
+    "bytes": 3643,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-public28/fixtures/test_owner_public_run_observes0/metadata/grant.json",
+    "sha256": "0c428ee864007aa0fb218348109e2d85dd4746562c3488d524ca9da9cc37d75f"
+  }
+}

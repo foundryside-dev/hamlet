@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6397,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_independent_task1_public_3/output/attempt/a/command.json",
+    "sha256": "21b17be00996a3b5c9010d0d1b512717315b6cec794c765926818ab4959ffae8"
+  },
+  "policy": {
+    "bytes": 942,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_independent_task1_public_3/metadata/identity-policy.json",
+    "sha256": "ae36a8028daa09bbbd84e27aa4fe7f16c3199998c056369ef720e5cec48a0107"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 224641,
+    "ppid": 224640,
+    "start_identity": "13219595"
+  },
+  "runner_source_start": {
+    "bytes": 3242,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_independent_task1_public_3/output/attempt/source-0002.json",
+    "sha256": "3db6dfd6b7baf6a8a42bbd0b86371a4fd650abbe816b6990f9287bd6cfc5fd66"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13938,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_independent_task1_public_3/metadata/spec.json",
+    "sha256": "f66af1f72e7b77551f09f9da9460d84a1970f037a3db92409e73e1810cd1fc72"
+  },
+  "trusted_grant": {
+    "bytes": 3408,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_independent_task1_public_3/metadata/grant.json",
+    "sha256": "91ae7ab8acba9bb89796b9ccb46f28176ad7f64b6213cd4cbffeb50d4c646db1"
+  }
+}

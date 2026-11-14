@@ -1,0 +1,16 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_owner_sampler_prepared_input_cap_refuses _________________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-inputcap-red06/fixtures/test_owner_sampler_prepared_in0')
+
+    def test_owner_sampler_prepared_input_cap_refuses(tmp_path):
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, policy_mutate=lambda p: p.update(max_input_bytes=1))
+>       with pytest.raises(ValueError, match='input.*cap'): custody.evidence(selected)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1878: Failed
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_prepared_input_cap_refuses
+1 failed, 231 deselected in 0.79s

@@ -1,0 +1,27 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_owner_spawn_launch_requires_end_import_without_requiring_parent_start_import[False] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-red16/fixtures/test_owner_spawn_launch_requir1')
+present = False
+
+    @pytest.mark.parametrize('present', [True, False])
+    def test_owner_spawn_launch_requires_end_import_without_requiring_parent_start_import(tmp_path, present):
+        r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path, end_import=True)
+        if present: launch['inherited_imports'] = [{'name': 'late_required', 'reference': custody.inputs[0]}]
+        launch_ref = put('owner-launch-spawn-one.json', launch); claim['launch'] = launch_ref
+        claim_ref = put('owner-claim-spawn-one.json', claim)
+        raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+        updated = {x['path']: x for x in (launch_ref, claim_ref)}
+        envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+        if present:
+            custody.process_context(selected, record, role, envelope)
+        else:
+>           with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1496: Failed
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_spawn_launch_requires_end_import_without_requiring_parent_start_import[False]
+1 failed, 1 passed, 145 deselected in 0.74s

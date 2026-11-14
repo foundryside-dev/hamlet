@@ -1,0 +1,95 @@
+{
+  "actual_result": "99 inert PASS; Ruff PASS; Black PASS; oneCPU/fourGiB; selections overlap, no sum",
+  "at": "2026-11-14T12:00:18.618724+00:00",
+  "boundary": "No source or test removed; no P5 acceptance substituted for P4 common checks; no application/Git/hardware runtime. Current two source files only edited; readonly P0/P5 unchanged.",
+  "budget_boundary": {
+    "bytes": 3439,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/budget-boundary-v1.md",
+    "sha256": "3d9dafb1bdcb054f33f1b77882ed87ac253f74a384a06b55905edd649f3d79e0"
+  },
+  "checks": [
+    {
+      "bytes": 1693,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/green-current-raw-v2/pytest.json",
+      "sha256": "1e39095f344eb4ca7d6b02db275d71b059c9ff7ceb7190dba2d948627443fef2"
+    },
+    {
+      "bytes": 180,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/green-current-raw-v2/pytest.log",
+      "sha256": "946dca8f6905459023a8a1f2e405baf3dfca7620eaedfafac24da53f1a8ccec0"
+    },
+    {
+      "bytes": 1494,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/green-current-raw-v2/ruff.json",
+      "sha256": "d7a406743f3142a0ebbc8eae7e53f43b5968c52dd6a4545fc8c7b1a52a925c62"
+    },
+    {
+      "bytes": 19,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/green-current-raw-v2/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 1511,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/green-current-raw-v2/black.json",
+      "sha256": "27cde633a90e7afc41ae012962dd3e73885079662a0a4535137ed608e9205241"
+    },
+    {
+      "bytes": 56,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/green-current-raw-v2/black.log",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+    }
+  ],
+  "plan": {
+    "bytes": 4471,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/implementation-plan-v1.md",
+    "sha256": "deb7577f97b8bcc7c9c0252da1970e1739a9b8aee2de0a3181b32e07b889c3bc"
+  },
+  "readonly_dependencies": [
+    {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 79319,
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+    }
+  ],
+  "remaining": [
+    "Independent owner launch/claim/context/resource/emission/return/parent timing transport",
+    "Completion owner closure and literal P5 pure document/receipt integration",
+    "Canonical owner versus selected strict-role correspondence",
+    "Independent review/adoption and actual producer/full-chain/hardware execution"
+  ],
+  "schema": "bac-hardware-p4-unqualified-checkpoint-v1",
+  "sources": [
+    {
+      "lines": 1205,
+      "live": {
+        "bytes": 61259,
+        "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+        "sha256": "9fb6ca30648fc4282c558c85652825605a37b3c7e0e44c7e54ad97a0c08656c8"
+      },
+      "snapshot": {
+        "bytes": 61259,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/checkpoint-unqualified-v1/verify_bac_hardware_v1.py.txt",
+        "sha256": "9fb6ca30648fc4282c558c85652825605a37b3c7e0e44c7e54ad97a0c08656c8"
+      }
+    },
+    {
+      "lines": 1399,
+      "live": {
+        "bytes": 56639,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "a2a3fdca5e730c1cf7afeca5b4f5c33bc4faac38b3c6764e52804cef294baa8e"
+      },
+      "snapshot": {
+        "bytes": 56639,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/current-owner-integration/checkpoint-unqualified-v1/test_verify_bac_hardware_v1.py.txt",
+        "sha256": "a2a3fdca5e730c1cf7afeca5b4f5c33bc4faac38b3c6764e52804cef294baa8e"
+      }
+    }
+  ],
+  "status": "UNQUALIFIED PARTIAL CURRENT-OWNER INTEGRATION; BOUNDED RESLICE REQUIRED"
+}

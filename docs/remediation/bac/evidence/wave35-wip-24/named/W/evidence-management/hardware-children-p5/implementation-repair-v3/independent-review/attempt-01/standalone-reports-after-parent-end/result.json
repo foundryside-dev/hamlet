@@ -1,0 +1,9 @@
+{
+  "name": "standalone-reports-after-parent-end",
+  "expected": "refused",
+  "mode": "standalone",
+  "observed": "refused",
+  "error": "report outside observing process lifetime",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

@@ -1,0 +1,2564 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [268 items]
+
+.....F..F.FFF......................F..............................FF.... [ 26%]
+......F.....FFFF........................................................ [ 53%]
+...F.................F.............................................F.... [ 80%]
+...........FFF.F.F...F..F..F.....FF.F...s.s.s.s..FFF                     [100%]
+=================================== FAILURES ===================================
+_______ test_first_real_transition_uses_sealed_activity_and_one_service ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790d5ee3f0>
+
+    def test_first_real_transition_uses_sealed_activity_and_one_service(compiled: Any, monkeypatch: Any) -> None:
+        """A late retirement or synthetic second reward/service changes real handoff counts."""
+        rig = activated(compiled)
+        calls: dict[str, list[Any]] = {"reward": [], "service": []}
+        reward, service = rig.runtime.reward, rig.runtime.admit_and_service
+    
+        def observed_reward(**kwargs: Any) -> Any:
+            result = reward(**kwargs)
+            calls["reward"].append((kwargs, result))
+            return result
+    
+        def observed_service(**kwargs: Any) -> Any:
+            result = service(**kwargs)
+            calls["service"].append((kwargs, result))
+            return result
+    
+        monkeypatch.setattr(rig.runtime, "reward", observed_reward)
+        monkeypatch.setattr(rig.runtime, "admit_and_service", observed_service)
+        predecessor = rig.current_obs.clone()
+>       _, rewards, dones, info, receipts = rig.step()
+                                            ^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:436: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f790d5ee650>
+edge = 'claim'
+callback = <bound method ComponentPopulation.claim_vector_step of <test_initial_participation_env.ComponentPopulation object at 0x7f7901fbefd0>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f7901fbefd0>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7901fbf110>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+___________ test_no_retirement_preserves_ordinary_active_transition ____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_no_retirement_preserves_ordinary_active_transition(compiled: Any) -> None:
+        rig = activated(compiled, ())
+>       _, _, _, info, _ = rig.step()
+                           ^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:453: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f790d82a9f0>
+edge = 'claim'
+callback = <bound method ComponentPopulation.claim_vector_step of <test_initial_participation_env.ComponentPopulation object at 0x7f790d8a7890>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f790d8a7890>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f790d8a79d0>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+__________ test_validator_accepts_later_genuine_active_lane_terminal ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_validator_accepts_later_genuine_active_lane_terminal(compiled: Any) -> None:
+        """Comparing all future dones to the initial seal would reject lawful A retirement."""
+        rig = ComponentPopulation(compiled)
+        rig.env.agent_lifespan = 1  # Explicit genuine ENV lifespan, not pre-step inactivity.
+        rig.publish(prepare(rig))
+        rig.activate()
+>       _, _, dones, info, _ = rig.step()
+                               ^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:465: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f79020a5480>
+edge = 'claim'
+callback = <bound method ComponentPopulation.claim_vector_step of <test_initial_participation_env.ComponentPopulation object at 0x7f790200b890>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f790200b890>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f790200bd90>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+________ test_separate_all_inactive_ordinary_step_contract_is_preserved ________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_separate_all_inactive_ordinary_step_contract_is_preserved(compiled: Any) -> None:
+        """This ordinary API control is separate from zero-tick empty abandonment."""
+        rig = activated(compiled, IDS)
+>       _, rewards, _, info, _ = rig.step()
+                                 ^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:475: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f7901c26250>
+edge = 'claim'
+callback = <bound method ComponentPopulation.claim_vector_step of <test_initial_participation_env.ComponentPopulation object at 0x7f7901c1bed0>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f7901c1bed0>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7901d74550>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+_ test_current_initial_boundary_restore_does_not_import_live_decision_authority _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_current_initial_boundary_restore_does_not_import_live_decision_authority(compiled: Any) -> None:
+        source, target = make_parent(compiled), make_parent(compiled)
+        state = copy.deepcopy(source.population.get_checkpoint_state())
+>       target.population.load_checkpoint_state(state)
+
+tests/test_townlet/regressions/bac/test_initial_participation_population.py:614: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:3157: in load_checkpoint_state
+    prepared = self.prepare_checkpoint_state(
+src/townlet/population/vectorized.py:3073: in prepare_checkpoint_state
+    prepared_replay = replay_target.materialize_validated(validated_replay)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:628: in guarded
+    with self._device_operation("prepare", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=False) as lease:
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+arguments = {}
+
+    def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+        try:
+            lineage = arguments["lineage"]
+        except KeyError:
+>           raise TypeError("Missing required keyword-only argument: 'lineage'") from None
+E           TypeError: Missing required keyword-only argument: 'lineage'
+
+src/townlet/training/replay_contract.py:566: TypeError
+_________ test_native_install_custody_blocks_unowned_selector_reentry __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4aee60b6b0>
+
+    def test_native_install_custody_blocks_unowned_selector_reentry(compiled: Any, monkeypatch: Any) -> None:
+        source, target, masks = make_parent(compiled), make_parent(compiled), unowned(compiled)
+>       prepared = target.population.prepare_checkpoint_state(
+            source.population.get_checkpoint_state(), mode="initial", parent_restore=None, validate_parent_restore=None, initialization=None
+        )
+
+tests/test_townlet/regressions/bac/test_initial_participation_population.py:668: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:3073: in prepare_checkpoint_state
+    prepared_replay = replay_target.materialize_validated(validated_replay)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:628: in guarded
+    with self._device_operation("prepare", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=False) as lease:
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+arguments = {}
+
+    def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+        try:
+            lineage = arguments["lineage"]
+        except KeyError:
+>           raise TypeError("Missing required keyword-only argument: 'lineage'") from None
+E           TypeError: Missing required keyword-only argument: 'lineage'
+
+src/townlet/training/replay_contract.py:566: TypeError
+__________ test_observation_cleanup_cannot_return_healthy_validation ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790d8784d0>
+
+    def test_observation_cleanup_cannot_return_healthy_validation(compiled: Any, monkeypatch: Any) -> None:
+        """Unchanged genuine encoding cannot bless lifecycle custody abandoned in that read."""
+        rig = activated(compiled)
+        encode = rig.env._encode_observations
+        abandonments: list[Any] = []
+    
+        def encode_then_abandon() -> Any:
+            observation = encode()
+            abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
+            return observation
+    
+        monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
+        before, revision = witness(rig), rig.env._world_revision
+        with pytest.raises(ValueError):
+            rig.env.validate_initial_participation(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+>       assert len(abandonments) == 1 and abandonments[0].reason == "runtime_failure"
+E       assert (0 == 1)
+E        +  where 0 = len([])
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:896: AssertionError
+_________ test_observation_cleanup_cannot_activate_quarantined_episode _________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790d87a450>
+
+    def test_observation_cleanup_cannot_activate_quarantined_episode(compiled: Any, monkeypatch: Any) -> None:
+        rig = ComponentPopulation(compiled)
+        rig.publish(prepare(rig))
+        encode = rig.env._encode_observations
+        abandonments: list[Any] = []
+    
+        def encode_then_abandon() -> Any:
+            observation = encode()
+            abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
+            return observation
+    
+        monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
+        before, revision = witness(rig), rig.env._world_revision
+        with pytest.raises(ValueError):
+            rig.activate()
+>       assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
+E       assert (0 == 1)
+E        +  where 0 = len([])
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:916: AssertionError
+__________________ test_reading_validator_cleanup_is_durable ___________________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790207ae60>
+
+    def test_reading_validator_cleanup_is_durable(compiled: Any, monkeypatch: Any) -> None:
+        rig = activated(compiled)
+        encode = rig.env._encode_observations
+        abandonments: list[Any] = []
+    
+        def encode_then_abandon() -> Any:
+            observation = encode()
+            abandonments.append(rig.env.abandon_episode(accepted=rig.accepted, reason="runtime_failure"))
+            return observation
+    
+        monkeypatch.setattr(rig.env, "_encode_observations", encode_then_abandon)
+        before, revision = witness(rig), rig.env._world_revision
+        with pytest.raises(ValueError):
+            rig.env.validate_initial_participation_reading(accepted=rig.accepted, participation=rig.participation, predecessor=rig.current_obs)
+>       assert len(abandonments) == 1 and abandonments[0].accepted is rig.accepted
+E       assert (0 == 1)
+E        +  where 0 = len([])
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:992: AssertionError
+_ test_reading_validator_preserves_each_genuine_healthy_phase[closed-awaiting-release] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f7902153260>
+phase = 'closed-awaiting-release'
+
+    @pytest.mark.parametrize("phase", ["active-awaiting-activation", "active", "closed-awaiting-release", "released-completed"])
+    def test_reading_validator_preserves_each_genuine_healthy_phase(compiled: Any, monkeypatch: Any, phase: str) -> None:
+        claim, claim_calls = ComponentPopulation.claim_vector_step, []
+    
+        def observed_claim(owner: ComponentPopulation, *, prepared: Any, **candidate: Any) -> int:
+            claim_calls.append(prepared)
+            return claim(owner, prepared=prepared, **candidate)
+    
+        monkeypatch.setattr(ComponentPopulation, "claim_vector_step", observed_claim)
+>       rig = reading_phase(compiled, phase)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1051: in reading_phase
+    observations, rewards, _, info, _ = rig.step()
+                                        ^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f790d87c650>
+edge = 'claim'
+callback = <bound method test_reading_validator_preserves_each_genuine_healthy_phase.<locals>.observed_claim of <test_initial_participation_env.ComponentPopulation object at 0x7f79014bde50>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f79014bde50>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f79014bdf90>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+_ test_reading_validator_preserves_each_genuine_healthy_phase[released-completed] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790d1e9150>
+phase = 'released-completed'
+
+    @pytest.mark.parametrize("phase", ["active-awaiting-activation", "active", "closed-awaiting-release", "released-completed"])
+    def test_reading_validator_preserves_each_genuine_healthy_phase(compiled: Any, monkeypatch: Any, phase: str) -> None:
+        claim, claim_calls = ComponentPopulation.claim_vector_step, []
+    
+        def observed_claim(owner: ComponentPopulation, *, prepared: Any, **candidate: Any) -> int:
+            claim_calls.append(prepared)
+            return claim(owner, prepared=prepared, **candidate)
+    
+        monkeypatch.setattr(ComponentPopulation, "claim_vector_step", observed_claim)
+>       rig = reading_phase(compiled, phase)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1051: in reading_phase
+    observations, rewards, _, info, _ = rig.step()
+                                        ^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f790d1e95d0>
+edge = 'claim'
+callback = <bound method test_reading_validator_preserves_each_genuine_healthy_phase.<locals>.observed_claim of <test_initial_participation_env.ComponentPopulation object at 0x7f7901c25f90>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f7901c25f90>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7901c26210>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+_______ test_frozen_close_refuses_reading_without_consuming_sink_handles _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_frozen_close_refuses_reading_without_consuming_sink_handles(compiled: Any) -> None:
+>       rig = reading_phase(compiled, "boundary-pending")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1193: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1051: in reading_phase
+    observations, rewards, _, info, _ = rig.step()
+                                        ^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f790181ead0>
+edge = 'claim'
+callback = <bound method ComponentPopulation.claim_vector_step of <test_initial_participation_env.ComponentPopulation object at 0x7f79017020d0>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f79017020d0>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7901702350>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+__________ test_new_genuine_reset_invalidates_prior_reading_identity ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_new_genuine_reset_invalidates_prior_reading_identity(compiled: Any) -> None:
+>       rig = reading_phase(compiled, "released-completed")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1207: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:1051: in reading_phase
+    observations, rewards, _, info, _ = rig.step()
+                                        ^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_initial_participation_env.py:297: in step
+    observations, rewards, dones, info = self.env.step(actions, vector_step=prepared)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1334: in step
+    vector_tick = self._env_custody.outcall(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f79017f5e50>
+edge = 'claim'
+callback = <bound method ComponentPopulation.claim_vector_step of <test_initial_participation_env.ComponentPopulation object at 0x7f7901bd2210>>
+owner = <test_initial_participation_env.ComponentPopulation object at 0x7f7901bd2210>
+arguments = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...00,  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]]), ...}
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7901bd2490>
+committed = {'accepted': WorldAcceptedEpisode(world_ids=('component-A', 'component-B'), world_episode_seqs=(1, 1), batch_episode=0...  0.0000,  0.0000,  1.0000,  0.0000,  0.0000,  1.0000,
+          0.0000,  0.0000,  1.0000,  0.0000,  0.0000]])})), ...}
+record = {}, result = 1
+
+    def outcall(self, edge: str, callback: Callable[..., Any], *, owner: Any, **arguments: Any) -> Any:
+        """Issue one private continuation immediately around an actual producer call."""
+        self.check_process()
+        if self.active is None or self.active[1] is not current_thread() or self.reverse is not None:
+            raise ValueError("ENV outcall requires its original method custody")
+        env = self.owner
+        committed = env._participation_committed
+        record = {
+            "call": self.active,
+            "thread": current_thread(),
+            "callback": callback,
+            "owner": owner,
+            "binding": self.binding(),
+            "scope": self.scope,
+            "operation": None if self.scope is None else self.scope._operation,
+            "accepted": env._world_accepted,
+            "generation": env._world_generation,
+            "revision": env._world_revision,
+            "committed": committed,
+            "participation": None if committed is None else committed["result"],
+            "reading": None if committed is None else committed["observation"],
+            "prepared": arguments.get("prepared"),
+            "state": "CLAIM_READY" if edge == "claim" else "EMPTY_READY",
+            "denied": False,
+            "failure": None,
+        }
+        self.reverse = record
+        try:
+            result = callback(**arguments)
+            # No permission survives into result/receipt validation or ENV helpers.
+            self.reverse = None
+            if record["failure"] is not None:
+                raise record["failure"]
+            if record["denied"] or (edge == "claim" and committed is not None and record["state"] != "CHECKED"):
+>               raise ValueError("ENV continuation refused after producer callback")
+E               ValueError: ENV continuation refused after producer callback
+
+src/townlet/environment/parent_custody.py:248: ValueError
+__________ test_initial_snapshot_repeat_restore_and_first_real_reset ___________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_initial_snapshot_repeat_restore_and_first_real_reset(compiled):
+        run = _Run(_env(compiled), **_baseline_inputs(compiled))
+        before = _state(run.env)
+        state = run.initial()
+        _same(state, run.initial())
+        _same(before, _state(run.env))
+        assert state["schema"] == "world-lifecycle-v4" and state["kind"] == "INITIAL"
+        assert state["vfs_random_context"] == {
+            "schema": "vfs-world-random-v1",
+            "domain": "townlet.simulator.vfs.world-draw.v1",
+            "training_seed": SEED,
+            "world_ids": list(IDS),
+            "world_episode_seqs": [0, 0],
+        }
+        assert state["accepted_bindings"] == []
+        assert state["last_closed_episode"] is None and state["completed_boundary_key"] is None
+        assert state["saved_lane_binding"] is None
+        assert state["accepted_episode_seqs"] == dict.fromkeys(IDS, 0)
+>       restored = _restore(
+            compiled,
+            state,
+            tuple(reversed(IDS)),
+            runtime_state=run.runtime.checkpoint_state(),
+            component_ledger=run.ledger,
+            component_state=run.component_state(),
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1065: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+______ test_two_boundaries_two_reorders_keep_historical_binding_verbatim _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_two_boundaries_two_reorders_keep_historical_binding_verbatim(compiled):
+        first = _Run(_env(compiled), **_baseline_inputs(compiled))
+        first.reset(1, retired_world_ids=())
+        first.step()
+        _, closure, dispositions = first.close(1, first.env.world_ids)
+        first.release_closed(1, closure, dispositions)
+        saved1 = first.completed((1,))
+        old_outcomes = deepcopy(first.outcomes[1])
+>       second = _restore(
+            compiled,
+            saved1,
+            tuple(reversed(IDS)),
+            runtime_state=first.runtime.checkpoint_state(),
+            component_ledger=first.ledger,
+            component_state=first.component_state(),
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_reset_projects_reservation_before_evaluation_and_retry_never_resamples __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f7901bb9630>
+
+    def test_reset_projects_reservation_before_evaluation_and_retry_never_resamples(compiled, monkeypatch):
+        owners = bound(compiled, ("a", "b"), ("b", "a"))
+        env = owners.env
+        release = bootstrap(owners)
+        before, rng = env.vfs_random_state(), torch.get_rng_state().clone()
+        reservation = env.prepare_episode(batch_episode=0, release=release)
+        assert env.prepare_episode(batch_episode=0, release=release).world_episode_seqs == (1, 1)
+        assert env.vfs_random_state() == before
+        assert torch.equal(torch.get_rng_state(), rng)
+        observed = []
+        real_evaluate = env._evaluate_vfs_profiles
+    
+        def observe():
+            if env.world_phase != "resetting":
+                return real_evaluate()
+            assert env.world_phase == "resetting"
+            assert dict(env.accepted_episode_seqs) == {"b": 0, "a": 0}
+            observed.append(env.vfs_randomness.state())
+            with pytest.raises(ValueError):
+                env.vfs_random_state()
+            return real_evaluate()
+    
+        monkeypatch.setattr(env, "_evaluate_vfs_profiles", observe)
+>       result = env.reset(reservation=reservation)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:669: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/environment/parent_custody.py:30: in guarded
+    return method(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:2269: in reset
+    observation = self._reset_world_state()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/vectorized_env.py:1047: in _reset_world_state
+    self._evaluate_vfs_profiles()
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:662: in observe
+    assert dict(env.accepted_episode_seqs) == {"b": 0, "a": 0}
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:138: in call
+    with self._reverse_entry(name, arguments):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f7901c3bf50>
+name = 'accepted_episode_seqs', arguments = {}
+
+    @contextmanager
+    def _reverse_entry(self, name: str, arguments: dict[str, Any]) -> Iterator[None]:
+        record = self.reverse
+        if record is None:
+>           raise ValueError("ENV public methods cannot reenter active work")
+E           ValueError: ENV public methods cannot reenter active work
+
+src/townlet/environment/parent_custody.py:180: ValueError
+__ test_native_roundtrip_projects_destination_and_preserves_history[INITIAL] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'INITIAL'
+
+    @pytest.mark.parametrize("kind", ["INITIAL", "COMPLETED"])
+    def test_native_roundtrip_projects_destination_and_preserves_history(compiled, kind):
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        if kind == "INITIAL":
+            state = initial_snapshot(source, release)
+            sequence = 0
+        else:
+            _, result = accept(source, release, retired_world_ids=())
+            state = completed_snapshot(source, result.accepted)
+            sequence = 1
+        assert state["schema"] == "world-lifecycle-v4"
+        assert state["vfs_random_context"]["world_episode_seqs"] == [sequence, sequence]
+        destination = bound(compiled, ("a", "b"), ("b", "a"))
+        before = destination.env.vfs_random_state()
+        prepared = prepare_restore(
+            destination,
+            state,
+            runtime_state=source.saved_runtime,
+            component_ledger=source.saved_ledger,
+            component_state=json.loads(json.dumps(source.saved_component)),
+        )
+        assert destination.env.vfs_random_state() == before
+        # Prepared restore data must remain portable, not embed a producer/dataclass/capability.
+        json.dumps(prepared.payload)
+        # Accessor copies and input mutations must not change the portable prepared payload.
+        state["vfs_random_context"]["world_episode_seqs"][1] = 999
+        exposed = prepared.state
+        exposed["vfs_random_context"]["world_ids"][1] = "tampered"
+        assert prepared.state["vfs_random_context"]["world_ids"] == ["a", "b"]
+        assert prepared.state["vfs_random_context"]["world_episode_seqs"] == [sequence, sequence]
+        rng = torch.get_rng_state().clone()
+>       installed = install_restore(destination, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:976: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f790dcf52b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4aee4b35b0>
+damage = 'initial_cadence'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
+        source = _Run(_env(compiled), **_baseline_inputs(compiled))
+        initial = source.initial()
+        initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
+        initial_component = source.component_state()
+        captures = []
+        for batch, retired in ((1, (IDS[1],)), (2, ())):
+            source.reset(batch, retired_world_ids=retired)
+            source.step()
+            participants = tuple(wid for wid in IDS if wid not in retired)
+            _, closure, dispositions = source.close(batch, participants)
+            source.release_closed(batch, closure, dispositions)
+            captures.append(
+                (
+                    source.completed(tuple(range(1, batch + 1))),
+                    deepcopy(source.runtime.checkpoint_state()),
+                    source.ledger,
+                    source.component_state(),
+                )
+            )
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
+        _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        # A real JSON transport proves this record does not depend on source objects.
+        import json
+    
+        component = json.loads(json.dumps(component))
+        # Earn the healthy native prepare/install and next-reset route before the
+        # negative. Only separately supplied cadence/selector or ledger will change.
+>       healthy = _restore(
+            compiled,
+            state,
+            tuple(reversed(IDS)),
+            runtime_state=runtime_state,
+            component_ledger=ledger,
+            component_state=component,
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1596: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_native_roundtrip_projects_destination_and_preserves_history[COMPLETED] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+kind = 'COMPLETED'
+
+    @pytest.mark.parametrize("kind", ["INITIAL", "COMPLETED"])
+    def test_native_roundtrip_projects_destination_and_preserves_history(compiled, kind):
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        if kind == "INITIAL":
+            state = initial_snapshot(source, release)
+            sequence = 0
+        else:
+            _, result = accept(source, release, retired_world_ids=())
+            state = completed_snapshot(source, result.accepted)
+            sequence = 1
+        assert state["schema"] == "world-lifecycle-v4"
+        assert state["vfs_random_context"]["world_episode_seqs"] == [sequence, sequence]
+        destination = bound(compiled, ("a", "b"), ("b", "a"))
+        before = destination.env.vfs_random_state()
+        prepared = prepare_restore(
+            destination,
+            state,
+            runtime_state=source.saved_runtime,
+            component_ledger=source.saved_ledger,
+            component_state=json.loads(json.dumps(source.saved_component)),
+        )
+        assert destination.env.vfs_random_state() == before
+        # Prepared restore data must remain portable, not embed a producer/dataclass/capability.
+        json.dumps(prepared.payload)
+        # Accessor copies and input mutations must not change the portable prepared payload.
+        state["vfs_random_context"]["world_episode_seqs"][1] = 999
+        exposed = prepared.state
+        exposed["vfs_random_context"]["world_ids"][1] = "tampered"
+        assert prepared.state["vfs_random_context"]["world_ids"] == ["a", "b"]
+        assert prepared.state["vfs_random_context"]["world_episode_seqs"] == [sequence, sequence]
+        rng = torch.get_rng_state().clone()
+>       installed = install_restore(destination, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:976: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f790dcf52b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4afa787a10>
+damage = 'earlier_cadence'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
+        source = _Run(_env(compiled), **_baseline_inputs(compiled))
+        initial = source.initial()
+        initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
+        initial_component = source.component_state()
+        captures = []
+        for batch, retired in ((1, (IDS[1],)), (2, ())):
+            source.reset(batch, retired_world_ids=retired)
+            source.step()
+            participants = tuple(wid for wid in IDS if wid not in retired)
+            _, closure, dispositions = source.close(batch, participants)
+            source.release_closed(batch, closure, dispositions)
+            captures.append(
+                (
+                    source.completed(tuple(range(1, batch + 1))),
+                    deepcopy(source.runtime.checkpoint_state()),
+                    source.ledger,
+                    source.component_state(),
+                )
+            )
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
+        _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        # A real JSON transport proves this record does not depend on source objects.
+        import json
+    
+        component = json.loads(json.dumps(component))
+        # Earn the healthy native prepare/install and next-reset route before the
+        # negative. Only separately supplied cadence/selector or ledger will change.
+>       healthy = _restore(
+            compiled,
+            state,
+            tuple(reversed(IDS)),
+            runtime_state=runtime_state,
+            component_ledger=ledger,
+            component_state=component,
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1596: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4aedd200c0>
+damage = 'zero_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
+        source = _Run(_env(compiled), **_baseline_inputs(compiled))
+        initial = source.initial()
+        initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
+        initial_component = source.component_state()
+        captures = []
+        for batch, retired in ((1, (IDS[1],)), (2, ())):
+            source.reset(batch, retired_world_ids=retired)
+            source.step()
+            participants = tuple(wid for wid in IDS if wid not in retired)
+            _, closure, dispositions = source.close(batch, participants)
+            source.release_closed(batch, closure, dispositions)
+            captures.append(
+                (
+                    source.completed(tuple(range(1, batch + 1))),
+                    deepcopy(source.runtime.checkpoint_state()),
+                    source.ledger,
+                    source.component_state(),
+                )
+            )
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
+        _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        # A real JSON transport proves this record does not depend on source objects.
+        import json
+    
+        component = json.loads(json.dumps(component))
+        # Earn the healthy native prepare/install and next-reset route before the
+        # negative. Only separately supplied cadence/selector or ledger will change.
+>       healthy = _restore(
+            compiled,
+            state,
+            tuple(reversed(IDS)),
+            runtime_state=runtime_state,
+            component_ledger=ledger,
+            component_state=component,
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1596: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4afa5f8d00>
+damage = 'earlier_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
+        source = _Run(_env(compiled), **_baseline_inputs(compiled))
+        initial = source.initial()
+        initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
+        initial_component = source.component_state()
+        captures = []
+        for batch, retired in ((1, (IDS[1],)), (2, ())):
+            source.reset(batch, retired_world_ids=retired)
+            source.step()
+            participants = tuple(wid for wid in IDS if wid not in retired)
+            _, closure, dispositions = source.close(batch, participants)
+            source.release_closed(batch, closure, dispositions)
+            captures.append(
+                (
+                    source.completed(tuple(range(1, batch + 1))),
+                    deepcopy(source.runtime.checkpoint_state()),
+                    source.ledger,
+                    source.component_state(),
+                )
+            )
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
+        _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        # A real JSON transport proves this record does not depend on source objects.
+        import json
+    
+        component = json.loads(json.dumps(component))
+        # Earn the healthy native prepare/install and next-reset route before the
+        # negative. Only separately supplied cadence/selector or ledger will change.
+>       healthy = _restore(
+            compiled,
+            state,
+            tuple(reversed(IDS)),
+            runtime_state=runtime_state,
+            component_ledger=ledger,
+            component_state=component,
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1596: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4ae6fc51d0>
+damage = 'same_count_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
+        source = _Run(_env(compiled), **_baseline_inputs(compiled))
+        initial = source.initial()
+        initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
+        initial_component = source.component_state()
+        captures = []
+        for batch, retired in ((1, (IDS[1],)), (2, ())):
+            source.reset(batch, retired_world_ids=retired)
+            source.step()
+            participants = tuple(wid for wid in IDS if wid not in retired)
+            _, closure, dispositions = source.close(batch, participants)
+            source.release_closed(batch, closure, dispositions)
+            captures.append(
+                (
+                    source.completed(tuple(range(1, batch + 1))),
+                    deepcopy(source.runtime.checkpoint_state()),
+                    source.ledger,
+                    source.component_state(),
+                )
+            )
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
+        _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        # A real JSON transport proves this record does not depend on source objects.
+        import json
+    
+        component = json.loads(json.dumps(component))
+        # Earn the healthy native prepare/install and next-reset route before the
+        # negative. Only separately supplied cadence/selector or ledger will change.
+>       healthy = _restore(
+            compiled,
+            state,
+            tuple(reversed(IDS)),
+            runtime_state=runtime_state,
+            component_ledger=ledger,
+            component_state=component,
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1596: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4aee7e3700>
+damage = 'initial_nonzero_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_component_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """A real matching BANK/world cannot authorize lost global work or wrong clock units."""
+        source = _Run(_env(compiled), **_baseline_inputs(compiled))
+        initial = source.initial()
+        initial_runtime, zero_ledger = deepcopy(source.runtime.checkpoint_state()), source.ledger
+        initial_component = source.component_state()
+        captures = []
+        for batch, retired in ((1, (IDS[1],)), (2, ())):
+            source.reset(batch, retired_world_ids=retired)
+            source.step()
+            participants = tuple(wid for wid in IDS if wid not in retired)
+            _, closure, dispositions = source.close(batch, participants)
+            source.release_closed(batch, closure, dispositions)
+            captures.append(
+                (
+                    source.completed(tuple(range(1, batch + 1))),
+                    deepcopy(source.runtime.checkpoint_state()),
+                    source.ledger,
+                    source.component_state(),
+                )
+            )
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 2
+        _same(latest[1]["cadence"]["last_committed"]["completion_content"], source.events[2])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        # A real JSON transport proves this record does not depend on source objects.
+        import json
+    
+        component = json.loads(json.dumps(component))
+        # Earn the healthy native prepare/install and next-reset route before the
+        # negative. Only separately supplied cadence/selector or ledger will change.
+>       healthy = _restore(
+            compiled,
+            state,
+            tuple(reversed(IDS)),
+            runtime_state=runtime_state,
+            component_ledger=ledger,
+            component_state=component,
+            **_baseline_inputs(compiled),
+        )
+
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:1596: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:806: in _restore
+    child = run.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_episode_identity.py:382: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790d82ca60>
+damage = 'initial_cadence'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """Genuine world/BANK pairing cannot bless an unrelated global cadence or lifetime ledger."""
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        initial = initial_snapshot(source, release)
+        initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
+        initial_component = copy.deepcopy(source.saved_component)
+        captures = []
+        for retired in (("b",), ()):
+            _, result = accept(source, release, retired_world_ids=retired)
+            state = completed_snapshot(source, result.accepted)
+            captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger, copy.deepcopy(source.saved_component)))
+            release = source.release
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
+        assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        component = json.loads(json.dumps(component))
+        healthy = bound(compiled, ("a", "b"), ("b", "a"))
+        prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger, component_state=component)
+        json.dumps(prepared.payload)
+>       installed = install_restore(healthy, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:1107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f790dcf52b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f7901cd9ef0>
+damage = 'earlier_cadence'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """Genuine world/BANK pairing cannot bless an unrelated global cadence or lifetime ledger."""
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        initial = initial_snapshot(source, release)
+        initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
+        initial_component = copy.deepcopy(source.saved_component)
+        captures = []
+        for retired in (("b",), ()):
+            _, result = accept(source, release, retired_world_ids=retired)
+            state = completed_snapshot(source, result.accepted)
+            captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger, copy.deepcopy(source.saved_component)))
+            release = source.release
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
+        assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        component = json.loads(json.dumps(component))
+        healthy = bound(compiled, ("a", "b"), ("b", "a"))
+        prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger, component_state=component)
+        json.dumps(prepared.payload)
+>       installed = install_restore(healthy, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:1107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f790dcf52b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790207fe70>
+damage = 'zero_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """Genuine world/BANK pairing cannot bless an unrelated global cadence or lifetime ledger."""
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        initial = initial_snapshot(source, release)
+        initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
+        initial_component = copy.deepcopy(source.saved_component)
+        captures = []
+        for retired in (("b",), ()):
+            _, result = accept(source, release, retired_world_ids=retired)
+            state = completed_snapshot(source, result.accepted)
+            captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger, copy.deepcopy(source.saved_component)))
+            release = source.release
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
+        assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        component = json.loads(json.dumps(component))
+        healthy = bound(compiled, ("a", "b"), ("b", "a"))
+        prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger, component_state=component)
+        json.dumps(prepared.payload)
+>       installed = install_restore(healthy, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:1107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f790dcf52b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790db38980>
+damage = 'earlier_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """Genuine world/BANK pairing cannot bless an unrelated global cadence or lifetime ledger."""
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        initial = initial_snapshot(source, release)
+        initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
+        initial_component = copy.deepcopy(source.saved_component)
+        captures = []
+        for retired in (("b",), ()):
+            _, result = accept(source, release, retired_world_ids=retired)
+            state = completed_snapshot(source, result.accepted)
+            captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger, copy.deepcopy(source.saved_component)))
+            release = source.release
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
+        assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        component = json.loads(json.dumps(component))
+        healthy = bound(compiled, ("a", "b"), ("b", "a"))
+        prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger, component_state=component)
+        json.dumps(prepared.payload)
+>       installed = install_restore(healthy, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:1107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f790dcf52b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f4afa5f8de0>
+damage = 'initial_nonzero_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """Genuine world/BANK pairing cannot bless an unrelated global cadence or lifetime ledger."""
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        initial = initial_snapshot(source, release)
+        initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
+        initial_component = copy.deepcopy(source.saved_component)
+        captures = []
+        for retired in (("b",), ()):
+            _, result = accept(source, release, retired_world_ids=retired)
+            state = completed_snapshot(source, result.accepted)
+            captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger, copy.deepcopy(source.saved_component)))
+            release = source.release
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
+        assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        component = json.loads(json.dumps(component))
+        healthy = bound(compiled, ("a", "b"), ("b", "a"))
+        prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger, component_state=component)
+        json.dumps(prepared.payload)
+>       installed = install_restore(healthy, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:1107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f4aface92b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+_ test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f790d8114e0>
+damage = 'same_count_ledger'
+
+    @pytest.mark.parametrize(
+        "damage", ["initial_cadence", "earlier_cadence", "zero_ledger", "earlier_ledger", "same_count_ledger", "initial_nonzero_ledger"]
+    )
+    def test_native_restore_rejects_unearned_cadence_or_ledger_before_publication(compiled, monkeypatch, damage):
+        """Genuine world/BANK pairing cannot bless an unrelated global cadence or lifetime ledger."""
+        source = bound(compiled, ("a", "b"), ("a", "b"))
+        release = bootstrap(source)
+        initial = initial_snapshot(source, release)
+        initial_runtime, zero_ledger = copy.deepcopy(source.saved_runtime), source.saved_ledger
+        initial_component = copy.deepcopy(source.saved_component)
+        captures = []
+        for retired in (("b",), ()):
+            _, result = accept(source, release, retired_world_ids=retired)
+            state = completed_snapshot(source, result.accepted)
+            captures.append((state, copy.deepcopy(source.saved_runtime), source.saved_ledger, copy.deepcopy(source.saved_component)))
+            release = source.release
+        earlier, latest = captures
+        assert earlier[2].vector_ticks == 1 and earlier[2].eligible_transitions == 1
+        assert latest[2].vector_ticks == 2 and latest[2].eligible_transitions == 3
+        assert latest[1]["cadence"]["last_committed"]["batch_episode"] == 1
+        assert_nested_equal(latest[1]["cadence"]["last_committed"]["completion_content"], source.committed[1])
+        state, runtime_state, ledger, component = (
+            (initial, initial_runtime, zero_ledger, initial_component) if damage == "initial_nonzero_ledger" else latest
+        )
+        component = json.loads(json.dumps(component))
+        healthy = bound(compiled, ("a", "b"), ("b", "a"))
+        prepared = prepare_restore(healthy, state, runtime_state=runtime_state, component_ledger=ledger, component_state=component)
+        json.dumps(prepared.payload)
+>       installed = install_restore(healthy, prepared)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:1107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:926: in install_restore
+    child = owners.runtime.prepare_restore(
+src/townlet/config/exploration_policy.py:767: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/config/exploration_policy.py:1253: in prepare_restore
+    handle = self._bank_call(
+src/townlet/config/exploration_policy.py:874: in _bank_call
+    return _forward_bank(self, method, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/parent_custody.py:209: in _forward_bank
+    return getattr(runtime._bank, method)(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:157: in invoke
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/exploration/scoped_curiosity.py:1389: in prepare_restore
+    correlate()
+src/townlet/exploration/scoped_curiosity.py:1387: in correlate
+    self._correlate_parent(history, parent_restore, validate_parent_restore, parent_view)
+src/townlet/exploration/scoped_curiosity.py:1171: in _correlate_parent
+    _require(validate(prepared=parent, curiosity_state=view) is None, "parent validator return")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_world_vfs_identity.py:222: in validate_parent_restore
+    context["release"] = self.authority.restored(restore=prepared, boundary=context["boundary"])
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:29: in guarded
+    with env._env_custody.call(method.__name__, kwargs):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src/townlet/environment/parent_custody.py:151: in call
+    with process_rng_domain().admission(lineage=lineage), self.lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f790dcf52b0>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_first_real_transition_uses_sealed_activity_and_one_service
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_no_retirement_preserves_ordinary_active_transition
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_validator_accepts_later_genuine_active_lane_terminal
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_separate_all_inactive_ordinary_step_contract_is_preserved
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_current_initial_boundary_restore_does_not_import_live_decision_authority
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_population.py::test_native_install_custody_blocks_unowned_selector_reentry
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_return_healthy_validation
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_observation_cleanup_cannot_activate_quarantined_episode
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_cleanup_is_durable
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_preserves_each_genuine_healthy_phase[closed-awaiting-release]
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_reading_validator_preserves_each_genuine_healthy_phase[released-completed]
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_frozen_close_refuses_reading_without_consuming_sink_handles
+FAILED tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_new_genuine_reset_invalidates_prior_reading_identity
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_initial_snapshot_repeat_restore_and_first_real_reset
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_two_boundaries_two_reorders_keep_historical_binding_verbatim
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_reset_projects_reservation_before_evaluation_and_retry_never_resamples
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_roundtrip_projects_destination_and_preserves_history[INITIAL]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_roundtrip_projects_destination_and_preserves_history[COMPLETED]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]
+FAILED tests/test_townlet/regressions/bac/test_world_episode_identity.py::test_component_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_cadence]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_cadence]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[zero_ledger]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[earlier_ledger]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[initial_nonzero_ledger]
+FAILED tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_native_restore_rejects_unearned_cadence_or_ledger_before_publication[same_count_ledger]
+================== 30 failed, 234 passed, 4 skipped in 36.00s ==================

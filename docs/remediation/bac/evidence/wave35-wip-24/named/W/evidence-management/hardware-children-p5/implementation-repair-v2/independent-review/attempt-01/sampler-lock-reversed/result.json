@@ -1,0 +1,9 @@
+{
+  "name": "sampler-lock-reversed",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "sampler lock chronology",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

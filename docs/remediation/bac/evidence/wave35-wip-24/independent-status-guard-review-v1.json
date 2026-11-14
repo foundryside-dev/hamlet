@@ -1,0 +1,43 @@
+{
+  "approved_documents": {
+    "bytes": 3362,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/ROOT-DOCUMENT-REVIEW-v1.json",
+    "sha256": "3d9a7e27350fc026ce8e9cffd035be3bd5f49da2f589af43558a042f66f0fad1"
+  },
+  "at": "2026-11-14T12:43:19.624479+00:00",
+  "candidate": {
+    "bytes": 209062,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r145-candidate.json",
+    "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+  },
+  "checks": [
+    "Continuation requires all four current docs and retained postimages to equal approved hashes before proceeding.",
+    "Only source_files/docs/remediation/bac/STATUS.md may differ; executed digest must equal approved before_sha256 and live digest approved postimage. Exactly one mismatch required.",
+    "Every other source/config/artifact still requires exact executed hash. Original candidate manifest is read only; publication records distinguish old executed/new document digests.",
+    "Prior plan/assembly archive outputs must match their originals; reconciliation and continuation evidence created exclusively.",
+    "Subsequent staged src/tests/configs/scripts/.defaults-ratchet identities must match recorded execution subtrees; this is a future executed guard, not claimed performed by reviewer."
+  ],
+  "custody_comparison": {
+    "bytes": 2797,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/independent-status-publication-custody-v1.json",
+    "sha256": "0657f732323e05b00628a1623238cf20a2e32a76d15a823c6151e86b25e88ef4"
+  },
+  "disposition": "APPROVE NARROW PUBLICATION-GUARD CORRECTION",
+  "final_plan": {
+    "bytes": 85280637,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/root-selection-plan-v1.json",
+    "sha256": "1d7180158b15d17aa132c46080e0a2141bcb12d2f85b3d0829c20564d3552265"
+  },
+  "findings": [],
+  "limits": [
+    "Metadata/helper review and current STATUS hashing only; no APP source read/execution, Git operation or runtime qualification performed.",
+    "Approval is limited to the exact reviewed helper hash and STATUS exception. Publication, staging, push and actual guard execution remain root-owned."
+  ],
+  "producer": "/root",
+  "reviewed_helper": {
+    "bytes": 8067,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip24-preparation/publish-root-continuation-v1.py",
+    "sha256": "656c146b9295a1d85162ecd8926fb902e229f4df637b22ef654d26f5764fdc04"
+  },
+  "reviewer": "/root/bac_astra_wip23_closed_evidence"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "negative-control-exit-bool",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "child unsuccessful exit",
+  "matched_expectation": true
+}

@@ -1,0 +1,852 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 209062,
+            "path": "wave35/r145-candidate.json",
+            "root": "W",
+            "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+          },
+          "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+          "collected_count": 82,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r145-c2-fixture-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection/identity-controller.json",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4",
+              "type": "file"
+            },
+            {
+              "bytes": 653,
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection-custody.json",
+              "sha256": "912ed8427d8720cd8134b763f87b9a2cf6056d3be6a91d3708ade52b2e14ea59",
+              "type": "file"
+            },
+            {
+              "bytes": 1027,
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection-result.json",
+              "sha256": "7548ce664b44413db4e0a1cbb772b8a4d23827cfd454180b112b22f1c92e6969",
+              "type": "file"
+            },
+            {
+              "bytes": 7917,
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection.log",
+              "sha256": "4bbce9c5b872e1a2706dceb3d6f2c5898536801ffd8b8eafc7c54dccc539ea32",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 4.1477284880238585,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r145-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "5918405879bc2ca1544e648db9a353db44933d214b872e539e274e1addaa9fd9"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r145-c2-fixture-collection-attempt-1--c2-fixture-collection",
+          "log_paths": [
+            {
+              "bytes": 7917,
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection.log",
+              "root": "Q",
+              "sha256": "4bbce9c5b872e1a2706dceb3d6f2c5898536801ffd8b8eafc7c54dccc539ea32"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 925,
+            "path": "evidence-management/pop-standalone-step/wave35-r145-c2-fixture-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "a1d84479b3fcae32726e403de253571e8dbb7e8d6ee85007e41cbb02c7cea319"
+          },
+          "path": "wave35-r145-c2-fixture-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1027,
+            "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection-result.json",
+            "root": "Q",
+            "sha256": "7548ce664b44413db4e0a1cbb772b8a4d23827cfd454180b112b22f1c92e6969"
+          },
+          "record_id": "c2-fixture-collection",
+          "result": {
+            "bytes": 1027,
+            "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection-result.json",
+            "root": "Q",
+            "sha256": "7548ce664b44413db4e0a1cbb772b8a4d23827cfd454180b112b22f1c92e6969"
+          },
+          "round": 145,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 653,
+            "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection-custody.json",
+            "root": "Q",
+            "sha256": "912ed8427d8720cd8134b763f87b9a2cf6056d3be6a91d3708ade52b2e14ea59"
+          }
+        }
+      ],
+      "check": "wave35-r145-c2-fixture-collection-attempt-1--c2-fixture-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r145-c2-fixture-collection-attempt-1--c2-fixture-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 209062,
+            "path": "wave35/r145-candidate.json",
+            "root": "W",
+            "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+          },
+          "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_initial_participation_env.py::test_first_real_transition_uses_sealed_activity_and_one_service",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r145-c2-fixture-first-transition-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition/identity-controller.json",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition-custody.json",
+              "sha256": "6c6768b169c09e23e5e6c32a5464bc81b1220f74053d77c69c21be12316e62cb",
+              "type": "file"
+            },
+            {
+              "bytes": 1094,
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition-result.json",
+              "sha256": "d5e3e419d52f8a17bb30e55d739d50513a26d344b064904ef0b8562000dd810b",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition.log",
+              "sha256": "c64f9ee54e1123d35d3d0994d751852ddc37dbb763ce0955cd527e48244ae246",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 11.427787016989896,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r145-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "5918405879bc2ca1544e648db9a353db44933d214b872e539e274e1addaa9fd9"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r145-c2-fixture-first-transition-attempt-1--c2-fixture-first-transition",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition.log",
+              "root": "Q",
+              "sha256": "c64f9ee54e1123d35d3d0994d751852ddc37dbb763ce0955cd527e48244ae246"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 938,
+            "path": "evidence-management/pop-standalone-step/wave35-r145-c2-fixture-first-transition-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "a0c1c1b91490860fe56d88418637ac7d220833aeb06101104fa67148b0d3a769"
+          },
+          "path": "wave35-r145-c2-fixture-first-transition-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1094,
+            "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition-result.json",
+            "root": "Q",
+            "sha256": "d5e3e419d52f8a17bb30e55d739d50513a26d344b064904ef0b8562000dd810b"
+          },
+          "record_id": "c2-fixture-first-transition",
+          "result": {
+            "bytes": 1094,
+            "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition-result.json",
+            "root": "Q",
+            "sha256": "d5e3e419d52f8a17bb30e55d739d50513a26d344b064904ef0b8562000dd810b"
+          },
+          "round": 145,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 659,
+            "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition-custody.json",
+            "root": "Q",
+            "sha256": "6c6768b169c09e23e5e6c32a5464bc81b1220f74053d77c69c21be12316e62cb"
+          }
+        }
+      ],
+      "check": "wave35-r145-c2-fixture-first-transition-attempt-1--c2-fixture-first-transition",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r145-c2-fixture-first-transition-attempt-1--c2-fixture-first-transition"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 209062,
+            "path": "wave35/r145-candidate.json",
+            "root": "W",
+            "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+          },
+          "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r145-c2-fixture-owner-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "passed": 82,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-controller.json",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-gw0.json",
+              "sha256": "5f5b3d5512abda7832503a8c7251fb246d1c74e693d4c9a507cc555d5cc60dfb",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-gw1.json",
+              "sha256": "e3bea08ef88de919e062938a1ba2704fc7ab80942c823f26d765d4c0912d9ab8",
+              "type": "file"
+            },
+            {
+              "bytes": 648,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-custody.json",
+              "sha256": "7b856f28809cfbf1c72ac66c2a842aa0712518f4fb39fee3c637c3bae5aee30f",
+              "type": "file"
+            },
+            {
+              "bytes": 1034,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-result.json",
+              "sha256": "683898c234e2022fc35cdb5e4dfe8ab9d9c0f82b57644b6b73da63182eff62f6",
+              "type": "file"
+            },
+            {
+              "bytes": 682,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner.log",
+              "sha256": "68915d1766a5657c88c59493726fd611b4893051a690fbd5026dd56f7e84cd64",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 23.08596162701724,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r145-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "5918405879bc2ca1544e648db9a353db44933d214b872e539e274e1addaa9fd9"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r145-c2-fixture-owner-attempt-1--c2-fixture-owner",
+          "log_paths": [
+            {
+              "bytes": 682,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner.log",
+              "root": "Q",
+              "sha256": "68915d1766a5657c88c59493726fd611b4893051a690fbd5026dd56f7e84cd64"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 916,
+            "path": "evidence-management/pop-standalone-step/wave35-r145-c2-fixture-owner-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "e947efc8538928200c4139d75b88130b419a76ce46412ea16f329a6a8d947f1a"
+          },
+          "path": "wave35-r145-c2-fixture-owner-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "5f5b3d5512abda7832503a8c7251fb246d1c74e693d4c9a507cc555d5cc60dfb"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "e3bea08ef88de919e062938a1ba2704fc7ab80942c823f26d765d4c0912d9ab8"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1034,
+            "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-result.json",
+            "root": "Q",
+            "sha256": "683898c234e2022fc35cdb5e4dfe8ab9d9c0f82b57644b6b73da63182eff62f6"
+          },
+          "record_id": "c2-fixture-owner",
+          "result": {
+            "bytes": 1034,
+            "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-result.json",
+            "root": "Q",
+            "sha256": "683898c234e2022fc35cdb5e4dfe8ab9d9c0f82b57644b6b73da63182eff62f6"
+          },
+          "round": 145,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 648,
+            "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-custody.json",
+            "root": "Q",
+            "sha256": "7b856f28809cfbf1c72ac66c2a842aa0712518f4fb39fee3c637c3bae5aee30f"
+          }
+        }
+      ],
+      "check": "wave35-r145-c2-fixture-owner-attempt-1--c2-fixture-owner",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r145-c2-fixture-owner-attempt-1--c2-fixture-owner"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 209062,
+            "path": "wave35/r145-candidate.json",
+            "root": "W",
+            "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+          },
+          "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r145-collection-spec.json",
+              "sha256": "b29ad084a5602de2244e11fa54d4482ecd20d01e6a081c9e219c3494f61439d5",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r145-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "5918405879bc2ca1544e648db9a353db44933d214b872e539e274e1addaa9fd9"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r145-collection-spec.json--unrun",
+          "path": "wave35-r145-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 145,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r145-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r145-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+          "candidate_manifest": {
+            "bytes": 209062,
+            "path": "wave35/r145-candidate.json",
+            "root": "W",
+            "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+          },
+          "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r145-owned-spec.json",
+              "sha256": "a3b2d34c179ceff86019f4e3d152cbe25c9b9c9fc853980f8f60a58a30b5bd17",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5533,
+            "path": "wave35/r145-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "5918405879bc2ca1544e648db9a353db44933d214b872e539e274e1addaa9fd9"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r145-owned-spec.json--unrun",
+          "path": "wave35-r145-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 145,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r145-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r145-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_manifest": {
+    "bytes": 209062,
+    "path": "wave35/r145-candidate.json",
+    "root": "W",
+    "sha256": "d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53"
+  },
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "fixture_preflight": {
+    "bytes": 5533,
+    "path": "wave35/r145-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "5918405879bc2ca1544e648db9a353db44933d214b872e539e274e1addaa9fd9"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r145-c2-fixture-collection-attempt-1",
+      "round": 145,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r145-c2-fixture-collection-attempt-1-spec.json",
+      "round": 145,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r145-c2-fixture-first-transition-attempt-1",
+      "round": 145,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r145-c2-fixture-first-transition-attempt-1-spec.json",
+      "round": 145,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r145-c2-fixture-owner-attempt-1",
+      "round": 145,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r145-c2-fixture-owner-attempt-1-spec.json",
+      "round": 145,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r145-collection-spec.json",
+      "round": 145,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r145-owned-spec.json",
+      "round": 145,
+      "status": "UNRUN"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r145-c2-fixture-collection-attempt-1": [
+      {
+        "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection/identity-controller.json",
+        "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4",
+        "type": "file"
+      },
+      {
+        "bytes": 653,
+        "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection-custody.json",
+        "sha256": "912ed8427d8720cd8134b763f87b9a2cf6056d3be6a91d3708ade52b2e14ea59",
+        "type": "file"
+      },
+      {
+        "bytes": 1027,
+        "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection-result.json",
+        "sha256": "7548ce664b44413db4e0a1cbb772b8a4d23827cfd454180b112b22f1c92e6969",
+        "type": "file"
+      },
+      {
+        "bytes": 7917,
+        "path": "wave35-r145-c2-fixture-collection-attempt-1/c2-fixture-collection.log",
+        "sha256": "4bbce9c5b872e1a2706dceb3d6f2c5898536801ffd8b8eafc7c54dccc539ea32",
+        "type": "file"
+      }
+    ],
+    "wave35-r145-c2-fixture-collection-attempt-1-spec.json": [
+      {
+        "bytes": 780,
+        "path": "wave35-r145-c2-fixture-collection-attempt-1-spec.json",
+        "sha256": "c8fad9f0945a1c08f2153d245e0172bf43dec89d98704e23daa16024b6270112",
+        "type": "file"
+      }
+    ],
+    "wave35-r145-c2-fixture-first-transition-attempt-1": [
+      {
+        "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition/identity-controller.json",
+        "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4",
+        "type": "file"
+      },
+      {
+        "bytes": 659,
+        "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition-custody.json",
+        "sha256": "6c6768b169c09e23e5e6c32a5464bc81b1220f74053d77c69c21be12316e62cb",
+        "type": "file"
+      },
+      {
+        "bytes": 1094,
+        "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition-result.json",
+        "sha256": "d5e3e419d52f8a17bb30e55d739d50513a26d344b064904ef0b8562000dd810b",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r145-c2-fixture-first-transition-attempt-1/c2-fixture-first-transition.log",
+        "sha256": "c64f9ee54e1123d35d3d0994d751852ddc37dbb763ce0955cd527e48244ae246",
+        "type": "file"
+      }
+    ],
+    "wave35-r145-c2-fixture-first-transition-attempt-1-spec.json": [
+      {
+        "bytes": 837,
+        "path": "wave35-r145-c2-fixture-first-transition-attempt-1-spec.json",
+        "sha256": "90c8557458bacb904226f7d3abce4488bbaff5f90cdc9bc5ea2a979eafb996c6",
+        "type": "file"
+      }
+    ],
+    "wave35-r145-c2-fixture-owner-attempt-1": [
+      {
+        "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-controller.json",
+        "sha256": "be18c7edb8ba890c2eb84295d2479c298daf37895a9db0bbcfdaac279d6613f4",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-gw0.json",
+        "sha256": "5f5b3d5512abda7832503a8c7251fb246d1c74e693d4c9a507cc555d5cc60dfb",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner/identity-gw1.json",
+        "sha256": "e3bea08ef88de919e062938a1ba2704fc7ab80942c823f26d765d4c0912d9ab8",
+        "type": "file"
+      },
+      {
+        "bytes": 648,
+        "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-custody.json",
+        "sha256": "7b856f28809cfbf1c72ac66c2a842aa0712518f4fb39fee3c637c3bae5aee30f",
+        "type": "file"
+      },
+      {
+        "bytes": 1034,
+        "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner-result.json",
+        "sha256": "683898c234e2022fc35cdb5e4dfe8ab9d9c0f82b57644b6b73da63182eff62f6",
+        "type": "file"
+      },
+      {
+        "bytes": 682,
+        "path": "wave35-r145-c2-fixture-owner-attempt-1/c2-fixture-owner.log",
+        "sha256": "68915d1766a5657c88c59493726fd611b4893051a690fbd5026dd56f7e84cd64",
+        "type": "file"
+      }
+    ],
+    "wave35-r145-c2-fixture-owner-attempt-1-spec.json": [
+      {
+        "bytes": 805,
+        "path": "wave35-r145-c2-fixture-owner-attempt-1-spec.json",
+        "sha256": "b37c091a8baeb3db2ab3cacfc69dd63581016ce484343f64d0e7bd441ceb7a22",
+        "type": "file"
+      }
+    ],
+    "wave35-r145-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r145-collection-spec.json",
+        "sha256": "b29ad084a5602de2244e11fa54d4482ecd20d01e6a081c9e219c3494f61439d5",
+        "type": "file"
+      }
+    ],
+    "wave35-r145-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r145-owned-spec.json",
+        "sha256": "a3b2d34c179ceff86019f4e3d152cbe25c9b9c9fc853980f8f60a58a30b5bd17",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 145,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN"
+}

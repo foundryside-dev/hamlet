@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "identity_scope": "Checkpoint inclusion anchor only; original source/execution identities retained in named input.",
+  "input": {
+    "bytes": 5802,
+    "path": "evidence-management/wip24-preparation/adoption-delta-r144-v1/c2-r144-adopted-inputs-v1.json",
+    "root": "W",
+    "sha256": "87fb2bfd97b267c31cce58d71b91b1004642b548d25357cb6adcb26bc0af41a0"
+  },
+  "status": "BOUNDED ADOPTION; no package closure"
+}

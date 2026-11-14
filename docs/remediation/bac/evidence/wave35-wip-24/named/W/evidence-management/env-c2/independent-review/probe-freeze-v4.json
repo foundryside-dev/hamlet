@@ -1,0 +1,40 @@
+{
+  "schema": "env-c2-independent-probe-freeze-v4",
+  "status": "FROZEN FOR ROOT EXECUTION; R144 PROBE UNRUN",
+  "candidate_manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r144-candidate.json",
+  "candidate_manifest_sha256": "42fe2729f820795f4d5f94720e73c0feb20756ecb745ace2f6fb87711fe6cec8",
+  "candidate_tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0",
+  "source_inventory": [
+    {
+      "path": "/workspace/hamlet/src/townlet/environment/vectorized_env.py",
+      "sha256": "aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22",
+      "bytes": 150750,
+      "lines": 2949
+    },
+    {
+      "path": "/workspace/hamlet/src/townlet/environment/parent_custody.py",
+      "sha256": "bc83c8ce94da32cf9296692e167bbab42c52794cb2d3da91595d19b3cd176022",
+      "bytes": 10775,
+      "lines": 252
+    },
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+      "sha256": "372745a1c584d92ac0349479010f1d195a4fae9d89d4c2ba449a445297e6f68b",
+      "bytes": 38379,
+      "lines": 840
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+      "sha256": "b0b5837ca9b4d4997fa3bca2730053a0e95f111fab41184f73aa4352ba2e2e0f",
+      "bytes": 19644,
+      "lines": 393
+    }
+  ],
+  "total_lines": 4434,
+  "body_count": 4,
+  "expected_cases": 9,
+  "prior_freeze_sha256": "7a621e5bf17b14938cc24bb4348f81836468f2a54120e9aa88cf80da516cd54b",
+  "historical_source_record_sha256": "2f8573998949f08db92b01c0d2fb16cd3e67569c3869559e509b2d2eade9c16c",
+  "change": "Only expected candidate manifest basename and tree literal; exact byte replacement verified against inert prior source",
+  "validation": "stdlib AST and exact byte comparison; no APP imports/runtime by reviewer"
+}

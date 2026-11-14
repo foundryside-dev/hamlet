@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-c",
+    "import subprocess,sys; subprocess.Popen([sys.executable,\"-c\",\"import time; from pathlib import Path; time.sleep(.6); Path('orphan-side-effect').write_text('bad')\"]); print(\"controller finished\",flush=True)"
+  ],
+  "at": "2026-11-14T10:41:28.532361Z",
+  "cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_descendant_cannot_outlive0",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "17"
+  },
+  "seed": {
+    "cuda": [],
+    "numpy": 18,
+    "policy": "explicit",
+    "python": 17,
+    "torch": 19
+  }
+}

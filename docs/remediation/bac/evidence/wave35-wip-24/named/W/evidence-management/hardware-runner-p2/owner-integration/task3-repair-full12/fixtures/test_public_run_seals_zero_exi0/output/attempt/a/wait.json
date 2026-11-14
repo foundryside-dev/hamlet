@@ -1,0 +1,34 @@
+{
+  "attempt_id": "attempt",
+  "command": {
+    "bytes": 1632,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/output/attempt/a/command.json",
+    "sha256": "d9c7387922e6cad84c223d824184dd403ca13849387609a9f1332bf262978688"
+  },
+  "end": "2026-11-14T11:08:12.381072Z",
+  "end_monotonic_ns": 133802721529390,
+  "exit_code": 0,
+  "identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 229030,
+    "ppid": 228997,
+    "start_identity": "13380264"
+  },
+  "interruption_reason": "",
+  "job_id": "a",
+  "launch": {
+    "bytes": 1754,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/output/attempt/a/launch.json",
+    "sha256": "56ccfee7ec7dc2ebcc8862b67a78d8f4c742ad7204592b4b0411239831b61eae"
+  },
+  "schema": "bac-hardware-runner-wait-v1",
+  "signal": 0,
+  "spec": {
+    "bytes": 8954,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/metadata/spec.json",
+    "sha256": "5a3cd625452ebfec4fc72afdcfeb38cc639bc8d667277bb288c6f9a3e295c3c9"
+  },
+  "start": "2026-11-14T11:08:12.309112Z",
+  "start_monotonic_ns": 133802649592328
+}

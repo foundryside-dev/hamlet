@@ -1,0 +1,467 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [11 items]
+
+FFFFFFFFFFF                                                              [100%]
+=================================== FAILURES ===================================
+_ test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd] _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd', choice = 'clone_learned_archive_pending'
+mode = 'paced_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_current_captured_replay_is_preserved(compiled, family, choice, mode):
+        """Catches confusing curiosity's inactive tail archive with active captured REPLAY."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:799: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:414: in trained_source
+    original = live(source.bank)
+               ^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in live
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:297: in on_backend
+    return operation(bank._shared)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in <lambda>
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:374: in live_provider
+    params = [p for module in modules(provider, family).values() for p in module.parameters()]
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = <townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7fbc8159b620>
+family = 'adaptive_rnd'
+
+    def modules(provider, family):
+        if family == "adaptive_rnd":
+>           return {"rnd.predictor_network": provider.rnd.predictor_network}
+                                             ^^^^^^^^^^^^
+E           AttributeError: 'SharedWorldBackend' object has no attribute 'rnd'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:326: AttributeError
+_______________ test_coherent_incompatible_target_refuses[seed] ________________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+mismatch = 'seed'
+
+    @pytest.mark.parametrize("mismatch", ("family", "learning_rate", "batch", "capacity", "geometry", "seed", "membership"))
+    def test_coherent_incompatible_target_refuses(compiled, mismatch):
+        """Source validation alone cannot reject these separately valid target configurations."""
+        source = Rig(compiled, policy(compiled, "icm", "shared", "paced_fifo"))
+        state = source.bank.checkpoint_state()
+>       backend(source.bank).validate_state(state["shared_backend"]["native"])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SharedWorldBackend' object has no attribute 'validate_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1106: AttributeError
+_____________ test_fixture_current_hc_and_active_replay_roundtrip ______________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+    def test_fixture_current_hc_and_active_replay_roundtrip():
+        """Prerequisite: real captured replay must survive real HC and replay loaders."""
+>       replay_roundtrip(recorded_replay())
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:791: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:774: in replay_roundtrip
+    restored.prepare_serialized(decoded.available_learned_state["population_state"]["replay_buffer"], expected_obs_dim=3)
+src/townlet/training/replay_contract.py:628: in guarded
+    with self._device_operation("prepare", _required_lineage(kwargs), method.__name__, args, kwargs, mutation=False) as lease:
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+arguments = {'expected_obs_dim': 3}
+
+    def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+        try:
+            lineage = arguments["lineage"]
+        except KeyError:
+>           raise TypeError("Missing required keyword-only argument: 'lineage'") from None
+E           TypeError: Missing required keyword-only argument: 'lineage'
+
+src/townlet/training/replay_contract.py:566: TypeError
+_ test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', choice = 'fresh_private'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    def test_initial_conversion_has_no_episode_or_closing_history(compiled, family, choice):
+        """Catches an INITIAL template inventing an accepted episode or completed history."""
+        source = Rig(compiled, policy(compiled, family, "shared", "paced_fifo"))
+        state = source.bank.checkpoint_state()
+        target = Rig(compiled, policy(compiled, family, "per_world", "paced_fifo"))
+        token = target.bank.prepare_private_initialization(
+            state=state,
+            initialization=choice,
+            parent_restore=None,
+            validate_parent_restore=None,
+        )
+        target.bank.install_restore(prepared=token)
+        saved = target.bank.checkpoint_state()
+        assert saved["bank_phase"] == "initial" and saved["curiosity_epoch"] == 1
+        assert saved["completion"] is None and saved["dispatch_identity"] is None
+        for world in IDS:
+            snapshot = target.bank.snapshot_world(world_id=world)
+            assert snapshot["cursor"]["accepted_episode_seq"] == 0
+            assert snapshot["accepted_identity"] is None and snapshot["phase_cache"] == {}
+            assert_future(snapshot, family, 0, 0)
+        target.begin(0)
+>       _, stamp, _, _ = target.step(1)
+                         ^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:853: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_pw_scope_conversion.Rig object at 0x7f1b586c0f50>, tick = 1
+active = (True, True)
+
+    def step(self, tick, active=(True, True)):
+        # Actual ENV supplies participation and authority; curiosity uses explicit synthetic geometry.
+        for index, eligible in enumerate(active):
+            if not eligible:
+                self.env.dones[index] = True
+        actions = self.env.get_action_masks().to(torch.int64).argmax(dim=1)
+>       self.env.step(actions, depletion_multiplier=1.0)
+E       TypeError: VectorizedHamletEnv.step() missing 1 required keyword-only argument: 'vector_step'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:168: TypeError
+_ test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none', choice = 'fresh_private', mode = 'occupancy_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, choice, mode):
+        """Catches dropped/reordered archives and any archive-to-active service route."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:687: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:414: in trained_source
+    original = live(source.bank)
+               ^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in live
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:297: in on_backend
+    return operation(bank._shared)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in <lambda>
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = <townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f1b4d534910>
+family = 'none'
+
+    def live_provider(provider, family):
+        params = [p for module in modules(provider, family).values() for p in module.parameters()]
+        gradients = {
+            key: {name: None if p.grad is None else p.grad.detach().clone() for name, p in module.named_parameters()}
+            for key, module in modules(provider, family).items()
+        }
+        refs = tuple((id(p), p.data_ptr(), None if p.grad is None else p.grad.data_ptr()) for p in params)
+        storage_ids = {p.data_ptr() for p in params} | {p.grad.data_ptr() for p in params if p.grad is not None}
+        if family in ("rnd", "adaptive_rnd"):
+            rnd = provider.rnd if family == "adaptive_rnd" else provider
+            assert all(p.grad is None for p in rnd.fixed_network.parameters())
+            storage_ids.update(p.data_ptr() for p in rnd.fixed_network.parameters())
+        adam = provider.rnd.optimizer if family == "adaptive_rnd" else getattr(provider, "optimizer", None)
+        if adam is not None:
+            grouped = [p for group in adam.param_groups for p in group["params"]]
+            assert {id(p) for p in grouped} == {id(p) for p in params}
+            assert {id(p) for p in adam.state}.issubset({id(p) for p in params})
+            refs += tuple(
+                (id(p), tuple(v.data_ptr() for v in state.values() if isinstance(v, torch.Tensor))) for p, state in adam.state.items()
+            )
+            storage_ids.update(v.data_ptr() for state in adam.state.values() for v in state.values() if isinstance(v, torch.Tensor))
+        return {
+            "provider_id": id(provider),
+>           "native": provider.checkpoint_state(),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+            "gradients": gradients,
+            "refs": refs,
+            "storage_ids": tuple(sorted(storage_ids)),
+        }
+E       AttributeError: 'SharedWorldBackend' object has no attribute 'checkpoint_state'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:396: AttributeError
+_ test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm', choice = 'fresh_private', mode = 'paced_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, choice, mode):
+        """Catches dropped/reordered archives and any archive-to-active service route."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:687: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:414: in trained_source
+    original = live(source.bank)
+               ^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in live
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:297: in on_backend
+    return operation(bank._shared)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in <lambda>
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:374: in live_provider
+    params = [p for module in modules(provider, family).values() for p in module.parameters()]
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = <townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f1b4d589090>
+family = 'icm'
+
+    def modules(provider, family):
+        if family == "adaptive_rnd":
+            return {"rnd.predictor_network": provider.rnd.predictor_network}
+        if family == "rnd":
+            return {"predictor_network": provider.predictor_network}
+        if family == "icm":
+>           return {key: getattr(provider, key) for key in ("encoder", "inverse_model", "forward_model")}
+                         ^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'SharedWorldBackend' object has no attribute 'encoder'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:330: AttributeError
+_____________ test_fixture_actual_private_callback_witnesses[none] _____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'none'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    def test_fixture_actual_private_callback_witnesses(compiled, family):
+        """Reject copied-provider evidence: stable installed addresses and real service hooks."""
+        rig = Rig(compiled, policy(compiled, family, "per_world", "paced_fifo"))
+>       before = live(rig.bank)
+                 ^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:1354: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in live
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bank = <townlet.exploration.scoped_curiosity.CuriosityBank object at 0x7f1b4cfec690>
+operation = <function live.<locals>.<lambda> at 0x7f1b4cfb23e0>, world = 'A'
+
+    def on_backend(bank, operation, world="A"):
+        if bank.scope == "shared":
+            return operation(bank._shared)
+>       return bank._owners[world].call(lambda provider, sources: operation(provider))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:298: TypeError
+_ test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd', choice = 'clone_learned_archive_pending'
+mode = 'occupancy_fifo'
+
+    @pytest.mark.parametrize("family", FAMILIES)
+    @pytest.mark.parametrize("choice", CHOICES)
+    @pytest.mark.parametrize("mode", MODES)
+    def test_shared_pending_is_archived_not_falsely_attributed(compiled, family, choice, mode):
+        """Catches dropped/reordered archives and any archive-to-active service route."""
+>       source = trained_source(compiled, family, mode)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:687: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:414: in trained_source
+    original = live(source.bank)
+               ^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in live
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:297: in on_backend
+    return operation(bank._shared)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:370: in <lambda>
+    return on_backend(bank, lambda provider: live_provider(provider, bank.policy.strategy), world)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:374: in live_provider
+    params = [p for module in modules(provider, family).values() for p in module.parameters()]
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+provider = <townlet.exploration.world_curiosity_state.SharedWorldBackend object at 0x7f1b4cfd1310>
+family = 'rnd'
+
+    def modules(provider, family):
+        if family == "adaptive_rnd":
+            return {"rnd.predictor_network": provider.rnd.predictor_network}
+        if family == "rnd":
+>           return {"predictor_network": provider.predictor_network}
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'SharedWorldBackend' object has no attribute 'predictor_network'
+
+tests/test_townlet/regressions/bac/test_pw_scope_conversion.py:328: AttributeError
+__________ test_pristine_owned_provider_gradient_pairing_control[rnd] __________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_pristine_owned_provider_gradient_pairing_control(compiled, family):
+        """Actual owner public callbacks; no BANK checkpoint or CP import."""
+        policy = policy_for(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(policy, world_ids=IDS, observation_dim=3, action_dim=2, training_seed=SEED)
+        rng = WorldRNGState.create(descriptor=descriptor, world_id=IDS[0], cuda_devices=())
+        owner = OwnedWorldBackend.construct(
+            rng=rng,
+            factory=lambda candidate: make_backend(
+                policy, world_id=IDS[0], obs_dim=3, action_dim=2, device="cpu", rng=candidate, descriptor=descriptor
+            ),
+        )
+    
+        def witness(backend, sources):
+            del sources
+            if family == "icm":
+                parameters = (
+                    list(backend.encoder.parameters()) + list(backend.inverse_model.parameters()) + list(backend.forward_model.parameters())
+                )
+                adam = backend.optimizer
+            else:
+                provider = backend.rnd if family == "adaptive_rnd" else backend
+                parameters, adam = list(provider.predictor_network.parameters()), provider.optimizer
+                assert all(parameter.grad is None for parameter in provider.fixed_network.parameters())
+            assert {id(parameter) for group in adam.param_groups for parameter in group["params"]} == {id(p) for p in parameters}
+            assert all(parameter.grad is None for parameter in parameters)
+            return backend.checkpoint_state()
+    
+        before = ambient()
+>       snapshot = owner.call(witness)
+                   ^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:625: TypeError
+_____ test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd] ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'adaptive_rnd'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_pristine_owned_provider_gradient_pairing_control(compiled, family):
+        """Actual owner public callbacks; no BANK checkpoint or CP import."""
+        policy = policy_for(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(policy, world_ids=IDS, observation_dim=3, action_dim=2, training_seed=SEED)
+        rng = WorldRNGState.create(descriptor=descriptor, world_id=IDS[0], cuda_devices=())
+        owner = OwnedWorldBackend.construct(
+            rng=rng,
+            factory=lambda candidate: make_backend(
+                policy, world_id=IDS[0], obs_dim=3, action_dim=2, device="cpu", rng=candidate, descriptor=descriptor
+            ),
+        )
+    
+        def witness(backend, sources):
+            del sources
+            if family == "icm":
+                parameters = (
+                    list(backend.encoder.parameters()) + list(backend.inverse_model.parameters()) + list(backend.forward_model.parameters())
+                )
+                adam = backend.optimizer
+            else:
+                provider = backend.rnd if family == "adaptive_rnd" else backend
+                parameters, adam = list(provider.predictor_network.parameters()), provider.optimizer
+                assert all(parameter.grad is None for parameter in provider.fixed_network.parameters())
+            assert {id(parameter) for group in adam.param_groups for parameter in group["params"]} == {id(p) for p in parameters}
+            assert all(parameter.grad is None for parameter in parameters)
+            return backend.checkpoint_state()
+    
+        before = ambient()
+>       snapshot = owner.call(witness)
+                   ^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:625: TypeError
+__________ test_pristine_owned_provider_gradient_pairing_control[icm] __________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+family = 'icm'
+
+    @pytest.mark.parametrize("family", TRAINABLE)
+    def test_pristine_owned_provider_gradient_pairing_control(compiled, family):
+        """Actual owner public callbacks; no BANK checkpoint or CP import."""
+        policy = policy_for(compiled, family, "per_world")
+        descriptor = WorldCuriosityDescriptor.from_policy(policy, world_ids=IDS, observation_dim=3, action_dim=2, training_seed=SEED)
+        rng = WorldRNGState.create(descriptor=descriptor, world_id=IDS[0], cuda_devices=())
+        owner = OwnedWorldBackend.construct(
+            rng=rng,
+            factory=lambda candidate: make_backend(
+                policy, world_id=IDS[0], obs_dim=3, action_dim=2, device="cpu", rng=candidate, descriptor=descriptor
+            ),
+        )
+    
+        def witness(backend, sources):
+            del sources
+            if family == "icm":
+                parameters = (
+                    list(backend.encoder.parameters()) + list(backend.inverse_model.parameters()) + list(backend.forward_model.parameters())
+                )
+                adam = backend.optimizer
+            else:
+                provider = backend.rnd if family == "adaptive_rnd" else backend
+                parameters, adam = list(provider.predictor_network.parameters()), provider.optimizer
+                assert all(parameter.grad is None for parameter in provider.fixed_network.parameters())
+            assert {id(parameter) for group in adam.param_groups for parameter in group["params"]} == {id(p) for p in parameters}
+            assert all(parameter.grad is None for parameter in parameters)
+            return backend.checkpoint_state()
+    
+        before = ambient()
+>       snapshot = owner.call(witness)
+                   ^^^^^^^^^^^^^^^^^^^
+E       TypeError: OwnedWorldBackend.call() missing 1 required keyword-only argument: 'lineage'
+
+tests/test_townlet/regressions/bac/test_pw_scope_restore.py:625: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved[paced_fifo-clone_learned_archive_pending-adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses[seed]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-fresh_private-none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[paced_fifo-fresh_private-icm]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses[none]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed[occupancy_fifo-clone_learned_archive_pending-rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[adaptive_rnd]
+FAILED tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control[icm]
+============================= 11 failed in 13.16s ==============================

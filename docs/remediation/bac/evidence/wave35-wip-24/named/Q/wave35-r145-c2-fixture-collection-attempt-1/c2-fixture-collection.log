@@ -1,0 +1,98 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 82 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_initial_participation_env.py>
+            <Function test_genuine_reset_prepares_retirement_without_publication>
+            <Function test_commit_publishes_owned_geometry_without_physics[retired0-expected0]>
+            <Function test_commit_publishes_owned_geometry_without_physics[retired1-expected1]>
+            <Function test_commit_publishes_owned_geometry_without_physics[retired2-expected2]>
+            <Function test_first_real_transition_uses_sealed_activity_and_one_service>
+            <Function test_no_retirement_preserves_ordinary_active_transition>
+            <Function test_real_claim_validates_current_owned_reading_once_before_publication[True]>
+            <Function test_real_claim_validates_current_owned_reading_once_before_publication[False]>
+            <Function test_validator_accepts_later_genuine_active_lane_terminal>
+            <Function test_separate_all_inactive_ordinary_step_contract_is_preserved>
+            <Function test_direct_ordinary_activation_remains_available_without_decision>
+            <Function test_whole_retirement_uses_real_empty_abandonment>
+            <Function test_missing_real_empty_proof_refuses_without_release>
+            <Function test_invalid_retirement_ids_refuse_before_publication[retired0]>
+            <Function test_invalid_retirement_ids_refuse_before_publication[retired1]>
+            <Function test_invalid_retirement_ids_refuse_before_publication[retired2]>
+            <Function test_invalid_retirement_ids_refuse_before_publication[retired3]>
+            <Function test_invalid_retirement_ids_refuse_before_publication[retired4]>
+            <Function test_invalid_retirement_ids_refuse_before_publication[retired5]>
+            <Function test_intent_identity_and_exact_content_are_required[copy_token]>
+            <Function test_intent_identity_and_exact_content_are_required[copy_intent]>
+            <Function test_intent_identity_and_exact_content_are_required[foreign_issuer]>
+            <Function test_intent_identity_and_exact_content_are_required[wrong_kind]>
+            <Function test_intent_identity_and_exact_content_are_required[extra_key]>
+            <Function test_intent_identity_and_exact_content_are_required[bool_revision]>
+            <Function test_intent_identity_and_exact_content_are_required[wrong_order]>
+            <Function test_pure_commit_refusal_retains_exact_preparation[copy_prepared]>
+            <Function test_pure_commit_refusal_retains_exact_preparation[copy_ready]>
+            <Function test_pure_commit_refusal_retains_exact_preparation[wrong_prepared]>
+            <Function test_pure_commit_refusal_retains_exact_preparation[revision]>
+            <Function test_pure_commit_refusal_retains_exact_preparation[foreign_owner]>
+            <Function test_changed_intent_and_second_commit_cannot_replace_decision>
+            <Function test_prepublication_physical_tamper_quarantines[dones]>
+            <Function test_prepublication_physical_tamper_quarantines[step_counts]>
+            <Function test_prepublication_physical_tamper_quarantines[positions]>
+            <Function test_prepublication_physical_tamper_quarantines[meters]>
+            <Function test_prepublication_physical_tamper_quarantines[_velocity]>
+            <Function test_active_validator_rejects_tamper_before_any_transition[dones]>
+            <Function test_active_validator_rejects_tamper_before_any_transition[step_counts]>
+            <Function test_active_validator_rejects_tamper_before_any_transition[positions]>
+            <Function test_active_validator_rejects_tamper_before_any_transition[meters]>
+            <Function test_active_validator_rejects_tamper_before_any_transition[_velocity]>
+            <Function test_active_validator_requires_private_predecessor_and_issued_result[copy_result]>
+            <Function test_active_validator_requires_private_predecessor_and_issued_result[foreign_result]>
+            <Function test_active_validator_requires_private_predecessor_and_issued_result[copy_token]>
+            <Function test_active_validator_requires_private_predecessor_and_issued_result[changed_predecessor]>
+            <Function test_duplicate_reset_preserves_seal_and_activation_closes_window>
+            <Function test_pending_decision_refuses_duplicate_reset_reentry>
+            <Function test_live_empty_candidate_mask_refuses_before_publication>
+            <Function test_mask_callback_physical_mutation_is_not_blessed_as_fresh>
+            <Function test_prepublication_allocation_failure_invalidates_old_handle>
+            <Function test_exception_after_status_publication_quarantines_without_rollback>
+            <Function test_postpublication_activation_failure_quarantines>
+            <Function test_prepared_capability_cannot_cross_receiver_or_restore_phase>
+            <Function test_constructed_step_is_not_an_authority_after_retirement>
+            <Function test_claim_cleanup_cannot_resume_physics[True]>
+            <Function test_claim_cleanup_cannot_resume_physics[False]>
+            <Function test_observation_cleanup_cannot_return_healthy_validation>
+            <Function test_observation_cleanup_cannot_activate_quarantined_episode>
+            <Function test_reading_validator_accepts_genuine_committed_preactivation>
+            <Function test_reading_validator_authenticates_current_private_reading[copy_result]>
+            <Function test_reading_validator_authenticates_current_private_reading[foreign_result]>
+            <Function test_reading_validator_authenticates_current_private_reading[copy_token]>
+            <Function test_reading_validator_authenticates_current_private_reading[mutated_record]>
+            <Function test_reading_validator_authenticates_current_private_reading[predecessor]>
+            <Function test_reading_validator_rejects_public_physical_tamper[positions]>
+            <Function test_reading_validator_rejects_public_physical_tamper[meters]>
+            <Function test_reading_validator_rejects_public_physical_tamper[dones]>
+            <Function test_reading_validator_rejects_public_physical_tamper[step_counts]>
+            <Function test_reading_validator_cleanup_is_durable>
+            <Function test_pending_decision_cannot_be_used_as_reading_authority>
+            <Function test_failed_episode_cannot_use_retained_reading_authority>
+            <Function test_activation_in_progress_refuses_recursive_reading>
+            <Function test_reading_validator_preserves_each_genuine_healthy_phase[active-awaiting-activation]>
+            <Function test_reading_validator_preserves_each_genuine_healthy_phase[active]>
+            <Function test_reading_validator_preserves_each_genuine_healthy_phase[closed-awaiting-release]>
+            <Function test_reading_validator_preserves_each_genuine_healthy_phase[released-completed]>
+            <Function test_frozen_close_refuses_reading_without_consuming_sink_handles>
+            <Function test_new_genuine_reset_invalidates_prior_reading_identity>
+            <Function test_reading_validator_requires_actual_finite_observation_geometry[dtype]>
+            <Function test_reading_validator_requires_actual_finite_observation_geometry[width]>
+            <Function test_reading_validator_requires_actual_finite_observation_geometry[nonfinite]>
+
+========================= 82 tests collected in 0.18s ==========================

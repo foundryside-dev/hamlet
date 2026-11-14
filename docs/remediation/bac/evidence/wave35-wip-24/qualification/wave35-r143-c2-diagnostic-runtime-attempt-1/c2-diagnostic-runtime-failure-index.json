@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "f65eaf09849e4672e16c28e4d477a4dfc9e6efaf",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: ENV public methods cannot reenter active work",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_reset_callback_reads_owned_cursors_without_export_or_mutation_rights",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

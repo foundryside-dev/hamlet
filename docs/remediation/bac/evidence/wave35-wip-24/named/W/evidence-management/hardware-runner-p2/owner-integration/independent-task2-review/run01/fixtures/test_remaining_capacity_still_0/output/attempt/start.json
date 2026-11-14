@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-14T10:41:36.927520Z",
+  "attempt_id": "attempt",
+  "kind": "attempt-start",
+  "retention": "root no-writer retained",
+  "schema": "bac-hardware-v1",
+  "source_freeze": {
+    "bytes": 1071,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_remaining_capacity_still_0/metadata/freeze.json",
+    "sha256": "6dd9ac9f7b6a33ce0aa478f35f05cec033cd5a02ebbb6515de6345af0d96031e"
+  },
+  "source_witness": {
+    "bytes": 3242,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_remaining_capacity_still_0/output/attempt/source-0001.json",
+    "sha256": "0e21bd78a56f44506e05a1c5f4970d2f69a495d6acae3fc9af7c76154c16bc53"
+  },
+  "spec": {
+    "bytes": 13936,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run01/fixtures/test_remaining_capacity_still_0/metadata/spec.json",
+    "sha256": "b0cac3d4424255daadd1699b8ac4f3baf4f6135c018a022ef26f9dbff7853300"
+  }
+}

@@ -1,6 +1,6 @@
 # Current runtime/BANK parent custody component contract
 
-2026-11-14. Source-verified component contract at R133. Full C1 acceptance remains open. R121 owner-suite 215 failures are historical; current R133 global mypy fails with 12 diagnostics in two files. Actual CUDA is UNRUN.
+2026-11-14. Runtime/BANK diagnostic contract source-verified at R133; the R144 ENV guard/diagnostic and R145 G1/G2 fixture components have separate bounded reviews and root adoptions. The historical R133/R132 executions below retain their original identities. Full C1/C2 acceptance remains open. Current R145 global mypy fails with 12 diagnostics in two files. Actual CUDA is UNRUN.
 
 ## Exact source
 
@@ -101,3 +101,20 @@ The payload retains fresh complete native state, gradients, RNG, cursors, caches
 POP preserves its healthy `checkpoint_state()` route, explicit proven failed route, all twelve outer fields and evaluation order. The failed route uses generic `diagnostic_state()` so an available BANK can be reported truthfully after a different POP failure. Standalone step cleanup retains actual failure/completion evidence. Complete payload comparison, fresh receiver failed-progress refusal and capture sentinel identity remain required and are exercised by the bounded POP selection. Diagnostic transport cannot resume failed progress. Two R133 return casts change typing only; no fallback, cached subset or exception swallowing is introduced.
 
 Source-review basis is the R131 independent producer review (`245f090945f240a57122ed404979761e524681261394efe42dd55ea62bc8a6e8`), fresh R132 POP review and R133 typing addendum (`ecdb4e5098ae04d3e98e0d2d610b39149722467d298ab942d94c521f9b12fdeb`). These component reviews are not the independent terminal checkpoint review. R132 retains 12 intentional fork DeprecationWarnings. R128's missing original postflight stays explicit; later POP reruns do not rewrite historical custody. Package accounting remains 28 qualified / 38 remaining / 66 total.
+
+## R144 ENV component and R145 fixture adoption
+
+The R144 ENV guard/diagnostic component is separately adopted at executed tree `ed561dc04fcffba4f6617f343862d54db6a8dad0`. It records 51 targeted cases and nine independent adversarial cases passed, without a combined unique-coverage claim. Runtime/BANK retention, lifetime and completion constraints above remain in force; ENV exclusion does not establish outer completion health, complete child/device inventory or restore composition.
+
+| Source under repository root | Lines | SHA256 |
+| --- | ---: | --- |
+| src/townlet/environment/vectorized_env.py | 2949 | aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22 |
+| src/townlet/environment/parent_custody.py | 252 | bc83c8ce94da32cf9296692e167bbab42c52794cb2d3da91595d19b3cd176022 |
+| tests/test_townlet/regressions/bac/test_environment_parent_custody.py | 840 | 372745a1c584d92ac0349479010f1d195a4fae9d89d4c2ba449a445297e6f68b |
+| tests/test_townlet/regressions/bac/test_initial_participation_env.py | 1343 | 80a9ef90c939214b9d709b94e7f058041e4cfa24cfaa0421b8cb0d31a0c327d1 |
+
+R145 manifest SHA256 is `d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798cd5381bc53`, candidate tree `192bfdbd16fd998e0095f303c5e93a49e346a471`. Its one-file fixture migration retains all 39 original test functions and assertions and records 82 cases passed with full controller/two-worker custody. The separate first-transition pass overlaps that selection. Eleven G1/G2 failures are resolved; 18 known G3/G4 restore failures, four prior unqualified skips and a full owner rerun remain. R142's 234 PASS / 30 FAIL / 4 SKIP is historical evidence, not a new R145 execution.
+
+Local P1 full-ancestry admission is unsupported: cgroup membership is `/`, the mount root is `/..`, and PID 1 namespace access returns EACCES. This is not CPU scarcity: four CPU and 16 GiB remain available for authorized local APP and inert checks. Actual P2 Task 4 remains UNRUN pending access to the user-provided server and measured ancestry; the promised 16-worker CUDA server is unprobed. The two identified P1 code fixes are not qualified in WIP24; subsequent implementation is outside this checkpoint.
+
+The width-three manual ENV driver is designed, not implemented. Complete child/source/device inventory, outer completion consumers, restore/cohort/recurrent integration, P1 real-input repair, P2 actual backstop, P4 strict dispatch, actual full chain and CUDA remain required. P2 Task 4 is AST-only unqualified preparation; checkpointed P4's 99 inert passes lack independent review. P5 v4 adoption is tooling scope only. No original package closure is claimed: 28 qualified / 38 remaining / 66 total. See [WIP24 evidence](evidence/wave35-wip-24.json) and its [selection plan](evidence/wave35-wip-24/selection-plan.json) for exact adoptions, reviews, failures and source/helper identities.

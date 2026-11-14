@@ -1,0 +1,22 @@
+{
+  "command": {
+    "bytes": 622,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-full21/fixtures/test_cpu_ram_and_timing_overla0/out/attempt/b/command.json",
+    "sha256": "24895d40ff2ce29cb3b3a351bc3bc851cde83be1cf6ab361c35a449cc2026ad9"
+  },
+  "disposition": "completed-unverified",
+  "end": "2026-11-14T10:34:21.121710Z",
+  "exit_code": 0,
+  "job_id": "b",
+  "log": {
+    "bytes": 0,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-full21/fixtures/test_cpu_ram_and_timing_overla0/out/attempt/b/stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "monotonic_end_ns": 131771462112274,
+  "monotonic_start_ns": 131771238342422,
+  "process_records": [],
+  "reason": "completion transport not integrated",
+  "signal": 0,
+  "start": "2026-11-14T10:34:20.897868Z"
+}

@@ -1,0 +1,29 @@
+{
+  "name": "black-changed",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "src/townlet/environment/parent_custody.py",
+    "src/townlet/environment/vectorized_env.py",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py"
+  ],
+  "cwd": "/workspace/hamlet",
+  "start_utc": "2026-11-14T11:11:18.323748+00:00",
+  "parent_pid": 229346,
+  "affinity": [
+    4
+  ],
+  "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r141-candidate.json",
+  "manifest_sha256": "b96225e5c0d3ba6efe2540fc9cec4a4da4e7d69198f551fe7b7f93b93f4db20a",
+  "candidate_tree": "e0322c4d12f9602e271af9e4d2982c46ec1903e8",
+  "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+  "pid": 229465,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T11:11:19.787677+00:00",
+  "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r141-static-attempt-1/black-changed.log",
+  "log_sha256": "25369eabb8c122f861d58ddb255f81f4b9ee797f42f3882975bef953218258ed"
+}

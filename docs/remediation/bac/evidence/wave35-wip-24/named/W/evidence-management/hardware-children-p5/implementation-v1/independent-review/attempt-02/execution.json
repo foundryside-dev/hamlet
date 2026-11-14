@@ -1,0 +1,87 @@
+{
+  "schema": "bac-p5-independent-probe-execution-v1",
+  "mode": "suite",
+  "attempt": "attempt-02",
+  "argv": [
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/probe-v1.py",
+    "suite",
+    "attempt-02"
+  ],
+  "actual_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/probe-v1.py",
+    "suite",
+    "attempt-02"
+  ],
+  "interpreter": "/workspace/hamlet/.venv/bin/python",
+  "cwd": "/workspace/hamlet",
+  "pid": 229035,
+  "ppid": 229034,
+  "start_identity": "13380288",
+  "host": "51d55c80f0b0",
+  "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+  "affinity": [
+    0
+  ],
+  "ram_limit": 4294967296,
+  "start": "2026-11-14T11:08:12.587795+00:00",
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/probe-v1.py",
+    "sha256": "4a28229c955395c697aacbe28fda4d2af918625c1a0118b714da193f16276195"
+  },
+  "source_before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "sha256": "b1734829f8e57bf3d9538441ceca901e4eabd3703b243f564fb037e7c7f89843",
+      "bytes": 64899,
+      "lines": 1256
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py",
+      "sha256": "69fcbc92d1f8194c32260a53a92b1fccf1e8226b45a02aadd25372428ad492fd",
+      "bytes": 56939,
+      "lines": 1354
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    }
+  ],
+  "pytest_argv": [
+    "-q",
+    "--noconftest",
+    "-c",
+    "/dev/null",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-v1/independent-review/attempt-02/pytest",
+    "-p",
+    "no:cacheprovider",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py"
+  ],
+  "exit": 0,
+  "duration_ns": 2071325447,
+  "end": "2026-11-14T11:08:14.659240+00:00",
+  "source_after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "sha256": "b1734829f8e57bf3d9538441ceca901e4eabd3703b243f564fb037e7c7f89843",
+      "bytes": 64899,
+      "lines": 1256
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py",
+      "sha256": "69fcbc92d1f8194c32260a53a92b1fccf1e8226b45a02aadd25372428ad492fd",
+      "bytes": 56939,
+      "lines": 1354
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    }
+  ],
+  "unchanged": true
+}

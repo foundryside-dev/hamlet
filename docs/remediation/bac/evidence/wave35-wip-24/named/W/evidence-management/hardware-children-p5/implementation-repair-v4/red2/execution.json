@@ -1,0 +1,47 @@
+{
+  "phase": "red2",
+  "argv": [
+    "-q",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v4/red2/pytest",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "-p",
+    "no:cacheprovider",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py"
+  ],
+  "pid": 233406,
+  "ppid": 233403,
+  "affinity": [
+    0
+  ],
+  "ram_limit": 4294967296,
+  "start": "2026-11-14T11:42:18.450577+00:00",
+  "end": "2026-11-14T11:42:23.746862+00:00",
+  "elapsed": 5.296270832011942,
+  "exit": 1,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "bytes": 78715,
+      "sha256": "34df34f0d5a1b80a90d8d553b96f3a7fa9c3a9258c1601742110df39568bd81c"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py",
+      "bytes": 72865,
+      "sha256": "ea7257e550f99943eb28c8b770e6bce368db1d8b1df3f9c4973eb711c1a3d7c9"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "interpreter": "/workspace/hamlet/.venv/bin/python",
+  "actual_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-"
+  ],
+  "host": "51d55c80f0b0",
+  "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+  "start_identity": "13584875"
+}

@@ -1,0 +1,1371 @@
+"""Fixed P5 strict semantics. Pure validation is not root/common/hardware authority.
+
+Only the standalone boundary reads files or writes an exclusive component receipt.
+No historical verifier, application, Torch, subprocess, Git or dynamic dispatch.
+"""
+
+import datetime
+import hashlib
+import json
+import math
+import os
+from pathlib import Path
+import re
+import stat
+
+import bac_hardware_protocol_v1 as p0
+
+SUBJECT = "bac-hardware-strict-validation-subject-v1"
+RESULT = "bac-hardware-strict-validation-result-v1"
+RECEIPT = "bac-hardware-strict-child-receipt-v1"
+KINDS = ("strict-child-core", "strict-child-producer", "rng-custody", "fork-three-trials", "phase-pair")
+PREFIX = "tests/test_townlet/regressions/bac/"
+CORE = (
+    "bootstrap_failure",
+    "runtime_query_failure",
+    "local_completion_single",
+    "local_completion_multiple_body",
+    "local_completion_duplicate_parent",
+    "poison_unknown_ready",
+    "poison_ready_qualified",
+    "poison_ready_healthy_only",
+    "operation_body_completion",
+    "inherited_pid",
+    "invocation_same_error",
+    "invocation_child_failure",
+    "invocation_parent_failure",
+    "invocation_reported_failure",
+    "invocation_phase_reference",
+    "invocation_phase_failure",
+)
+PRODUCER = tuple(
+    f"{family}_{case}"
+    for family in ("flat", "per")
+    for case in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
+)
+ACTIONS = {
+    "admission": ("resolve_cuda", "enroll", "report_failure", "domain_admission"),
+    "local": (
+        "resolve_cuda",
+        "complete",
+        "completion_failed",
+        "report_failure",
+        "domain_local_cuda_access",
+        "domain_local_cuda_policy",
+        "domain_resolve_local_cuda_record",
+    ),
+    "invocation": ("active_enter", "active_exit", "active_completion_failed", "completed_completion_failed", "domain_device_invocation"),
+}
+RAW_FIELDS = "schema context identity phase environment worker_identity torch_loaded cuda_marker observation_limit at python_debug python_optimize torch_anomaly source_method recorder_mode module_names_before_sha256 module_names_after_sha256 owner_claim sampler"
+CONTEXT_FIELDS = "schema spec command trusted_grant job_id role_id required_imports worker_roles environment_delta parent_start replacement_start lifecycle worker_identity policy runtime"
+LAUNCH_FIELDS = "schema spec command owner_contract parent_process source_witness parent_identity parent_argv case_id pytest_phase child_role_id instance_id start_method environment python_assertions_enabled inherited_imports module_names_sha256 sampler_policy owner_deadline_ns sampler_cutoff_ns at monotonic_ns"
+PARENT_FIELDS = (
+    "schema spec job_id case role parent_start owner_launch process_pid exitcode acknowledgement parent_rng_assertion assertion_source"
+)
+CHILD_FIELDS = "schema spec job_id case role owner_launch process_start python_assertions_enabled message rng_assertion_scopes"
+ACK_FIELDS = "case role pid ppid message result process_start process_end"
+FORK_FIELDS = "schema spec job_id role trial owner_launch process_start inherited_parent_start inherited_domain_pid python_assertions_enabled module_origin source_modules os_threads torch_profile torch_profile_unavailable_reason guard_results recorder_returns"
+FORK_OBS_FIELDS = "schema spec job_id trial role parent_start owner_launch fork_pid waitpid_pid wait_status exit_code acknowledgement parent_os_threads_before_fork parent_custody"
+RECEIPT_FIELDS = "schema spec job_id obligation_id validator validator_dependencies contract witness_schema documents result validation_identity validated_at"
+
+
+def private_type(schema, *groups):
+    return {"schema": p0.enum(schema), **{key: rule for names, rule in groups for key in names.split()}}
+
+
+WORKER_TYPE = {"workerid": "id", "workercount": "positive-int", "testrunuid": "text", "mainargv": p0.seq("text", 1)}
+IMPORT_TYPE = {"name": "reference-name", "reference": "reference", "phases": p0.seq(p0.enum("start", "end"), 1)}
+CONTEXT_TYPE = private_type("bac-hardware-identity-context-v1",
+    ("spec command trusted_grant", "reference"), ("job_id role_id", "id"),
+    ("required_imports", p0.seq(IMPORT_TYPE)), ("worker_roles", p0.seq("id")),
+    ("environment_delta", {"common": "env", "worker": "env"}),
+    ("parent_start replacement_start lifecycle policy runtime", p0.seq("reference")),
+    ("worker_identity", p0.optional(WORKER_TYPE)))
+COMMAND_TYPE = {"argv": p0.seq("text", 1), "pid": "positive-int", "start_ns": "uint", "end_ns": "uint",
+                "exit_code": "int", "stdout": "reference", "stderr": "reference", "stdout_truncated": "bool", "stderr_truncated": "bool"}
+PRIVATE_TYPES = {
+    "bac-hardware-identity-context-v1": CONTEXT_TYPE,
+    "bac-hardware-process-observation-v2": private_type("bac-hardware-process-observation-v2",
+        ("context", CONTEXT_TYPE), ("identity", "identity"), ("phase", p0.enum("start", "end")),
+        ("environment", "env"), ("worker_identity", p0.optional(WORKER_TYPE)),
+        ("torch_loaded python_debug", "bool"), ("cuda_marker", p0.optional("bool")),
+        ("observation_limit", "text"), ("at", "utc"), ("python_optimize", "uint"),
+        ("torch_anomaly", p0.observed("bool")), ("source_method", p0.enum("direct-git")),
+        ("recorder_mode", p0.enum("ordinary", "fork-guard")),
+        ("module_names_before_sha256 module_names_after_sha256", "sha256"), ("owner_claim sampler", p0.seq("reference"))),
+    "bac-hardware-owner-launch-v1": private_type("bac-hardware-owner-launch-v1",
+        ("spec command owner_contract parent_process source_witness", "reference"), ("parent_identity", "identity"),
+        ("parent_argv", p0.seq("text", 1)), ("case_id", "text"), ("pytest_phase", p0.enum("call")),
+        ("child_role_id instance_id", "id"), ("start_method", p0.enum("spawn", "fork")), ("environment", "env"),
+        ("python_assertions_enabled", "bool"), ("inherited_imports", p0.seq("named-reference")),
+        ("module_names_sha256", "sha256"), ("sampler_policy", p0.seq("reference")),
+        ("owner_deadline_ns sampler_cutoff_ns", p0.optional("uint")), ("at", "utc"), ("monotonic_ns", "uint")),
+    "bac-hardware-owner-claim-v1": private_type("bac-hardware-owner-claim-v1",
+        ("launch", "reference"), ("identity", "identity"), ("role_id", "id"), ("at", "utc"), ("monotonic_ns", "uint")),
+    "bac-hardware-owner-sampler-observation-v1": private_type("bac-hardware-owner-sampler-observation-v1",
+        ("policy launch", "reference"), ("identity", "identity"), ("phase", p0.enum("start", "end")),
+        ("start_ns end_ns cumulative_ns lock_acquired_ns lock_released_ns", "uint"), ("commands", p0.seq(COMMAND_TYPE, 2))),
+    "bac-hardware-owner-sampler-emission-v1": private_type("bac-hardware-owner-sampler-emission-v1",
+        ("policy launch sampler raw process", "reference"), ("identity", "identity"), ("phase", p0.enum("start", "end")),
+        ("emission_end_ns", "uint"), ("module_names_after_sha256", "sha256")),
+    "bac-hardware-owner-sampler-policy-v1": private_type("bac-hardware-owner-sampler-policy-v1",
+        ("role_ids", p0.seq("id", 1)),
+        ("owner_deadline_ns sampler_cutoff_ns sampler_total_ns phase_ns lock_wait_ns command_run_ns term_grace_ns kill_reap_ns emission_reserve_ns stdout_limit_bytes stderr_limit_bytes max_input_bytes cpu_slots scratch_bytes scratch_inodes", "positive-int")),
+    RECEIPT: private_type(RECEIPT, ("spec validator contract witness_schema", "reference"),
+        ("job_id obligation_id", "id"), ("validator_dependencies documents", p0.seq("reference", 1)),
+        ("result", private_type(RESULT, ("obligation_id", "id"), ("verdict", p0.enum("satisfied", "unsatisfied", "unrun")),
+            ("reasons cases", p0.seq("text")), ("evidence payloads producer_processes related_attempts", p0.seq("reference")))),
+        ("validation_identity", "identity"), ("validated_at", "utc")),
+}
+
+
+def require(ok, why):
+    if not ok:
+        raise ValueError(why)
+
+
+def exact(value, fields):
+    fields = fields.split() if isinstance(fields, str) else fields
+    require(type(value) is dict and set(value) == set(fields), "exact fields required: " + " ".join(fields))
+
+
+def same(a, b):
+    if type(a) is not type(b):
+        return False
+    if type(a) is dict:
+        return set(a) == set(b) and all(same(a[k], b[k]) for k in a)
+    if type(a) is list:
+        return len(a) == len(b) and all(same(x, y) for x, y in zip(a, b))
+    return a == b
+
+
+def equal(a, b, why):
+    require(same(a, b), why)
+
+
+def integer(value, minimum=0):
+    require(type(value) is int and value >= minimum, "exact integer/range required")
+    return value
+
+
+def text(value):
+    require(type(value) is str and bool(value.strip()) and "\x00" not in value, "nonempty text required")
+
+
+def digest(value):
+    require(type(value) is str and re.fullmatch("[a-f0-9]{64}", value) is not None, "SHA256 required")
+
+
+def reference(value):
+    exact(value, "path bytes sha256")
+    p0._path(value["path"])
+    integer(value["bytes"])
+    digest(value["sha256"])
+    return (value["path"], value["bytes"], value["sha256"])
+
+
+def refs(values):
+    require(type(values) is list, "reference list required")
+    keys = [reference(v) for v in values]
+    require(len(keys) == len(set(keys)) and len({k[0] for k in keys}) == len(keys), "duplicate reference")
+    return keys
+
+
+def parse(data):
+    require(type(data) is bytes, "actual bytes required")
+
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            require(key not in result, "duplicate JSON key")
+            result[key] = value
+        return result
+
+    def nonfinite(value):
+        raise ValueError("nonfinite JSON number")
+
+    def finite_float(value):
+        number = float(value)
+        require(math.isfinite(number), "nonfinite JSON number")
+        return number
+
+    try:
+        value = json.loads(data, object_pairs_hook=pairs, parse_constant=nonfinite, parse_float=finite_float)
+    except (UnicodeError, json.JSONDecodeError, RecursionError) as exc:
+        raise ValueError("invalid JSON") from exc
+    require(type(value) is dict, "JSON object required")
+    return value
+
+
+def shape(rule, value, live=False):
+    """P0 structural types without P0's live-filesystem semantic hooks."""
+    if type(rule) is dict:
+        exact(value, rule)
+        for k, r in rule.items():
+            shape(r, value[k], live)
+    elif type(rule) is list:
+        tag = rule[0]
+        if tag == "enum":
+            require(any(same(value, x) for x in rule[1:]), "invalid enum")
+        elif tag == "list":
+            require(type(value) is list and len(value) >= rule[2], "list cardinality")
+            for item in value:
+                shape(rule[1], item, live)
+        elif tag == "nullable":
+            if value is not None:
+                shape(rule[1], value, live)
+        else:
+            exact(value, "state value reason provenance" if tag == "fact" else "state value reason")
+            require(
+                value["state"]
+                in (("measured", "unavailable", "unsupported", "unlimited") if tag == "fact" else ("measured", "unavailable")),
+                "invalid observation state",
+            )
+            require(type(value["reason"]) is str, "observation reason")
+            if tag == "fact":
+                shape("reference", value["provenance"], live)
+            if value["state"] == "measured":
+                shape(rule[1], value["value"], live)
+                require(value["reason"] == "", "measured reason")
+            else:
+                require(value["value"] is None and bool(value["reason"]), "unavailable value/reason")
+    elif rule == "reference":
+        reference(value)
+        if live: equal(p0.file_reference(Path(value["path"])), value, "live private reference mismatch")
+    elif rule in p0.TYPES:
+        shape(p0.TYPES[rule], value, live)
+    else:
+        # Primitive _check never invokes reference or layout semantic hooks.
+        p0._check(rule, value, rule)
+
+
+def config(job_id):
+    for case in CORE:
+        if job_id == "cuda-core-" + case.replace("_", "-"):
+            node = "test_isolated_inherited_pid_gate_refusal" if case == "inherited_pid" else f"test_isolated_poison_protocol[{case}]"
+            msg = "cuda core inherited pid gates fail closed" if case == "inherited_pid" else f"cuda core {case} fail closed"
+            return ("core", case, "cuda_core_" + case, PREFIX + "test_rng_cuda_admission.py::" + node, msg)
+    for case in PRODUCER:
+        if job_id == "cuda-producer-poison-" + case:
+            return (
+                "producer",
+                case,
+                "cuda_producer_poison",
+                PREFIX + f"test_replay_cuda_producer.py::test_isolated_producer_poison[{case}]",
+                f"cuda producer {case} poison quarantines under owner custody",
+            )
+    if job_id == "replay-poison":
+        return (
+            "replay",
+            "replay_poison",
+            "replay_poison",
+            PREFIX + "test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+            "replay poison fail closed",
+        )
+    if job_id == "recurrent-replay-poison":
+        return (
+            "replay",
+            "recurrent_replay_poison",
+            "recurrent_replay_poison",
+            PREFIX + "test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison",
+            "recurrent replay scratch poison fail closed",
+        )
+    raise ValueError("unsupported owner job")
+
+
+class Incomplete(Exception):
+    def __init__(self, verdict, reason):
+        self.verdict = verdict
+        self.reason = reason
+
+
+class Documents:
+    def __init__(self, rows):
+        require(type(rows) is list, "documents list required")
+        self.rows = {}
+        self.used = set()
+        self.values = {}
+        self.events = []
+        for row in rows:
+            exact(row, "reference content")
+            key = reference(row["reference"])
+            data = row["content"]
+            require(type(data) is bytes and len(data) == key[1] and hashlib.sha256(data).hexdigest() == key[2], "document bytes mismatch")
+            require(key[0] not in self.rows, "duplicate document path")
+            self.rows[key[0]] = row
+            self.values[key[0]] = parse(data)
+
+    def get(self, ref, kind=None):
+        key = reference(ref)
+        require(key[0] in self.rows, "missing referenced document: " + key[0])
+        equal(self.rows[key[0]]["reference"], ref, "crosswired document reference")
+        self.used.add(key[0])
+        self.events.append(key[0])
+        value = self.values[key[0]]
+        if kind:
+            shape(kind, value)
+        elif type(value.get("schema")) is str and value["schema"] in PRIVATE_TYPES and set(value) != {"schema"}:
+            shape(PRIVATE_TYPES[value["schema"]], value)
+        return value
+
+    def at(self, path, kind):
+        require(path in self.rows, "missing fixed transport document: " + path)
+        ref = self.rows[path]["reference"]
+        return ref, self.get(ref, kind)
+
+    def finish(self):
+        require(set(self.rows) == self.used, "unconsumed documents")
+
+
+class Check:
+    def __init__(self, docs, spec_ref, job_id, obligation_id, pair=False):
+        self.d = docs
+        self.touch_start = len(docs.events)
+        self.spec_ref = spec_ref
+        self.spec = docs.get(spec_ref, "spec")
+        jobs = [j for j in self.spec["jobs"] if j["id"] == job_id]
+        require(len(jobs) == 1, "exact job selection")
+        self.job = jobs[0]
+        obligations = [o for o in self.job["obligations"] if o["id"] == obligation_id]
+        require(len(obligations) == 1, "exact obligation selection")
+        self.o = obligations[0]
+        self.tools = {t["name"]: t["reference"] for t in self.spec["tools"]}
+        require(len(self.tools) == len(self.spec["tools"]) and set(self.tools) == set(p0.TOOLS), "exact tool pins required")
+        equal(self.tools["children-verifier"], self.o["validator"], "strict validator source pin")
+        self.contract = docs.get(self.o["contract"], "case-contract")
+        for a, b in [
+            ("kind", "obligation_kind"),
+            ("required_cases", "required_cases"),
+            ("validator", "validator"),
+            ("evidence_class", "evidence_class"),
+            ("minimum_devices", "minimum_devices"),
+        ]:
+            equal(self.o[a], self.contract[b], "obligation/contract mismatch: " + a)
+        self.role_subset(self.contract["roles"])
+        self.witness = docs.get(self.contract["witness_schema"])
+        exact(self.witness, "schema")
+        text(self.witness["schema"])
+        self.candidate = docs.get(self.spec["candidate"], "candidate")
+        equal(self.candidate["authorized_root"], self.spec["authorized_root"], "candidate source root")
+        equal(self.candidate["source_freeze"], self.spec["source_freeze"], "candidate source freeze")
+        self.inputs = {reference(e["reference"]) for rows in self.candidate["inventory"].values() for e in rows}
+        self.processes = []
+        self.payloads = []
+        self.evidence = []
+        self.related = []
+        self.phases = []
+        self.pair = pair
+        self.active = set()
+        self.checked_processes = set()
+        self.reports = {}
+
+    def role_subset(self, roles):
+        actual = {r["id"]: r for r in self.job["roles"]}
+        require(len(actual) == len(self.job["roles"]), "duplicate job role")
+        require(len({r["id"] for r in roles}) == len(roles), "duplicate contract role")
+        for role in roles:
+            require(role["id"] in actual, "contract role absent from job")
+            equal(role, actual[role["id"]], "contract role definition differs")
+
+    def canonical(self, evidence):
+        family, case, role, node, message = self.cfg
+        kind = "strict-child-producer" if family == "producer" else "strict-child-core"
+        choices = []
+        for obligation in self.job["obligations"]:
+            if obligation["kind"] == kind and node in obligation["required_cases"]:
+                contract = self.d.get(obligation["contract"], "case-contract")
+                if role in [r["id"] for r in contract["roles"]]:
+                    choices.append((obligation, contract))
+        require(len(choices) == 1, "missing/ambiguous canonical owner contract")
+        owner, contract = choices[0]
+        self.role_subset(contract["roles"])
+        for a, b in [
+            ("kind", "obligation_kind"),
+            ("required_cases", "required_cases"),
+            ("validator", "validator"),
+            ("evidence_class", "evidence_class"),
+            ("minimum_devices", "minimum_devices"),
+        ]:
+            equal(owner[a], contract[b], "canonical contract binding")
+        equal(contract["required_cases"], self.o["required_cases"], "canonical case selection differs")
+        for key in ("evidence_class", "minimum_devices", "validator"):
+            equal(owner[key], self.o[key], "canonical class/minimum/validator differs")
+        if case == "inherited_pid":
+            require("cuda_core_inherited_pid_guard" in [r["id"] for r in contract["roles"]], "canonical guard role absent")
+        matches = []
+        for ref in self.completion["obligation_records"]:
+            row = self.d.get(ref, "obligation-evidence")
+            if row["obligation_id"] == owner["id"] and row["case_id"] == node:
+                matches.append(row)
+        require(len(matches) == 1, "canonical evidence missing/ambiguous")
+        row = matches[0]
+        self.bound(row)
+        for key in ("payload", "producer_process", "case_id", "evidence_class", "validator", "related_attempts"):
+            equal(row[key], evidence[key], "canonical owner graph crosswired: " + key)
+        equal(row["contract"], owner["contract"], "canonical evidence contract")
+        equal(row["obligation_kind"], kind, "canonical evidence kind")
+        equal(row["attempt_id"], self.spec["attempt_id"], "canonical evidence attempt")
+        self.owner_contract_ref = owner["contract"]
+
+    def bound(self, obj):
+        equal(obj["spec"], self.spec_ref, "foreign spec")
+        equal(obj["job_id"], self.job["id"], "foreign job")
+
+    def located(self, ref, basename):
+        equal(ref["path"], self.job["output"] + "/" + basename, "strict fixed payload locator")
+
+    def source(self, ref):
+        require(reference(ref) in self.inputs, "source absent from candidate inputs")
+
+    def process(self, ref, phase, role=None):
+        proc = self.d.get(ref, "process")
+        self.bound(proc)
+        self.checked_processes.add(reference(ref))
+        equal(proc["attempt_id"], self.spec["attempt_id"], "foreign process attempt")
+        equal(proc["phase"], phase, "wrong process phase")
+        roles = [r for r in self.job["roles"] if r["id"] == proc["role_id"]]
+        require(len(roles) == 1 and proc["role"] == roles[0]["role"], "process role definition mismatch")
+        if role is not None:
+            equal(proc["role_id"], role, "wrong process role")
+        require(reference(ref) in self.process_inventory, "process absent from completion")
+        rawref = proc["debug"]["provenance"]
+        for key in ("intra_op", "inter_op"):
+            equal(proc[key]["provenance"], rawref, "raw provenance differs")
+        raw = self.d.get(rawref)
+        exact(raw, RAW_FIELDS)
+        equal(raw["schema"], "bac-hardware-process-observation-v2", "current raw required")
+        for key in ("identity", "phase", "environment", "at"):
+            equal(raw[key], proc[key], "raw/process mismatch: " + key)
+        require(
+            raw["python_debug"] is True and type(raw["python_optimize"]) is int and raw["python_optimize"] == 0,
+            "Python assertions disabled",
+        )
+        equal(raw["source_method"], "direct-git", "source method")
+        equal(raw["recorder_mode"], "fork-guard" if proc["role"] == "fork-guard" else "ordinary", "recorder mode")
+        shape(["observed", "bool"], raw["torch_anomaly"])
+        if proc["role"] == "fork-guard":
+            equal(raw["torch_anomaly"]["state"], "unavailable", "guard must not observe Torch anomaly")
+        if proc["role"] == "controller":
+            equal(raw["owner_claim"], [], "controller cannot carry child claim")
+            equal(raw["sampler"], [], "controller cannot carry guard sampler")
+        shape("bool", raw["torch_loaded"])
+        require(raw["cuda_marker"] is None or type(raw["cuda_marker"]) is bool, "CUDA marker type")
+        digest(raw["module_names_before_sha256"])
+        digest(raw["module_names_after_sha256"])
+        context = raw["context"]
+        exact(context, CONTEXT_FIELDS)
+        self.bound(context)
+        equal(context["schema"], "bac-hardware-identity-context-v1", "context schema")
+        equal(context["role_id"], proc["role_id"], "context role")
+        equal(raw["worker_identity"], context["worker_identity"], "raw/context worker identity")
+        equal(context["worker_identity"], None, "fixed owner job cannot invent worker identity")
+        equal(context["worker_roles"], [], "fixed owner job has no worker role slots")
+        for key in ("parent_start", "replacement_start", "lifecycle", "policy", "runtime"):
+            refs(context[key]); require(len(context[key]) <= 1, "context reference cardinality")
+        require(len({i["name"] for i in context["required_imports"]}) == len(context["required_imports"]), "duplicate required import")
+        for item in context["required_imports"]:
+            require(len(item["phases"]) == len(set(item["phases"])), "duplicate import phase")
+            self.source(item["reference"])
+        if phase == "start": require(proc["elapsed_ns"]["state"] == "unavailable", "START cannot claim elapsed")
+        else: require(proc["elapsed_ns"]["state"] == "measured", "END needs observed elapsed")
+        sr = self.d.get(proc["source_witness"], "source-witness")
+        equal(sr["candidate"], self.spec["candidate"], "process candidate")
+        equal(sr["process_identity"], proc["identity"], "source emitter")
+        require(reference(proc["source_witness"]) in self.source_inventory, "source witness absent from completion")
+        for k in ("head", "tree"):
+            equal(sr[k], self.candidate[k], "source candidate " + k)
+        equal(sr["source_freeze"], self.spec["source_freeze"], "source freeze binding")
+        for item in proc["imports"]:
+            self.source(item["reference"])
+        for item in sr["inventory"]:
+            self.source(item)
+        require(rawref in self.completion["inventory"], "raw absent from producer inventory")
+        return proc, raw
+
+    def pair_process(self, start_ref, end_ref, parent_ref, launch_ref, role, method):
+        start, raw = self.process(start_ref, "start", role)
+        end, endraw = self.process(end_ref, "end", role)
+        equal(start["identity"], end["identity"], "start/end identity")
+        require(start["monotonic_ns"] <= end["monotonic_ns"], "process time reversed")
+        parent, parentraw = self.process(parent_ref, "start")
+        ident = start["identity"]
+        pi = parent["identity"]
+        require(ident["pid"] != pi["pid"] and ident["ppid"] == pi["pid"], "actual immediate parent PID")
+        for k in ("host", "boot_id"):
+            equal(ident[k], pi[k], "clock domain mismatch")
+        for p in (start, end):
+            equal(p["parent_identity"], [pi], "parent identity mismatch")
+        launch = self.d.get(launch_ref)
+        exact(launch, LAUNCH_FIELDS)
+        equal(launch["spec"], self.spec_ref, "launch spec")
+        equal(launch["schema"], "bac-hardware-owner-launch-v1", "launch schema")
+        for key, value in [
+            ("owner_contract", self.owner_contract_ref),
+            ("parent_process", parent_ref),
+            ("parent_identity", pi),
+            ("child_role_id", role),
+            ("start_method", method),
+            ("case_id", self.cfg[3]),
+            ("pytest_phase", "call"),
+        ]:
+            equal(launch[key], value, "launch mismatch: " + key)
+        require(launch["python_assertions_enabled"] is True, "parent assertions disabled")
+        equal(launch["command"], parentraw["context"]["command"], "launch command differs from parent")
+        equal(launch["parent_argv"], parent["argv"], "launch actual parent argv")
+        fresh=self.d.get(launch["source_witness"], "source-witness")
+        for key,value in (("candidate", self.spec["candidate"]), ("source_freeze", self.spec["source_freeze"]), ("process_identity", pi), ("head", self.candidate["head"]), ("tree", self.candidate["tree"])):
+            equal(fresh[key],value,"launch source witness binding")
+        require(reference(launch["source_witness"]) in self.source_inventory, "launch source witness inventory")
+        for ref in fresh["inventory"]: self.source(ref)
+        require(parent["at"] <= fresh["at"] <= launch["at"] <= end["at"], "launch/source UTC chronology")
+        require(len({i["name"] for i in launch["inherited_imports"]})==len(launch["inherited_imports"]), "duplicate inherited import")
+        for item in launch["inherited_imports"]: self.source(item["reference"])
+        parent_ends=[r for r in self.completion["process_records"] if self.d.get(r,"process")["identity"]==pi and self.d.get(r,"process")["phase"]=="end"]
+        require(len(parent_ends)==1,"exact parent END required")
+        parent_end,_=self.process(parent_ends[0],"end")
+        require(parent["monotonic_ns"]<=launch["monotonic_ns"]<=start["monotonic_ns"]<=end["monotonic_ns"]<=parent_end["monotonic_ns"],"parent/launch/child lifetime contradiction")
+        require(parent["at"]<=start["at"]<=end["at"]<=parent_end["at"],"parent/child UTC lifetime contradiction")
+        if method=="fork":
+            for child in (start,end): equal(child["argv"], launch["parent_argv"], "fork inherited argv")
+        claim_refs = []
+        for rr in (raw, endraw):
+            require(type(rr["owner_claim"]) is list and len(rr["owner_claim"]) == 1, "owner claim required")
+            claim_ref = rr["owner_claim"][0]
+            claim_refs.append(claim_ref)
+            claim = self.d.get(claim_ref)
+            exact(claim, "schema launch identity role_id at monotonic_ns")
+            equal(claim["schema"], "bac-hardware-owner-claim-v1", "claim schema")
+            equal(claim["launch"], launch_ref, "claim launch")
+            equal(claim["identity"], ident, "claim identity")
+            equal(claim["role_id"], role, "claim role")
+            shape("utc", claim["at"])
+            integer(claim["monotonic_ns"])
+            require(launch["monotonic_ns"]<=claim["monotonic_ns"]<=end["monotonic_ns"],"claim outside owner lifetime")
+            require(launch["at"]<=claim["at"]<=end["at"],"claim UTC outside owner lifetime")
+            ctx = rr["context"]
+            for key in ("schema","spec","command","trusted_grant","job_id","required_imports","worker_roles","environment_delta"):
+                equal(ctx[key],parentraw["context"][key],"owner context derivation: "+key)
+            equal(ctx["policy"], [], "owner policy must be empty"); equal(ctx["runtime"], [], "owner runtime must be empty")
+            equal(ctx["parent_start"], [parent_ref], "context parent")
+            equal(ctx["lifecycle"], [launch_ref], "context launch")
+            equal(ctx["worker_identity"], None, "owner cannot be worker")
+            equal(ctx["replacement_start"], [], "owner replacement")
+            equal(rr["environment"], launch["environment"], "owner environment")
+        equal(claim_refs[0], claim_refs[1], "start/end claim differs")
+        expected_imports = self.required_imports()
+        for p in (start, end):
+            imported = {i["name"]: i["reference"] for i in p["imports"]}
+            require(len(imported) == len(p["imports"]), "duplicate module import")
+            require(set(expected_imports) <= set(imported), "required strict source module absent")
+            for name, path in expected_imports.items():
+                equal(imported[name]["path"], path, "wrong loaded source origin")
+            if method == "fork":
+                require(
+                    p["torch_observation"] == "forbidden-inherited-module-witness" and p["cuda_observation"] == "forbidden",
+                    "guard runtime observation",
+                )
+                require(all(p[k]["state"] == "unavailable" for k in ("intra_op", "inter_op", "debug")), "guard runtime calls forbidden")
+            if method == "spawn":
+                for key, value in [("intra_op", 1), ("inter_op", 5), ("debug", True)]:
+                    require(p[key]["state"] == "measured", "work runtime missing")
+                    equal(p[key]["value"], value, "work runtime value")
+        if method == "spawn":
+            equal(launch["sampler_policy"], [], "spawn policy")
+            require(launch["owner_deadline_ns"] is None and launch["sampler_cutoff_ns"] is None, "spawn has fork deadlines")
+            equal(raw["sampler"], [], "spawn sampler")
+            equal(endraw["sampler"], [], "spawn sampler")
+        if method == "fork":
+            for rr in (raw, endraw):
+                equal(rr["module_names_before_sha256"], rr["module_names_after_sha256"], "guard module names changed")
+                equal(rr["module_names_before_sha256"], launch["module_names_sha256"], "guard inherited module names")
+        return start, end, launch
+
+    def required_imports(self):
+        family, case, role, node, message = self.cfg
+        names = [
+            "townlet.exploration.world_curiosity_state",
+            "townlet.exploration.rng_custody",
+            "townlet.exploration.rnd",
+            "test_world_rng_bootstrap",
+            node.split("::")[0].split("/")[-1][:-3],
+        ]
+        if family == "replay":
+            names += ["townlet.training.sequential_replay_buffer", "townlet.training.replay_contract"]
+            if case == "replay_poison":
+                names += ["townlet.training.replay_buffer", "townlet.training.prioritized_replay_buffer"]
+            else:
+                names += ["test_replay_rng_custody"]
+        if family == "producer":
+            names += ["townlet.training.replay_contract", "townlet.training.replay_buffer", "townlet.training.prioritized_replay_buffer"]
+        return {
+            n: self.spec["authorized_root"]
+            + "/"
+            + ("src/" + n.replace(".", "/") + ".py" if n.startswith("townlet.") else PREFIX + n + ".py")
+            for n in names
+        }
+
+    def execution(self):
+        _, self.completion = self.d.at(self.job["output"] + "/completion.json", "job-evidence")
+        _, result = self.d.at(self.job["output"] + "/result.json", "job-result")
+        for obj in (self.completion, result):
+            self.bound(obj)
+            equal(obj["attempt_id"], self.spec["attempt_id"], "attempt mismatch")
+        for key in ("collected_ids", "outcomes", "process_records", "obligation_records", "source_witnesses"):
+            equal(result[key], self.completion[key], "completion/result correspondence: " + key)
+        if result["disposition"] != "successful":
+            require(type(result["reason"]) is str and bool(result["reason"].strip()), "incomplete result reason missing")
+            if result["disposition"] in ("unrun", "refused"):
+                require(result["exit_code"] is None and result["signal"] == 0, "nonexecution has exit/signal")
+                require(all(result[k]["state"] == "unavailable" for k in ("end", "elapsed_ns")), "nonexecution has finish")
+                require(
+                    all(
+                        result[k] == [] for k in ("collected_ids", "outcomes", "process_records", "obligation_records", "source_witnesses")
+                    ),
+                    "nonexecution has observations",
+                )
+                raise Incomplete("unrun", result["reason"])
+            if result["disposition"] == "completed-failed":
+                require(type(result["exit_code"]) is int and result["exit_code"] > 0 and result["signal"] == 0, "failed exit inconsistent")
+            if result["disposition"] == "completed-unverified":
+                require(
+                    type(result["exit_code"]) is int and result["exit_code"] == 0 and result["signal"] == 0, "unverified exit inconsistent"
+                )
+            raise Incomplete("unsatisfied", result["reason"])
+        require(
+            type(result["exit_code"]) is int and result["exit_code"] == 0 and result["signal"] == 0 and result["reason"] == "",
+            "success exit inconsistent",
+        )
+        self.process_inventory = set(refs(self.completion["process_records"]))
+        self.source_inventory = set(refs(self.completion["source_witnesses"]))
+        self.output_inventory = set(refs(self.completion["inventory"]))
+        refs(result["inventory"])
+        equal(self.completion["collected_ids"], self.job["required_collected_ids"], "collected selection")
+        for case in self.o["required_cases"]:
+            outcomes = [o for o in self.completion["outcomes"] if o["case_id"] == case]
+            require(len(outcomes) == 1, "case outcome missing/duplicate")
+            require(all(outcomes[0][p] == "passed" for p in ("setup", "call", "teardown")), "required report phase failed")
+            reports = []
+            for rr in outcomes[0]["evidence"]:
+                report = self.d.get(rr)
+                exact(report, "schema process case_id phase outcome longrepr at")
+                equal(report["schema"], "bac-hardware-pytest-report-v1", "report schema")
+                equal(report["case_id"], case, "report case")
+                require(
+                    report["phase"] in ("setup", "call", "teardown") and report["outcome"] == "passed" and report["longrepr"] == "",
+                    "report phase outcome",
+                )
+                shape("utc", report["at"])
+                reference(report["process"])
+                reports.append(report)
+            equal([r["phase"] for r in reports], ["setup", "call", "teardown"], "exact report phase membership/order")
+            require(reports[0]["at"] <= reports[1]["at"] <= reports[2]["at"], "report chronology")
+            self.reports[case] = reports
+        ev = []
+        for ref in self.completion["obligation_records"]:
+            obj = self.d.get(ref, "obligation-evidence")
+            if obj["obligation_id"] == self.o["id"]:
+                ev.append((ref, obj))
+        require(len(ev) == len(self.o["required_cases"]), "exact evidence cardinality")
+        require(len({v["case_id"] for _, v in ev}) == len(ev), "duplicate case evidence")
+        for ref, e in ev:
+            self.bound(e)
+            equal(e["attempt_id"], self.spec["attempt_id"], "evidence attempt")
+            for k, ok in [
+                ("obligation_kind", "kind"),
+                ("contract", "contract"),
+                ("validator", "validator"),
+                ("evidence_class", "evidence_class"),
+            ]:
+                equal(e[k], self.o[ok], "evidence binding: " + k)
+            require(e["case_id"] in self.o["required_cases"], "unexpected evidence case")
+            require(reference(ref) in self.output_inventory, "evidence absent from completion")
+            self.evidence.append(ref)
+            self.payloads.append(e["payload"])
+            self.processes.append(e["producer_process"])
+        return ev
+
+    def owner(self, e):
+        family, case, role, node, message = self.cfg
+        self.canonical(e)
+        equal(e["case_id"], node, "fixed owner node")
+        equal(e["related_attempts"], [], "unexpected related attempts")
+        require(self.o["kind"] != "fork-three-trials" or case == "inherited_pid", "fork kind on nonfork case")
+        require(self.o["kind"] != "strict-child-producer" or family == "producer", "producer kind on wrong family")
+        require(self.o["kind"] != "strict-child-core" or family != "producer", "core kind on producer")
+        self.located(e["payload"], "producer-result.json" if family == "producer" else f"{family}-result-{role}.json")
+        p = self.d.get(e["payload"])
+        equal(p["schema"], self.witness["schema"], "payload witness schema")
+        equal(p["schema"], f"bac-hardware-{family}-result-v1", "payload family")
+        fields = PARENT_FIELDS if family != "producer" else PARENT_FIELDS + " parent_baseline before after cleanup"
+        exact(p, fields)
+        self.bound(p)
+        for k, v in [("case", case), ("role", role), ("parent_start", e["producer_process"])]:
+            equal(p[k], v, "parent payload binding: " + k)
+        require(type(p["exitcode"]) is int and p["exitcode"] == 0, "child unsuccessful exit")
+        self.source(p["assertion_source"])
+        expected_path = self.spec["authorized_root"] + "/" + node.split("::")[0]
+        equal(p["assertion_source"]["path"], expected_path, "wrong assertion source file")
+        for report in self.reports[node]:
+            equal(report["process"], p["parent_start"], "source assertion report process")
+        ack = p["acknowledgement"]
+        exact(ack, ACK_FIELDS.replace("result", "outcome") if family == "producer" else ACK_FIELDS)
+        for k, v in [("case", case), ("role", role), ("message", message)]:
+            equal(ack[k], v, "ack binding: " + k)
+        start, end, launch = self.pair_process(
+            ack["process_start"], ack["process_end"], p["parent_start"], p["owner_launch"], role, "spawn"
+        )
+        for value in (p["process_pid"], ack["pid"], ack["ppid"]):
+            integer(value, 1)
+        equal(p["process_pid"], start["identity"]["pid"], "Process PID")
+        equal(ack["pid"], p["process_pid"], "queue PID")
+        equal(ack["ppid"], start["identity"]["ppid"], "queue PPID")
+        expected = {
+            "kind": "source-assertion-only",
+            "checkpoint": "after_child_cleanup",
+            "function": "assert_ambient_unchanged" if family == "core" else "_assert_same_transport",
+            "channels": ["python", "numpy", "torch_cpu"],
+        }
+        if family == "producer":
+            expected = {
+                "kind": "source-assertion-and-serialized-digests",
+                "checkpoint": "after_child_join_before_unregister",
+                "function": "_assert_tree_equal",
+                "channels": ["python", "numpy", "torch_cpu", "cuda_if_initialized"],
+            }
+        equal(p["parent_rng_assertion"], expected, "parent RNG source checkpoint")
+        child_ref = ack["outcome" if family == "producer" else "result"]
+        self.located(child_ref, "producer-outcome.json" if family == "producer" else f"{family}-child-{role}.json")
+        child = self.d.get(child_ref)
+        self.bound(child)
+        for k, v in [("case", case), ("role", role), ("owner_launch", p["owner_launch"]), ("process_start", ack["process_start"])]:
+            equal(child[k], v, "child binding: " + k)
+        require(child["python_assertions_enabled"] is True, "child assertions disabled")
+        if family == "producer":
+            self.producer(p, child)
+        else:
+            exact(child, CHILD_FIELDS + (" phase forks" if family == "core" else " assertion_source"))
+            equal(child["schema"], f"bac-hardware-{family}-child-result-v1", "child schema")
+            equal(child["message"], message, "child message")
+            if family == "replay":
+                equal(child["assertion_source"], p["assertion_source"], "child assertion source")
+                scopes = (
+                    ["after_all_poison_operations"]
+                    if case == "replay_poison"
+                    else ["after_priority_update", "after_store_refresh", "after_all_poison_operations"]
+                )
+                equal(child["rng_assertion_scopes"], scopes, "replay RNG scopes")
+            else:
+                scopes = ["after_admission", "after_local", "after_invocation", "after_unregister"] if case == "inherited_pid" else []
+                equal(child["rng_assertion_scopes"], scopes, "core RNG scopes")
+                if case in ("invocation_phase_reference", "invocation_phase_failure"):
+                    require(type(child["phase"]) is list and len(child["phase"]) == 1, "exact phase payload")
+                    phase = child["phase"][0]
+                    exact(phase, "devices synchronize_events exception_labels completion_failed")
+                    equal(phase["devices"], [0, 1, 2], "phase devices")
+                    equal(phase["exception_labels"], ["body", "synchronization"], "phase labels")
+                    require(
+                        type(phase["synchronize_events"]) is list
+                        and bool(phase["synchronize_events"])
+                        and all(type(x) is int and x in (0, 1, 2) for x in phase["synchronize_events"]),
+                        "phase event vector",
+                    )
+                    require(phase["completion_failed"] is (None if case.endswith("reference") else True), "phase completion")
+                    self.phases.append(phase)
+                else:
+                    equal(child["phase"], [], "unexpected phase data")
+                if case == "inherited_pid":
+                    require(type(child["forks"]) is list and len(child["forks"]) == 3, "three guard trials required")
+                    seen = {start["identity"]["pid"], start["identity"]["ppid"]}
+                    for trial, ref in zip(ACTIONS, child["forks"]):
+                        self.fork(ref, trial, ack["process_start"], seen)
+                else:
+                    equal(child["forks"], [], "unexpected forks")
+        # Parent END is separate from the terminal payload and must be present.
+        parent, _ = self.process(p["parent_start"], "start")
+        endings = [
+            ref
+            for ref in self.completion["process_records"]
+            if self.d.get(ref, "process")["identity"] == parent["identity"] and self.d.get(ref, "process")["phase"] == "end"
+        ]
+        require(len(endings) == 1, "parent end absent/duplicate")
+        self.process(endings[0], "end")
+        require(
+            reference(child_ref) in self.output_inventory and reference(e["payload"]) in self.output_inventory,
+            "strict payload absent from completion",
+        )
+
+    def fork(self, ref, trial, parent_ref, seen):
+        self.located(ref, "core-fork-observation-" + trial + ".json")
+        o = self.d.get(ref)
+        exact(o, FORK_OBS_FIELDS)
+        self.bound(o)
+        equal(o["schema"], "bac-hardware-core-fork-observation-v2", "fork observation schema")
+        equal(o["trial"], trial, "fork trial order")
+        equal(o["role"], "cuda_core_inherited_pid_guard", "guard role")
+        equal(o["parent_start"], parent_ref, "guard parent")
+        for key in ("wait_status", "exit_code"):
+            require(type(o[key]) is int and o[key] == 0, "guard normal zero wait")
+        require(type(o["parent_os_threads_before_fork"]) is int and o["parent_os_threads_before_fork"] == 1, "pre-fork task count")
+        ack = o["acknowledgement"]
+        exact(ack, "trial pid ppid result process_start process_end message")
+        equal(ack["trial"], trial, "pipe trial")
+        equal(ack["message"], f"cuda core inherited pid {trial} fail closed", "pipe message")
+        start, end, launch = self.pair_process(ack["process_start"], ack["process_end"], parent_ref, o["owner_launch"], o["role"], "fork")
+        pid = start["identity"]["pid"]
+        require(pid not in seen, "guard PID reused/ancestor")
+        seen.add(pid)
+        for k in ("fork_pid", "waitpid_pid"):
+            equal(o[k], pid, "fork/wait PID")
+        equal(ack["pid"], pid, "pipe PID")
+        equal(ack["ppid"], start["identity"]["ppid"], "pipe PPID")
+        self.located(ack["result"], "core-fork-result-" + trial + ".json")
+        t = self.d.get(ack["result"])
+        exact(t, FORK_FIELDS)
+        self.bound(t)
+        equal(t["schema"], "bac-hardware-core-fork-result-v2", "guard terminal schema")
+        for k, v in [
+            ("trial", trial),
+            ("role", o["role"]),
+            ("owner_launch", o["owner_launch"]),
+            ("process_start", ack["process_start"]),
+            ("inherited_parent_start", parent_ref),
+            ("inherited_domain_pid", ack["ppid"]),
+        ]:
+            equal(t[k], v, "guard terminal binding: " + k)
+        require(t["python_assertions_enabled"] is True, "guard assertions disabled")
+        equal(t["module_origin"], "inherited-loaded-module-objects", "guard module origin")
+        exact(t["source_modules"], ["townlet.exploration.rng_custody", "test_rng_cuda_admission"])
+        for name, sr in t["source_modules"].items():
+            self.source(sr)
+            for proc in (start, end):
+                matches = [i["reference"] for i in proc["imports"] if i["name"] == name]
+                equal(matches, [sr], "guard semantic module differs from process import")
+        require(type(t["os_threads"]) is int and t["os_threads"] == 1, "guard task count")
+        require(t["torch_profile"] is None, "guard Torch profile forbidden")
+        equal(t["torch_profile_unavailable_reason"], "no Torch calls permitted in fork guard-only process", "guard profile reason")
+        exact(t["guard_results"], ACTIONS[trial])
+        for action in t["guard_results"].values():
+            exact(
+                action, "exception_class diagnostic lock_acquire_calls owner_lock_acquire_calls cuda_touch_calls body_calls state_unchanged"
+            )
+            equal(action["exception_class"], "builtins.RuntimeError", "guard error class")
+            equal(action["diagnostic"], "RNG custody cannot be inherited by another process", "guard error text")
+            for key in ("lock_acquire_calls", "owner_lock_acquire_calls", "cuda_touch_calls", "body_calls"):
+                require(type(action[key]) is int and action[key] == 0, "guard side effect")
+            require(action["state_unchanged"] is True, "guard changed state")
+        c = o["parent_custody"]
+        exact(c, "launch child_identity terminal_payload acknowledgement_received_ns reaped_ns wait_status")
+        for k, v in [
+            ("launch", o["owner_launch"]),
+            ("child_identity", start["identity"]),
+            ("terminal_payload", ack["result"]),
+            ("wait_status", o["wait_status"]),
+        ]:
+            equal(c[k], v, "parent custody binding: " + k)
+        self.timing(t["recorder_returns"], c, launch, o["owner_launch"], start, ack)
+        for rr in (ref, ack["result"]):
+            require(reference(rr) in self.output_inventory, "guard record absent from completion")
+
+    def timing(self, rows, c, launch, launch_ref, start, ack):
+        require(type(rows) is list and len(rows) == 2, "two recorder return rows required")
+        require(type(launch["sampler_policy"]) is list and len(launch["sampler_policy"]) == 1, "fork sampler policy required")
+        policy_ref = launch["sampler_policy"][0]
+        require(policy_ref in self.job["prerequisites"], "policy absent from sealed prerequisites")
+        policy = self.d.get(policy_ref)
+        exact(
+            policy,
+            "schema role_ids owner_deadline_ns sampler_cutoff_ns sampler_total_ns phase_ns lock_wait_ns command_run_ns term_grace_ns kill_reap_ns emission_reserve_ns stdout_limit_bytes stderr_limit_bytes max_input_bytes cpu_slots scratch_bytes scratch_inodes",
+        )
+        equal(policy["schema"], "bac-hardware-owner-sampler-policy-v1", "sampler policy schema")
+        require(
+            type(policy["role_ids"]) is list
+            and len(policy["role_ids"]) == len(set(policy["role_ids"]))
+            and start["role_id"] in policy["role_ids"],
+            "policy role",
+        )
+        for key, value in policy.items():
+            if key not in ("schema", "role_ids"):
+                integer(value, 1)
+        for key, value in [
+            ("owner_deadline_ns", 10000000000),
+            ("sampler_cutoff_ns", 8000000000),
+            ("sampler_total_ns", 6000000000),
+            ("phase_ns", 3000000000),
+        ]:
+            equal(policy[key], value, "owner timing policy changed")
+        launch_ns = integer(launch["monotonic_ns"])
+        cutoff = integer(launch["sampler_cutoff_ns"])
+        deadline = integer(launch["owner_deadline_ns"])
+        require(cutoff == launch_ns + 8000000000 and deadline == launch_ns + 10000000000, "original 8/10 owner deadlines")
+        ack_ns = integer(c["acknowledgement_received_ns"])
+        reap_ns = integer(c["reaped_ns"])
+        require(ack_ns <= deadline and reap_ns <= deadline, "owner endpoint beyond deadline")
+        durations = []
+        last = launch_ns
+        source_sum = 0
+        for phase, row in zip(("start", "end"), rows):
+            exact(row, "phase process emission entry_ns return_ns")
+            equal(row["phase"], phase, "return row order")
+            equal(row["process"], ack["process_" + phase], "return process crosswired")
+            entry = integer(row["entry_ns"])
+            returned = integer(row["return_ns"])
+            require(launch_ns <= entry <= returned <= cutoff and entry >= last, "owner return outside cutoff/order")
+            require(returned - entry <= 3000000000, "complete recorder call exceeds3s")
+            durations.append(returned - entry)
+            last = returned
+            require(returned <= ack_ns and returned <= reap_ns, "parent endpoint before actual return")
+            proc, raw = self.process(row["process"], phase, start["role_id"])
+            emission = self.d.get(row["emission"])
+            exact(emission, "schema policy launch identity phase sampler raw process emission_end_ns module_names_after_sha256")
+            equal(emission["schema"], "bac-hardware-owner-sampler-emission-v1", "emission schema")
+            equal(emission["policy"], policy_ref, "emission policy crosswired")
+            for k, v in [
+                ("launch", launch_ref),
+                ("identity", start["identity"]),
+                ("phase", phase),
+                ("process", row["process"]),
+                ("raw", proc["debug"]["provenance"]),
+            ]:
+                equal(emission[k], v, "emission crosswired: " + k)
+            equal(raw["sampler"], [emission["sampler"]], "sampler correspondence")
+            sampler = self.d.get(emission["sampler"])
+            exact(sampler, "schema policy launch identity phase start_ns end_ns cumulative_ns lock_acquired_ns lock_released_ns commands")
+            equal(sampler["schema"], "bac-hardware-owner-sampler-observation-v1", "sampler schema")
+            for k, v in [("launch", launch_ref), ("identity", start["identity"]), ("phase", phase), ("policy", emission["policy"])]:
+                equal(sampler[k], v, "sampler crosswired: " + k)
+            ss = integer(sampler["start_ns"])
+            se = integer(sampler["end_ns"])
+            ee = integer(emission["emission_end_ns"])
+            require(entry <= ss <= se <= ee <= returned, "sampler/emission/return chronology")
+            require(entry <= proc["monotonic_ns"] <= ee <= returned, "actual process timestamp outside recorder call")
+            acquired=sampler["lock_acquired_ns"];released=sampler["lock_released_ns"]
+            require(ss <= acquired <= released <= se, "sampler lock chronology")
+            require(len(sampler["commands"])==2, "two source sampler commands required")
+            previous=acquired
+            for command in sampler["commands"]:
+                require(previous<=command["start_ns"]<=command["end_ns"]<=released,"sampler command chronology")
+                previous=command["end_ns"]
+                require(command["exit_code"]==0 and not command["stdout_truncated"] and not command["stderr_truncated"],"sampler command unsuccessful")
+                require(command["end_ns"]-command["start_ns"]<=policy["command_run_ns"]+policy["term_grace_ns"]+policy["kill_reap_ns"],"sampler command time budget")
+                for stream in ("stdout","stderr"):
+                    require(command[stream]["bytes"]<=policy[stream+"_limit_bytes"] and reference(command[stream]) in self.output_inventory,"sampler output bound/inventory")
+            claim=self.d.get(raw["owner_claim"][0])
+            if phase=="start": require(claim["monotonic_ns"]<=se,"owner claim after source sampling")
+            source_sum += se - ss
+            equal(sampler["cumulative_ns"], source_sum, "source-stage cumulative is not whole-call time")
+            equal(emission["module_names_after_sha256"], raw["module_names_after_sha256"], "module names changed")
+            for rr in (row["emission"], emission["sampler"]):
+                require(reference(rr) in self.output_inventory, "timing record absent from completion")
+        require(sum(durations) <= 6000000000, "combined complete recorder calls exceed6s")
+
+    def producer(self, p, c):
+        exact(
+            c,
+            "schema spec job_id case role owner_launch process_start python_assertions_enabled preflight phase success observations failure",
+        )
+        equal(c["schema"], "bac-hardware-producer-outcome-v1", "producer outcome schema")
+        require(c["phase"] == "complete" and c["success"] is True and c["failure"] is None, "producer incomplete")
+        self.located(c["preflight"], "producer-preflight.json")
+        self.located(p["parent_baseline"], "producer-parent-baseline.json")
+        pre = self.d.get(c["preflight"])
+        exact(pre, "schema spec job_id case role owner_launch process_start python_assertions_enabled before")
+        self.bound(pre)
+        equal(pre["schema"], "bac-hardware-producer-preflight-v1", "preflight schema")
+        for key in ("case", "role", "owner_launch", "process_start", "python_assertions_enabled"):
+            equal(pre[key], c[key], "preflight binding")
+        before = pre["before"]
+        exact(before, "domain devices error_ids")
+        domain(before["domain"], False)
+        equal(before["devices"], [0, 1], "producer devices")
+        ids = before["error_ids"]
+        require(type(ids) is list and len(ids) == 3, "producer error IDs")
+        for value in ids:
+            if value is not None:
+                integer(value, 1)
+        case = c["case"]
+        distinct = case.endswith("distinct")
+        aliased = case.endswith("same")
+        admitted = "_admitted_" in case
+        if distinct:
+            require(None not in ids and len(set(ids)) == 3, "distinct error identities")
+        elif aliased:
+            require(ids[0] is not None and ids[0] == ids[1] and ids[2] is None, "aliased error identities")
+        else:
+            require(ids[0] is None and ids[1] is not None and ids[2] is None, "single error identities")
+        obs = c["observations"]
+        exact(
+            obs,
+            "healthy_controls reached started_work syncs peer_blocked worker_errors peer_errors completion_failed outcome_errors quarantine_before_unlock owner_quarantined cpu_local_available ambient_refused domain_after",
+        )
+        for key in ("healthy_controls", "reached", "peer_blocked", "owner_quarantined", "cpu_local_available", "ambient_refused"):
+            require(obs[key] is True, "producer control failed: " + key)
+        require(obs["started_work"] is (distinct or aliased), "body phase")
+        syncs = obs["syncs"]
+        require(type(syncs) is list and bool(syncs) and all(type(v) is int and v in (0, 1) for v in syncs), "producer sync types")
+        require(syncs[0] == 0 if admitted else syncs == [0, 1], "producer sync schedule")
+        failed = obs["completion_failed"]
+        require(
+            type(failed) is list and bool(failed) and all(v is True for v in failed) and (not admitted or len(failed) == 1),
+            "completion failed markers",
+        )
+        equal(obs["quarantine_before_unlock"], [True], "quarantine before unlock")
+        equal(obs["outcome_errors"], [], "outcome errors")
+        domain(obs["domain_after"], True)
+        for key in ("worker_errors", "peer_errors"):
+            require(type(obs[key]) is list and len(obs[key]) == 1, "outward error cardinality")
+        peer = obs["peer_errors"][0]
+        error(peer, "RuntimeError")
+        require("quarantined" in peer["message"], "peer quarantine error")
+        out = obs["worker_errors"][0]
+        if distinct:
+            error(out)
+            require(out["type"] == "ExceptionGroup" and len(out["children"]) == 3 and out["id"] not in ids, "error group identities")
+            for leaf, kind, suffix, n in zip(
+                out["children"], ("ValueError", "RuntimeError", "OSError"), ("body", "completion0", "completion1"), ids
+            ):
+                error(leaf, kind, case + ": " + suffix, n)
+        else:
+            error(out, "ValueError" if aliased else "RuntimeError", case + (": body" if aliased else ": completion0"), ids[1])
+        b = self.d.get(p["parent_baseline"])
+        exact(b, "schema spec job_id case role parent_start owner_launch before")
+        self.bound(b)
+        equal(b["schema"], "bac-hardware-producer-parent-baseline-v1", "parent baseline schema")
+        for key in ("case", "role", "parent_start", "owner_launch", "before"):
+            equal(b[key], p[key], "parent baseline binding")
+        baseline(p["before"])
+        baseline(p["after"])
+        for key in ("python", "numpy", "torch", "cuda"):
+            equal(p["before"][key], p["after"][key], "parent RNG changed")
+        exact(p["cleanup"], "participant_unregistered queue_closed queue_thread_joined process_closed")
+        require(all(v is True for v in p["cleanup"].values()), "parent cleanup incomplete")
+        for ref in (c["preflight"], p["parent_baseline"]):
+            require(reference(ref) in self.output_inventory, "producer record absent from completion")
+
+    def phase_pair(self, e):
+        require(not self.pair, "recursive phase pair")
+        w = self.d.get(e["payload"])
+        exact(w, "schema spec job_id obligation_id subjects")
+        self.bound(w)
+        equal(w["schema"], "bac-hardware-core-phase-pair-v1", "pair schema")
+        equal(w["schema"], self.witness["schema"], "pair witness")
+        equal(w["obligation_id"], self.o["id"], "pair obligation")
+        require(type(w["subjects"]) is list and len(w["subjects"]) == 2, "two phase subjects")
+        equal(e["related_attempts"], [s["spec"] for s in w["subjects"]], "related attempts order")
+        refs(e["related_attempts"])
+        attempts = set()
+        outputs = set()
+        shared = None
+        for label, s in zip(("invocation_phase_reference", "invocation_phase_failure"), w["subjects"]):
+            exact(s, "case spec attempt_id job_id strict_receipt")
+            equal(s["case"], label, "phase subject order")
+            receipt = self.d.get(s["strict_receipt"])
+            exact(receipt, RECEIPT_FIELDS)
+            equal(receipt["schema"], RECEIPT, "strict receipt schema")
+            equal(receipt["spec"], s["spec"], "receipt spec")
+            equal(receipt["job_id"], s["job_id"], "receipt job")
+            shape("identity", receipt["validation_identity"])
+            shape("utc", receipt["validated_at"])
+            sub = Check(self.d, s["spec"], s["job_id"], receipt["obligation_id"], pair=True)
+            require(
+                len(sub.spec["jobs"]) == 1 and all(o["kind"] != "phase-pair" for o in sub.job["obligations"]),
+                "phase subject must be independent single job",
+            )
+            equal(sub.spec["attempt_id"], s["attempt_id"], "phase attempt")
+            require(s["attempt_id"] not in attempts and sub.job["output"] not in outputs, "duplicate phase subject/output")
+            attempts.add(s["attempt_id"])
+            outputs.add(sub.job["output"])
+            equal(receipt["validator"], sub.o["validator"], "receipt validator")
+            equal(receipt["contract"], sub.o["contract"], "receipt contract")
+            equal(receipt["witness_schema"], sub.contract["witness_schema"], "receipt schema pin")
+            equal(receipt["validator_dependencies"], [sub.tools["protocol"]], "receipt protocol dependency pin")
+            actual = sub.run()
+            equal(actual, receipt["result"], "recomputed strict receipt differs")
+            require(actual["verdict"] == "satisfied" and len(sub.phases) == 1, "phase subject not qualified")
+            # A receipt documents its own traversal, including shared documents.
+            declared = set(refs(receipt["documents"]))
+            require(reference(s["spec"]) in declared, "receipt subject documents missing")
+            equal(
+                declared,
+                {reference(self.d.rows[path]["reference"]) for path in self.d.events[sub.touch_start :]},
+                "receipt consumed-document mismatch",
+            )
+            equal(sub.cfg[1], label, "phase wrapper actual case mismatch")
+            equal(s["job_id"], "cuda-core-" + label.replace("_", "-"), "phase wrapper actual job mismatch")
+            phase = sub.phases[0]
+            require(phase["completion_failed"] is (None if label == "invocation_phase_reference" else True), "phase pair complementary outcome")
+            current = {
+                "root": sub.spec["authorized_root"],
+                "candidate": sub.candidate,
+                "devices": phase["devices"],
+                "events": phase["synchronize_events"],
+                "labels": phase["exception_labels"],
+            }
+            if shared is not None:
+                equal(current, shared, "phase source/input/events mismatch")
+            shared = current
+        self.related = e["related_attempts"]
+
+    def run(self):
+        base = {
+            "schema": RESULT,
+            "obligation_id": self.o["id"],
+            "verdict": "unrun",
+            "reasons": [],
+            "cases": self.o["required_cases"],
+            "evidence": [],
+            "payloads": [],
+            "producer_processes": [],
+            "related_attempts": [],
+        }
+        if self.o["kind"] not in KINDS or self.o["evidence_class"] not in ("cpu", "cpu-standin"):
+            base["reasons"] = ["unsupported strict obligation or evidence class"]
+            return base
+        require(self.o["minimum_devices"] == 0, "CPU strict minimum must be zero")
+        if self.o["kind"] != "phase-pair":
+            self.cfg = config(self.job["id"])
+            equal(self.o["required_cases"], [self.cfg[3]], "finite selected case")
+            require(type(self.job["xdist_workers"]) is int and self.job["xdist_workers"] == 0, "fixed owner job has no xdist workers")
+            controllers = [r for r in self.job["roles"] if r["role"] == "controller"]
+            children = [r for r in self.job["roles"] if r["id"] == self.cfg[2] and r["role"] == "spawn-child"]
+            guards = [r for r in self.job["roles"] if r["id"] == "cuda_core_inherited_pid_guard" and r["role"] == "fork-guard"]
+            require(
+                len(controllers) == len(children) == 1 and controllers[0]["count"] == children[0]["count"] == 1,
+                "fixed owner controller/child cardinality",
+            )
+            inherited = self.cfg[1] == "inherited_pid"
+            require(
+                len(guards) == (1 if inherited else 0) and len(self.job["roles"]) == (3 if inherited else 2), "fixed owner role inventory"
+            )
+            if inherited:
+                require(guards[0]["count"] == 3, "three guard role instances required")
+            require(all(r["replacement_limit"] == 0 for r in self.job["roles"]), "owner jobs do not replace processes")
+        try:
+            evidence = self.execution()
+        except Incomplete as failure:
+            base.update(verdict=failure.verdict, reasons=[failure.reason])
+            return base
+        for _, e in evidence:
+            if self.o["kind"] == "phase-pair":
+                self.phase_pair(e)
+            else:
+                self.owner(e)
+        if self.o["kind"] != "phase-pair":
+            equal(self.checked_processes, self.process_inventory, "undeclared or unchecked owner process")
+        # Every parsed job-local record actually used must have been declared.
+        for path in set(self.d.events[self.touch_start :]):
+            if path.startswith(self.job["output"] + "/") and path not in (
+                self.job["output"] + "/result.json",
+                self.job["output"] + "/completion.json",
+            ):
+                require(reference(self.d.rows[path]["reference"]) in self.output_inventory, "consumed owner record absent from completion")
+        used = set(self.d.events[self.touch_start :])
+        for rr in self.completion["inventory"]:
+            name = Path(rr["path"]).name
+            strict_name = re.fullmatch(
+                r"(?:core-(?:result|child|fork-result|fork-observation)-.+|replay-(?:result|child)-.+|producer-(?:result|preflight|outcome|parent-baseline))\.json",
+                name,
+            )
+            if strict_name:
+                require(rr["path"] in used, "unexpected unconsumed strict record")
+        base.update(
+            verdict="satisfied",
+            reasons=[],
+            evidence=self.evidence,
+            payloads=self.payloads,
+            producer_processes=self.processes,
+            related_attempts=self.related,
+        )
+        return base
+
+
+def domain(value, poisoned):
+    require(type(value) is list and len(value) == 3, "domain shape")
+    integer(value[0])
+    integer(value[1])
+    require(value[2] is poisoned, "domain health")
+
+
+def baseline(value):
+    exact(value, "domain python numpy torch cuda")
+    domain(value["domain"], False)
+    digest(value["python"])
+    digest(value["torch"])
+    require(value["cuda"] is None or type(value["cuda"]) is list, "CUDA baseline type")
+    if value["cuda"] is not None:
+        for v in value["cuda"]:
+            digest(v)
+    n = value["numpy"]
+    require(type(n) is list and len(n) == 5, "NumPy baseline shape")
+    equal(n[0], "MT19937", "NumPy algorithm")
+    digest(n[1])
+    integer(n[2])
+    integer(n[3])
+    require(n[2] <= 624 and n[3] in (0, 1) and type(n[4]) is float and math.isfinite(n[4]), "NumPy baseline values")
+
+
+def error(value, kind=None, message=None, identity=None):
+    exact(value, "type message id children")
+    text(value["type"])
+    require(type(value["message"]) is str, "error message")
+    integer(value["id"], 1)
+    require(type(value["children"]) is list, "error children")
+    if kind is not None:
+        equal(value["type"], kind, "error type")
+        equal(value["children"], [], "leaf children")
+    if message is not None:
+        equal(value["message"], message, "error diagnostic")
+    if identity is not None:
+        equal(value["id"], identity, "error object identity")
+    for child in value["children"]:
+        error(child)
+
+
+def validate_child_obligation(subject):
+    """Validate supplied bytes only; no I/O or independently acquired authority."""
+    try:
+        exact(subject, "schema spec job_id obligation_id documents")
+        equal(subject["schema"], SUBJECT, "subject schema")
+        shape("id", subject["job_id"])
+        shape("id", subject["obligation_id"])
+        documents = Documents(subject["documents"])
+        check = Check(documents, subject["spec"], subject["job_id"], subject["obligation_id"])
+        result = check.run()
+        documents.finish()
+        return result
+    except (KeyError, TypeError, IndexError, RecursionError) as exc:
+        raise ValueError("malformed strict subject") from exc
+
+
+def read_bytes(ref):
+    """No-follow component walk; pin bytes before and after the read."""
+    reference(ref)
+    equal(p0.file_reference(Path(ref["path"])), ref, "live reference mismatch")
+    descriptors = []
+    try:
+        fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+        descriptors.append(fd)
+        parts = ref["path"][1:].split("/")
+        for part in parts[:-1]:
+            fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            descriptors.append(fd)
+        fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
+        descriptors.append(fd)
+        require(stat.S_ISREG(os.fstat(fd).st_mode), "regular file required")
+        chunks = []
+        while True:
+            chunk = os.read(fd, 1048576)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        data = b"".join(chunks)
+        require(len(data) == ref["bytes"] and hashlib.sha256(data).hexdigest() == ref["sha256"], "read bytes changed")
+        equal(p0.file_reference(Path(ref["path"])), ref, "reference changed after read")
+        return data
+    except OSError as exc:
+        raise ValueError("unsafe reference read") from exc
+    finally:
+        for fd in reversed(descriptors):
+            os.close(fd)
+
+
+def verify_children(spec_path: Path, job_id: str, destination: Path, *, obligation_id: str):
+    """Exclusive strict component receipt; caller supplies source/namespace custody."""
+    require(isinstance(spec_path, Path) and isinstance(destination, Path), "Path arguments required")
+    spec_ref = p0.file_reference(spec_path)
+    spec = parse(read_bytes(spec_ref))
+    p0.validate_spec(spec)
+    job = next((j for j in spec["jobs"] if j["id"] == job_id), None)
+    require(job is not None, "job absent")
+    o = next((o for o in job["obligations"] if o["id"] == obligation_id), None)
+    require(o is not None and o["kind"] in KINDS, "unsupported/absent explicit strict obligation")
+
+    # Schema-directed collection uses a demand reader: no glob or executable dispatch.
+    class Reader(Documents):
+        def __init__(self):
+            self.rows = {}
+            self.values = {}
+            self.used = set()
+            self.events = []
+
+        def get(self, ref, kind=None):
+            key = reference(ref)
+            if key[0] not in self.rows:
+                content = read_bytes(ref)
+                value = parse(content)
+                if value.get("schema") == p0.SCHEMA:
+                    require(value.get("kind") in p0.TYPES, "unknown P0 record")
+                    p0.validate_record(value["kind"], value)
+                if type(value.get("schema")) is str and value["schema"] in PRIVATE_TYPES and set(value) != {"schema"}:
+                    shape(PRIVATE_TYPES[value["schema"]], value, live=True)
+                self.rows[key[0]] = {"reference": ref, "content": content}
+                self.values[key[0]] = value
+            return super().get(ref, kind)
+
+        def at(self, path, kind):
+            ref = p0.file_reference(Path(path))
+            return ref, self.get(ref, kind)
+
+    reader = Reader()
+    check = Check(reader, spec_ref, job_id, obligation_id)
+    check.run()
+    subject = {
+        "schema": SUBJECT,
+        "spec": spec_ref,
+        "job_id": job_id,
+        "obligation_id": obligation_id,
+        "documents": list(reader.rows.values()),
+    }
+    result = validate_child_obligation(subject)
+    selfref = p0.file_reference(Path(__file__).absolute())
+    equal(o["validator"], selfref, "standalone source pin")
+    protocol = p0.file_reference(Path(p0.__file__).absolute())
+    equal(check.tools["protocol"], protocol, "standalone protocol source pin")
+    statline = Path("/proc/self/stat").read_text()
+    tail = statline[statline.rfind(")") + 2 :].split()
+    identity = {
+        "pid": os.getpid(),
+        "ppid": os.getppid(),
+        "start_identity": tail[19],
+        "host": os.uname().nodename,
+        "boot_id": Path("/proc/sys/kernel/random/boot_id").read_text().strip(),
+    }
+    shape("identity", identity)
+    receipt = {
+        "schema": RECEIPT,
+        "spec": spec_ref,
+        "job_id": job_id,
+        "obligation_id": obligation_id,
+        "validator": selfref,
+        "validator_dependencies": [protocol],
+        "contract": o["contract"],
+        "witness_schema": check.contract["witness_schema"],
+        "documents": [r["reference"] for r in reader.rows.values()],
+        "result": result,
+        "validation_identity": identity,
+        "validated_at": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+    }
+    for row in reader.rows.values():
+        equal(p0.file_reference(Path(row["reference"]["path"])), row["reference"], "input changed before receipt")
+        value=reader.values[row["reference"]["path"]]
+        if value.get("schema")==p0.SCHEMA: p0.validate_record(value["kind"],value)
+        elif value.get("schema") in PRIVATE_TYPES and set(value)!={"schema"}: shape(PRIVATE_TYPES[value["schema"]],value,live=True)
+    p0._path(str(destination))
+    p0._existing_directories(str(destination.parent))
+    # Open destination relative to a no-follow parent descriptor, never overwrite.
+    descriptors = []
+    try:
+        fd = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
+        descriptors.append(fd)
+        for part in destination.parts[1:-1]:
+            fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            descriptors.append(fd)
+        out = os.open(destination.name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=fd)
+        with os.fdopen(out, "w") as stream:
+            json.dump(receipt, stream, indent=2, allow_nan=False)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+    finally:
+        for fd in reversed(descriptors):
+            os.close(fd)
+    return receipt

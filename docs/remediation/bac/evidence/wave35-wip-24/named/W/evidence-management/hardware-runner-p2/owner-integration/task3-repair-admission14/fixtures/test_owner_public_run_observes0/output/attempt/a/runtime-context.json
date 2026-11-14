@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 14343,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-admission14/fixtures/test_owner_public_run_observes0/output/attempt/a/command.json",
+    "sha256": "92a16688c97a5f9a53361aea2c08f5302ee4f960035feba7dfe61f2de963f7e9"
+  },
+  "policy": {
+    "bytes": 924,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-admission14/fixtures/test_owner_public_run_observes0/metadata/identity-policy.json",
+    "sha256": "1405bece58924b53db0c8e96a33f42dfd66cc64d0cd4ed0e87970328de901f0d"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 229658,
+    "ppid": 229657,
+    "start_identity": "13406413"
+  },
+  "runner_source_start": {
+    "bytes": 3194,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-admission14/fixtures/test_owner_public_run_observes0/output/attempt/source-0002.json",
+    "sha256": "629bc10e8e0832bff67640ee8f0137df1654486e3a20d2257f8dfb589bdb1a09"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 23221,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-admission14/fixtures/test_owner_public_run_observes0/metadata/spec.json",
+    "sha256": "f0e9d17182270a4294c8b15792150da18f1906fad78ebe345ad43fa67df7ea2c"
+  },
+  "trusted_grant": {
+    "bytes": 3676,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-admission14/fixtures/test_owner_public_run_observes0/metadata/grant.json",
+    "sha256": "c21e89f442b8ddd4951194dbc58245f94ec9b3566e81e949087d231753aaf1a7"
+  }
+}

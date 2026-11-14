@@ -1,0 +1,28 @@
+{
+  "name": "c2-diagnostic-collection",
+  "exit_code": 0,
+  "seconds": 4.490238515980309,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+    "tests/test_townlet/regressions/bac/test_world_vfs_identity.py::test_reset_projects_reservation_before_evaluation_and_retry_never_resamples",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r144-c2-diagnostic-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r144-c2-diagnostic-collection-attempt-1/c2-diagnostic-collection.log",
+  "sha256": "1e048eb7f1fad20a661a917c8e56f750ae06cf0cd8bceaa19571521d4112c78b",
+  "candidate_tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "manifest_sha256": "42fe2729f820795f4d5f94720e73c0feb20756ecb745ace2f6fb87711fe6cec8",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

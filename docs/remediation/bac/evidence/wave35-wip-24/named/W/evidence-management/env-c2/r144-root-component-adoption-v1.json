@@ -1,0 +1,84 @@
+{
+  "schema": "bac-root-bounded-component-adoption-v1",
+  "at": "2026-11-14T11:49:04.876987+00:00",
+  "status": "BOUNDED C2 ENV GUARD AND DIAGNOSTIC REPAIR ADOPTED; OWNER RESTORE/CALLER AND OUTER COMPLETION GATES OPEN",
+  "candidate": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r144-candidate.json",
+    "bytes": 208900,
+    "sha256": "42fe2729f820795f4d5f94720e73c0feb20756ecb745ace2f6fb87711fe6cec8"
+  },
+  "execution_tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0",
+  "source": [
+    {
+      "path": "/workspace/hamlet/src/townlet/environment/vectorized_env.py",
+      "bytes": 150750,
+      "sha256": "aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22"
+    },
+    {
+      "path": "/workspace/hamlet/src/townlet/environment/parent_custody.py",
+      "bytes": 10775,
+      "sha256": "bc83c8ce94da32cf9296692e167bbab42c52794cb2d3da91595d19b3cd176022"
+    },
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+      "bytes": 38379,
+      "sha256": "372745a1c584d92ac0349479010f1d195a4fae9d89d4c2ba449a445297e6f68b"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/review-v3.md",
+      "bytes": 6207,
+      "sha256": "a1e51581423cc0facbbcc370158f0c29c598accdc8a14731ddeb815d2d1012b6"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/probe-freeze-v4.json",
+      "bytes": 1894,
+      "sha256": "4993c10a5d062eca12e0ea7e1c444321d261b37634c4bcd5496833106ddfbbf4"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r144-independent-auxiliary-postflight-v1.json",
+      "bytes": 520,
+      "sha256": "5f1d750b9a2b76aa26fd7697c12a8e9ee037af26bce8d8fd4cf80ba9d315ce1f"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r144-independent-actual-fork-witness-v1.json",
+      "bytes": 23982,
+      "sha256": "0843cfe23d5397b4244b66effd5709bbb7d91b6c77316ffbe55260c342e79eec"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/r144-static-attempt-1/summary.json",
+      "bytes": 4583,
+      "sha256": "fec0959138fea99a4bceb9caba73d95e72c3adbb181f7f08f83f864b9e01eb02"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r144-c2-diagnostic-runtime-attempt-1/c2-diagnostic-runtime-custody.json",
+      "bytes": 653,
+      "sha256": "047c4b49c70420fae72da4f09f783c473dc890f17ad4e1a0323b4f979a9034b7"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r144-c2-independent-runtime-attempt-1/c2-independent-runtime-custody.json",
+      "bytes": 653,
+      "sha256": "9d97ce7c4ab4dd6f4ba7ef8679fd3ac6f765fa849f2d8efa420ee858cc723388"
+    }
+  ],
+  "results": {
+    "targeted_c2_and_original_diagnostic": 51,
+    "independent_adversarial": 9,
+    "overlap": "Separate scopes; no combined unique count or full owner acceptance",
+    "static": "Ruff/Black/defaults PASS; mypy12 errors in oracle and POP remain FAILED"
+  },
+  "remaining_required": [
+    "29 R142 owner failures remain pending causal fixes; no R144 broad rerun claimed",
+    "ENV/runtime/BANK restore composition and genuine native/replay fixture lifecycle",
+    "POP replay restore lineage/destination lifecycle",
+    "Outer source/device inventory and completion-outcome consumer integration",
+    "Full repository/coverage/slow/hardware/final CI gates"
+  ],
+  "scope": "Fresh source/design review approves diagnostic delta; R142 review/probes and R144 repeated independent nine-case execution support bounded guard behavior. No original package closure.",
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

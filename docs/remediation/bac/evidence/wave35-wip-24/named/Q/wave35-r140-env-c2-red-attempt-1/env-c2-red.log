@@ -1,0 +1,103 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [36 items]
+
+..F................................F                                     [100%]
+=================================== FAILURES ===================================
+__ test_real_validation_failure_preserves_primary_and_terminal_denial[False] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f2afb303490>
+swallow = False
+
+    @pytest.mark.parametrize("swallow", [False, True])
+    def test_real_validation_failure_preserves_primary_and_terminal_denial(compiled: Any, monkeypatch: Any, swallow: bool) -> None:
+        """A swallowed real validation failure cannot authorize physics or lose its identity."""
+        claim = VectorizedPopulation.claim_vector_step
+        validate = VectorizedHamletEnv.validate_initial_participation
+        state: dict[str, Any] = {"inside": False, "primary": None}
+    
+        def wrong_reading(self: Any, **kwargs: Any) -> None:
+            if state["inside"]:
+                kwargs = {**kwargs, "predecessor": kwargs["predecessor"] + 1}
+            try:
+                return validate(self, **kwargs)
+            except BaseException as error:
+                if state["inside"]:
+                    state["primary"] = error
+                raise
+    
+        def observer(self: Any, **kwargs: Any) -> Any:
+            state["inside"] = True
+            try:
+                return claim(self, **kwargs)
+            except BaseException:
+                if not swallow:
+                    raise
+                # This is deliberately a negative callback result, never a tick or
+                # fabricated successful claim. ENV must rethrow the actual failure.
+                return None
+            finally:
+                state["inside"] = False
+    
+        monkeypatch.setattr(VectorizedHamletEnv, "validate_initial_participation", wrong_reading)
+        monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observer)
+        rig = make_parent(compiled, "none", "shared")
+        rig.enter()
+        with pytest.raises(ValueError) as caught:
+            _real_component_step(rig)
+>       assert caught.value is state["primary"]
+E       AssertionError: assert ValueError('ENV callback has no permission for this public entry') is ValueError('initial participation predecessor disagrees with current physical reading')
+E        +  where ValueError('ENV callback has no permission for this public entry') = <ExceptionInfo ValueError('ENV callback has no permission for this public entry') tblen=15>.value
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:308: AssertionError
+_______ test_genuine_unowned_selector_does_not_grant_pop_claim_authority _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_genuine_unowned_selector_does_not_grant_pop_claim_authority(compiled: Any) -> None:
+        """A successful inference selector must remain distinct from an owned claim."""
+        rig = unowned(compiled)
+        actions = select(rig.population, rig.env, "greedy")
+        assert actions.shape == (rig.env.num_agents,)
+        candidate = rig.candidate()
+        with pytest.raises(ValueError):
+>           rig.population.prepare_vector_step(**candidate)
+
+tests/test_townlet/regressions/bac/test_environment_parent_custody.py:569: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/population/vectorized.py:1361: in prepare_vector_step
+    return self._prepare_vector_step(
+src/townlet/population/vectorized.py:1371: in _prepare_vector_step
+    record = self._step_record(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f2aefe720d0>
+
+    def _step_record(
+        self, *, accepted: Any, world_ids: tuple[str, ...], predecessor: torch.Tensor, actions: torch.Tensor, active_on_entry: torch.Tensor
+    ) -> _VectorStep:
+        if (
+            self._preparing_checkpoint is not None
+            or self._selection_frame is not None
+            or self._initial_reset is not None
+            or self._failed_step
+            or self._owned_reset_pending
+            or accepted is not self._accepted
+            or accepted is None
+        ):
+>           raise RuntimeError("Step requires this population's healthy accepted reset")
+E           RuntimeError: Step requires this population's healthy accepted reset
+
+src/townlet/population/vectorized.py:1296: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_real_validation_failure_preserves_primary_and_terminal_denial[False]
+FAILED tests/test_townlet/regressions/bac/test_environment_parent_custody.py::test_genuine_unowned_selector_does_not_grant_pop_claim_authority
+======================== 2 failed, 34 passed in 10.75s =========================

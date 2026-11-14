@@ -1,0 +1,47 @@
+{
+  "phase": "nested-green1",
+  "argv": [
+    "-q",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-children-p5/implementation-repair-v2/nested-green1/pytest",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "-p",
+    "no:cacheprovider",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py"
+  ],
+  "pid": 230974,
+  "ppid": 230971,
+  "affinity": [
+    0
+  ],
+  "ram_limit": 4294967296,
+  "start": "2026-11-14T11:22:39.561347+00:00",
+  "end": "2026-11-14T11:22:44.161435+00:00",
+  "elapsed": 4.60007141600363,
+  "exit": 1,
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "bytes": 75424,
+      "sha256": "02e7d4a50646a445f7ebf9e25ff3945a207f777feea203002b4e4ab638921a96"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py",
+      "bytes": 67085,
+      "sha256": "9bcbe763dec44e421c529af33c13cac935d9af2557c957841918c84331083b62"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "interpreter": "/workspace/hamlet/.venv/bin/python",
+  "actual_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-"
+  ],
+  "host": "51d55c80f0b0",
+  "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+  "start_identity": "13466986"
+}

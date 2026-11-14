@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 1632,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/output/attempt/a/command.json",
+    "sha256": "d9c7387922e6cad84c223d824184dd403ca13849387609a9f1332bf262978688"
+  },
+  "policy": {
+    "bytes": 909,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/metadata/identity-policy.json",
+    "sha256": "0c886489ec01d457360e1c95d0af6e82b59e6e9e13ce735860c4751043088228"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 228997,
+    "ppid": 228996,
+    "start_identity": "13379824"
+  },
+  "runner_source_start": {
+    "bytes": 3154,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/output/attempt/source-0002.json",
+    "sha256": "138c9b2ad0e2d5fe369d100231ff5ece14d497ec82b4d8421a7921768249ca7d"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 8954,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/metadata/spec.json",
+    "sha256": "5a3cd625452ebfec4fc72afdcfeb38cc639bc8d667277bb288c6f9a3e295c3c9"
+  },
+  "trusted_grant": {
+    "bytes": 3298,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-repair-full12/fixtures/test_public_run_seals_zero_exi0/metadata/grant.json",
+    "sha256": "ceeb0fc76a8f66dd68077232091df1c9ced0be211f8325cc08eac92a6d4192d1"
+  }
+}

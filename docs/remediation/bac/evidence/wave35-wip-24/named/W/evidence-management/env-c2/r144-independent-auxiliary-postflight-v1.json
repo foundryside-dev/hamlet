@@ -1,0 +1,11 @@
+{
+  "probe": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/env-c2/independent-review/test_env_c2_independent_v1.py",
+  "sha256": "b0b5837ca9b4d4997fa3bca2730053a0e95f111fab41184f73aa4352ba2e2e0f",
+  "candidate_tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0",
+  "attempts": [
+    "collection-attempt-1",
+    "runtime-attempt-1"
+  ],
+  "scope": "R144 nine independent cases PASS; external probe separately bound, not APP manifest member.",
+  "source_before_after": "PASS"
+}

@@ -1,0 +1,29 @@
+{
+  "schema": "bac-hardware-p2-task2-root-adoption-v1",
+  "at": "2026-11-14T10:49:54.594716+00:00",
+  "owner": "/root",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-freeze-v2.json",
+    "bytes": 10819,
+    "sha256": "fec12ea9073b98179cbf6ef9a1d5187c7542575602325b9147076366ca801900"
+  },
+  "independent_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/review-v2.json",
+    "bytes": 8413,
+    "sha256": "24a4b45b268f8068b168af16d1f57c89ec5d790e22b8cbe320a4a21fd67b7cd6"
+  },
+  "disposition": "ADOPT BOUNDED TASK2 OWNER TRANSPORT",
+  "scope": "Pure tooling and authored inert source/Git fixtures only. Task3/4, actual APP/P3/Git/source integration, P4/P5 and hardware qualification remain unrun. No new workers.",
+  "author_tests": "154 distinct current-byte cases:153 two-CPU plus1 separately three-CPU; targeted6 overlap.",
+  "independent_tests": "116 plus1 separate guard-refusal control; overlap author suite, not additive unique count.",
+  "resolved": [
+    "P2-TASK2-IMPORT-1: actual child START/END imports now share frozen byte/import-root authority checks; valid dynamic imports retained."
+  ],
+  "remaining": [
+    "Task3 sampler/emission/guard current payload transport and inventory completion",
+    "Task4 actual abrupt guard death with live Git and owned-group backstop; separate exact source/Git lease and recipe required",
+    "P4/P5 actual full return/ack/reap correspondence,3/6/8/10 and valid7.9/8.1,strict actions/RNG remain UNRUN",
+    "APP source-owned instrumentation/inter-op5,server/CUDA qualification and all final BAC gates remain required"
+  ],
+  "next_grant": "Task3 sampler/emission/owner-local inventory correspondence only, existing runner/tests/P0/wrapper body budget <=5 files/5000 lines. Pure inert tests2CPU/4GiB; no APP/P3 actual source/Git process lease. Task4 backstop and full chain remain separately scheduled."
+}

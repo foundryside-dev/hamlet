@@ -1,0 +1,131 @@
+{
+  "accepted_recipe": {
+    "bytes": 5358,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task4-recipe-v1.json",
+    "sha256": "8ec54e08008118d0d2285a7f07c8d2c369c93e0449189936eb1935202dd8e197"
+  },
+  "additional_input_requirements": [
+    "Real measured P1/root admission, never sealed_fixture or stub_source",
+    "Actual current existing source checkout and no-writer/index lease; refresh R144 baseline after WIP24/current HEAD change",
+    "Observed pytest/runtime module closure under in-checkout .venv must be authorized in source/dependency map and import roots; isolated discovery environment must be truthful",
+    "Two per-case source grants/freezes with exactly spec-used CPU bounds, backed by same real barrier",
+    "External T paths; canonical host lease namespace; four CPU slot and root-accepted memory/scratch",
+    "Root-scoped execution lease with final pins and at least35s remaining per case; six-minute maximum combined capture/runtime window proposed"
+  ],
+  "at": "2026-11-14T11:59:50.364877+00:00",
+  "body_budget": {
+    "maximum_bodies": 5,
+    "maximum_lines": 5000,
+    "whole_bodies": 4,
+    "whole_lines": 4431
+  },
+  "changed_files": [
+    "test_run_bac_hardware_v1.py",
+    "run-inert-v1.py"
+  ],
+  "files": [
+    {
+      "bytes": 110631,
+      "lines": 1603,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+    },
+    {
+      "bytes": 152607,
+      "lines": 2202,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "5340db4c7eac1870f6748d6116ef2ca7a307e9994c6bbb790c0d272fc9070e43"
+    },
+    {
+      "bytes": 34654,
+      "lines": 526,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 5571,
+      "lines": 100,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+    }
+  ],
+  "p1_confirmation": {
+    "actor": "/root/bac_hardware_admission_p1",
+    "api": "capture(candidate:Path,admission_request:Path,destination:Path)->dict; no top-level capture CLI",
+    "blockers": [
+      "Current P1 hardcoded P0 adc8 conflicts adopted e4f31",
+      "Current P1 treats Git dependency as Python distribution; only nvidia-smi is special"
+    ],
+    "source": "Direct bounded supplier message; formal capsule pending"
+  },
+  "p1_historical_interface": {
+    "bytes": 5867,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+    "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+  },
+  "p3_supplier": {
+    "bytes": 11059,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/owner-task4-backstop-recipe-supplier-v2.json",
+    "sha256": "3f413a3ca2b6c62cd8fe07605d402eac93c51c17435dcdba1bf90f2a44141bd9"
+  },
+  "predecessor_adoption": {
+    "bytes": 1820,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/root-task3-adoption-v1.json",
+    "sha256": "99557032bb471d7af538ce96c540c32ba41119d87563218ddeaba883ebca2c99"
+  },
+  "predecessor_freeze": {
+    "bytes": 11033,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-freeze-v2.json",
+    "sha256": "1449655fec7f34c09057b5ded121c02cb22a0bc7e58a6f944b313556848a6717"
+  },
+  "preparation": {
+    "bytes": 13272,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-TASK4-PREPARATION-v1.md",
+    "sha256": "1720e6169039052150b4450c88d312cf0b8b60cdc3b85829c043d35d312d1305"
+  },
+  "preservation": "No APP edits, Git command/index operation, worktree/branch/checkout or execution copy. Four-body static work only; P3/P1 supplier metadata consumed without producer body reads. No source/index/runtime lease taken. Existing Task3 runner/P0 and all historical evidence unchanged.",
+  "production_cleanup_changes": "NONE; retained actual RED required before any change",
+  "required_inputs": {
+    "bytes": 7648,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task4-required-inputs-v1.json",
+    "sha256": "79d821f0242754f35291c4548db55ea8a236153b329ad6d35edffb6e338ac868"
+  },
+  "schema": "bac-p2-task4-preparation-freeze-v1",
+  "source_snapshots": [
+    {
+      "bytes": 110631,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run_bac_hardware_v1.py.0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97.py.txt",
+      "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+    },
+    {
+      "bytes": 152607,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/test_run_bac_hardware_v1.py.5340db4c7eac1870f6748d6116ef2ca7a307e9994c6bbb790c0d272fc9070e43.py.txt",
+      "sha256": "5340db4c7eac1870f6748d6116ef2ca7a307e9994c6bbb790c0d272fc9070e43"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/bac_hardware_protocol_v1.py.e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860.py.txt",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "bytes": 5571,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py.7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3.py.txt",
+      "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+    }
+  ],
+  "static_check": {
+    "bytes": 1629,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task4-static-check-v1.json",
+    "sha256": "05b92ea8a15ecf8cfdbab4022ad8b1a33739d688807e982fc9a25f067f450996"
+  },
+  "status": "DURABLE AUTHORED PREPARATION ONLY; ALL COLLECTION/RUNTIME/ACTUAL CAPTURE/BACKSTOP UNRUN",
+  "unrun": [
+    "Exact pytest collection",
+    "Current-byte pure regressions and nine-case3CPU regression",
+    "Genuine repaired/adopted P1 captures",
+    "Actual controller-exit live-Git backstop",
+    "Actual job-timeout live-Git backstop",
+    "Independent exact-freeze actual Task4 review",
+    "Full P3/P2/P4/P5/APP and later16-worker CUDA server gates"
+  ]
+}

@@ -1,0 +1,287 @@
+"""Independent inert P5 adversarial review; no APP or child execution."""
+import contextlib
+import copy
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import resource
+import sys
+import time
+import traceback
+
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+HERE = Path(__file__).parent
+PINS = {
+    'verify_bac_hardware_children_v1.py': '34df34f0d5a1b80a90d8d553b96f3a7fa9c3a9258c1601742110df39568bd81c',
+    'test_verify_bac_hardware_children_v1.py': '89a44f3d7c8fd77bd9975a7192b46522cd2a6683ec85df9d3804e3e4294317f4',
+    'bac_hardware_protocol_v1.py': 'e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860',
+}
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def pin_sources(folder, when):
+    rows = []
+    for name, expected in PINS.items():
+        data = (Q / name).read_bytes()
+        (folder / (when + '-' + name + '.txt')).write_bytes(data)
+        rows.append({'path': str(Q / name), 'sha256': sha(data), 'bytes': len(data), 'lines': len(data.splitlines())})
+        assert sha(data) == expected, (name, when, sha(data))
+    return rows
+
+
+def save_subject(folder, subject):
+    folder.mkdir()
+    manifest = {k: v for k, v in subject.items() if k != 'documents'}
+    manifest['documents'] = []
+    for index, row in enumerate(subject['documents']):
+        leaf = f'document-{index:03d}.json'
+        (folder / leaf).write_bytes(row['content'])
+        manifest['documents'].append({'reference': row['reference'], 'retained_content': leaf})
+    (folder / 'subject.json').write_text(json.dumps(manifest, indent=2) + '\n')
+
+
+def run_probes(folder):
+    import test_verify_bac_hardware_children_v1 as fixture
+    import verify_bac_hardware_children_v1 as verifier
+    rows = []
+
+    def evaluate(name, bundle, should_satisfy=False, standalone=False):
+        case_dir = folder / name
+        case_dir.mkdir()
+        subject = bundle.subject()
+        save_subject(case_dir / 'subject', subject)
+        record = {'name': name, 'expected': 'satisfied' if should_satisfy else 'refused', 'mode': 'standalone' if standalone else 'pure'}
+        try:
+            if standalone:
+                spec = fixture.materialize(bundle, case_dir / 'inert')
+                result = verifier.verify_children(spec, bundle.jobid, case_dir / 'receipt.json', obligation_id='strict')['result']
+                save_subject(case_dir / 'materialized-subject', bundle.subject())
+            else:
+                result = verifier.validate_child_obligation(subject)
+            record.update(observed=result['verdict'], result=result)
+        except ValueError as exc:
+            record.update(observed='refused', error=str(exc))
+        record['matched_expectation'] = record['observed'] == record['expected']
+        record['receipt_exists'] = (case_dir / 'receipt.json').exists()
+        (case_dir / 'result.json').write_text(json.dumps(record, indent=2) + '\n')
+        print(json.dumps(record), flush=True)
+        rows.append(record)
+
+    for case in ('replay_poison', 'inherited_pid', 'per_local_distinct'):
+        evaluate('control-' + case, fixture.Bundle(case), True)
+    pair, _ = fixture.pair_bundle()
+    evaluate('control-phase-pair', pair, True)
+
+    pair, _ = fixture.pair_bundle()
+    wrapper = pair.named['pair-wrapper']
+    wrapper['subjects'].reverse()
+    for row, label in zip(wrapper['subjects'], ('invocation_phase_reference', 'invocation_phase_failure')):
+        row['case'] = label
+    pair.named['evidence']['related_attempts'] = [row['spec'] for row in wrapper['subjects']]
+    evaluate('phase-swapped-jobs-relabelled-wrapper', pair)
+
+    pair, subs = fixture.pair_bundle()
+    first, second = subs[0][0], subs[1][0]
+    # Replace the failure subject with an independently identified reference run.
+    old_job, new_job = second.jobid, first.jobid
+    old_case, new_case = second.case, first.case
+    old_node, new_node = second.node, first.node
+    def rename(value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if isinstance(child, str):
+                    value[key] = child.replace(old_job, new_job).replace(old_case, new_case).replace(old_node, new_node)
+                else:
+                    rename(child)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                if isinstance(child, str):
+                    value[index] = child.replace(old_job, new_job).replace(old_case, new_case).replace(old_node, new_node)
+                else:
+                    rename(child)
+    for _, obj, ref in second.items:
+        rename(obj)
+        rename(ref)
+    second.named['child-result']['phase'][0]['completion_failed'] = None
+    pair.named['pair-wrapper']['subjects'][1]['job_id'] = new_job
+    evaluate('phase-two-reference-runs-no-failure-run', pair)
+
+    mutations = [
+        ('launch-command-bool', 'replay_poison', 'launch', 'command', True),
+        ('launch-source-witness-foreign', 'replay_poison', 'launch', 'source_witness', copy.deepcopy(fixture.OPAQUE)),
+        ('launch-parent-argv-object', 'replay_poison', 'launch', 'parent_argv', {'unknown': True}),
+        ('launch-inherited-imports-object', 'replay_poison', 'launch', 'inherited_imports', {'unknown': True}),
+        ('launch-timestamp-bool', 'replay_poison', 'launch', 'at', True),
+        ('launch-monotonic-bool', 'replay_poison', 'launch', 'monotonic_ns', True),
+        ('raw-worker-identity-object', 'replay_poison', 'child-start-raw', 'worker_identity', {'unknown': True}),
+        ('raw-observation-limit-object', 'replay_poison', 'child-start-raw', 'observation_limit', {'unknown': True}),
+        ('sampler-commands-malformed', 'inherited_pid', 'admission-start-sampler', 'commands', [True]),
+        ('sampler-lock-time-bool', 'inherited_pid', 'admission-start-sampler', 'lock_acquired_ns', True),
+        ('sampler-lock-reversed', 'inherited_pid', 'admission-start-sampler', 'lock_released_ns', 1),
+        ('guard-process-time-after-return', 'inherited_pid', 'admission-end', 'monotonic_ns', 999000000000),
+        ('parent-end-before-child-start', 'replay_poison', 'parent-end', 'monotonic_ns', 1),
+        ('claim-time-before-launch', 'replay_poison', 'claim-101', 'monotonic_ns', 0),
+    ]
+    for name, case, document, key, value in mutations:
+        b = fixture.Bundle(case)
+        b.named[document][key] = value
+        evaluate(name, b)
+    for name, field, value in (
+        ('context-grant-bool', 'trusted_grant', True),
+        ('context-required-imports-object', 'required_imports', {'unknown': True}),
+        ('context-policy-bool', 'policy', True),
+    ):
+        b = fixture.Bundle()
+        b.named['child-start-raw']['context'][field] = value
+        evaluate(name, b)
+    b = fixture.Bundle()
+    b.named['payload']['exitcode'] = False
+    evaluate('negative-control-exit-bool', b)
+    b = fixture.Bundle()
+    b.named['launch']['command'] = True
+    b.named['child-start-raw']['context']['trusted_grant'] = True
+    evaluate('standalone-malformed-launch-and-grant', b, standalone=True)
+    b = fixture.Bundle()
+    evaluate('control-standalone', b, True, standalone=True)
+    # New causal cases use valid v2 sampler/control graphs and re-seal all refs.
+    for label, end_ns in [('parent-end-before-guard-return', 10000000000), ('parent-end-before-guard-ack-reap', 11000000000)]:
+        b = fixture.Bundle('inherited_pid')
+        b.named['child-end']['monotonic_ns'] = end_ns
+        b.named['child-end']['elapsed_ns']['value'] = end_ns - b.named['child-start']['monotonic_ns']
+        evaluate(label, b)
+    for label, stamp in [('reports-after-parent-end', '2026-11-15T00:00:00.000000Z'), ('reports-before-parent-start', '2026-11-13T00:00:00.000000Z')]:
+        b = fixture.Bundle()
+        for phase in ('setup', 'call', 'teardown'):
+            b.named['report-' + phase]['at'] = stamp
+        evaluate(label, b)
+    b = fixture.Bundle()
+    b.named['parent-end'].update(role_id=b.role, role='spawn-child')
+    b.named['parent-end-raw']['context']['role_id'] = b.role
+    evaluate('parent-end-substitutes-child-role', b)
+    b = fixture.Bundle('inherited_pid')
+    b.named['admission-launch']['inherited_imports'] = [{'name': 'townlet.exploration.rng_custody', 'reference': b.owner_source}]
+    evaluate('inherited-module-alias-crosswired', b)
+    b = fixture.Bundle()
+    item = {'name': 'townlet.exploration.rng_custody', 'reference': b.owner_source, 'phases': ['start', 'end']}
+    for _, obj, _ in b.items:
+        if obj.get('schema') == 'bac-hardware-process-observation-v2':
+            obj['context']['required_imports'] = [item]
+    evaluate('required-import-alias-crosswired', b)
+    # Standalone proof on one remaining causal mutation, if present.
+    b = fixture.Bundle()
+    for phase in ('setup', 'call', 'teardown'):
+        b.named['report-' + phase]['at'] = '2026-11-15T00:00:00.000000Z'
+    evaluate('standalone-reports-after-parent-end', b, standalone=True)
+    # Fresh coherent joins, plus valid boundary/source declarations.
+    b = fixture.Bundle()
+    for phase in ('parent', 'parent-end'):
+        b.named[phase].update(role_id=b.role, role='spawn-child')
+        b.named[phase + '-raw']['context']['role_id'] = b.role
+    evaluate('both-parent-phases-substitute-child-role', b)
+
+    def timeline():
+        b = fixture.Bundle()
+        values = {'parent': '00.000000', 'parent-end': '20.000000', 'child-start': '02.000000', 'child-end': '15.000000'}
+        for name, seconds in values.items():
+            stamp = '2026-11-14T00:00:' + seconds + 'Z'
+            b.named[name]['at'] = stamp
+            b.named[name + '-raw']['at'] = stamp
+        b.named['launch']['at'] = '2026-11-14T00:00:01.500000Z'
+        b.named['claim-101']['at'] = '2026-11-14T00:00:02.000000Z'
+        for phase, seconds in [('setup', '01.000000'), ('call', '16.000000'), ('teardown', '17.000000')]:
+            b.named['report-' + phase]['at'] = '2026-11-14T00:00:' + seconds + 'Z'
+        b.named['result']['end'] = {'state': 'measured', 'value': '2026-11-14T00:00:20.000000Z', 'reason': ''}
+        b.named['result']['elapsed_ns'] = {'state': 'measured', 'value': 20000000000, 'reason': ''}
+        return b
+    evaluate('control-separated-utc-timeline', timeline(), True)
+    b = timeline()
+    b.named['report-call']['at'] = '2026-11-14T00:00:01.750000Z'
+    b.named['report-teardown']['at'] = '2026-11-14T00:00:01.800000Z'
+    evaluate('passing-call-before-child-start', b)
+    b = timeline()
+    b.named['report-call']['at'] = '2026-11-14T00:00:14.000000Z'
+    b.named['report-teardown']['at'] = '2026-11-14T00:00:14.500000Z'
+    evaluate('passing-call-before-child-end-standalone', b, standalone=True)
+    b = fixture.Bundle('inherited_pid')
+    b.named['child-end']['monotonic_ns'] = 11200000000
+    b.named['child-end']['elapsed_ns']['value'] = 9200000000
+    evaluate('control-observer-end-equals-reap', b, True)
+    b = fixture.Bundle('inherited_pid')
+    for trial in fixture.ACTIONS:
+        b.named[trial + '-observation']['parent_custody'].update(acknowledgement_received_ns=13000000000, reaped_ns=13000000000)
+    evaluate('control-both-endpoints-exact-deadline', b, True)
+    b = fixture.Bundle('inherited_pid')
+    b.named['admission-observation']['parent_custody'].update(acknowledgement_received_ns=11200000000, reaped_ns=11100000000)
+    evaluate('control-reap-before-ack', b, True)
+    b = fixture.Bundle('inherited_pid')
+    item = {'name': 'townlet.exploration.rng_custody', 'reference': b.imports['townlet.exploration.rng_custody']}
+    for _, obj, _ in b.items:
+        if obj.get('schema') == 'bac-hardware-process-observation-v2':
+            obj['context']['required_imports'] = [{**item, 'phases': ['start', 'end']}]
+        if obj.get('schema') == 'bac-hardware-owner-launch-v1':
+            obj['inherited_imports'] = [item]
+    evaluate('control-explicit-valid-import-joins', b, True)
+    (folder / 'probe-results.json').write_text(json.dumps(rows, indent=2) + '\n')
+    return 1 if any(not row['matched_expectation'] for row in rows) else 0
+
+
+def main():
+    mode, attempt = sys.argv[1:]
+    folder = HERE / attempt
+    folder.mkdir(exist_ok=False)
+    os.sched_setaffinity(0, {min(os.sched_getaffinity(0))})
+    resource.setrlimit(resource.RLIMIT_AS, (4 * 1024**3, 4 * 1024**3))
+    for key in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS'):
+        os.environ[key] = '1'
+    os.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
+    sys.dont_write_bytecode = True
+    sys.path.insert(0, str(Q))
+    record = {
+        'schema': 'bac-p5-independent-probe-execution-v1', 'mode': mode, 'attempt': attempt,
+        'argv': sys.argv, 'actual_argv': [x.decode() for x in Path('/proc/self/cmdline').read_bytes().split(b'\0') if x],
+        'interpreter': sys.executable, 'cwd': os.getcwd(), 'pid': os.getpid(), 'ppid': os.getppid(),
+        'start_identity': Path('/proc/self/stat').read_text().rsplit(')', 1)[1].split()[19],
+        'host': os.uname().nodename, 'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+        'affinity': sorted(os.sched_getaffinity(0)), 'ram_limit': 4 * 1024**3,
+        'start': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        'probe': {'path': str(Path(__file__)), 'sha256': sha(Path(__file__).read_bytes())},
+    }
+    before = time.monotonic_ns()
+    record['source_before'] = pin_sources(folder, 'before')
+    code = 2
+    with (folder / 'stdout.log').open('x') as out, (folder / 'stderr.log').open('x') as err:
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            try:
+                if mode == 'probe':
+                    code = run_probes(folder)
+                elif mode == 'suite':
+                    import pytest
+                    args = ['-q', '--noconftest', '-c', '/dev/null', '--basetemp=' + str(folder / 'pytest'), '-p', 'no:cacheprovider', str(Q / 'test_verify_bac_hardware_children_v1.py')]
+                    record['pytest_argv'] = args
+                    code = int(pytest.main(args))
+                else:
+                    raise ValueError('unknown mode')
+            except BaseException:
+                traceback.print_exc()
+                code = 2
+    record.update(exit=code, duration_ns=time.monotonic_ns() - before, end=datetime.datetime.now(datetime.timezone.utc).isoformat())
+    record['source_after'] = pin_sources(folder, 'after')
+    record['unchanged'] = record['source_before'] == record['source_after']
+    inventory = []
+    for path in sorted(folder.rglob('*')):
+        if path.is_file() and not path.is_symlink():
+            data = path.read_bytes()
+            inventory.append({'path': str(path), 'bytes': len(data), 'sha256': sha(data)})
+    (folder / 'retained-inventory.json').write_text(json.dumps(inventory, indent=2) + '\n')
+    (folder / 'execution.json').write_text(json.dumps(record, indent=2) + '\n')
+    print(json.dumps(record))
+    return code
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

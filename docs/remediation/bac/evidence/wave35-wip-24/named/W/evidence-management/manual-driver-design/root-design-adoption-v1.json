@@ -1,0 +1,50 @@
+{
+  "schema": "bac-manual-physical-design-root-adoption-v1",
+  "at": "2026-11-14T11:07:17.610126+00:00",
+  "owner": "/root",
+  "disposition": "ADOPT FINITE ADDITIVE DESIGN; IMPLEMENTATION PENDING C2 WRITER HANDOFF",
+  "evidence": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/manual-physical-driver-design-v1.md",
+      "bytes": 27262,
+      "sha256": "5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/input-inventory-v1.json",
+      "bytes": 6937,
+      "sha256": "681feb8942382a9b06ee3f064296e4af625d36645a158c7614616a299e72bf84"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-review/review-v1.json",
+      "bytes": 6626,
+      "sha256": "7cf914a8b51c16d780b93643059a43ed8f2aa7c18c64d0c0da41a1c2d8078c5e"
+    }
+  ],
+  "necessity": "Preserve same learned BANK/ENV completed-parent correlation and authentic between-step retirement, without production POP learning or fabricated claim/finish. Separate geometry/clocks remain explicit independent contracts.",
+  "scope": "ENV-issued ManualPhysicalSession step/retire; existing honest local role/completion owners; common physical/DAC kernel with explicit absence of manual intrinsic calls. No new population outcome subsystem, no backwards compatibility, no reduction approved.",
+  "budgets": {
+    "packet_M": {
+      "env": 3350,
+      "manual_helper": 450,
+      "reward_calculator": 100,
+      "tests": 900,
+      "total": 4800,
+      "bodies": 4
+    },
+    "packet_F": {
+      "existing_two_fixture_bodies": 3300,
+      "bodies": 2
+    }
+  },
+  "remaining": [
+    "Implementation test-first, exact source qualification and fresh independent review",
+    "All original physical-dependent fixtures and assertions; broad owner gate remains required",
+    "Full ENV source/device inventory and designated invocation completion consumer shared with C2 remain mandatory later; CPU manual receipt is not RNG completion certification"
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "authority": "No APP writer grant yet; root will hand off after C2 finite increment/review. No new branch/worktree/checkout/source-execution-copy or source inspection expansion authorized by this record."
+}

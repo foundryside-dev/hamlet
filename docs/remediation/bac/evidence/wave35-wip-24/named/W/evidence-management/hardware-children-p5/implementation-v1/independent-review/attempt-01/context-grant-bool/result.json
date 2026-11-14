@@ -1,0 +1,38 @@
+{
+  "name": "context-grant-bool",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+    ],
+    "evidence": [
+      {
+        "bytes": 1090,
+        "path": "/synthetic/out/a/replay-poison/evidence.json",
+        "sha256": "465bb8994b23476b8386d321157bd846d320129b5ee7c02e504830c020c7475a"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 1593,
+        "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+        "sha256": "77eb7ac09fa34710cb99c1cf8beb78851a2149a3ff46c3017109bb81beda5e5c"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 3644,
+        "path": "/synthetic/out/a/replay-poison/parent.json",
+        "sha256": "6db0ad0f5de1859769cfa3343d7a5c4d41d91d325e847eefef759d099e235468"
+      }
+    ],
+    "related_attempts": []
+  },
+  "matched_expectation": false
+}

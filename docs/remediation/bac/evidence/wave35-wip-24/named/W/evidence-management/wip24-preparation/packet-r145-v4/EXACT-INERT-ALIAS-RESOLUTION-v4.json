@@ -1,0 +1,157 @@
+{
+  "initial_draft_plan_failure": "logical destination collision: named/W/evidence-management/hardware-children-p5/implementation-v1/independent-review/probe-v1.py.txt",
+  "no_source_copy": true,
+  "resolutions": [
+    {
+      "exact_retained_alias": {
+        "bytes": 34654,
+        "path": "evidence-management/hardware-children-p5/implementation-v1/red2/bac_hardware_protocol_v1.py.txt",
+        "root": "W",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      },
+      "original": {
+        "bytes": 34654,
+        "path": "bac_hardware_protocol_v1.py",
+        "root": "Q",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 110631,
+        "path": "evidence-management/hardware-runner-p2/owner-integration/run_bac_hardware_v1.py.0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97.py.txt",
+        "root": "W",
+        "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+      },
+      "original": {
+        "bytes": 110631,
+        "path": "run_bac_hardware_v1.py",
+        "root": "Q",
+        "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 79319,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v4/final1/verify_bac_hardware_children_v1.py.txt",
+        "root": "W",
+        "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+      },
+      "original": {
+        "bytes": 79319,
+        "path": "verify_bac_hardware_children_v1.py",
+        "root": "Q",
+        "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 72891,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v4/final1/test_verify_bac_hardware_children_v1.py.txt",
+        "root": "W",
+        "sha256": "fac752e3c7ca0b33f96c78a6eefe0bd39a0d4e378f6b456728a86b86e3affd4b"
+      },
+      "original": {
+        "bytes": 72891,
+        "path": "test_verify_bac_hardware_children_v1.py",
+        "root": "Q",
+        "sha256": "fac752e3c7ca0b33f96c78a6eefe0bd39a0d4e378f6b456728a86b86e3affd4b"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 15814,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/probe-v4.py.txt",
+        "root": "W",
+        "sha256": "f576e68cff5fcf310c38382fe58b6ef9a35229c92ce1515875f9102819045403"
+      },
+      "original": {
+        "bytes": 15814,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v4/independent-review/probe-v4.py",
+        "root": "W",
+        "sha256": "f576e68cff5fcf310c38382fe58b6ef9a35229c92ce1515875f9102819045403"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 10201,
+        "path": "evidence-management/hardware-children-p5/implementation-v1/independent-review/probe-v1.py.txt",
+        "root": "W",
+        "sha256": "4a28229c955395c697aacbe28fda4d2af918625c1a0118b714da193f16276195"
+      },
+      "original": {
+        "bytes": 10201,
+        "path": "evidence-management/hardware-children-p5/implementation-v1/independent-review/probe-v1.py",
+        "root": "W",
+        "sha256": "4a28229c955395c697aacbe28fda4d2af918625c1a0118b714da193f16276195"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 12084,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/probe-v2.py.txt",
+        "root": "W",
+        "sha256": "411eaf8d077f43f866f305cda99c8a45b1651ff514a01aadc65421f569352214"
+      },
+      "original": {
+        "bytes": 12084,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v2/independent-review/probe-v2.py",
+        "root": "W",
+        "sha256": "411eaf8d077f43f866f305cda99c8a45b1651ff514a01aadc65421f569352214"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 15028,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/probe-v3.py.txt",
+        "root": "W",
+        "sha256": "411391537cb9cbd462676801fe05f2e8a7cd4e8cf396ded09e53dce81fcb6bb2"
+      },
+      "original": {
+        "bytes": 15028,
+        "path": "evidence-management/hardware-children-p5/implementation-repair-v3/independent-review/probe-v3.py",
+        "root": "W",
+        "sha256": "411391537cb9cbd462676801fe05f2e8a7cd4e8cf396ded09e53dce81fcb6bb2"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 152607,
+        "path": "evidence-management/hardware-runner-p2/owner-integration/test_run_bac_hardware_v1.py.5340db4c7eac1870f6748d6116ef2ca7a307e9994c6bbb790c0d272fc9070e43.py.txt",
+        "root": "W",
+        "sha256": "5340db4c7eac1870f6748d6116ef2ca7a307e9994c6bbb790c0d272fc9070e43"
+      },
+      "original": {
+        "bytes": 152607,
+        "path": "test_run_bac_hardware_v1.py",
+        "root": "Q",
+        "sha256": "5340db4c7eac1870f6748d6116ef2ca7a307e9994c6bbb790c0d272fc9070e43"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    },
+    {
+      "exact_retained_alias": {
+        "bytes": 5571,
+        "path": "evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py.7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3.py.txt",
+        "root": "W",
+        "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+      },
+      "original": {
+        "bytes": 5571,
+        "path": "evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+        "root": "W",
+        "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+      },
+      "scope": "Same historical bytes; no re-execution. Original producing path retained here."
+    }
+  ],
+  "status": "Exact bytes retained, original logical/producer names preserved"
+}

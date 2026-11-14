@@ -1,0 +1,22 @@
+{
+  "status": "FAILED BOOTSTRAP; PYTEST UNRUN",
+  "observed_exit_code": 1,
+  "reason": "Default shell python could not import pytest: ModuleNotFoundError at run-inert-v1.py line50. No test collection/execution occurred. Existing R/.venv interpreter used on collection02; nothing installed.",
+  "argv": [
+    "python",
+    "-B",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "collection01",
+    "--collect-only"
+  ],
+  "actual_pid": null,
+  "utc_start": null,
+  "utc_end": null,
+  "elapsed_seconds": null,
+  "unavailable_reason": "Initial wrapper exception escaped before structured record; process PID/time not retained, not inferred.",
+  "output_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/collection01/output.log",
+    "bytes": 0
+  },
+  "source": "test-freeze-v1.json identifies preattempt pins; no source mutation occurred before collection02."
+}

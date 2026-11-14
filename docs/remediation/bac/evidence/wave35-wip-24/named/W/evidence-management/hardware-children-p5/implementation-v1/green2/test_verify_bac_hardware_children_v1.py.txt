@@ -1,0 +1,244 @@
+"""Synthetic closed P5 semantics; no APP, Torch, CUDA or child execution."""
+import copy
+import hashlib
+import importlib
+import importlib.util
+import json
+from pathlib import Path
+
+import pytest
+import bac_hardware_protocol_v1 as p0
+
+PREFIX = 'tests/test_townlet/regressions/bac/'
+STAMP = '2026-11-14T00:00:00.000000Z'
+OPAQUE = {'path': '/synthetic/opaque', 'bytes': 0, 'sha256': hashlib.sha256(b'').hexdigest()}
+CORE = ['bootstrap_failure', 'runtime_query_failure', 'local_completion_single', 'local_completion_multiple_body',
+        'local_completion_duplicate_parent', 'poison_unknown_ready', 'poison_ready_qualified', 'poison_ready_healthy_only',
+        'operation_body_completion', 'inherited_pid', 'invocation_same_error', 'invocation_child_failure',
+        'invocation_parent_failure', 'invocation_reported_failure', 'invocation_phase_reference', 'invocation_phase_failure']
+PRODUCER = [f'{a}_{b}' for a in ('flat', 'per') for b in ('local_single', 'local_distinct', 'local_same', 'admitted_single', 'admitted_same')]
+ACTIONS = {'admission': ['resolve_cuda','enroll','report_failure','domain_admission'],
+           'local': ['resolve_cuda','complete','completion_failed','report_failure','domain_local_cuda_access','domain_local_cuda_policy','domain_resolve_local_cuda_record'],
+           'invocation':['active_enter','active_exit','active_completion_failed','completed_completion_failed','domain_device_invocation']}
+
+
+def api():
+    assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+    return importlib.import_module('verify_bac_hardware_children_v1')
+
+
+def seed(rule):
+    """Populate all P0 fields, then fixtures override behavioral values explicitly."""
+    if isinstance(rule, dict):
+        return {k: seed(v) for k,v in rule.items()}
+    if isinstance(rule, list):
+        if rule[0] == 'enum': return rule[1]
+        if rule[0] == 'list': return [seed(rule[1]) for _ in range(rule[2])]
+        if rule[0] == 'nullable': return None
+        obj = {'state':'measured','value':seed(rule[1]),'reason':''}
+        if rule[0] == 'fact': obj['provenance'] = copy.deepcopy(OPAQUE)
+        return obj
+    if rule == 'reference': return copy.deepcopy(OPAQUE)
+    if rule in p0.TYPES: return seed(p0.TYPES[rule])
+    return {'path':'/synthetic/path','uint':0,'positive-int':1,'int':0,'number':0,'positive-number':1,
+            'bool':True,'text':'synthetic','string':'','sha256':'a'*64,'git-id':'b'*40,'id':'synthetic',
+            'reference-name':'synthetic','utc':STAMP,'env':{}}[rule]
+
+
+class Bundle:
+    def __init__(self, case='replay_poison', kind=None, base='/synthetic'):
+        self.base=base; self.items=[]; self.named={}; self.case=case
+        if case in CORE:
+            self.family='core'; self.role='cuda_core_'+case; self.jobid='cuda-core-'+case.replace('_','-')
+            node='test_isolated_inherited_pid_gate_refusal' if case=='inherited_pid' else 'test_isolated_poison_protocol['+case+']'
+            self.node=PREFIX+'test_rng_cuda_admission.py::'+node
+            self.message='cuda core inherited pid gates fail closed' if case=='inherited_pid' else f'cuda core {case} fail closed'
+        elif case in PRODUCER:
+            self.family='producer'; self.role='cuda_producer_poison'; self.jobid='cuda-producer-poison-'+case
+            self.node=PREFIX+f'test_replay_cuda_producer.py::test_isolated_producer_poison[{case}]'
+            self.message=f'cuda producer {case} poison quarantines under owner custody'
+        else:
+            self.family='replay'; self.role=case; self.jobid='replay-poison' if case=='replay_poison' else 'recurrent-replay-poison'
+            self.node=PREFIX+('test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers' if case=='replay_poison' else 'test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison')
+            self.message='replay poison fail closed' if case=='replay_poison' else 'recurrent replay scratch poison fail closed'
+        self.kind=kind or ('strict-child-producer' if self.family=='producer' else 'strict-child-core')
+        self.validator=copy.deepcopy(OPAQUE)
+        witness=self.add('witness',{'schema':f'bac-hardware-{self.family}-result-v1'})
+        role=seed('role'); role.update(id=self.role,role='spawn-child',count=1,inter_op=5,debug=True,observer='work',torch_policy='work',cuda_policy='no-initialize')
+        ctrl=copy.deepcopy(role); ctrl.update(id='controller',role='controller')
+        self.roles=[ctrl,role]
+        if case=='inherited_pid':
+            guard=copy.deepcopy(role); guard.update(id='cuda_core_inherited_pid_guard',role='fork-guard',count=3,observer='guard-only',torch_policy='forbidden',cuda_policy='forbidden');self.roles.append(guard)
+        contract=seed('case-contract');contract.update(obligation_kind=self.kind,required_cases=[self.node],witness_schema=witness,validator=self.validator,roles=self.roles,evidence_class='cpu',minimum_devices=0)
+        self.contract=self.add('contract',contract)
+        self.obligation={'id':'strict','kind':self.kind,'required_cases':[self.node],'contract':self.contract,'validator':self.validator,'evidence_class':'cpu','minimum_devices':0}
+        job=seed('job');job.update(id=self.jobid,required_collected_ids=[self.node],roles=self.roles,obligations=[self.obligation],output=base+'/out/a/'+self.jobid,scratch=base+'/scratch/a/'+self.jobid,argv=['/synthetic/python','-m','pytest',self.node],interpreter='/synthetic/python',environment={'OMP_NUM_THREADS':'1','MKL_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1','CUDA_VISIBLE_DEVICES':''})
+        self.job=job
+        candidate=seed('candidate');candidate['inventory']={k:[] for k in candidate['inventory']}
+        self.owner_source=copy.deepcopy(OPAQUE);self.owner_source['path']=base+'/source/'+self.node.split('::')[0]
+        candidate['inventory']={k:[{'path':self.owner_source['path'],'reference':self.owner_source}] for k in candidate['inventory']}
+        self.candidate=self.add('candidate',candidate)
+        spec=seed('spec');spec.update(attempt_id='a',jobs=[job],candidate=self.candidate,authorized_root=base+'/source',output_root=base+'/out',scratch_root=base+'/scratch',lease_root=base+'/lease')
+        self.spec=self.add('spec',spec)
+        self.parent=self.process('parent','controller',100,1,None,None,'start',1000000000)
+        self.parent_end=self.process('parent-end','controller',100,1,None,None,'end',20000000000)
+        self.launch=self.launch_record('launch',self.role,self.parent,'spawn')
+        self.start=self.process('child-start',self.role,101,100,self.parent,self.launch,'start',2000000000)
+        self.end=self.process('child-end',self.role,101,100,self.parent,self.launch,'end',15000000000)
+        self.child_result=self.child()
+        ack={'case':case,'role':self.role,'pid':101,'ppid':100,'message':self.message,'process_start':self.start,'process_end':self.end,('outcome' if self.family=='producer' else 'result'):self.child_result}
+        parent={'schema':f'bac-hardware-{self.family}-result-v1','spec':self.spec,'job_id':self.jobid,'case':case,'role':self.role,'parent_start':self.parent,'owner_launch':self.launch,'process_pid':101,'exitcode':0,'acknowledgement':ack,'assertion_source':self.owner_source,'parent_rng_assertion':{'kind':'source-assertion-only','checkpoint':'after_child_cleanup','function':'assert_ambient_unchanged' if self.family=='core' else '_assert_same_transport','channels':['python','numpy','torch_cpu']}}
+        if self.family=='producer':
+            baseline=self.baseline();parent.update(parent_baseline=self.add('baseline',{'schema':'bac-hardware-producer-parent-baseline-v1','spec':self.spec,'job_id':self.jobid,'case':case,'role':self.role,'parent_start':self.parent,'owner_launch':self.launch,'before':baseline}),before=baseline,after=copy.deepcopy(baseline),cleanup={k:True for k in ['participant_unregistered','queue_closed','queue_thread_joined','process_closed']},parent_rng_assertion={'kind':'source-assertion-and-serialized-digests','checkpoint':'after_child_join_before_unregister','function':'_assert_tree_equal','channels':['python','numpy','torch_cpu','cuda_if_initialized']})
+        self.payload=self.add('payload',parent)
+        evidence=seed('obligation-evidence');evidence.update(attempt_id='a',job_id=self.jobid,spec=self.spec,obligation_id='strict',obligation_kind=self.kind,contract=self.contract,validator=self.validator,case_id=self.node,evidence_class='cpu',payload=self.payload,producer_process=self.parent,related_attempts=[])
+        self.evidence=self.add('evidence',evidence)
+        completion=seed('job-evidence');completion.update(attempt_id='a',job_id=self.jobid,spec=self.spec,collected_ids=[self.node],outcomes=[{'case_id':self.node,'setup':'passed','call':'passed','teardown':'passed','evidence':[copy.deepcopy(OPAQUE)]}],process_records=[ref for _,obj,ref in self.items if obj.get('kind')=='process'],obligation_records=[self.evidence],source_witnesses=[ref for _,obj,ref in self.items if obj.get('kind')=='source-witness'],inventory=[])
+        completion['inventory']=[ref for _,obj,ref in self.items if ref['path'].startswith(job['output']+'/')]
+        self.completion=self.add('completion',completion,job['output']+'/completion.json')
+        result=seed('job-result');result.update(attempt_id='a',job_id=self.jobid,spec=self.spec,exit_code=0,signal=0,reason='',disposition='successful')
+        for key in ('collected_ids','outcomes','process_records','obligation_records','source_witnesses','inventory'):result[key]=completion[key]
+        self.result=self.add('result',result,job['output']+'/result.json')
+
+    def add(self,name,obj,path=None):
+        path=path or (self.job['output'] if hasattr(self,'job') else self.base+'/meta')+'/'+name+'.json'
+        ref={'path':path,'bytes':0,'sha256':'0'*64};self.items.append((name,obj,ref));self.named[name]=obj;return ref
+
+    def launch_record(self,name,role,parent,method):
+        identity=self.obj(parent)['identity']; start=3000000000 if method=='fork' else 1500000000
+        return self.add(name,{'schema':'bac-hardware-owner-launch-v1','spec':self.spec,'command':copy.deepcopy(OPAQUE),'owner_contract':self.contract,'parent_process':parent,'source_witness':self.obj(parent)['source_witness'],'parent_identity':identity,'parent_argv':['/synthetic/python'],'case_id':self.node,'pytest_phase':'call','child_role_id':role,'instance_id':name,'start_method':method,'environment':{},'python_assertions_enabled':True,'inherited_imports':[],'module_names_sha256':'a'*64,'sampler_policy':[],'owner_deadline_ns':start+10000000000,'sampler_cutoff_ns':start+8000000000,'at':STAMP,'monotonic_ns':start})
+
+    def process(self,name,role,pid,ppid,parent,launch,phase,ns):
+        ident={'pid':pid,'ppid':ppid,'start_identity':str(pid),'host':'synthetic','boot_id':'synthetic-boot'}
+        context={'schema':'bac-hardware-identity-context-v1','spec':getattr(self,'spec',OPAQUE),'command':copy.deepcopy(OPAQUE),'trusted_grant':copy.deepcopy(OPAQUE),'job_id':self.jobid,'role_id':role,'required_imports':[],'worker_roles':[],'environment_delta':[],'parent_start':[parent] if parent else [],'replacement_start':[],'lifecycle':[launch] if launch else [],'worker_identity':None,'policy':[],'runtime':[]}
+        raw=self.add(name+'-raw',{'schema':'bac-hardware-process-observation-v2','context':context,'identity':ident,'phase':phase,'environment':{},'worker_identity':None,'torch_loaded':True,'cuda_marker':'uninitialized','observation_limit':'synthetic','at':STAMP,'python_debug':True,'python_optimize':0,'torch_anomaly':False,'source_method':'direct-git','recorder_mode':'outside-guard','module_names_before_sha256':'a'*64,'module_names_after_sha256':'a'*64,'owner_claim':[],'sampler':[]})
+        source=seed('source-witness');source.update(candidate=self.candidate,process_identity=ident,inventory=[self.owner_source])
+        sr=self.add(name+'-source',source)
+        proc=seed('process');proc.update(attempt_id='a',job_id=self.jobid,spec=self.spec,process_id='p-'+str(pid),role_id=role,role='controller' if role=='controller' else ('fork-guard' if 'guard' in role else 'spawn-child'),phase=phase,identity=ident,parent_identity=[self.obj(parent)['identity']] if parent else [],argv=['/synthetic/python'],imports=[],source_witness=sr,environment={},at=STAMP,monotonic_ns=ns,elapsed_ns={'state':'unavailable','value':None,'reason':'start'} if phase=='start' else {'state':'measured','value':ns-2000000000,'reason':''})
+        for key,value in [('intra_op',1),('inter_op',5),('debug',True)]:proc[key]={'state':'measured','value':value,'reason':'','provenance':raw}
+        return self.add(name,proc)
+
+    def obj(self,ref):return next(obj for _,obj,r in self.items if r is ref)
+
+    def child(self):
+        if self.family=='producer':return self.producer()
+        obj={'schema':f'bac-hardware-{self.family}-child-result-v1','spec':self.spec,'job_id':self.jobid,'case':self.case,'role':self.role,'owner_launch':self.launch,'process_start':self.start,'python_assertions_enabled':True,'message':self.message,'rng_assertion_scopes':[]}
+        if self.family=='core':
+            obj.update(phase=[],forks=[])
+            if self.case.startswith('invocation_phase_'):obj['phase']=[{'devices':[0,1,2],'synchronize_events':[0,1,2],'exception_labels':['body','synchronization'],'completion_failed':None if self.case.endswith('reference') else True}]
+            if self.case=='inherited_pid':
+                obj['forks']=[self.fork(t,i) for i,t in enumerate(ACTIONS)]
+                obj['rng_assertion_scopes']=['after_admission','after_local','after_invocation','after_unregister']
+        else:
+            obj['assertion_source']=self.owner_source
+            obj['rng_assertion_scopes']=['after_all_poison_operations'] if self.case=='replay_poison' else ['after_priority_update','after_store_refresh','after_all_poison_operations']
+        return self.add('child-result',obj)
+
+    def fork(self,trial,index):
+        role='cuda_core_inherited_pid_guard';launch=self.launch_record(trial+'-launch',role,self.start,'fork')
+        start=self.process(trial+'-start',role,110+index,101,self.start,launch,'start',3100000000)
+        end=self.process(trial+'-end',role,110+index,101,self.start,launch,'end',10000000000)
+        rows=[]
+        for phase,pr,entry,returned in [('start',start,3000000000,4000000000),('end',end,9000000000,10900000000)]:
+            proc=self.obj(pr);rawref=proc['debug']['provenance']; raw=self.obj(rawref)
+            sampler=self.add(trial+'-'+phase+'-sampler',{'schema':'bac-hardware-owner-sampler-observation-v1','policy':copy.deepcopy(OPAQUE),'launch':launch,'identity':proc['identity'],'phase':phase,'start_ns':entry,'end_ns':entry+100000000,'cumulative_ns':100000000 if phase=='start' else 200000000,'lock_acquired_ns':entry,'lock_released_ns':entry+100000000,'commands':[]})
+            raw['sampler']=[sampler]
+            emission=self.add(trial+'-'+phase+'-emission',{'schema':'bac-hardware-owner-sampler-emission-v1','policy':copy.deepcopy(OPAQUE),'launch':launch,'identity':proc['identity'],'phase':phase,'sampler':sampler,'raw':rawref,'process':pr,'emission_end_ns':entry+200000000,'module_names_after_sha256':'a'*64})
+            rows.append({'phase':phase,'process':pr,'emission':emission,'entry_ns':entry,'return_ns':returned})
+        terminal={'schema':'bac-hardware-core-fork-result-v2','spec':self.spec,'job_id':self.jobid,'role':role,'trial':trial,'owner_launch':launch,'process_start':start,'inherited_parent_start':self.start,'inherited_domain_pid':101,'python_assertions_enabled':True,'module_origin':'inherited-loaded-module-objects','source_modules':{'townlet.exploration.rng_custody':self.owner_source,'test_rng_cuda_admission':self.owner_source},'os_threads':1,'torch_profile':None,'torch_profile_unavailable_reason':'no Torch calls permitted in fork guard-only process','guard_results':{a:{'exception_class':'builtins.RuntimeError','diagnostic':'RNG custody cannot be inherited by another process','lock_acquire_calls':0,'owner_lock_acquire_calls':0,'cuda_touch_calls':0,'body_calls':0,'state_unchanged':True} for a in ACTIONS[trial]},'recorder_returns':rows}
+        tr=self.add(trial+'-terminal',terminal)
+        ack={'trial':trial,'pid':110+index,'ppid':101,'result':tr,'process_start':start,'process_end':end,'message':f'cuda core inherited pid {trial} fail closed'}
+        return self.add(trial+'-observation',{'schema':'bac-hardware-core-fork-observation-v2','spec':self.spec,'job_id':self.jobid,'trial':trial,'role':role,'parent_start':self.start,'owner_launch':launch,'fork_pid':110+index,'waitpid_pid':110+index,'wait_status':0,'exit_code':0,'acknowledgement':ack,'parent_os_threads_before_fork':1,'parent_custody':{'launch':launch,'child_identity':self.obj(start)['identity'],'terminal_payload':tr,'acknowledgement_received_ns':11100000000,'reaped_ns':11200000000,'wait_status':0}})
+
+    def baseline(self):return {'domain':[1,1,False],'python':'a'*64,'numpy':['MT19937','b'*64,1,0,0.0],'torch':'c'*64,'cuda':None}
+
+    def producer(self):
+        case=self.case;same=case.endswith('same');distinct=case.endswith('distinct');ids=[1,1,None] if same else [1,2,3] if distinct else [None,2,None]
+        pre=self.add('preflight',{'schema':'bac-hardware-producer-preflight-v1','spec':self.spec,'job_id':self.jobid,'case':case,'role':self.role,'owner_launch':self.launch,'process_start':self.start,'python_assertions_enabled':True,'before':{'domain':[1,1,False],'devices':[0,1],'error_ids':ids}})
+        def err(kind,msg,n):return {'type':kind,'message':msg,'id':n,'children':[]}
+        outward=err('ValueError' if same else 'RuntimeError',case+(': body' if same else ': completion0'),ids[1])
+        if distinct:outward={'type':'ExceptionGroup','message':'synthetic','id':4,'children':[err(k,case+': '+s,i) for k,s,i in zip(['ValueError','RuntimeError','OSError'],['body','completion0','completion1'],ids)]}
+        obs={k:True for k in ['healthy_controls','reached','peer_blocked','owner_quarantined','cpu_local_available','ambient_refused']}
+        obs.update(started_work=same or distinct,syncs=[0,1],worker_errors=[outward],peer_errors=[err('RuntimeError','quarantined',5)],completion_failed=[True],outcome_errors=[],quarantine_before_unlock=[True],domain_after=[2,2,True])
+        return self.add('outcome',{'schema':'bac-hardware-producer-outcome-v1','spec':self.spec,'job_id':self.jobid,'case':case,'role':self.role,'owner_launch':self.launch,'process_start':self.start,'python_assertions_enabled':True,'preflight':pre,'phase':'complete','success':True,'observations':obs,'failure':None})
+
+    def subject(self):
+        for _ in range(100):
+            changed=False
+            for name,obj,ref in self.items:
+                data=json.dumps(obj,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
+                update={'path':ref['path'],'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+                if ref != update:ref.update(update);changed=True
+            if not changed:break
+        else:raise AssertionError('synthetic reference cycle')
+        return {'schema':'bac-hardware-strict-validation-subject-v1','spec':self.spec,'job_id':self.jobid,'obligation_id':'strict','documents':[{'reference':copy.deepcopy(ref),'content':json.dumps(obj,sort_keys=True,separators=(',',':'),allow_nan=False).encode()} for _,obj,ref in self.items]}
+
+
+@pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+def test_exact_owner_cases(case):
+    # A missing dispatch or omitted strict chain must not yield satisfaction.
+    result=api().validate_child_obligation(Bundle(case).subject())
+    assert result['verdict']=='satisfied' and result['reasons']==[]
+    assert result['cases']==[Bundle(case).node]
+
+
+@pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+def test_resealed_owner_mutations(mutation):
+    b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+    if mutation=='extra':p['extra']=True
+    elif mutation=='missing':del p['acknowledgement']
+    elif mutation=='pid':p['process_pid']=999
+    elif mutation=='ppid':p['acknowledgement']['ppid']=999
+    elif mutation=='exit_bool':p['exitcode']=False
+    elif mutation=='debug':c['python_assertions_enabled']=False
+    elif mutation=='role':p['role']='foreign'
+    elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+    elif mutation=='cleanup':p['cleanup']['process_closed']=False
+    elif mutation=='source':p['assertion_source']=OPAQUE
+    elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+    with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+
+
+@pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+def test_fork_resealed_mutations(mutation):
+    b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+    if mutation=='missing_return':rows.pop()
+    elif mutation=='reverse':rows.reverse()
+    elif mutation=='late_call':rows[0]['return_ns']=6100000000
+    elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+    elif mutation=='late_return':rows[1]['return_ns']=11000000001
+    elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+    elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+    elif mutation=='bool':rows[0]['entry_ns']=True
+    elif mutation=='negative':rows[0]['entry_ns']=-1
+    elif mutation=='payload':o['parent_custody']['terminal_payload']=b.start
+    elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+    elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+    elif mutation=='actions':del t['guard_results']['enroll']
+    elif mutation=='wait':o['wait_status']=9
+    elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+    elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+    with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+
+
+@pytest.mark.parametrize('ack,reap',[(11100000000,11200000000),(11200000000,11100000000),(13000000000,13000000000)])
+def test_return_7_9_ack_8_1_and_reap_order(ack,reap):
+    b=Bundle('inherited_pid');custody=b.named['admission-observation']['parent_custody'];custody.update(acknowledgement_received_ns=ack,reaped_ns=reap)
+    assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+
+
+@pytest.mark.parametrize('mutation',['hash','length','duplicate','unknown','duplicate_json','nonfinite'])
+def test_document_boundary(mutation):
+    s=Bundle().subject()
+    if mutation=='hash':s['documents'][0]['reference']['sha256']='0'*64
+    elif mutation=='length':s['documents'][0]['reference']['bytes']+=1
+    elif mutation=='duplicate':s['documents'].append(s['documents'][0])
+    elif mutation=='unknown':s['trust_me']=True
+    else:
+        data=b'{"schema":"x","schema":"y"}' if mutation=='duplicate_json' else b'{"x":NaN}'
+        s['documents'].append({'reference':{'path':'/synthetic/extra.json','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()},'content':data})
+    with pytest.raises(ValueError):api().validate_child_obligation(s)
+
+
+def test_standalone_requires_explicit_obligation():
+    with pytest.raises(TypeError):api().verify_children(Path('/synthetic/spec'), 'job', Path('/synthetic/destination'))

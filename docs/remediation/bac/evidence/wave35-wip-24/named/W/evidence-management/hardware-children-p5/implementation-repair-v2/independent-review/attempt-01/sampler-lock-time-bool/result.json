@@ -1,0 +1,9 @@
+{
+  "name": "sampler-lock-time-bool",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "uint: exact integer required",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

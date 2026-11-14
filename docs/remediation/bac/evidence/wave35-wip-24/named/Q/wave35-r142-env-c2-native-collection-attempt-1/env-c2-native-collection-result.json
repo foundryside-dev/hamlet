@@ -1,0 +1,31 @@
+{
+  "name": "env-c2-native-collection",
+  "exit_code": 0,
+  "seconds": 3.8855121360102203,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_coherent_incompatible_targets",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_historical_current_captured_replay_control",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r142-env-c2-native-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r142-env-c2-native-collection-attempt-1/env-c2-native-collection.log",
+  "sha256": "85561e8099d39a87273c0baaee878fced20ccbad85db75fab4974c48505d771e",
+  "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "manifest_sha256": "8a044a7257a14ab55c32479a7bdac660ba3db758cf569e0b3b41c0d3ff5ada3f",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

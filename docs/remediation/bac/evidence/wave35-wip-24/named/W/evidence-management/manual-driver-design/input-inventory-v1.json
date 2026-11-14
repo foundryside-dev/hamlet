@@ -1,0 +1,134 @@
+{
+  "schema": "manual-physical-driver-design-input-inventory-v1",
+  "date": "2026-11-14",
+  "author": "/root/bac_astra_manual_driver_design",
+  "status": "DESIGN_NOT_IMPLEMENTATION_APPROVAL",
+  "implementation_bodies": [
+    {
+      "path": "src/townlet/environment/reward_calculator.py",
+      "lines": 68,
+      "sha256": "72368cb6f10eb96ad4f772fbcf46b4229c809091ff6b5414764382141ae0b45c"
+    }
+  ],
+  "whole_implementation_lines": 68,
+  "implementation_authorization": "Root explicitly authorized reward_calculator68 as first implementation body; no delegated body read.",
+  "metadata": [
+    {
+      "path": "AGENTS.md",
+      "lines": 90,
+      "sha256": "7cf711206c00682b317064a2ff0f49eb78ca03d899642af8be82951c12970c93"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/genuine-driver-requirements-v1.json",
+      "lines": 478,
+      "sha256": "04400b3a1bfad466640fc1df6f70c20ee1200f2c6d41f52f2837c7c4b8920f01"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/manual-driver-fixture-binding-facts-v1.json",
+      "lines": 38,
+      "sha256": "650da05f438b5ac8875b7872bbf91e614013be994205db69fb63d1be6e4f9cb0"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-ENV-C2-PROPOSAL-v1.md",
+      "lines": 311,
+      "sha256": "ac73d33427e0c4c4d708a11010f7e278b577978fa5075c3e41e241078778f667"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-ENV-C2-PROPOSAL-v2.md",
+      "lines": 283,
+      "sha256": "419f57fd2c1abca43a3733db3274b161526a26bb01332bbcbaccc723dad105d6"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-C1-FIXTURE-SUPPLIER.md",
+      "lines": 198,
+      "sha256": "659332295bd538fae06d264026985dbbaf525d40423abf9b0f60f56aa889776d"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-INTEGRATION-PROPOSAL-V2.md",
+      "lines": 486,
+      "sha256": "45801f6d05a751b4fa7458278f2c781290c094eafa267a65479efb34d9c427c6"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-ENV-RUNTIME-CURRENT-SUPPLIER.md",
+      "lines": 133,
+      "sha256": "02ac16732bb18dd6613c09cf90f2b20850da402c355cd11604f000f3f91b5b33"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-POP-MANUAL-PHYSICAL-DRIVER-GAP-FACTS-v1.md",
+      "lines": 121,
+      "sha256": "ab60faefe9500462c9a3fc9f88f38cae96f01e69f5ae7ea9d29c7c5235ce9dc7"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-POP-MANUAL-DRIVER-DESIGN-BOUNDARY-v1.md",
+      "lines": 11,
+      "sha256": "7bc091a641171dd22a1edf81e79a2478d79a111305a41629a61eadd29222406b"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-BANK-CURRENT-SUPPLIER.md",
+      "lines": 134,
+      "sha256": "4e118f6b65bbfd4bdc9b877624d9ad5abbbeb607e97374a9776b9e33f11165e4"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-PARENT-NATIVE-CURRENT-SUPPLIER.md",
+      "lines": 138,
+      "sha256": "7cb54762da2ecffae75091d06725afac71d83097f615cd364fc79ed1f54f0ba9"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/implementation-static-handoff-v1.json",
+      "lines": 131,
+      "sha256": "485b7a11d0e1e0738452d26682392beaa07dec27de1130cf17ba84ffe2533bd5"
+    },
+    {
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/root-bank-clock-facts-v1.json",
+      "lines": 23,
+      "sha256": "8f5ee99521f62d5f5a738fabd2021a03f7b4182a548dfbe8e6a831b743d29e4d"
+    }
+  ],
+  "owner_messages": [
+    {
+      "owner": "/root/bac_env_c2_implementation",
+      "source": "ENV2889 original seal e5a447b0e3d45c861e2fd5e3adcde799f80581053a9512f10af1b365509d8409",
+      "facts": "No manual issuer/alternate step or mid-episode retirement; runtime stamp/reward compulsory; generic exact local-owner participation receipts supported; initial/complete restore only, no active simulator restore; constructor RewardCalculator(self). Exact initial intent/ready/activation payloads transcribed in design. Attribution only, ENV body not opened."
+    },
+    {
+      "owner": "/root/bac_native_replay_fixture_implementation",
+      "facts": "Metadata sealed in manual-driver-fixture-binding-facts-v1.json; no runtime/POP/claim/participation in current fixtures."
+    },
+    {
+      "owner": "/root/bac_pop_standalone_step_prepare",
+      "facts": "Metadata sealed in POP manual facts + design-boundary capsules; no current public finish, existing complete driver imposes compiled learning protocol."
+    }
+  ],
+  "skills_read": [
+    "c13/using-superpowers (subagent exemption)",
+    "c13/brainstorming (bounded design only; task authorizes concrete design, no implementation)"
+  ],
+  "actions": {
+    "application_source_edits": false,
+    "test_edits": false,
+    "application_imports_or_execution": false,
+    "tests": false,
+    "git_or_index_writes": false,
+    "branches_worktrees_checkouts_copies": false,
+    "deletion": false
+  },
+  "authored_files": [
+    "evidence-management/manual-driver-design/manual-physical-driver-design-v1.md",
+    "evidence-management/manual-driver-design/input-inventory-v1.json"
+  ],
+  "pending": [
+    "Independent design review",
+    "Mandatory implementation/runtime proving scenarios; no unresolved design supplier question",
+    "Later shared C2 integration gate: source-complete device/RNG inventory and designated sealed-outcome consumer; not CPU-component implementation prerequisite"
+  ],
+  "root_scope_direction": "Full WorldRecord parent close and ordinary CPU manual failure behavior required now; full ENV RNG completion/device inventory remains required later shared C2 integration gate. No full BAC/hardware qualification before that gate.",
+  "resolved_supplier_rows": [
+    "ENV generic local receipt schemas and initial/complete restore modes; no live ENV restore API needed",
+    "Native hook cleanup preserves primary and notes cleanup failure; no post-quarantine availability guarantee",
+    "G9 exact current root source confirms independent sparse ticks/masks with retained cursor/currentness/cache restrictions; no additional BANK API needed"
+  ],
+  "design_seal": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/manual-physical-driver-design-v1.md",
+    "sha256": "5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2"
+  }
+}

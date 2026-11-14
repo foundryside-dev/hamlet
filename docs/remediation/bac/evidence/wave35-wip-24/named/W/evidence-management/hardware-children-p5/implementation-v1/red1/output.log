@@ -1,0 +1,1914 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF        [100%]
+=================================== FAILURES ===================================
+____________________ test_exact_owner_cases[replay_poison] _____________________
+
+case = 'replay_poison'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______________ test_exact_owner_cases[recurrent_replay_poison] ________________
+
+case = 'recurrent_replay_poison'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________________ test_exact_owner_cases[bootstrap_failure] ___________________
+
+case = 'bootstrap_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+________________ test_exact_owner_cases[runtime_query_failure] _________________
+
+case = 'runtime_query_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______________ test_exact_owner_cases[local_completion_single] ________________
+
+case = 'local_completion_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________ test_exact_owner_cases[local_completion_multiple_body] ____________
+
+case = 'local_completion_multiple_body'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________ test_exact_owner_cases[local_completion_duplicate_parent] ___________
+
+case = 'local_completion_duplicate_parent'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_________________ test_exact_owner_cases[poison_unknown_ready] _________________
+
+case = 'poison_unknown_ready'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+________________ test_exact_owner_cases[poison_ready_qualified] ________________
+
+case = 'poison_ready_qualified'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________ test_exact_owner_cases[poison_ready_healthy_only] _______________
+
+case = 'poison_ready_healthy_only'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________ test_exact_owner_cases[operation_body_completion] _______________
+
+case = 'operation_body_completion'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_exact_owner_cases[inherited_pid] _____________________
+
+case = 'inherited_pid'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+________________ test_exact_owner_cases[invocation_same_error] _________________
+
+case = 'invocation_same_error'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______________ test_exact_owner_cases[invocation_child_failure] _______________
+
+case = 'invocation_child_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________ test_exact_owner_cases[invocation_parent_failure] _______________
+
+case = 'invocation_parent_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_____________ test_exact_owner_cases[invocation_reported_failure] ______________
+
+case = 'invocation_reported_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________ test_exact_owner_cases[invocation_phase_reference] ______________
+
+case = 'invocation_phase_reference'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______________ test_exact_owner_cases[invocation_phase_failure] _______________
+
+case = 'invocation_phase_failure'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________________ test_exact_owner_cases[flat_local_single] ___________________
+
+case = 'flat_local_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_________________ test_exact_owner_cases[flat_local_distinct] __________________
+
+case = 'flat_local_distinct'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+___________________ test_exact_owner_cases[flat_local_same] ____________________
+
+case = 'flat_local_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_________________ test_exact_owner_cases[flat_admitted_single] _________________
+
+case = 'flat_admitted_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________________ test_exact_owner_cases[flat_admitted_same] __________________
+
+case = 'flat_admitted_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+___________________ test_exact_owner_cases[per_local_single] ___________________
+
+case = 'per_local_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________________ test_exact_owner_cases[per_local_distinct] __________________
+
+case = 'per_local_distinct'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_exact_owner_cases[per_local_same] ____________________
+
+case = 'per_local_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_________________ test_exact_owner_cases[per_admitted_single] __________________
+
+case = 'per_admitted_single'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________________ test_exact_owner_cases[per_admitted_same] ___________________
+
+case = 'per_admitted_same'
+
+    @pytest.mark.parametrize('case',['replay_poison','recurrent_replay_poison',*CORE,*PRODUCER])
+    def test_exact_owner_cases(case):
+        # A missing dispatch or omitted strict chain must not yield satisfaction.
+>       result=api().validate_child_obligation(Bundle(case).subject())
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_____________________ test_resealed_owner_mutations[extra] _____________________
+
+mutation = 'extra'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_resealed_owner_mutations[missing] ____________________
+
+mutation = 'missing'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________________ test_resealed_owner_mutations[pid] ______________________
+
+mutation = 'pid'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_____________________ test_resealed_owner_mutations[ppid] ______________________
+
+mutation = 'ppid'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+___________________ test_resealed_owner_mutations[exit_bool] ___________________
+
+mutation = 'exit_bool'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_____________________ test_resealed_owner_mutations[debug] _____________________
+
+mutation = 'debug'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_____________________ test_resealed_owner_mutations[role] ______________________
+
+mutation = 'role'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_____________________ test_resealed_owner_mutations[phase] _____________________
+
+mutation = 'phase'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_resealed_owner_mutations[cleanup] ____________________
+
+mutation = 'cleanup'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_resealed_owner_mutations[source] _____________________
+
+mutation = 'source'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________________ test_resealed_owner_mutations[rng] ______________________
+
+mutation = 'rng'
+
+    @pytest.mark.parametrize('mutation',['extra','missing','pid','ppid','exit_bool','debug','role','phase','cleanup','source','rng'])
+    def test_resealed_owner_mutations(mutation):
+        b=Bundle('flat_local_distinct' if mutation=='cleanup' else 'replay_poison');p=b.named['payload'];c=b.named.get('child-result')
+        if mutation=='extra':p['extra']=True
+        elif mutation=='missing':del p['acknowledgement']
+        elif mutation=='pid':p['process_pid']=999
+        elif mutation=='ppid':p['acknowledgement']['ppid']=999
+        elif mutation=='exit_bool':p['exitcode']=False
+        elif mutation=='debug':c['python_assertions_enabled']=False
+        elif mutation=='role':p['role']='foreign'
+        elif mutation=='phase':b.named['completion']['outcomes'][0]['teardown']='failed'
+        elif mutation=='cleanup':p['cleanup']['process_closed']=False
+        elif mutation=='source':p['assertion_source']=OPAQUE
+        elif mutation=='rng':p['parent_rng_assertion']['channels'].append('cuda')
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:199: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_________________ test_fork_resealed_mutations[missing_return] _________________
+
+mutation = 'missing_return'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[reverse] _____________________
+
+mutation = 'reverse'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+___________________ test_fork_resealed_mutations[late_call] ____________________
+
+mutation = 'late_call'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[late_sum] ____________________
+
+mutation = 'late_sum'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________________ test_fork_resealed_mutations[late_return] ___________________
+
+mutation = 'late_return'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[late_ack] ____________________
+
+mutation = 'late_ack'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+___________________ test_fork_resealed_mutations[late_reap] ____________________
+
+mutation = 'late_reap'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________________ test_fork_resealed_mutations[bool] ______________________
+
+mutation = 'bool'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[negative] ____________________
+
+mutation = 'negative'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[payload] _____________________
+
+mutation = 'payload'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[emission] ____________________
+
+mutation = 'emission'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[identity] ____________________
+
+mutation = 'identity'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_fork_resealed_mutations[actions] _____________________
+
+mutation = 'actions'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________________ test_fork_resealed_mutations[wait] ______________________
+
+mutation = 'wait'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_____________________ test_fork_resealed_mutations[clock] ______________________
+
+mutation = 'clock'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+__________________ test_fork_resealed_mutations[missing_doc] ___________________
+
+mutation = 'missing_doc'
+
+    @pytest.mark.parametrize('mutation',['missing_return','reverse','late_call','late_sum','late_return','late_ack','late_reap','bool','negative','payload','emission','identity','actions','wait','clock','missing_doc'])
+    def test_fork_resealed_mutations(mutation):
+        b=Bundle('inherited_pid');t=b.named['admission-terminal'];o=b.named['admission-observation'];rows=t['recorder_returns']
+        if mutation=='missing_return':rows.pop()
+        elif mutation=='reverse':rows.reverse()
+        elif mutation=='late_call':rows[0]['return_ns']=6100000000
+        elif mutation=='late_sum':rows[0]['return_ns']=6000000000;rows[1]['entry_ns']=6000000000;rows[1]['return_ns']=9100000001
+        elif mutation=='late_return':rows[1]['return_ns']=11000000001
+        elif mutation=='late_ack':o['parent_custody']['acknowledgement_received_ns']=13000000001
+        elif mutation=='late_reap':o['parent_custody']['reaped_ns']=13000000001
+        elif mutation=='bool':rows[0]['entry_ns']=True
+        elif mutation=='negative':rows[0]['entry_ns']=-1
+        elif mutation=='payload':o['parent_custody']['terminal_payload']=b.payload
+        elif mutation=='emission':rows[1]['emission']=rows[0]['emission']
+        elif mutation=='identity':o['parent_custody']['child_identity']={**o['parent_custody']['child_identity'],'pid':999}
+        elif mutation=='actions':del t['guard_results']['enroll']
+        elif mutation=='wait':o['wait_status']=9
+        elif mutation=='clock':b.named['admission-end']['identity']={**b.named['admission-end']['identity'],'boot_id':'other'}
+        elif mutation=='missing_doc':b.items=[i for i in b.items if i[0]!='admission-end-emission']
+>       with pytest.raises(ValueError):api().validate_child_obligation(b.subject())
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______ test_return_7_9_ack_8_1_and_reap_order[11100000000-11200000000] ________
+
+ack = 11100000000, reap = 11200000000
+
+    @pytest.mark.parametrize('ack,reap',[(11100000000,11200000000),(11200000000,11100000000),(13000000000,13000000000)])
+    def test_return_7_9_ack_8_1_and_reap_order(ack,reap):
+        b=Bundle('inherited_pid');custody=b.named['admission-observation']['parent_custody'];custody.update(acknowledgement_received_ns=ack,reaped_ns=reap)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______ test_return_7_9_ack_8_1_and_reap_order[11200000000-11100000000] ________
+
+ack = 11200000000, reap = 11100000000
+
+    @pytest.mark.parametrize('ack,reap',[(11100000000,11200000000),(11200000000,11100000000),(13000000000,13000000000)])
+    def test_return_7_9_ack_8_1_and_reap_order(ack,reap):
+        b=Bundle('inherited_pid');custody=b.named['admission-observation']['parent_custody'];custody.update(acknowledgement_received_ns=ack,reaped_ns=reap)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______ test_return_7_9_ack_8_1_and_reap_order[13000000000-13000000000] ________
+
+ack = 13000000000, reap = 13000000000
+
+    @pytest.mark.parametrize('ack,reap',[(11100000000,11200000000),(11200000000,11100000000),(13000000000,13000000000)])
+    def test_return_7_9_ack_8_1_and_reap_order(ack,reap):
+        b=Bundle('inherited_pid');custody=b.named['admission-observation']['parent_custody'];custody.update(acknowledgement_received_ns=ack,reaped_ns=reap)
+>       assert api().validate_child_obligation(b.subject())['verdict']=='satisfied'
+               ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_________________________ test_document_boundary[hash] _________________________
+
+mutation = 'hash'
+
+    @pytest.mark.parametrize('mutation',['hash','length','duplicate','unknown','duplicate_json','nonfinite'])
+    def test_document_boundary(mutation):
+        s=Bundle().subject()
+        if mutation=='hash':s['documents'][0]['reference']['sha256']='0'*64
+        elif mutation=='length':s['documents'][0]['reference']['bytes']+=1
+        elif mutation=='duplicate':s['documents'].append(s['documents'][0])
+        elif mutation=='unknown':s['trust_me']=True
+        else:
+            data=b'{"schema":"x","schema":"y"}' if mutation=='duplicate_json' else b'{"x":NaN}'
+            s['documents'].append({'reference':{'path':'/synthetic/extra.json','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()},'content':data})
+>       with pytest.raises(ValueError):api().validate_child_obligation(s)
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+________________________ test_document_boundary[length] ________________________
+
+mutation = 'length'
+
+    @pytest.mark.parametrize('mutation',['hash','length','duplicate','unknown','duplicate_json','nonfinite'])
+    def test_document_boundary(mutation):
+        s=Bundle().subject()
+        if mutation=='hash':s['documents'][0]['reference']['sha256']='0'*64
+        elif mutation=='length':s['documents'][0]['reference']['bytes']+=1
+        elif mutation=='duplicate':s['documents'].append(s['documents'][0])
+        elif mutation=='unknown':s['trust_me']=True
+        else:
+            data=b'{"schema":"x","schema":"y"}' if mutation=='duplicate_json' else b'{"x":NaN}'
+            s['documents'].append({'reference':{'path':'/synthetic/extra.json','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()},'content':data})
+>       with pytest.raises(ValueError):api().validate_child_obligation(s)
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________________ test_document_boundary[duplicate] _______________________
+
+mutation = 'duplicate'
+
+    @pytest.mark.parametrize('mutation',['hash','length','duplicate','unknown','duplicate_json','nonfinite'])
+    def test_document_boundary(mutation):
+        s=Bundle().subject()
+        if mutation=='hash':s['documents'][0]['reference']['sha256']='0'*64
+        elif mutation=='length':s['documents'][0]['reference']['bytes']+=1
+        elif mutation=='duplicate':s['documents'].append(s['documents'][0])
+        elif mutation=='unknown':s['trust_me']=True
+        else:
+            data=b'{"schema":"x","schema":"y"}' if mutation=='duplicate_json' else b'{"x":NaN}'
+            s['documents'].append({'reference':{'path':'/synthetic/extra.json','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()},'content':data})
+>       with pytest.raises(ValueError):api().validate_child_obligation(s)
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_______________________ test_document_boundary[unknown] ________________________
+
+mutation = 'unknown'
+
+    @pytest.mark.parametrize('mutation',['hash','length','duplicate','unknown','duplicate_json','nonfinite'])
+    def test_document_boundary(mutation):
+        s=Bundle().subject()
+        if mutation=='hash':s['documents'][0]['reference']['sha256']='0'*64
+        elif mutation=='length':s['documents'][0]['reference']['bytes']+=1
+        elif mutation=='duplicate':s['documents'].append(s['documents'][0])
+        elif mutation=='unknown':s['trust_me']=True
+        else:
+            data=b'{"schema":"x","schema":"y"}' if mutation=='duplicate_json' else b'{"x":NaN}'
+            s['documents'].append({'reference':{'path':'/synthetic/extra.json','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()},'content':data})
+>       with pytest.raises(ValueError):api().validate_child_obligation(s)
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+____________________ test_document_boundary[duplicate_json] ____________________
+
+mutation = 'duplicate_json'
+
+    @pytest.mark.parametrize('mutation',['hash','length','duplicate','unknown','duplicate_json','nonfinite'])
+    def test_document_boundary(mutation):
+        s=Bundle().subject()
+        if mutation=='hash':s['documents'][0]['reference']['sha256']='0'*64
+        elif mutation=='length':s['documents'][0]['reference']['bytes']+=1
+        elif mutation=='duplicate':s['documents'].append(s['documents'][0])
+        elif mutation=='unknown':s['trust_me']=True
+        else:
+            data=b'{"schema":"x","schema":"y"}' if mutation=='duplicate_json' else b'{"x":NaN}'
+            s['documents'].append({'reference':{'path':'/synthetic/extra.json','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()},'content':data})
+>       with pytest.raises(ValueError):api().validate_child_obligation(s)
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+______________________ test_document_boundary[nonfinite] _______________________
+
+mutation = 'nonfinite'
+
+    @pytest.mark.parametrize('mutation',['hash','length','duplicate','unknown','duplicate_json','nonfinite'])
+    def test_document_boundary(mutation):
+        s=Bundle().subject()
+        if mutation=='hash':s['documents'][0]['reference']['sha256']='0'*64
+        elif mutation=='length':s['documents'][0]['reference']['bytes']+=1
+        elif mutation=='duplicate':s['documents'].append(s['documents'][0])
+        elif mutation=='unknown':s['trust_me']=True
+        else:
+            data=b'{"schema":"x","schema":"y"}' if mutation=='duplicate_json' else b'{"x":NaN}'
+            s['documents'].append({'reference':{'path':'/synthetic/extra.json','bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()},'content':data})
+>       with pytest.raises(ValueError):api().validate_child_obligation(s)
+                                       ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:240: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+_________________ test_standalone_requires_explicit_obligation _________________
+
+    def test_standalone_requires_explicit_obligation():
+>       with pytest.raises(TypeError):api().verify_children(Path('/synthetic/spec'), 'job', Path('/synthetic/destination'))
+                                      ^^^^^
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:244: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def api():
+>       assert importlib.util.find_spec('verify_bac_hardware_children_v1') is not None, 'P5 implementation absent'
+E       AssertionError: P5 implementation absent
+E       assert None is not None
+E        +  where None = <function find_spec at 0x7fec1f159300>('verify_bac_hardware_children_v1')
+E        +    where <function find_spec at 0x7fec1f159300> = <module 'importlib.util' (frozen)>.find_spec
+E        +      where <module 'importlib.util' (frozen)> = importlib.util
+
+bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py:26: AssertionError
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[replay_poison]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[recurrent_replay_poison]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[bootstrap_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[runtime_query_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[local_completion_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[local_completion_multiple_body]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[local_completion_duplicate_parent]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[poison_unknown_ready]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[poison_ready_qualified]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[poison_ready_healthy_only]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[operation_body_completion]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[inherited_pid]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_same_error]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_child_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_parent_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_reported_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_phase_reference]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[invocation_phase_failure]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_local_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_local_distinct]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_local_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_admitted_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[flat_admitted_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_local_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_local_distinct]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_local_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_admitted_single]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_exact_owner_cases[per_admitted_same]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[extra]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[missing]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[pid]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[ppid]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[exit_bool]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[debug]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[role]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[phase]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[cleanup]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[source]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_resealed_owner_mutations[rng]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[missing_return]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[reverse]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[late_call]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[late_sum]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[late_return]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[late_ack]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[late_reap]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[bool]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[negative]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[payload]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[emission]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[identity]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[actions]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[wait]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[clock]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_fork_resealed_mutations[missing_doc]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_return_7_9_ack_8_1_and_reap_order[11100000000-11200000000]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_return_7_9_ack_8_1_and_reap_order[11200000000-11100000000]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_return_7_9_ack_8_1_and_reap_order[13000000000-13000000000]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_document_boundary[hash]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_document_boundary[length]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_document_boundary[duplicate]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_document_boundary[unknown]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_document_boundary[duplicate_json]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_document_boundary[nonfinite]
+FAILED bac-review-2026-11-01/qualification/test_verify_bac_hardware_children_v1.py::test_standalone_requires_explicit_obligation
+65 failed in 1.21s

@@ -1,0 +1,230 @@
+"""Real ENV ingress and finite reverse-call controls for retained parent custody."""
+
+import copy
+import pickle
+from contextlib import contextmanager
+from threading import Event, Thread, current_thread
+from typing import Any
+
+import pytest
+import torch
+
+from tests.test_townlet.regressions.bac.test_runtime_bank_parent_custody import compiled as compiled
+from tests.test_townlet.regressions.bac.test_runtime_bank_parent_custody import make_parent
+from townlet.environment.vectorized_env import VectorizedHamletEnv
+from townlet.exploration.rng_custody import process_rng_domain
+from townlet.population.vectorized import VectorizedPopulation
+
+
+def _observe_claim(monkeypatch: Any, peer_method: str | None) -> dict[str, Any]:
+    """Observe the configured producer without replacing its claim authority."""
+    claim = VectorizedPopulation.claim_vector_step
+    validate = VectorizedHamletEnv.validate_initial_participation
+    seen: dict[str, Any] = {"claims": [], "checks": [], "peer_errors": [], "inside": False}
+
+    def observed_validation(self: Any, **kwargs: Any) -> None:
+        if seen["inside"]:
+            seen["checks"].append(kwargs)
+        return validate(self, **kwargs)
+
+    def observed_claim(self: Any, **kwargs: Any) -> int:
+        seen["claims"].append(kwargs)
+        seen["inside"] = True
+        try:
+            if peer_method is not None:
+                try:
+                    getattr(self.env, peer_method)()
+                except ValueError as error:
+                    seen["peer_errors"].append(error)
+            return claim(self, **kwargs)
+        finally:
+            seen["inside"] = False
+
+    # POP captures this real bound method during its constructor's one-time
+    # ENV runtime binding. No private callback replacement or fake handle.
+    monkeypatch.setattr(VectorizedPopulation, "claim_vector_step", observed_claim)
+    monkeypatch.setattr(VectorizedHamletEnv, "validate_initial_participation", observed_validation)
+    return seen
+
+
+def _real_component_step(rig: Any) -> tuple[Any, dict[str, Any]]:
+    candidate = rig.candidate()
+    prepared = rig.population.prepare_vector_step(**candidate)
+    result = rig.env.step(candidate["actions"], vector_step=prepared)
+    return result, candidate
+
+
+def test_genuine_claim_preserves_independently_owned_predecessor(compiled: Any, monkeypatch: Any) -> None:
+    """Rejecting POP's independent reading by Python identity breaks real claims."""
+    seen = _observe_claim(monkeypatch, None)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+
+    result, candidate = _real_component_step(rig)
+
+    assert len(seen["claims"]) == len(seen["checks"]) == 1
+    claim, check = seen["claims"][0], seen["checks"][0]
+    assert claim["accepted"] is check["accepted"] is candidate["accepted"]
+    assert check["predecessor"] is not claim["predecessor"]
+    assert torch.equal(check["predecessor"], claim["predecessor"])
+    assert result[3]["intrinsic_transition"].accepted is candidate["accepted"]
+    assert result[3]["intrinsic_transition"].context.vector_tick == 1
+    assert rig.env.global_tick == 1
+    assert torch.equal(rig.env.step_counts, torch.ones_like(rig.env.step_counts))
+
+
+@pytest.mark.parametrize("peer_method", ["get_action_masks", "get_affordance_positions", "vfs_random_state"])
+def test_claim_callback_cannot_enter_peer_env_work(compiled: Any, monkeypatch: Any, peer_method: str) -> None:
+    """A general callback reentry exemption would allow these independent reads."""
+    seen = _observe_claim(monkeypatch, peer_method)
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+
+    result, candidate = _real_component_step(rig)
+
+    # The actual POP callback still runs once and earns its genuine validation;
+    # the refused probe cannot replace it or consume that validation slot.
+    assert len(seen["claims"]) == len(seen["checks"]) == 1
+    assert len(seen["peer_errors"]) == 1
+    assert result[3]["intrinsic_transition"].accepted is candidate["accepted"]
+    assert rig.env.global_tick == 1
+    assert torch.equal(rig.env.step_counts, torch.ones_like(rig.env.step_counts))
+
+
+class Controller:
+    def __init__(self) -> None:
+        self.domain = process_rng_domain()
+        self.participant = self.domain.register(owner=self, cuda_devices=(), entrypoints=frozenset({"component"}))
+
+    def invocation(self) -> Any:
+        return self.domain.device_invocation(participant=self.participant, operation_kind="component", lineage=None, cuda_devices=())
+
+
+def test_bound_env_and_runtime_preserve_real_step_and_service(compiled: Any) -> None:
+    """An ambient/missing lineage path cannot execute the real bound children."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    with rig.env.retain_parent_custody() as env_scope, rig.runtime.retain_parent_custody() as runtime_scope:
+        invocation = controller.invocation()
+        with invocation as operation:
+            with env_scope.bind_operation(operation=operation), runtime_scope.bind_operation(operation=operation):
+                result, candidate = _real_component_step(rig)
+                handoff = result[3]["intrinsic_transition"]
+                rig.runtime.admit_and_service(context=handoff.context, stamp=handoff.stamp, accepted=handoff.accepted)
+                assert handoff.accepted is candidate["accepted"]
+                assert rig.env.global_tick == 1
+        assert invocation.completion_failed() is False
+    assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_retained_env_requires_binding_and_expires(compiled: Any) -> None:
+    """Retained exclusion alone and expired execution references grant no work."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    with rig.env.retain_parent_custody() as scope:
+        with pytest.raises(ValueError):
+            rig.env.get_action_masks()
+        with pytest.raises(ValueError):
+            with rig.env.retain_parent_custody():
+                pytest.fail("same-owner retention reentered")
+        invocation = controller.invocation()
+        with invocation as operation:
+            with scope.bind_operation(operation=operation):
+                assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+                with pytest.raises(ValueError):
+                    with scope.bind_operation(operation=operation):
+                        pytest.fail("operation binding reentered")
+            with pytest.raises(ValueError):
+                rig.env.get_action_masks()
+        assert invocation.completion_failed() is False
+    with pytest.raises(ValueError):
+        with scope.bind_operation(operation=operation):
+            pytest.fail("expired scope bound")
+    assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_retained_env_scope_is_nonportable(compiled: Any) -> None:
+    """Copies, reconstructions and another Thread cannot acquire scope authority."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    with rig.env.retain_parent_custody() as scope:
+        for transfer in (copy.copy, copy.deepcopy, pickle.dumps):
+            with pytest.raises(TypeError):
+                transfer(scope)
+        invocation = controller.invocation()
+        with invocation as operation:
+            errors: list[BaseException] = []
+
+            def bind_elsewhere() -> None:
+                try:
+                    with scope.bind_operation(operation=operation):
+                        pytest.fail("foreign thread bound ENV")
+                except BaseException as error:
+                    errors.append(error)
+
+            worker = Thread(target=bind_elsewhere)
+            worker.start()
+            worker.join(timeout=5)
+            assert not worker.is_alive(), "foreign scope use waited for the domain or ENV lock"
+            assert len(errors) == 1 and isinstance(errors[0], ValueError)
+            forged = object.__new__(type(scope))
+            with pytest.raises((ValueError, AttributeError)):
+                with forged.bind_operation(operation=operation):
+                    pytest.fail("unissued scope bound ENV")
+            with scope.bind_operation(operation=operation):
+                assert rig.env.get_action_masks().shape == (rig.env.num_agents, rig.env.action_dim)
+
+
+def test_peer_waits_at_common_admission_through_outer_exit_and_consumer(compiled: Any, monkeypatch: Any) -> None:
+    """A peer must reach common admission before ENV, then wait through the final cut."""
+    rig = make_parent(compiled, "none", "shared")
+    rig.enter()
+    controller = Controller()
+    attempted, entered, finished = Event(), Event(), Event()
+    errors: list[BaseException] = []
+    admission = type(controller.domain).admission
+    worker: Thread
+
+    @contextmanager
+    def observed_admission(self: Any, *, lineage: Any) -> Any:
+        peer = current_thread() is worker
+        if peer:
+            attempted.set()
+        with admission(self, lineage=lineage) as admitted:
+            if peer:
+                entered.set()
+            yield admitted
+
+    def peer_read() -> None:
+        try:
+            rig.env.get_action_masks()
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            finished.set()
+
+    worker = Thread(target=peer_read)
+    monkeypatch.setattr(type(controller.domain), "admission", observed_admission)
+    try:
+        with rig.env.retain_parent_custody() as scope, rig.runtime.retain_parent_custody() as runtime_scope:
+            invocation = controller.invocation()
+            with invocation as operation:
+                with scope.bind_operation(operation=operation), runtime_scope.bind_operation(operation=operation):
+                    result, _ = _real_component_step(rig)
+                    worker.start()
+                    assert attempted.wait(timeout=5), "peer waited at ENV before common admission"
+                    assert not entered.is_set() and not finished.is_set()
+                    assert result[2] is rig.env.dones
+            assert invocation.completion_failed() is False
+            assert not entered.is_set() and not finished.is_set()
+            # The actual outer outcome consumer still owns ENV's live aliases.
+            assert result[3]["intrinsic_weight"] is rig.env.intrinsic_weights
+            assert not entered.is_set() and not finished.is_set()
+    finally:
+        if worker.ident is not None:
+            worker.join(timeout=5)
+    assert not worker.is_alive()
+    assert entered.is_set() and finished.is_set() and errors == []

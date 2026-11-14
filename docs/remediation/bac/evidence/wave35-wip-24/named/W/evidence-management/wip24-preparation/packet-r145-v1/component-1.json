@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "identity_scope": "Checkpoint inclusion anchor only; original source/execution identities retained in named input.",
+  "input": {
+    "bytes": 11115,
+    "path": "evidence-management/wip24-preparation/component-inputs-v2/native-r135-component-inputs-v2.json",
+    "root": "W",
+    "sha256": "a5ed2116e65609c3b10c116092dd411487cf2f6d9888e134a51c796ede8711b7"
+  },
+  "status": "BOUNDED ADOPTION; no package closure"
+}

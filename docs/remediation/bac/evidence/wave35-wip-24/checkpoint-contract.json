@@ -1,0 +1,367 @@
+{
+  "baseline_inventory": {
+    "bytes": 2755978,
+    "path": "evidence-management/inventory-v2.json",
+    "root": "W",
+    "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
+  },
+  "catalog": [
+    {
+      "checkpoint_id": "wave35-wip-13",
+      "format": "wip13-artifacts-v1",
+      "interval": [
+        55,
+        58
+      ],
+      "manifest": {
+        "bytes": 81982,
+        "path": "docs/remediation/bac/evidence/wave35-wip-13.json",
+        "sha256": "f05ca336a4c96c9c36c17ca2edd0c5778937f719f8bc4fadcfabfe2ea9c45cdb"
+      },
+      "selection_plan": {
+        "bytes": 146067,
+        "path": "docs/remediation/bac/evidence/wave35-wip-13/selection-plan.json",
+        "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-14",
+      "format": "incremental-v2",
+      "interval": [
+        59,
+        72
+      ],
+      "manifest": {
+        "bytes": 619867,
+        "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+        "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+      },
+      "selection_plan": {
+        "bytes": 763830,
+        "path": "docs/remediation/bac/evidence/wave35-wip-14/selection-plan.json",
+        "sha256": "2195ce33e7a08039434f3018e5e426b3924a6564e1211181b249040c79ef8ea8"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-15",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        73,
+        81
+      ],
+      "manifest": {
+        "bytes": 372697,
+        "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+        "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+      },
+      "selection_plan": {
+        "bytes": 442172,
+        "path": "docs/remediation/bac/evidence/wave35-wip-15/selection-plan.json",
+        "sha256": "8e3c5de089fdd68688b9dbd69133b0d05186294312acfbb398301ee42ecf6e15"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-16",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        82,
+        85
+      ],
+      "manifest": {
+        "bytes": 227482,
+        "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+        "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+      },
+      "selection_plan": {
+        "bytes": 270542,
+        "path": "docs/remediation/bac/evidence/wave35-wip-16/selection-plan.json",
+        "sha256": "81df9d15bc175cc9a52ed6b448ce165ae5c12eb1c4741146b7ad3e6c94e903cb"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-17",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        86,
+        89
+      ],
+      "manifest": {
+        "bytes": 527701,
+        "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+        "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+      },
+      "selection_plan": {
+        "bytes": 648628,
+        "path": "docs/remediation/bac/evidence/wave35-wip-17/selection-plan.json",
+        "sha256": "5a01cc361f55d978e7b3808095fc4a61a1ce6c4b0229b863caf9e5dc598b09e6"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-18",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        90,
+        98
+      ],
+      "manifest": {
+        "bytes": 361683,
+        "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+        "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+      },
+      "selection_plan": {
+        "bytes": 430051,
+        "path": "docs/remediation/bac/evidence/wave35-wip-18/selection-plan.json",
+        "sha256": "193ddece376797d277675a5190610c2f742b7da8a01425c37a9e1057372afac8"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-19",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        99,
+        108
+      ],
+      "manifest": {
+        "bytes": 998690,
+        "path": "docs/remediation/bac/evidence/wave35-wip-19.json",
+        "sha256": "7f03a92f589227f68ee87064fd153dac3d961a8bfe3e1565323ecf318076c24b"
+      },
+      "selection_plan": {
+        "bytes": 1269940,
+        "path": "docs/remediation/bac/evidence/wave35-wip-19/selection-plan.json",
+        "sha256": "9b470996d63ff2d5473188592d2a6cba74ab7f4897691cb1b54cd35d868763dc"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-20",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        109,
+        113
+      ],
+      "manifest": {
+        "bytes": 1382890,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+        "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd"
+      },
+      "selection_plan": {
+        "bytes": 1691458,
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-21",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        114,
+        116
+      ],
+      "manifest": {
+        "bytes": 787084,
+        "path": "docs/remediation/bac/evidence/wave35-wip-21.json",
+        "sha256": "3f7894548379233e0134a232d08656c2323ed33a806c09c468e8848619e4b310"
+      },
+      "selection_plan": {
+        "bytes": 944085,
+        "path": "docs/remediation/bac/evidence/wave35-wip-21/selection-plan.json",
+        "sha256": "ccc0333a3ea4f91b4c64c5b83765e5bbfe61ac8a2d9e27a7f510d0b494765550"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-22",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        117,
+        122
+      ],
+      "manifest": {
+        "bytes": 9380436,
+        "path": "docs/remediation/bac/evidence/wave35-wip-22.json",
+        "sha256": "760ce17502da0729b3c30b01e6f17844b17c9c97bd61db38c1ed82aeb085ffe0"
+      },
+      "selection_plan": {
+        "bytes": 9563368,
+        "path": "docs/remediation/bac/evidence/wave35-wip-22/selection-plan.json",
+        "sha256": "c72f3ae22d3a149db3835bcc249c508266ac0d949e0d403df124315dae3cf42a"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-23",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        123,
+        133
+      ],
+      "manifest": {
+        "bytes": 3041023,
+        "path": "docs/remediation/bac/evidence/wave35-wip-23.json",
+        "sha256": "fe91dedc49b445e10eb4c70d4805d65d2a03cbf5991d6b411a2cd633df94399b"
+      },
+      "selection_plan": {
+        "bytes": 3150170,
+        "path": "docs/remediation/bac/evidence/wave35-wip-23/selection-plan.json",
+        "sha256": "4ee47a3634582b595678048fc88f07c4c2b13ec63073677843ff711a89122c91"
+      }
+    }
+  ],
+  "checkpoint_id": "wave35-wip-24",
+  "interval_start": 134,
+  "required_components": [
+    {
+      "bytes": 42034,
+      "candidate_tree": "0bb608bef482106afa3a641e35420f2c26f82de5",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r134-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R134 own-source history including failed and UNRUN checks.",
+      "sha256": "899adaac1db7747568e2a6f5a9d51ad048e0b2603c2d223a598a1324e6bb6ce6"
+    },
+    {
+      "bytes": 48972,
+      "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r135-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R135 own-source history including failed and UNRUN checks.",
+      "sha256": "99462849ae44ef4175c367e14298cc791bc3fcef5a8f94ee9092177cd112cfac"
+    },
+    {
+      "bytes": 25508,
+      "candidate_tree": "0976561f1fd373d2675ce23741188d12c0a7d77b",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r136-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R136 own-source history including failed and UNRUN checks.",
+      "sha256": "08fc2efb388f5fbbc728aa9fb78ebd0ad41110cfff267171a2dc3a039f0bbc31"
+    },
+    {
+      "bytes": 23484,
+      "candidate_tree": "6803c49183d76c4fd8768a7fd83efd8fab27a50d",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r137-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R137 own-source history including failed and UNRUN checks.",
+      "sha256": "d360db2f9bd6c5e97fed444d388e2116f8398ff8f070dcc77e71d80487ec917c"
+    },
+    {
+      "bytes": 26052,
+      "candidate_tree": "8a2576c4ef2a45ec3b1ce958440e72df56eb3eee",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r138-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R138 own-source history including failed and UNRUN checks.",
+      "sha256": "9cf37e882ee1d3ad26429972fc11446b3e4fd67f348dd00e6f455f6a62657117"
+    },
+    {
+      "bytes": 23485,
+      "candidate_tree": "6d7ecee922ff7ba0ab4c743071d018bc483772ea",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r139-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R139 own-source history including failed and UNRUN checks.",
+      "sha256": "4528c7f4e35d5e703c9c001c403e3f57c282b539e8e5f4bb6cc88b52df102238"
+    },
+    {
+      "bytes": 27678,
+      "candidate_tree": "f5d45e7f1450ca5c39324ce7c528970a34fd3373",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r140-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R140 own-source history including failed and UNRUN checks.",
+      "sha256": "cbff3d7911bd57edd83ea632ba1e3398fabd67a2ac0d58db1b38575f5f59bf98"
+    },
+    {
+      "bytes": 23488,
+      "candidate_tree": "e0322c4d12f9602e271af9e4d2982c46ec1903e8",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r141-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R141 own-source history including failed and UNRUN checks.",
+      "sha256": "dac59fc3d4ae630bd19cc6017096132b8188d29483e310d368e3135178aeeb5b"
+    },
+    {
+      "bytes": 123528,
+      "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+      "path": "evidence-management/wip24-preparation/closed-r134-r142-v1/r142-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R142 own-source history including failed and UNRUN checks.",
+      "sha256": "2170a7191536809b2235606835fc3f8a21e968bd4f8b35b55ecf5614c8a9c76a"
+    },
+    {
+      "bytes": 25796,
+      "candidate_tree": "f65eaf09849e4672e16c28e4d477a4dfc9e6efaf",
+      "path": "evidence-management/wip24-preparation/closed-r143-r144-v1/r143-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R143 own-source history including failed and UNRUN checks.",
+      "sha256": "840bb3a43ac3194b31c69139768a0b779b3547b8b131ed620eb71583eefb659a"
+    },
+    {
+      "bytes": 44745,
+      "candidate_tree": "ed561dc04fcffba4f6617f343862d54db6a8dad0",
+      "path": "evidence-management/wip24-preparation/closed-r143-r144-v1/r144-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R144 own-source history including failed and UNRUN checks.",
+      "sha256": "36dd923e3e4219056f8950e1e7644fa2a5c9f648f9b48f64ea9c232bc7c77ff8"
+    },
+    {
+      "bytes": 34844,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/closed-r145-v1/r145-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed R145 own-source history including failed and UNRUN checks.",
+      "sha256": "02dbc6a9f4965ff8ffe196f0b80a832dcca8fb0eb622a5268e7374b8fa4aa288"
+    },
+    {
+      "bytes": 484,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-1.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "0b71fcb2964c4e48f7dee65c07244e3b1970c610bf2eea627acc69494f64ee3c"
+    },
+    {
+      "bytes": 485,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-2.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "f3c24c791dc07c7a7713b5b2cd34a08832d96b62e7f6272b68f6aa31d55e4333"
+    },
+    {
+      "bytes": 480,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-3.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "d064fcfc8b9a7cbe5bb1df16aeba1ed24627596681be20d16877126eab8fdadc"
+    },
+    {
+      "bytes": 493,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-4.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "e68c17602fb849443f7b2ead51f0a224a58561f6bd3f00d6f35130ff0e82c2b6"
+    },
+    {
+      "bytes": 460,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-5.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "5ef9bf071edcffcadf21771dec661a9cf94b938e45ff16cbe8560973f3311777"
+    },
+    {
+      "bytes": 465,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-6.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "d9ee246eb6f37375c4d58158cd6321049b8e243d1feb3a51e3cc086274a241f6"
+    },
+    {
+      "bytes": 473,
+      "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+      "path": "evidence-management/wip24-preparation/packet-r145-v1/component-7.json",
+      "root": "W",
+      "scope": "Named component inclusion; not R145 execution of tooling.",
+      "sha256": "6e8f9a4d67ddf5cc48bf9341b08d082078ca306dcdb2035b13b49af1be5a50a5"
+    }
+  ],
+  "schema": "bac-checkpoint-selection-contract-v1",
+  "series": "wave35",
+  "terminal_round": 145
+}

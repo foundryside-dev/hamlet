@@ -1,0 +1,38 @@
+{
+  "name": "launch-command-bool",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "satisfied",
+  "result": {
+    "schema": "bac-hardware-strict-validation-result-v1",
+    "obligation_id": "strict",
+    "verdict": "satisfied",
+    "reasons": [],
+    "cases": [
+      "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers"
+    ],
+    "evidence": [
+      {
+        "bytes": 1090,
+        "path": "/synthetic/out/a/replay-poison/evidence.json",
+        "sha256": "00742fa7bd4ddba72f6598b5eb080077513656546ce14db24d7ceec6a8582bab"
+      }
+    ],
+    "payloads": [
+      {
+        "bytes": 1593,
+        "path": "/synthetic/out/a/replay-poison/replay-result-replay_poison.json",
+        "sha256": "4356de8c0edf6faa79e4019f38ae18792ece906588b9b930c3952f5a50f9a15b"
+      }
+    ],
+    "producer_processes": [
+      {
+        "bytes": 3644,
+        "path": "/synthetic/out/a/replay-poison/parent.json",
+        "sha256": "6db0ad0f5de1859769cfa3343d7a5c4d41d91d325e847eefef759d099e235468"
+      }
+    ],
+    "related_attempts": []
+  },
+  "matched_expectation": false
+}

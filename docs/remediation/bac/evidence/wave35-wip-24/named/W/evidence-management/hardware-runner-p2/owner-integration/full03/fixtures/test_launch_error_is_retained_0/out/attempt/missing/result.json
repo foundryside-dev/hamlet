@@ -1,0 +1,8 @@
+{
+  "disposition": "refused",
+  "exit_code": null,
+  "job_id": "missing",
+  "process_records": [],
+  "reason": "launch refused: [Errno 2] No such file or directory: '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/fixtures/test_launch_error_is_retained_0/missing-executable'",
+  "signal": 0
+}

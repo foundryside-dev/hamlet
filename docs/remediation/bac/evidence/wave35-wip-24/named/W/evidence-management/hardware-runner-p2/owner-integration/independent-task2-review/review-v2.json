@@ -1,0 +1,135 @@
+{
+  "schema": "bac-p2-owner-task2-independent-review-v2",
+  "at": "2026-11-14T10:49:01.945914+00:00",
+  "reviewer": "/root/bac_astra_p2_integration_review",
+  "independence": "Separate reviewer, no production/test repair authorship; unchanged independent probes from v1 rerun against new exact candidate.",
+  "disposition": "APPROVE TASK2",
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-freeze-v2.json",
+    "bytes": 10819,
+    "sha256": "fec12ea9073b98179cbf6ef9a1d5187c7542575602325b9147076366ca801900"
+  },
+  "predecessor_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/review-v1.json",
+    "bytes": 9953,
+    "sha256": "20cd0c7dcba763dd83e46bc28b926183dc007785ab87938386789f0f8a77a9ef"
+  },
+  "source_inventory": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "bytes": 96510,
+      "sha256": "8bf7f17c79c2e79df08e8402a96acc0b09483777faaef5d814bf8d550420bfda",
+      "lines": 1434
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "bytes": 114205,
+      "sha256": "fcbc88ef7cf512462d9bddd36cc3db6075a70625eb20157222e0f60dc3968527",
+      "lines": 1644
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "lines": 526
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+      "bytes": 3778,
+      "sha256": "3cf8269324c5407bad4d3ceacfea1489f57b04ab3371e2ac9840a2d86453d650",
+      "lines": 75
+    }
+  ],
+  "preflight": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/preflight-v2.json",
+    "bytes": 1624,
+    "sha256": "e49f6c42d27cdbc28cbf97fea014c13f3f99e1f3dac16f96aedaa351baf82554"
+  },
+  "probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task1-review/test_independent_task1.py",
+    "bytes": 7883,
+    "sha256": "459226845107e8fd9844742d72312e19286fde173a717dd7d3dd139ed59cd042"
+  },
+  "body_budget": {
+    "bodies": 5,
+    "lines": 3811
+  },
+  "findings": [],
+  "unresolved_p1_p2": [],
+  "resolved": [
+    {
+      "id": "P2-TASK2-IMPORT-1",
+      "resolution": "One added outer loop applies existing candidate/dependency exact-reference and source import-root checks to record.imports as well as launch.inherited_imports. Existing P0 process validation ensures named-reference shape/unique import names; required phase/ref checks remain. No equality with parent START or launch lists added.",
+      "independent_proof": "Original coherently resealed full-completion unfrozen/outside-import-root child-module negatives now reject; valid dynamic frozen/import-root child-module positive remains accepted. All seven Task2 probe cases pass."
+    }
+  ],
+  "source_diff_review": "Only production change v1->v2 is import-authority loop sharing. Test changes factor existing completion fixture and add START/END x valid-frozen/unfrozen/outside-root six cases. No unrelated parent-lifetime or guard acceptance expansion.",
+  "independent_execution": [
+    {
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run02/execution.json",
+        "bytes": 4544,
+        "sha256": "3f5ab27f01e352278885c71c4b3601957e4d58dfc732383db531e2fed6056fbc"
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run02/output.log",
+        "bytes": 195,
+        "sha256": "abcfabf3f4fd20c43fa789149e88e0d32d57d33868a6e4598dd55e13ad335f57"
+      },
+      "result": "116 passed, 79 deselected in 7.98s",
+      "scope": "Fresh2CPU selection of owner tests and independent probe body; includes repair negatives/positive plus ancestry/source semantic regressions. The broad not-public name filter excluded the private-fork/public-refusal test, which was then run separately."
+    },
+    {
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run03/execution.json",
+        "bytes": 3939,
+        "sha256": "2c21cb681736a5530309dde5efea8353bea3ea3b9cf0bcbff01887524b3ae53d"
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/run03/output.log",
+        "bytes": 114,
+        "sha256": "f751b596fc61df96bfbe471ddfc7b7d762e0593dad0b08194ed29c20f4e38212"
+      },
+      "result": "1 passed, 153 deselected in 0.64s",
+      "scope": "Private fork ancestry and public sampler-refusal check, disjoint from run02. No guard sampler qualification."
+    }
+  ],
+  "accounting": "116PASS run02 and1PASS run03 on exact v2; disjoint selections, no sum with author runs or earlier candidate tests. No independent full154 or3CPU-public rerun claimed.",
+  "actual_custody": "Each execution records actual PID/start identity, kernel argv, UTC/duration, affinity[0,1],4GiB per-process RLIMIT_AS, serial0workers,thread env1 and unchanged before/after production source hashes. Probe/wrapper rehashed after execution.",
+  "attempt_inventory": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/independent-task2-review/attempt-inventory-v2.json",
+    "bytes": 1645784,
+    "sha256": "ab10777370eabbb7682786af7749635351dbaaeb20228c199a5efc69aa33224b"
+  },
+  "author_evidence": {
+    "terminal_results": [
+      {
+        "bytes": 3724,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-full26/execution.json",
+        "sha256": "cd5ac95bf0c137dbeccbd4bd3634a131fcc0ce9ced3d2866835a9f37eb0d8395"
+      },
+      {
+        "bytes": 3734,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-public28/execution.json",
+        "sha256": "15975db78865487b74d1ef66dcd08aebf60ded3edef51713b56f35d70aef2f47"
+      }
+    ],
+    "terminal_selections": {
+      "bytes": 42942,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-terminal-selections-v2.json",
+      "sha256": "5efa46a6374cc07210c0b6d84f966952ac9bd0107639d101ccc4c8f957924805"
+    },
+    "attempt_inventory": {
+      "bytes": 1740981,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task2-repair-attempt-inventory-v2.json",
+      "sha256": "fa1b8f10395da40d579e62799306c3370fb0fad62007fae1c24538cd61044d00"
+    },
+    "result": "Attributed author same-source disjoint153PASS2CPU+1PASS3CPU,154collected; repair RED4FAIL/2PASS and GREEN6PASS retained; six GREEN overlap, not added."
+  },
+  "limitations": [
+    "Pure authored-data/inert subprocess tooling; Git/source/admission observations stubbed; no actual P3/APP/source integration or hardware acceptance.",
+    "ThreeCPU public owner case retained as author evidence only; not run in this independent2CPU grant.",
+    "Task3 sampler/emission/current guard acceptance,Task4 actual live-Git backstop,P4/P5 timing/actions and source-owner/hardware qualification remain outstanding."
+  ],
+  "preservation": "Earlier failing review/run and historical probe remain immutable. No source edits,APP/P3/P4/P5 bodies/imports,Git/source lease,branches/worktrees/checkout or duplicate execution copies. Runtime slots released."
+}

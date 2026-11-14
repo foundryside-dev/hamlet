@@ -1,0 +1,998 @@
+{
+  "files": [
+    {
+      "bytes": 2398,
+      "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-red-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "78684fdf51e50e1f162fd68951540fe9b6cdadc0887086093592e4c8652b80f8"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-red-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 934,
+      "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "5226361f7d1f1d2efcfdd42d3901087af1dba2bba46afd4cf636133a79d6e319"
+    },
+    {
+      "bytes": 2410,
+      "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "91a11f27b6b4c3463c56334af71c09ed1291b135ed755092654e7b1f919ee421"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 919,
+      "path": "evidence-management/pop-standalone-step/wave35-r134-native-fixture-red-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "2c890a97c2b384e95792e7223927e2aa0d463c49e6088cd1061220bffcf441f6"
+    },
+    {
+      "bytes": 3226839,
+      "path": "evidence-management/native-replay-fixture-implementation/tasks-before-r134-v1.json",
+      "root": "W",
+      "sha256": "b4bb9070dfe6edc790a8f19f4b91376f8ccdeb9ef7a64165e1a75ed7f17c2c76"
+    },
+    {
+      "bytes": 68067,
+      "path": "evidence-management/native-replay-fixture-implementation/test_pw_scope_restore.py.before-r134.py.txt",
+      "root": "W",
+      "sha256": "d1036d44536bafb2f8fa85b6226cb76cc6be655dd44c4c91346287ee343a776c"
+    },
+    {
+      "bytes": 69641,
+      "path": "evidence-management/native-replay-fixture-implementation/test_pw_scope_conversion.py.before-r134.py.txt",
+      "root": "W",
+      "sha256": "672a1441520b69cfda5045220a29d2abf891afa7fbad8d461c5e22c91adab893"
+    },
+    {
+      "bytes": 7236,
+      "path": "evidence-management/native-replay-fixture-implementation/r134-capture.stdout",
+      "root": "W",
+      "sha256": "b75014ff8f6dd9a16673c8405aa428cad1d77ff949c7616e66b166f170ea8d92"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-progression-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 936,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-progression-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "5ed4e9221b68839f77806e3e36c89791e39c6995388282eeb6d9ccfb4f4ef8b8"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-positive-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2430,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-progression-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "d0e310dae58e51234f4bf1cef5340f9b993893af8bf037e51b91eebfc34a7db4"
+    },
+    {
+      "bytes": 2758,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "8f41f6bdc01a2374f93cbfe87c4a034aacb374d6d9d3087974d7902250472b52"
+    },
+    {
+      "bytes": 933,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "e175f76b0758abe6439646d96292dd1a161ae3c6f894f06b8c2d8bfb2f4a9591"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1365,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-positive-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "1af8e0837f49ad6c249c4bbaef26daec946915916fb3d8622ebf09503aa744db"
+    },
+    {
+      "bytes": 930,
+      "path": "evidence-management/pop-standalone-step/wave35-r135-native-fixture-positive-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "97e346a80d6390d1b20c41c0e889b6eaf8a5e7aebecc85ceef7bb788d5d804a9"
+    },
+    {
+      "bytes": 1799,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-static-v1.json",
+      "root": "W",
+      "sha256": "86fc792e0e85a8f807e7e96f5783a42de776c48b632fc7138bfc687475f01f56"
+    },
+    {
+      "bytes": 19,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-ruff-v1.log",
+      "root": "W",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 5148,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-component-adoption-v1.json",
+      "root": "W",
+      "sha256": "640082546621b7e36416d7deb44022640e6140b96bc1b7e40970e69067efd9c1"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-diff-v1.log",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 56,
+      "path": "evidence-management/native-replay-fixture-implementation/r135-root-black-v1.log",
+      "root": "W",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r136-env-c2-red-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 929,
+      "path": "evidence-management/pop-standalone-step/wave35-r136-env-c2-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "54d98f6162718a1d96629759f6618f51e68350ceea7288b971dbe0c231473a2d"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r136-env-c2-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 917,
+      "path": "evidence-management/pop-standalone-step/wave35-r136-env-c2-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "b2593aaaca7c88f2e18a23af6f6ba1c215425fcaad04f6c949399cbacbd185f7"
+    },
+    {
+      "bytes": 903,
+      "path": "evidence-management/pop-standalone-step/wave35-r136-env-c2-red-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "560be6945aa3b412027e02730bd32bce57007bb39ec4b36387ad3cf117ee7178"
+    },
+    {
+      "bytes": 883,
+      "path": "evidence-management/pop-standalone-step/wave35-r136-env-c2-red-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "11d776d9098df90d8593b1afde8c7e102046226bd0a32faca2de858fc7a0cc4a"
+    },
+    {
+      "bytes": 7526,
+      "path": "evidence-management/env-c2/r136-capture.stdout",
+      "root": "W",
+      "sha256": "c3dc37617f8a84d6ea6e85cb8bae4bd95420692e552d22c6132eb8d1d861effb"
+    },
+    {
+      "bytes": 3227182,
+      "path": "evidence-management/env-c2/tasks-before-r136-v1.json",
+      "root": "W",
+      "sha256": "856c97f11570bc8526dba1580cd0439a3f0765bbd8c9d57a5a44b3208f7d339e"
+    },
+    {
+      "bytes": 898,
+      "path": "evidence-management/pop-standalone-step/wave35-r137-env-c2-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "861c3cf2aec97256b24a7daa84836fbe31f90d1a40f0de2805b5d9e62c5d4bf7"
+    },
+    {
+      "bytes": 917,
+      "path": "evidence-management/pop-standalone-step/wave35-r137-env-c2-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "42615f620a305f157520ab33f95f7e9ef52f457cda286d344560c55bef5678aa"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r137-env-c2-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r137-env-c2-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 929,
+      "path": "evidence-management/pop-standalone-step/wave35-r137-env-c2-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "9154926f797be65547d44b343039506e749a48e19bfbcbc50dd15d3fee240e15"
+    },
+    {
+      "bytes": 912,
+      "path": "evidence-management/pop-standalone-step/wave35-r137-env-c2-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "f5f913f11051b14f037d8b52290e923779d13221e3337d2081c5267059db06e5"
+    },
+    {
+      "bytes": 3227580,
+      "path": "evidence-management/env-c2/tasks-before-r137-v1.json",
+      "root": "W",
+      "sha256": "62c882477ffe2c916055aa30e9528efd713312cc4455c8060a7b6482fb933435"
+    },
+    {
+      "bytes": 6534,
+      "path": "evidence-management/env-c2/parent_custody-r137.txt",
+      "root": "W",
+      "sha256": "08f11d183c8992d38367331a24c4c800727c6bd7f4ca49781732fbabfa0eda1c"
+    },
+    {
+      "bytes": 7780,
+      "path": "evidence-management/env-c2/r137-capture.stdout",
+      "root": "W",
+      "sha256": "06602e28ce305456bbba950ab428475e846833c3a978601ddfbe993a6923b234"
+    },
+    {
+      "bytes": 150475,
+      "path": "evidence-management/env-c2/vectorized_env-r137.txt",
+      "root": "W",
+      "sha256": "e39a563341fb629ab3a0764e7095786b081ad7dbdd20dcfbc1a92eebc73ecae0"
+    },
+    {
+      "bytes": 903,
+      "path": "evidence-management/pop-standalone-step/wave35-r138-env-c2-red-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "2cf35f2f6ca8097d1b4b086c04db96502c82f460f4ba73bafaefcafa8c88f36e"
+    },
+    {
+      "bytes": 917,
+      "path": "evidence-management/pop-standalone-step/wave35-r138-env-c2-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "be8343fbb7b4e5a09db1ff970514e26aa2ded027856a23725a3c4e0fe3340194"
+    },
+    {
+      "bytes": 930,
+      "path": "evidence-management/pop-standalone-step/wave35-r138-env-c2-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "7eed634613546ab5ec33e630131e0f98cd64a4d36486cf3d91001db29710ccaa"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r138-env-c2-red-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r138-env-c2-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 884,
+      "path": "evidence-management/pop-standalone-step/wave35-r138-env-c2-red-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "561987155c23c20629c1029fbc9b283e646552dbc41c253b24f39c4e9628d258"
+    },
+    {
+      "bytes": 10701,
+      "path": "evidence-management/env-c2/test_environment_parent_custody-r138.txt",
+      "root": "W",
+      "sha256": "8b31918322f41cbbdb5c1b86170509615008d3f5eeda50e2762a3fbd4ae6c600"
+    },
+    {
+      "bytes": 7600,
+      "path": "evidence-management/env-c2/r138-capture.stdout",
+      "root": "W",
+      "sha256": "6a6b1049882a2a0cb0aa0990472548ca6b4371a512958ea5ebf4d6ae3da06cb0"
+    },
+    {
+      "bytes": 929,
+      "path": "evidence-management/pop-standalone-step/wave35-r139-env-c2-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "0d47c6223090c2434780706142910af2b04bcf4e134cb5a1d847071b5e67db07"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r139-env-c2-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 917,
+      "path": "evidence-management/pop-standalone-step/wave35-r139-env-c2-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "695558fc55d2cc41580cad8f4daa1f06a2119ebd87a1d63fb5512bfe757c2d43"
+    },
+    {
+      "bytes": 899,
+      "path": "evidence-management/pop-standalone-step/wave35-r139-env-c2-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "2f93326f5a6d15c265c2fd9f7cf3a1a9ca17f8292fd68d16a473a8ac76596802"
+    },
+    {
+      "bytes": 910,
+      "path": "evidence-management/pop-standalone-step/wave35-r139-env-c2-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "0f26c0afe9a903b241a35f9f121f891bf642e740dd37a9821e335e605a5b96f2"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r139-env-c2-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 10701,
+      "path": "evidence-management/env-c2/test_environment_parent_custody-r139.txt",
+      "root": "W",
+      "sha256": "8b31918322f41cbbdb5c1b86170509615008d3f5eeda50e2762a3fbd4ae6c600"
+    },
+    {
+      "bytes": 150750,
+      "path": "evidence-management/env-c2/vectorized_env-r139.txt",
+      "root": "W",
+      "sha256": "aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22"
+    },
+    {
+      "bytes": 10335,
+      "path": "evidence-management/env-c2/parent_custody-r139.txt",
+      "root": "W",
+      "sha256": "e802a0a3a10661f8f4f12114c7b46b9c4836885941be3acb4f9a10cb5952173a"
+    },
+    {
+      "bytes": 7600,
+      "path": "evidence-management/env-c2/r139-capture.stdout",
+      "root": "W",
+      "sha256": "ac5ef3310272e3cb666006129f99e02c452af8fc05304587327679c4d2b059a4"
+    },
+    {
+      "bytes": 929,
+      "path": "evidence-management/pop-standalone-step/wave35-r140-env-c2-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "3ed182f5c4a526b7b43c986ebee47429956bc5b9ff33c17687e60ddd37216e62"
+    },
+    {
+      "bytes": 903,
+      "path": "evidence-management/pop-standalone-step/wave35-r140-env-c2-red-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "e824bd1a4c9bf95f55c2334230a6596f939cb70ef822a333a1327c3b79051f26"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r140-env-c2-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 917,
+      "path": "evidence-management/pop-standalone-step/wave35-r140-env-c2-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "ca4cc3e4bf05f3d1615064ac85efb5fac4a33752b307538e85a43e63fe5f0591"
+    },
+    {
+      "bytes": 918,
+      "path": "evidence-management/pop-standalone-step/wave35-r140-env-c2-red-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "5b0757cb1ae38471d21ae9e6d75b7f6c8efceb6140e40f5e22b10b8b9b974a86"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r140-env-c2-red-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 150750,
+      "path": "evidence-management/env-c2/vectorized_env-r140.txt",
+      "root": "W",
+      "sha256": "aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22"
+    },
+    {
+      "bytes": 3633,
+      "path": "evidence-management/env-c2/r140-mypy-diagnostic-v1.log",
+      "root": "W",
+      "sha256": "37695a9c0182c8a70138cd77a512c958adf2b1edcf75bf6833a9a9015081c4b9"
+    },
+    {
+      "bytes": 7674,
+      "path": "evidence-management/env-c2/r140-capture.stdout",
+      "root": "W",
+      "sha256": "7179388ebb9880cbecd63a17bf42fc162d43dfb459f8ca57d628724243f2a94b"
+    },
+    {
+      "bytes": 851,
+      "path": "evidence-management/env-c2/r140-mypy-diagnostic-v1.json",
+      "root": "W",
+      "sha256": "a9123be4375e88b889ba701b61af9b809f893844d796b3395c5337cad4722618"
+    },
+    {
+      "bytes": 26608,
+      "path": "evidence-management/env-c2/test_environment_parent_custody-r140.txt",
+      "root": "W",
+      "sha256": "a5a1b6bdac3de12bb2a270943a7242c071af9415afb81a254f8a19cf41348065"
+    },
+    {
+      "bytes": 10335,
+      "path": "evidence-management/env-c2/parent_custody-r140.txt",
+      "root": "W",
+      "sha256": "e802a0a3a10661f8f4f12114c7b46b9c4836885941be3acb4f9a10cb5952173a"
+    },
+    {
+      "bytes": 929,
+      "path": "evidence-management/pop-standalone-step/wave35-r141-env-c2-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "fb4277feacd6982e88f9224580eb25147e4a29f81d15a8f7c8d0061ee05f7a53"
+    },
+    {
+      "bytes": 918,
+      "path": "evidence-management/pop-standalone-step/wave35-r141-env-c2-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "470bee1d3e3b11855b321ee00c01b9e6c1219da0ad26fde526171c8b37bbe1b0"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r141-env-c2-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r141-env-c2-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 912,
+      "path": "evidence-management/pop-standalone-step/wave35-r141-env-c2-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "e30946c56d59345e53fae190e5d36b5acd1b1e5b457171a5719387fe71536901"
+    },
+    {
+      "bytes": 900,
+      "path": "evidence-management/pop-standalone-step/wave35-r141-env-c2-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "6484bf293293d5fec003f335ed349f37e667f245897687003fdc9763517cf438"
+    },
+    {
+      "bytes": 34283,
+      "path": "evidence-management/env-c2/test_environment_parent_custody-r141.txt",
+      "root": "W",
+      "sha256": "228b4f3641b0c24e70a4a83e0dd2cb0d4665f99f30afe058bb3717f55604494e"
+    },
+    {
+      "bytes": 150750,
+      "path": "evidence-management/env-c2/vectorized_env-r141.txt",
+      "root": "W",
+      "sha256": "aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22"
+    },
+    {
+      "bytes": 7748,
+      "path": "evidence-management/env-c2/r141-capture.stdout",
+      "root": "W",
+      "sha256": "cad8366a1a9de146557beca19a8c251baecf84da209ade4b8392176617f73cc5"
+    },
+    {
+      "bytes": 10651,
+      "path": "evidence-management/env-c2/parent_custody-r141.txt",
+      "root": "W",
+      "sha256": "b902057cb22a06b2e5dccccd537b5a127538bb97c3f7c2f85e5d769ee76cc3ef"
+    },
+    {
+      "bytes": 1207,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/black-changed.json",
+      "root": "W",
+      "sha256": "9c3a86a54d5e9c1d81964f2db77fc8409791a3a4a2647782736194d2611d443c"
+    },
+    {
+      "bytes": 56,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/black-changed.log",
+      "root": "W",
+      "sha256": "25369eabb8c122f861d58ddb255f81f4b9ee797f42f3882975bef953218258ed"
+    },
+    {
+      "bytes": 930,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/mypy.json",
+      "root": "W",
+      "sha256": "34d5b86b2d2e449cf81d6b9d17b3ceb33257b2c3bf1bfe03169c39afaee6f7ce"
+    },
+    {
+      "bytes": 3197,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/mypy.log",
+      "root": "W",
+      "sha256": "93e12f2763d5c0c34753aadf2d0e726436865e52a902d54aff5a9ce540148d4a"
+    },
+    {
+      "bytes": 1000,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/no-defaults.json",
+      "root": "W",
+      "sha256": "90cd201e6d13fba3cc570872664fe39f4455de459574098ddf6b6cc1755c5cb8"
+    },
+    {
+      "bytes": 1135,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/no-defaults.log",
+      "root": "W",
+      "sha256": "604e5ba9fbc47a273e182c0f22d93317d37caf01a2127c8e8c9d506c454a1017"
+    },
+    {
+      "bytes": 883,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/ruff.json",
+      "root": "W",
+      "sha256": "e3478288e4ee0812702da3833db410a844495d96fd721d278c99ad911c51f6c5"
+    },
+    {
+      "bytes": 19,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/ruff.log",
+      "root": "W",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 4583,
+      "path": "evidence-management/env-c2/r141-static-attempt-1/summary.json",
+      "root": "W",
+      "sha256": "8035378d5ea413d524115b8e7ddc51147c68e9fdf05f8cb6450275dc83810acd"
+    },
+    {
+      "bytes": 933,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "5cffe69130a122e7d1044751f0814b57089a7267c30fa104bbfa6026b64c0345"
+    },
+    {
+      "bytes": 1045,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "bef4e1cec01be632c067bec65909a9e1165042239b2ed625d0612e8e42d91c61"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-2-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 932,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-2-outer.json",
+      "root": "W",
+      "sha256": "464e6ff1e534bb08dac221a52b80a40ed42c484d621073c35e60d905845c04bf"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1201,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "b02a66b01d069914679f2c8e53aabe127186c8f654b61b1743cea9a8f4783175"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1196,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "8143504cdefd6018d879ca95e1d0c0053b40aac8a707dcecef545c155aa390cd"
+    },
+    {
+      "bytes": 1014,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "36770c3fe650a981683fb13a029d328ba82c368face5cbb534d3b5632c0ffbd6"
+    },
+    {
+      "bytes": 940,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "4ff1a3f3185100afa59e28eff2b5de2a047321a0069c150d65781a72ca19ccf9"
+    },
+    {
+      "bytes": 1429,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-runtime-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "bcfe95d9ce871e6e8a2be13a740c297d1617a8271e7943bb3a981f78102f61e8"
+    },
+    {
+      "bytes": 932,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "ef425c63cf79cf0bc8ff1444b0986c515e775cd2ab283bf06b69bc8994809a50"
+    },
+    {
+      "bytes": 927,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-2-outer.json",
+      "root": "W",
+      "sha256": "198d630f2c1c3b460dc68427f8da82b1897696a4fdce73206a7af2fd8d4ce59f"
+    },
+    {
+      "bytes": 1426,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-collection-attempt-1-outer.stdout",
+      "root": "W",
+      "sha256": "0435ef5928f10626f082ce7f2798ae7ddda96bcc48e0ee9f2bd3e016779f7d4e"
+    },
+    {
+      "bytes": 927,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "0e064aeaa633f7899cff99e92a002ebe9f9d760821d3cb0d4c0c6dddac369f2c"
+    },
+    {
+      "bytes": 1015,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-2-outer.stdout",
+      "root": "W",
+      "sha256": "178ef0b0ca5379c601ba6bfb96edeaf287842ed2e62b58c974a0f9bdbb5e5bf1"
+    },
+    {
+      "bytes": 944,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-owner-regressions-collection-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "f0cf041dc9a0f8de326274f3ca733cdb81fae6846e06384f9cefed578fada6b7"
+    },
+    {
+      "bytes": 926,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-env-c2-native-runtime-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "3e1c112a390c70c7eddee26b7c98f776d1bc03a75dce32287cef974fb444d202"
+    },
+    {
+      "bytes": 1043,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-2-outer.stdout",
+      "root": "W",
+      "sha256": "92d9da9245c97a2c7221feca100604af080b0c1658f8325bfcdb42e98eaffa10"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-runtime-attempt-1-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "evidence-management/pop-standalone-step/wave35-r142-c2-independent-collection-attempt-2-outer.stderr",
+      "root": "W",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 45293,
+      "path": "evidence-management/env-c2/r142-owner-failure-frames-v1.json",
+      "root": "W",
+      "sha256": "29a6762cf9d99488f934abc29efc4d5bf03e5d81c34558be954b765e6d3badbb"
+    },
+    {
+      "bytes": 23983,
+      "path": "evidence-management/env-c2/r142-independent-actual-fork-witness-v1.json",
+      "root": "W",
+      "sha256": "c59b585c28e71796821bef1973c56aaaf98fc757bcfc7e4b50ae851acb010439"
+    },
+    {
+      "bytes": 541,
+      "path": "evidence-management/env-c2/r142-independent-runtime-auxiliary-preflight-v1.json",
+      "root": "W",
+      "sha256": "239c83f1fb171132f0e6133a430dd115a1948b9258c1033958a38c1648dc60ea"
+    },
+    {
+      "bytes": 700,
+      "path": "evidence-management/env-c2/r142-independent-auxiliary-postflight-v2.json",
+      "root": "W",
+      "sha256": "f66714adceb7e114ca5ac96a1726247c489ab519095c0b11b0ce33f6abe7b6b2"
+    },
+    {
+      "bytes": 554,
+      "path": "evidence-management/env-c2/r142-independent-auxiliary-postflight-v1.json",
+      "root": "W",
+      "sha256": "676174fa22096f860acf2b6fb4ad7afc22f2121fd9ca20fbaf56a7153fbc2e9f"
+    },
+    {
+      "bytes": 491,
+      "path": "evidence-management/env-c2/r142-independent-auxiliary-preflight-v2.json",
+      "root": "W",
+      "sha256": "a24287fbdc2ee411e65ff8d57c68f5e76e9b4f62d9e3f8ad610f78644f535d3b"
+    },
+    {
+      "bytes": 544,
+      "path": "evidence-management/env-c2/r142-independent-collection-auxiliary-preflight-v1.json",
+      "root": "W",
+      "sha256": "0f5513f6b35893b46afe5d9cc5befe5fa261551d3553d03a421dc2137312ebcd"
+    },
+    {
+      "bytes": 7748,
+      "path": "evidence-management/env-c2/r142-capture.stdout",
+      "root": "W",
+      "sha256": "6573aa59183ee6a67c6037222fe6d8825803d7aa886a658f6951e814975f68bc"
+    },
+    {
+      "bytes": 1207,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/black-changed.json",
+      "root": "W",
+      "sha256": "39e6e972d322a79dc8d9b00ea4a82e997b3c878dd8d18d99fc6be07295e586ff"
+    },
+    {
+      "bytes": 56,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/black-changed.log",
+      "root": "W",
+      "sha256": "25369eabb8c122f861d58ddb255f81f4b9ee797f42f3882975bef953218258ed"
+    },
+    {
+      "bytes": 930,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/mypy.json",
+      "root": "W",
+      "sha256": "793985a6d6ea73abf58ac4426fc001cafd4b0aa4c82d5a49bc82527ed652303d"
+    },
+    {
+      "bytes": 3197,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/mypy.log",
+      "root": "W",
+      "sha256": "93e12f2763d5c0c34753aadf2d0e726436865e52a902d54aff5a9ce540148d4a"
+    },
+    {
+      "bytes": 1000,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/no-defaults.json",
+      "root": "W",
+      "sha256": "990407474088bbfcf10cd46b2edd11bdbcc0876b079011d144627cf26e967145"
+    },
+    {
+      "bytes": 926,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/no-defaults.log",
+      "root": "W",
+      "sha256": "15c22233d1944c88af76e0288adcf3c81427edb49ec7803d1a725561ebf7519c"
+    },
+    {
+      "bytes": 883,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/ruff.json",
+      "root": "W",
+      "sha256": "406fd9021ce3876c7be6fea2f4c7d6a1ccc3db949614f6f46d8c3720b70e7771"
+    },
+    {
+      "bytes": 19,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/ruff.log",
+      "root": "W",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 4583,
+      "path": "evidence-management/env-c2/r142-static-attempt-1/summary.json",
+      "root": "W",
+      "sha256": "a6b0251f1ea0b932ac08a2f4c0074ea0f985df3a8ec67ea49e3804c11c71dffb"
+    }
+  ],
+  "scope": "Explicit finite names and immediate known static directories only; no Q scratch, no source execution, no terminal selection.",
+  "static_checks": [
+    {
+      "candidate_tree": "e0322c4d12f9602e271af9e4d2982c46ec1903e8",
+      "check": "r141-static--black-changed",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/environment/parent_custody.py",
+        "src/townlet/environment/vectorized_env.py",
+        "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py"
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:11:19.787677+00:00",
+      "record": {
+        "bytes": 1207,
+        "path": "evidence-management/env-c2/r141-static-attempt-1/black-changed.json",
+        "root": "W",
+        "sha256": "9c3a86a54d5e9c1d81964f2db77fc8409791a3a4a2647782736194d2611d443c"
+      },
+      "round": 141,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:11:18.323748+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "e0322c4d12f9602e271af9e4d2982c46ec1903e8",
+      "check": "r141-static--mypy",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet",
+        "--show-error-codes",
+        "--no-incremental"
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:11:17.530279+00:00",
+      "record": {
+        "bytes": 930,
+        "path": "evidence-management/env-c2/r141-static-attempt-1/mypy.json",
+        "root": "W",
+        "sha256": "34d5b86b2d2e449cf81d6b9d17b3ceb33257b2c3bf1bfe03169c39afaee6f7ce"
+      },
+      "round": 141,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:10:49.672858+00:00",
+      "status": "FAILED"
+    },
+    {
+      "candidate_tree": "e0322c4d12f9602e271af9e4d2982c46ec1903e8",
+      "check": "r141-static--no-defaults",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:11:18.323361+00:00",
+      "record": {
+        "bytes": 1000,
+        "path": "evidence-management/env-c2/r141-static-attempt-1/no-defaults.json",
+        "root": "W",
+        "sha256": "90cd201e6d13fba3cc570872664fe39f4455de459574098ddf6b6cc1755c5cb8"
+      },
+      "round": 141,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:11:17.530939+00:00",
+      "status": "FAILED"
+    },
+    {
+      "candidate_tree": "e0322c4d12f9602e271af9e4d2982c46ec1903e8",
+      "check": "r141-static--ruff",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:10:49.672540+00:00",
+      "record": {
+        "bytes": 883,
+        "path": "evidence-management/env-c2/r141-static-attempt-1/ruff.json",
+        "root": "W",
+        "sha256": "e3478288e4ee0812702da3833db410a844495d96fd721d278c99ad911c51f6c5"
+      },
+      "round": 141,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:10:49.251444+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+      "check": "r142-static--black-changed",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/environment/parent_custody.py",
+        "src/townlet/environment/vectorized_env.py",
+        "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "tests/test_townlet/regressions/bac/test_pw_scope_restore.py"
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:19:15.425526+00:00",
+      "record": {
+        "bytes": 1207,
+        "path": "evidence-management/env-c2/r142-static-attempt-1/black-changed.json",
+        "root": "W",
+        "sha256": "39e6e972d322a79dc8d9b00ea4a82e997b3c878dd8d18d99fc6be07295e586ff"
+      },
+      "round": 142,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:19:13.918161+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+      "check": "r142-static--mypy",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet",
+        "--show-error-codes",
+        "--no-incremental"
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:19:13.067950+00:00",
+      "record": {
+        "bytes": 930,
+        "path": "evidence-management/env-c2/r142-static-attempt-1/mypy.json",
+        "root": "W",
+        "sha256": "793985a6d6ea73abf58ac4426fc001cafd4b0aa4c82d5a49bc82527ed652303d"
+      },
+      "round": 142,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:18:45.382346+00:00",
+      "status": "FAILED"
+    },
+    {
+      "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+      "check": "r142-static--no-defaults",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:19:13.917852+00:00",
+      "record": {
+        "bytes": 1000,
+        "path": "evidence-management/env-c2/r142-static-attempt-1/no-defaults.json",
+        "root": "W",
+        "sha256": "990407474088bbfcf10cd46b2edd11bdbcc0876b079011d144627cf26e967145"
+      },
+      "round": 142,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:19:13.068377+00:00",
+      "status": "PASSED"
+    },
+    {
+      "candidate_tree": "cf087351f0ecfb3bb3dca8423bfc9e9790d87335",
+      "check": "r142-static--ruff",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "counts": null,
+      "ended_at": "2026-11-14T11:18:45.382012+00:00",
+      "record": {
+        "bytes": 883,
+        "path": "evidence-management/env-c2/r142-static-attempt-1/ruff.json",
+        "root": "W",
+        "sha256": "406fd9021ce3876c7be6fea2f4c7d6a1ccc3db949614f6f46d8c3720b70e7771"
+      },
+      "round": 142,
+      "scope": "Nonruntime static check; no APP import/thread custody or runtime coverage claimed.",
+      "started_at": "2026-11-14T11:18:45.136354+00:00",
+      "status": "PASSED"
+    }
+  ],
+  "status": "CLOSED R134-R142 SUPPLEMENTAL STATIC/CAPTURE/OUTER-LAUNCHER INPUTS"
+}

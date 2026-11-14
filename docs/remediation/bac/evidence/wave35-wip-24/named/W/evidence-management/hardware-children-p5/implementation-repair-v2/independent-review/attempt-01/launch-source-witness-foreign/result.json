@@ -1,0 +1,9 @@
+{
+  "name": "launch-source-witness-foreign",
+  "expected": "refused",
+  "mode": "pure",
+  "observed": "refused",
+  "error": "missing referenced document: /synthetic/opaque",
+  "matched_expectation": true,
+  "receipt_exists": false
+}

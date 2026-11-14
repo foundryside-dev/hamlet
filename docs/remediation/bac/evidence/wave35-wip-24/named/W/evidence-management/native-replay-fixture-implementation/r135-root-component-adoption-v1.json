@@ -1,0 +1,103 @@
+{
+  "schema": "bac-native-replay-fixture-root-component-adoption-v1",
+  "at": "2026-11-14T10:40:52.975929+00:00",
+  "owner": "/root",
+  "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+  "disposition": "ACCEPT EXECUTED NATIVE/REPLAY COMPONENT ONLY; OWNER GATE STILL FAILED",
+  "evidence": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r135-candidate.json",
+      "bytes": 207754,
+      "sha256": "d3e679145ed8be6c6a4227504f7ad30ef65ffb3846d8fddb4d49a49adfc2d524"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/r135-root-static-v1.json",
+      "bytes": 1799,
+      "sha256": "86fc792e0e85a8f807e7e96f5783a42de776c48b632fc7138bfc687475f01f56"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation-review/review-v1.json",
+      "bytes": 3599,
+      "sha256": "f98bfd8e4fe6eb22ccd68f6f78d9a6490f252c8352c30f284a2679d36f46d0dc"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation-review/runtime-addendum-v1.json",
+      "bytes": 26159,
+      "sha256": "2e4c51570104548cdf25376880fc4dc5e7303fbeea6282a31010e67324a8dd20"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection-result.json",
+      "bytes": 2892,
+      "sha256": "bf5469a0bd0541c2297d96c1d06b5ca68fccefb08578a37e1bacf01e007074bf"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-collection-attempt-1/native-fixture-collection-custody.json",
+      "bytes": 656,
+      "sha256": "fff82e6ff5c8bde98735d6281a98b151888efa86536b64f872d47ea1e2908cdf"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive-result.json",
+      "bytes": 1471,
+      "sha256": "9804a77214123265bfd22e0b4963df00dbedcc0b44bafddcd5c24476af9f336d"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-positive-attempt-1/native-fixture-positive-custody.json",
+      "bytes": 656,
+      "sha256": "21f4432fc6103974659852f989572dbf85c4350924e559202506e1f3f74bd9c5"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-result.json",
+      "bytes": 2564,
+      "sha256": "26e0da100a012612d1756a1f986c610fccc64b1d2daa7f488d182af82f090523"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r135-native-fixture-progression-attempt-1/native-fixture-progression-negative-custody.json",
+      "bytes": 959,
+      "sha256": "72b030be91c2c7f8f5a464a62821b596843da4fc7620e5729dcf05edee5a69e5"
+    }
+  ],
+  "sources": [
+    {
+      "source": {
+        "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "bytes": 72479,
+        "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"
+      },
+      "inert_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/test_pw_scope_conversion.py.r135.9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f.py.txt",
+        "bytes": 72479,
+        "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"
+      }
+    },
+    {
+      "source": {
+        "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "bytes": 69095,
+        "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9"
+      },
+      "inert_snapshot": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/test_pw_scope_restore.py.r135.ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9.py.txt",
+        "bytes": 69095,
+        "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9"
+      }
+    }
+  ],
+  "results": {
+    "collection": 22,
+    "positive_passed": 12,
+    "progression_passed": 5,
+    "progression_failed": 6
+  },
+  "overlap": "Selections overlap; do not sum passes. Collection is not runtime evidence.",
+  "remaining": [
+    "All six ENV-dependent progression nodes still fail missing required vector_step; genuine driver required",
+    "Consumed-token matrices, shared learning/hooks, signed offsets, full restore/isolation assertions require driver and execution",
+    "C2 enabling implementation, C3/restore/type/repository/final/hardware gates remain required"
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "source_writer": "Native fixture writer frozen; root may hand next APP baton to separately scoped C2 preparer after RED fixture grant. No full acceptance."
+}

@@ -1,0 +1,41 @@
+.........F.....................                                          [100%]
+=================================== FAILURES ===================================
+___________________ test_owner_sampler_transport_valid_pair ____________________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task3-sampler-green03/fixtures/test_owner_sampler_transport_v0')
+
+    def test_owner_sampler_transport_valid_pair(tmp_path):
+        r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path)
+>       assert custody.evidence(selected) == completion
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1765: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:1494: in evidence
+    record = _read(reference, 'obligation-evidence')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:469: in _read
+    validate_record(kind, value)
+../bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:521: in validate_record
+    _check(kind, value, kind)
+../bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:239: in _check
+    _check(TYPES[rule], value, location)
+../bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:211: in _check
+    _check(child, value[key], f"{location}.{key}")
+../bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:240: in _check
+    _semantic(rule, value)
+../bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:349: in _semantic
+    _require(file_reference(Path(value["path"])) == value, "reference digest/length mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'reference digest/length mismatch'
+
+    def _require(condition, message):
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: reference digest/length mismatch
+
+../bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py:145: ValueError
+=========================== short test summary info ============================
+FAILED ../bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_valid_pair
+1 failed, 30 passed, 154 deselected in 5.58s

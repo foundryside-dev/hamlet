@@ -1,0 +1,255 @@
+{
+  "cpu_and_scratch": {
+    "bound_checks": [
+      "bound.schema==bac-hardware-cpu-bound-v1; bound.basis==role.cpu_reservation_basis; bound.role_id==role.id",
+      "Exact role.cpu_reservation_evidence ref occurs in trusted grant.cpu_reservation_evidence",
+      "bound.justification has type list and contains exact policy reference; every entry validates as P0 reference",
+      "For role,observer,intra_op,inter_op,debug,torch_policy,cuda_policy,peak_cpu_slots: exact Python type and equality to role field",
+      "bound.argv/environment equal job.argv/environment; required_cases==job.required_collected_ids",
+      "bound.head/tree equal candidate head/tree; bound.inputs==grant.inputs in exact ordered list",
+      "authority and bound_statement are str with nonblank strip; these labels are not cryptographic authority"
+    ],
+    "bound_exact_keys": [
+      "schema",
+      "basis",
+      "role_id",
+      "role",
+      "observer",
+      "intra_op",
+      "inter_op",
+      "debug",
+      "torch_policy",
+      "cuda_policy",
+      "peak_cpu_slots",
+      "argv",
+      "environment",
+      "required_cases",
+      "head",
+      "tree",
+      "inputs",
+      "justification",
+      "authority",
+      "bound_statement"
+    ],
+    "boundaries": "No producer hardcoded minimum cpu_slots=2, byte/inode runtime meter, or derivation of total complete workload from receipt sizes. Root-authorized complete workload reservation and P1/P2 admission remain required, including simultaneous guard/Git, receipt/owner/parent costs; positive policy text alone grants nothing.",
+    "comparisons": [
+      "policy.cpu_slots<=role.peak_cpu_slots",
+      "policy.scratch_bytes<=job.budget.scratch_bytes",
+      "policy.scratch_inodes<=job.budget.scratch_inodes",
+      "sum unique prepared refs bytes <=max_input_bytes; each phase independently checks prepared+launch+prior phase refs bytes <=max_input_bytes"
+    ]
+  },
+  "git": {
+    "argv_order": [
+      [
+        "RESOLVED_ADMITTED_GIT",
+        "-C",
+        "spec.authorized_root",
+        "rev-parse",
+        "HEAD"
+      ],
+      [
+        "RESOLVED_ADMITTED_GIT",
+        "-C",
+        "spec.authorized_root",
+        "diff-index",
+        "--cached",
+        "--quiet",
+        "candidate.tree",
+        "--"
+      ]
+    ],
+    "cleanup_boundary": "Normal row requires status observed/reaped; exceptional finally sends KILL to its known unreaped PID and polls waitpid up to400000000 then closes pipes. Abrupt guard termination can prevent finally; actual P2 owned-process-group cleanup backstop is still owed. No claim of automatic parent-death kill or universal reaping from a partial file.",
+    "clock_scope": "start_ns sampled before pipe creation/spawn; end_ns after wait status observed and read loop complete, before log/diagnostic writes. Each next command starts only after previous command diagnostics are written and success checked.",
+    "files": "All under job.output: sampler-{process_id}-{phase}-{0|1}.stdout, .stderr, .json. Diagnostic .json is exactly command row without schema/kind. Sampler.commands embeds same two rows in order.",
+    "limits": "run_end=min(passed deadline,start_ns+500000000). At timeout/cap error send TERM, after100000000 send KILL; kill-reap400000000. stdout/stderr each independently capped8192 bytes, overflow flag true and error on excess. Successful sampler requires both false; retained partial diagnostics may have true.",
+    "row_keys": [
+      "argv",
+      "pid",
+      "start_ns",
+      "end_ns",
+      "exit_code",
+      "stdout",
+      "stderr",
+      "stdout_truncated",
+      "stderr_truncated"
+    ],
+    "source_mapping": "source-witness head/tree are candidate.head/tree after actual successful queries; inventory=grant.inputs; candidate=spec.candidate; source_freeze=spec.source_freeze; process_identity=actual child. Tree does not mean HEAD^{tree}; staged candidates are allowed.",
+    "spawn": "os.posix_spawn exact admitted Git with actual dict(os.environ), stdout/stderr pipes; all enumerated open FDs>2 closed via spawn actions after dup2. No shell. This creates actual owned Git PID; not a synthetic declared command.",
+    "success": "Both actual commands must exit0 and have no timeout/output-cap error. First stdout.decode().strip()==candidate.head. Second checks staged index vs candidate.tree through exit0, not stdout tree parsing; producer imposes no extra empty stdout/stderr assertion on either successful command."
+  },
+  "guard_process": {
+    "argv": "actual /proc/self/cmdline split on NUL, equals launch.parent_argv",
+    "at": "post-source UTC shared with raw and source witness",
+    "common_bindings": "schema bac-hardware-v1/kind process; attempt/job/spec/role_id from sealed plan/context. process_id=p- plus SHA256(json.dumps(actual identity,sort_keys=True).encode()). Identity includes actual PID/PPID/start/host/boot.",
+    "cuda_observation": "forbidden",
+    "cwd": "actual os.getcwd()==job.cwd",
+    "devices": "job.devices",
+    "elapsed_end": "measured value=end phase begin-start phase begin; reason empty",
+    "elapsed_start": {
+      "reason": "process start has no elapsed interval",
+      "state": "unavailable",
+      "value": null
+    },
+    "environment": "actual map equals launch.environment",
+    "imports": "prepared imports list",
+    "interpreter": "prepared resolved interpreter ref",
+    "intra_op_inter_op_debug": {
+      "provenance": "exact raw ref",
+      "reason": "guard-only: no Torch/CUDA calls permitted",
+      "state": "unavailable",
+      "value": null
+    },
+    "monotonic_ns": "actual phase entry begin, equal sampler.start_ns",
+    "ordinary_difference": "Ordinary recorder_mode=ordinary, sampler=[], same source_method=direct-git. Ordinary debug measures Python __debug__, never anomaly; guard P0 debug is unavailable while raw Python remains actual True/0. Ordinary process.at precedes source query and source witness.at may be later. Guard shared at is sampled after source verification. Public record_process refuses fork-guard.",
+    "parent_identity": "[actual prepared launcher identity], independently equal actual immediate parent /proc identity",
+    "replacement_of": [],
+    "role": "fork-guard",
+    "torch_observation": "forbidden-inherited-module-witness"
+  },
+  "guard_raw": {
+    "bindings": "context=prepared derived child context; identity=actual child; phase=actual phase; environment=dict(os.environ)==launch.environment; at=same post-source UTC as process/source witness",
+    "cuda_marker": null,
+    "module_hash": "SHA256 of json.dumps(sorted(sys.modules),ensure_ascii=True,separators=(comma,colon)).encode(ascii). Entry hash must equal launch.module_names_sha256; raw before is entry hash and raw after actual later sample. Final module check also compares to entry. Hash is names only; imported file bytes/path witnesses are separate.",
+    "observation_limit": "guard-only: no Torch/CUDA calls permitted",
+    "owner_claim": "singleton actual claim ref shared by START and END",
+    "python_debug": true,
+    "python_optimize": 0,
+    "recorder_mode": "fork-guard",
+    "sampler": "singleton exact same-phase sampler observation reference",
+    "schema": "bac-hardware-process-observation-v2",
+    "source_method": "direct-git",
+    "torch_anomaly": {
+      "reason": "guard-only: no Torch/CUDA calls permitted",
+      "state": "unavailable",
+      "value": null
+    },
+    "torch_loaded": "type(sys.modules.get(torch)) is types.ModuleType; actual inherited presence may be True or False, no Torch call or requirement it is True",
+    "worker_identity": null
+  },
+  "interface": {
+    "bytes": 10566,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/interface-contract-v5.json",
+    "sha256": "a0130f27c50305cf5917bebd792fd904ef123be551ce4b246ad09822858b6d87"
+  },
+  "lock_and_source_order": {
+    "entry": "Record actual begin before other guard observations. Claim START follows begin. Verify phase input refs/imports, then sample UTC and require active grant/freeze start/end.",
+    "files": "source-{process_id}-{phase}.json; sampler-{process_id}-{phase}.json; process-{process_id}-observation-{phase}.json; process-{process_id}-{phase}.json; sampler-emission-{process_id}-{phase}.json, all exclusive no-follow writes.",
+    "lock": "Open freeze.index_lock through no-follow directory traversal O_RDWR|O_NOFOLLOW|O_NONBLOCK; require regular file. No inherited held lock. Repeated LOCK_EX|LOCK_NB until acquired or min(_BUDGET,current+250000000); poll1ms. lock_acquired_ns sampled after acquisition.",
+    "ordered": "sampler.start_ns <= lock_acquired_ns <= command0.start_ns <= command0.end_ns <= command1.start_ns <= command1.end_ns <= lock_released_ns <= sampler.end_ns <= emission.emission_end_ns. Diagnostic log writes occur inside lock, after each command.end_ns. Same-clock ordering allows equality.",
+    "release": "Unlock, close lock, then sample lock_released_ns. Rehash plan.refs; sample final UTC; recheck grant/freeze end limits. Write/hash source witness. Then sample sampler.end_ns. Source UTC is after release and before sampler.end sample, but no fabricated numeric comparison between UTC string and monotonic clock."
+  },
+  "policy": {
+    "absolute_launch_fields": "launch.monotonic_ns sampled after parent fresh source and preparation; owner_deadline_ns=launch.monotonic_ns+policy.owner_deadline_ns, sampler_cutoff_ns=launch.monotonic_ns+policy.sampler_cutoff_ns; launch.sampler_policy=[exact policy ref].",
+    "exact_keys": [
+      "schema",
+      "role_ids",
+      "max_input_bytes",
+      "cpu_slots",
+      "scratch_bytes",
+      "scratch_inodes",
+      "owner_deadline_ns",
+      "sampler_cutoff_ns",
+      "sampler_total_ns",
+      "phase_ns",
+      "lock_wait_ns",
+      "command_run_ns",
+      "term_grace_ns",
+      "kill_reap_ns",
+      "emission_reserve_ns",
+      "stdout_limit_bytes",
+      "stderr_limit_bytes"
+    ],
+    "fixed_values": {
+      "command_run_ns": 500000000,
+      "emission_reserve_ns": 250000000,
+      "kill_reap_ns": 400000000,
+      "lock_wait_ns": 250000000,
+      "owner_deadline_ns": 10000000000,
+      "phase_ns": 3000000000,
+      "sampler_cutoff_ns": 8000000000,
+      "sampler_total_ns": 6000000000,
+      "stderr_limit_bytes": 8192,
+      "stdout_limit_bytes": 8192,
+      "term_grace_ns": 100000000
+    },
+    "fork_only": "prepare_owner_launch selects this policy only for start_method=fork and role=fork-guard. Spawn emits sampler_policy=[], owner_deadline_ns=None, sampler_cutoff_ns=None. Do not impose fork deadlines on spawn.",
+    "number_constraints": "Every field other than schema and role_ids must have type(value) is int (bool rejected), value>0. Fixed fields must equal the literals. max_input_bytes/cpu_slots/scratch_bytes/scratch_inodes have no additional hardcoded maximum beyond the comparisons below.",
+    "role_ids": "type is list; len(set(role_ids))==len(role_ids); current role.id is a member. No explicit per-element string/type or equality-to-all-job-roles check here.",
+    "schema": "bac-hardware-owner-sampler-policy-v1",
+    "selection": "Load every job.prerequisites reference; select those whose schema equals this literal. Exactly one selected policy, not one per matching role."
+  },
+  "prepared_reference_closure": {
+    "ancestry_objects": "Walk context.parent_start chain; load each parent process and its debug.provenance raw, switch cursor to raw.context; refuse repeated parent process_id. Collect parent, raw, and parsed parent source-witness. For cursor.policy/runtime/lifecycle refs, load and collect each metadata value. If schema is bac-hardware-identity-runtime-v1 also load and collect its runner_source_start witness. No general graph search or opaque source/config/artifact JSON decoding.",
+    "collection_algorithm": "Recursively traverse lists and dictionary values in the explicitly supplied metadata objects. A dictionary whose keys are exactly path,bytes,sha256 is a P0 reference: validate and deduplicate by path, refusing unequal refs for the same path. References are collected without recursively decoding arbitrary referenced JSON.",
+    "executables": "Resolve shutil.which(git) and sys.executable with Path.resolve; hash each and add by absolute path. Git exact ref must occur as environment.dependencies entry with name git. Interpreter ref carried into guard process. No new external reference authority is implied.",
+    "final_source_precheck": "After unlocking actual index lock, rehash plan.refs again. This second pass does not rehash launch_ref or prior phase_refs unless those happen to be in plan.refs.",
+    "imports": "Prepared plan imports are another _imports(context,candidate,environment,end) sample. Child rehashes collected files and checks each prepared import alias is exact ModuleType with vars(module).__file__ equal the prepared path. Full import authority rules are in related Task2 capsule.",
+    "initial_objects": [
+      "derived child context before lifecycle is populated",
+      "spec",
+      "selected job",
+      "candidate",
+      "environment",
+      "owner_contract ref and its parsed case-contract",
+      "CPU bound",
+      "sampler policy",
+      "trusted grant",
+      "source-freeze"
+    ],
+    "local_vs_external": "Prepared refs include external sealed spec/candidate/source/grant/environment/tool/executable/contract/policy inputs and actual ancestor delegation/observation files. They are not all newly owned job-output artifacts. Conversely owner-local diagnostics/receipts must not be dropped merely because an incoming ref graph does not point to their filename. Scope inventory according to exact paths/ownership and accepted consumer contract, not by requiring every external input in job-output inventory.",
+    "phase_precheck": "Union by path of plan.refs, launch_ref, and prior phase_refs; bound total bytes then actual no-follow rehash each. Current START claim is written before this and not yet added to phase_refs. END explicitly rehashes existing claim and START process first.",
+    "phase_refs_after_emission": "Extend with source,sampler,raw,process,emission,claim and each command stdout/stderr. Diagnostic command JSON is not included in phase_refs or embedded as a reference in sampler; its fixed path/contents must be retained separately in inventory."
+  },
+  "related_ancestry_facts": {
+    "bytes": 12549,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/owner-task2-ancestry-facts-supplier-v1.json",
+    "sha256": "389849276d2bd689f9f994c278e67430b229ab54411bdbc9f14b5d2a91bcd76b"
+  },
+  "related_reason_literals": {
+    "bytes": 9203,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-identity-p3/owner-amendment/observation-reason-literals-supplier-v1.json",
+    "sha256": "ad597f75000940593c1c1aca7784372557ae7f7bba96cc0779108afb6d837a5d"
+  },
+  "sampler_and_emission_timing": {
+    "emission_clock": "After process output write/hash sample final module hash then emission_end_ns. Write/hash receipt afterward; then update phase refs, final module equality and _tick, sample/add internal prefix duration, record phase state, and return. emission_end_ns excludes its own receipt write and later return.",
+    "emission_fields": [
+      "schema",
+      "policy",
+      "launch",
+      "identity",
+      "phase",
+      "sampler",
+      "raw",
+      "process",
+      "emission_end_ns",
+      "module_names_after_sha256"
+    ],
+    "emission_schema": "bac-hardware-owner-sampler-emission-v1",
+    "external_required": "Source-qualified actual owner brackets must independently prove per-call<=3s, combined<=6s, both entries/returns inside launch..absolute8s. Actual parent ack and reap must corroborate exact child/payload by original min(existing10s,launch.owner_deadline_ns), not8s. Valid7.9s return/8.1s ack remains eligible. No required ack-vs-reap ordering if actual wait implementation differs. P4/P5 strict actions/payload/return linkage and actual P2 cleanup backstop remain owed; this supplier does not qualify them.",
+    "failure": "Exclusive partial records remain when later steps fail. A P0 END or emission receipt alone does not imply successful return. Missing return or END may be expected failure evidence, never successful complete transport.",
+    "limit": "limit=min(begin+phase_ns,launch.sampler_cutoff_ns,begin+sampler_total_ns-plan.prefix_ns). Initial _BUDGET=limit-(term_grace_ns+kill_reap_ns+emission_reserve_ns), i.e. limit-750000000. _tick requires actual monotonic<_BUDGET. After source emission set _BUDGET=limit for later emissions/check.",
+    "prefix": "Internal prefix_ns sums each successful actual begin-to-last-internal-clock interval, never future return. It conservatively reduces later call budget but cannot prove whole-call3/6 bounds.",
+    "source_interval": "sampler.start_ns=begin=process.monotonic_ns. sampler.end_ns after source witness write/hash, before sampler/raw/process writes. START cumulative_ns=end-start. END cumulative_ns=START cumulative_ns+(END end_ns-END start_ns). It does not include intervals between phases, post-source emissions, or caller return."
+  },
+  "schema": "bac-p3-owner-task3-sampler-facts-supplier-v1",
+  "scope": "Only existing owned frozen P3 source and existing metadata read. No P2 body, APP body, source import/execution, test, Git command/mutation, new checkout/copy, or source edit. Additive metadata only.",
+  "source_after": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "source_before": {
+    "bytes": 65961,
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_identity_v1.py",
+    "sha256": "dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07"
+  },
+  "source_locations": {
+    "command": "_sampler_command lines591-643",
+    "guard": "record_fork_process lines646-742",
+    "launch": "prepare_owner_launch lines839-883",
+    "module_hash": "_modules lines296-297",
+    "policy_and_prepared_closure": "_prepare_fork lines523-588"
+  },
+  "status": "Frozen current-producer facts only; no consumer implementation or whole-chain qualification claim"
+}

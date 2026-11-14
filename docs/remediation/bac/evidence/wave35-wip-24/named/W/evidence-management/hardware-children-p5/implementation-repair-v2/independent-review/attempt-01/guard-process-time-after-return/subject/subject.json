@@ -1,0 +1,564 @@
+{
+  "schema": "bac-hardware-strict-validation-subject-v1",
+  "spec": {
+    "path": "/synthetic/out/a/cuda-core-inherited-pid/spec.json",
+    "bytes": 4551,
+    "sha256": "64749980e8c3a7e8260cd1e3337ea53b464a69dd3102a9377abe408cb53c3e6d"
+  },
+  "job_id": "cuda-core-inherited-pid",
+  "obligation_id": "strict",
+  "documents": [
+    {
+      "reference": {
+        "path": "/synthetic/meta/witness.json",
+        "bytes": 40,
+        "sha256": "b52cd0186bd27b18106ea58790f126a88237eef9154bc92accd06029eec70d8d"
+      },
+      "retained_content": "document-000.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/meta/contract.json",
+        "bytes": 1751,
+        "sha256": "31e051b4fc63784aaf485b03f728cf27250c23e3151ea99ceb840e38180eb77e"
+      },
+      "retained_content": "document-001.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/meta/policy.json",
+        "bytes": 484,
+        "sha256": "d1e7118c8f6f43c976c1feaeef737c969b254f25053cf81e4e92fe6030aa5145"
+      },
+      "retained_content": "document-002.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/candidate.json",
+        "bytes": 3366,
+        "sha256": "4b0763e5345882795b462994845f31d45bd266da85fe1e330c833aa78444550b"
+      },
+      "retained_content": "document-003.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/spec.json",
+        "bytes": 4551,
+        "sha256": "64749980e8c3a7e8260cd1e3337ea53b464a69dd3102a9377abe408cb53c3e6d"
+      },
+      "retained_content": "document-004.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/parent-raw.json",
+        "bytes": 1410,
+        "sha256": "1df377ffd016a8f7a4e7094a344d0f6ea25e4b6a68c37b032a4e80c52c8e6669"
+      },
+      "retained_content": "document-005.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/parent-source.json",
+        "bytes": 786,
+        "sha256": "a0e449b498f7ae9460bd8f462eee60025d1c87386df14bcef171992b698c7a03"
+      },
+      "retained_content": "document-006.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/parent.json",
+        "bytes": 2826,
+        "sha256": "9eba17c529d325be236c8a15ce45ea4a79f4f05c247be7b0966fa0c4c32d0488"
+      },
+      "retained_content": "document-007.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/parent-end-raw.json",
+        "bytes": 1408,
+        "sha256": "dceda4e3df5ed5ea4532d271af70bef006df89dfeb6f3b6c1bad4a8318a97081"
+      },
+      "retained_content": "document-008.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/parent-end-source.json",
+        "bytes": 786,
+        "sha256": "a0e449b498f7ae9460bd8f462eee60025d1c87386df14bcef171992b698c7a03"
+      },
+      "retained_content": "document-009.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/parent-end.json",
+        "bytes": 2840,
+        "sha256": "5fd89630627ddb42e93647bd8774f8dfba64a81b32a5f20a9c8c86342754bc1f"
+      },
+      "retained_content": "document-010.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/launch.json",
+        "bytes": 1480,
+        "sha256": "4a1a2ef5dd3994a0c7dfb80c28633e9f7dac58fe7804b5a345ea8bd6df1708d6"
+      },
+      "retained_content": "document-011.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/child-start-raw.json",
+        "bytes": 1883,
+        "sha256": "e8fb4e1751919fdf2c5cd265ba97c7c59590e0f7bcbec2ea303de1ee65cf9f18"
+      },
+      "retained_content": "document-012.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/claim-101.json",
+        "bytes": 402,
+        "sha256": "45b73bdd36b1d187717c2c5735c818a8d7f7a104309dcca23d6e23c588e472f2"
+      },
+      "retained_content": "document-013.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/child-start-source.json",
+        "bytes": 788,
+        "sha256": "e70286fd4ba19d43e255b8668a57b399788de8857a21cb964cb2246e87dbcf87"
+      },
+      "retained_content": "document-014.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/child-start.json",
+        "bytes": 2951,
+        "sha256": "6addd5cada5d587d232304a02783d7a282d6ea41e02daa4146530e4746c1d9cf"
+      },
+      "retained_content": "document-015.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/child-end-raw.json",
+        "bytes": 1881,
+        "sha256": "dcd4718c6669f2d96a8f796a82c9f9505e58d4359e433324bffb66d1fd9f37c9"
+      },
+      "retained_content": "document-016.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/child-end-source.json",
+        "bytes": 788,
+        "sha256": "e70286fd4ba19d43e255b8668a57b399788de8857a21cb964cb2246e87dbcf87"
+      },
+      "retained_content": "document-017.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/child-end.json",
+        "bytes": 2941,
+        "sha256": "af69ff3bc33e98e3bcb47fed76704e5aaa0840e914a8dbd4d772dc7c130e6f1b"
+      },
+      "retained_content": "document-018.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-launch.json",
+        "bytes": 1647,
+        "sha256": "6c21ea51523de7d55e5515ede289170fd7c989ba5d139cb5e33495d587ad7e20"
+      },
+      "retained_content": "document-019.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-start-raw.json",
+        "bytes": 2128,
+        "sha256": "11c7fbed9c6d19edc7da9a178595c0a0796e45cf14d13cdc9501476d17404d06"
+      },
+      "retained_content": "document-020.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/claim-110.json",
+        "bytes": 418,
+        "sha256": "3410b3fa0e330476dae22bed410e1004983a60cb4890c65ab794dfc3b797f61c"
+      },
+      "retained_content": "document-021.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-start-source.json",
+        "bytes": 788,
+        "sha256": "bfbf0b9461b6910a5efae6b1fd8831e8ff5a1029a5f589f0565f6dc8c53ca49a"
+      },
+      "retained_content": "document-022.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-start.json",
+        "bytes": 3162,
+        "sha256": "ef223896610971a7a3362196511b8cdda94fffa49b0855747e8f340c2bb286b8"
+      },
+      "retained_content": "document-023.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-end-raw.json",
+        "bytes": 2124,
+        "sha256": "739906680d6558129deef8d0bb5fb63a20949167a1d376234d37dfe17c6c9ec5"
+      },
+      "retained_content": "document-024.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-end-source.json",
+        "bytes": 788,
+        "sha256": "bfbf0b9461b6910a5efae6b1fd8831e8ff5a1029a5f589f0565f6dc8c53ca49a"
+      },
+      "retained_content": "document-025.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-end.json",
+        "bytes": 3152,
+        "sha256": "ac9ddbf249d99b3cf4c17db89fb1ce45c4f9318ebf3c5fe1f0660efb5f519d90"
+      },
+      "retained_content": "document-026.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-start-sampler.json",
+        "bytes": 1731,
+        "sha256": "f36a89b37b2f0215134a38599aeca01864cc277fe4f6cd8f0c6c28dd4ffbce99"
+      },
+      "retained_content": "document-027.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-start-emission.json",
+        "bytes": 1126,
+        "sha256": "67a05cac26efc27b20cbdb2b9567cd979a70f78ee63b4b449576d123aa20c5ae"
+      },
+      "retained_content": "document-028.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-end-sampler.json",
+        "bytes": 1721,
+        "sha256": "4ca90e07c5dd3de057b7d1cc9b2579a5157f318472ecabb2a7619caf0045996a"
+      },
+      "retained_content": "document-029.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/admission-end-emission.json",
+        "bytes": 1118,
+        "sha256": "b87da07341641250a1769fcf52598ed27b24f9f1c76d6397bd8c7b02c9fef7bf"
+      },
+      "retained_content": "document-030.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-fork-result-admission.json",
+        "bytes": 3293,
+        "sha256": "ec97ee05bc21ab2526a34f64cb31c7e7dfce8efa5870eb2c8409712165fe9d5d"
+      },
+      "retained_content": "document-031.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-fork-observation-admission.json",
+        "bytes": 1977,
+        "sha256": "1b6f8cf58fe27c9801524dfaddad0394b4792136a3736ad04c9038586cdb8ac5"
+      },
+      "retained_content": "document-032.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-launch.json",
+        "bytes": 1643,
+        "sha256": "adbec99c188ded88d56a7c7b237a33e9987c2d19b75f32e852ae70e10511bc80"
+      },
+      "retained_content": "document-033.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-start-raw.json",
+        "bytes": 2120,
+        "sha256": "203d5dfede61fd76199bb2e201bbc1e0cf285f807ff61525eb37dce7ba124cf5"
+      },
+      "retained_content": "document-034.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/claim-111.json",
+        "bytes": 414,
+        "sha256": "3c9b1e9d8a77c5278f226d2eafe65278e6611bebc5570ea99395e8f57b231220"
+      },
+      "retained_content": "document-035.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-start-source.json",
+        "bytes": 788,
+        "sha256": "02edf8cc3c77e61c7b0f2c6fdae87d2dcc09220a3ecdba544ac7ba27c3c044b5"
+      },
+      "retained_content": "document-036.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-start.json",
+        "bytes": 3146,
+        "sha256": "40cefc0cc663bbf96bdb08d2e2d17126ff929ac6cdea9f3dd41a5752b8527f47"
+      },
+      "retained_content": "document-037.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-end-raw.json",
+        "bytes": 2116,
+        "sha256": "8daee6d0ddb9e901f354855ec0f1da8b3f44698d26801608eccf72afe3e6e263"
+      },
+      "retained_content": "document-038.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-end-source.json",
+        "bytes": 788,
+        "sha256": "02edf8cc3c77e61c7b0f2c6fdae87d2dcc09220a3ecdba544ac7ba27c3c044b5"
+      },
+      "retained_content": "document-039.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-end.json",
+        "bytes": 3134,
+        "sha256": "b7d3b677cb1feeab7f09070ac9f033bbcd3919184bb737b09a3e00df2946120f"
+      },
+      "retained_content": "document-040.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-start-sampler.json",
+        "bytes": 1711,
+        "sha256": "2141fa70524824cb375700bd60678f1e0c2cb21d4f31580f3558dd983c46fc5d"
+      },
+      "retained_content": "document-041.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-start-emission.json",
+        "bytes": 1110,
+        "sha256": "35fa9f8314ff0e2caf8ad94bee85a8316f97dd03d3141ead4383fa9febf0d1aa"
+      },
+      "retained_content": "document-042.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-end-sampler.json",
+        "bytes": 1701,
+        "sha256": "18ee31131d7027edd6282407534f34ab749240ddd4499327fff110e9a418cf22"
+      },
+      "retained_content": "document-043.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/local-end-emission.json",
+        "bytes": 1102,
+        "sha256": "d0673f7d0393af023d23acb8e92f633802487f1eb953c6db217f566eec29d116"
+      },
+      "retained_content": "document-044.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-fork-result-local.json",
+        "bytes": 4020,
+        "sha256": "2daa0865458ebe71a2b75ba5cc0108995726ac214bc73b3bfe79115f65f37832"
+      },
+      "retained_content": "document-045.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-fork-observation-local.json",
+        "bytes": 1941,
+        "sha256": "063a176a3d1b6ac60af7a4de73ca3491e8e0c645f6b9e9c68fb498e2704f3194"
+      },
+      "retained_content": "document-046.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-launch.json",
+        "bytes": 1648,
+        "sha256": "b0999d8e60a9b759bc595264520a271611a2c03939e0923fcb83b74f1453052c"
+      },
+      "retained_content": "document-047.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-start-raw.json",
+        "bytes": 2130,
+        "sha256": "191c8fd9d63a4a77522fedf91c0cdf7a28439a897ffc99ef32e12337b4ee4897"
+      },
+      "retained_content": "document-048.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/claim-112.json",
+        "bytes": 419,
+        "sha256": "31eaec76bfd43c0e93b7f57b623faacde8bd52fe6520cdc55a955606fe75c716"
+      },
+      "retained_content": "document-049.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-start-source.json",
+        "bytes": 788,
+        "sha256": "43a0425d4c0afbd46fcfe8bacc8212a3d4346f81ba16d43d98ef2d6ba734de5c"
+      },
+      "retained_content": "document-050.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-start.json",
+        "bytes": 3166,
+        "sha256": "682edd9b9c7dd5f1278e59eddbc2b39dd0e53d0ff1fc02f1285028cbc6e41783"
+      },
+      "retained_content": "document-051.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-end-raw.json",
+        "bytes": 2126,
+        "sha256": "4080f687b9867fdc335f093cdff9f35b33bca8528893a2288c0936edc0549e09"
+      },
+      "retained_content": "document-052.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-end-source.json",
+        "bytes": 788,
+        "sha256": "43a0425d4c0afbd46fcfe8bacc8212a3d4346f81ba16d43d98ef2d6ba734de5c"
+      },
+      "retained_content": "document-053.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-end.json",
+        "bytes": 3154,
+        "sha256": "cd5c27b768dad8fd25d5a224157e8946aee7e9eadeafc6a525892abe7e1fa075"
+      },
+      "retained_content": "document-054.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-start-sampler.json",
+        "bytes": 1736,
+        "sha256": "8f011639ae33b8e5586c85e0f856ced1031136d390bb764dd1d752fef83cd180"
+      },
+      "retained_content": "document-055.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-start-emission.json",
+        "bytes": 1130,
+        "sha256": "de5c0df96ca7e32c831f54ce481eeef1ffbbe77f9bfe3a97dff9116eb207b834"
+      },
+      "retained_content": "document-056.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-end-sampler.json",
+        "bytes": 1726,
+        "sha256": "265120c2efbeea266f74924fd409be129f6c7f40869852db52f52d12aa473475"
+      },
+      "retained_content": "document-057.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/invocation-end-emission.json",
+        "bytes": 1122,
+        "sha256": "f344a0df2bd56be08f5429c53fc7e92f0017c41f436edeb7da71eb92cd110115"
+      },
+      "retained_content": "document-058.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-fork-result-invocation.json",
+        "bytes": 3574,
+        "sha256": "4d45145ea42a31121e118ed72cb5e1f3eba924963cd24810873e15b0c71ec501"
+      },
+      "retained_content": "document-059.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-fork-observation-invocation.json",
+        "bytes": 1986,
+        "sha256": "d96208664960bdefe29c2203c86ad2fc8ce2a20a0506c3b78c493fceb5b077ad"
+      },
+      "retained_content": "document-060.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-child-cuda_core_inherited_pid.json",
+        "bytes": 1371,
+        "sha256": "97cd5acaa15f60bea87d3a462582b2c930c797f269950439ff6d7dd5c5f60297"
+      },
+      "retained_content": "document-061.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/core-result-cuda_core_inherited_pid.json",
+        "bytes": 1708,
+        "sha256": "de28296ae3c1e93cf8188a34f56aafc1f9d08eeade78fc6ce43cfc6ba5bcfe6c"
+      },
+      "retained_content": "document-062.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/evidence.json",
+        "bytes": 1123,
+        "sha256": "c4cf13ab5422b25f3cf3252735b995976aa9aa32a11d93b761643efb8bb2b4b4"
+      },
+      "retained_content": "document-063.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/report-setup.json",
+        "bytes": 405,
+        "sha256": "578162a6d4325eec41f324ed27ec8617e5b54f4140d4a337631f323c86fe077b"
+      },
+      "retained_content": "document-064.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/report-call.json",
+        "bytes": 404,
+        "sha256": "2548ffcdade60417e0fc2498a07170868832d0572d832b8dd3ddfa42cbae8283"
+      },
+      "retained_content": "document-065.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/report-teardown.json",
+        "bytes": 408,
+        "sha256": "cda707008206e0fec2df72d3c52fdaf1226591ea154678319050f4850da44c86"
+      },
+      "retained_content": "document-066.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/completion.json",
+        "bytes": 19180,
+        "sha256": "b881f17041a90056610f00730136402e6ca0f0a60b9164e72e353fa766bf4ccf"
+      },
+      "retained_content": "document-067.json"
+    },
+    {
+      "reference": {
+        "path": "/synthetic/out/a/cuda-core-inherited-pid/result.json",
+        "bytes": 19534,
+        "sha256": "3ff074af500c168f7a06107279ebfff826dd40ffa1310b74653d6a949d2c7f9e"
+      },
+      "retained_content": "document-068.json"
+    }
+  ]
+}

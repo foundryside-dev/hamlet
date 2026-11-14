@@ -1,0 +1,194 @@
+{
+  "schema": "native-install-identity-supplier-v1",
+  "date": "2026-11-14",
+  "purpose": "Read-only source facts for the approved F-native/replay fixture packet; no fixture changes or acceptance waiver supplied.",
+  "scope": {
+    "repository": "/workspace/hamlet",
+    "charged_implementation_bodies": 4,
+    "charged_whole_lines": 4842,
+    "additional_implementation_bodies": 0,
+    "test_bodies_read": 0,
+    "application_runtime_imports_tests": "none",
+    "source_api_app_git_mutation": "none",
+    "sole_authorized_write": "this metadata capsule"
+  },
+  "linked_authority": {
+    "original_native_supplier": {
+      "path": "../../wave35-preparation/T18e-R0-PARENT-NATIVE-CURRENT-SUPPLIER.md",
+      "sha256": "7cb54762da2ecffae75091d06725afac71d83097f615cd364fc79ed1f54f0ba9"
+    },
+    "diagnostic_clarification": {
+      "path": "../../wave35-preparation/T18e-R0-NATIVE-FAILED-DIAGNOSTIC-CAPTURE-FACTS-v1.md",
+      "sha256": "1be66aa7f93495b6c0304fa22974af4abbe4804a740bb32536130283b8079611"
+    }
+  },
+  "source_seals": [
+    {
+      "path": "src/townlet/exploration/world_curiosity_state.py",
+      "label": "W",
+      "whole_lines": 1361,
+      "sha256": "433b3563457fbf68d26d47d73dc375c1382e0cc77d0987a4c9d4f62f3cdfcce3"
+    },
+    {
+      "path": "src/townlet/exploration/curiosity_checkpoint.py",
+      "label": "CP",
+      "whole_lines": 1158,
+      "sha256": "b45ba7627b50c123de36862a678a8db98d4ab074db23d296b6cd81a05d74b6c1"
+    },
+    {
+      "path": "src/townlet/exploration/rnd.py",
+      "label": "RND",
+      "whole_lines": 1128,
+      "sha256": "53cccad55acad4018518bd498206129feddc5f54113560103cab60c94659ac46"
+    },
+    {
+      "path": "src/townlet/exploration/rng_custody.py",
+      "label": "C",
+      "whole_lines": 1195,
+      "sha256": "6cb01ca77b58db5f4c4784dc36da566c06cf68c2a7c2ce227bb780549f3344f8"
+    }
+  ],
+  "conclusion": {
+    "managed_install_preserves_prior_provider_identity": false,
+    "factory_or_validation_callback_identity_identifies_final_installed_candidate": false,
+    "public_install_callback_exists": false,
+    "public_revision_neutral_live_identity_observer_found": false,
+    "public_prepared_candidate_identity_accessor_exists": false,
+    "immediate_same_handle_retry_supported": true,
+    "immediate_retry_plus_before_after_installed_identity_witness_with_no_intervening_observation": "not supplied by the current inspected public APIs",
+    "capability_assertions": "Preserve required provider, Parameter, gradient and storage identity assertions. This supplier does not approve dropping them or substituting value equality, private access, raw-provider escape, forged candidates or a different receiver."
+  },
+  "install_semantics": [
+    {
+      "signature": "OwnedWorldBackend.install(prepared: PreparedWorldBackend, *, lineage: RNGOperation | None) -> None",
+      "references": [
+        "W1123-1136",
+        "W940-949"
+      ],
+      "facts": [
+        "Enters native install scope with required explicit lineage; authentic None is standalone, otherwise forward genuine active ancestor operation.",
+        "Validates handle membership/revision/current token before any install assignment; requires prepared private RNG.",
+        "Publishes state.backend and state.rng by direct tuple assignment at W1129, clears local failure, increments owner revision, deletes handle from issuer registry, consumes current token.",
+        "Backend is replaced by the final prepared object; no guarantee preserves prior provider, Parameter, gradient or tensor-storage identities.",
+        "No user callback, serializer or public observation hook occurs inside this install body.",
+        "Core admission/completion still applies around the body; assignment success does not waive later completion failure policy."
+      ]
+    },
+    {
+      "signature": "SharedWorldBackend.install(prepared: PreparedWorldBackend, *, lineage: RNGOperation | None) -> None",
+      "references": [
+        "W1338-1361",
+        "W940-949"
+      ],
+      "facts": [
+        "Enters native install scope; an already-installed bootstrap has an earlier explicit refusal at W1340-1341.",
+        "Validates handle, rejects private RNG ownership, and stages any prepared ambient continuation before first backend assignment.",
+        "Publishes state.backend at W1352, updates bootstrap state when building, clears local failure, increments revision, deletes handle and consumes token.",
+        "No user installation callback or public identity observer; replaces prior backend with the final retained candidate.",
+        "For ordinary ready shared owner, consumed-handle membership refusal is reached before ambient staging and backend assignment. During the special bootstrap installed state, the earlier bootstrap guard is a different refusal and must not be mislabeled consumed-handle evidence."
+      ]
+    },
+    {
+      "signature": "RNDExploration.install_state(prepared: _PreparedRND) -> None",
+      "references": [
+        "RND1024-1040",
+        "RND1121-1128"
+      ],
+      "facts": [
+        "Direct native RND installation is different from managed owner installation: retains the receiving RND Python object's identity, marks the authentic prepared record consumed, and replaces self.__dict__ with prepared.attributes.",
+        "Prepared modules/optimizer/pending rows replace prior attributes; pre-prepare Parameter, gradient and storage identities are not promised preserved.",
+        "_PreparedRND is an implementation-specific native record, not the opaque managed PreparedWorldBackend nor a public managed-owner custody/identity witness.",
+        "Direct RND behavior does not authorize bypassing managed owner wrappers to inspect or mutate their live provider."
+      ]
+    }
+  ],
+  "candidate_identity": {
+    "references": [
+      "W855-877",
+      "W926-937",
+      "W963-971",
+      "W1060-1092",
+      "W1094-1121",
+      "W1280-1309",
+      "W1311-1336"
+    ],
+    "facts": [
+      "PreparedWorldBackend is an opaque nonconstructible/nonportable/nondeepcopyable identity; all candidate objects remain issuer-retained.",
+      "Private restore clones factory output, runs validator and native load on that candidate, then clones the candidate again at W1091 before issuance.",
+      "Private learning reset invokes prepare_native then clones candidate at W1120 before issuance.",
+      "Shared restore clones candidate after validation/load at W1307; shared learning reset clones after prepare_native at W1335.",
+      "Consequently an identity baseline collected from a factory, validator or prepare_native callback is not the final installed candidate identity under ordinary deepcopy semantics.",
+      "Known checkpoint bytes and independently built expected providers establish value expectations, not installed object/Parameter/gradient/storage identity.",
+      "Arbitrary custom deepcopy behavior is outside the ordinary source profile and is not a supported identity-preservation workaround."
+    ]
+  },
+  "consumed_retry": {
+    "references": [
+      "W940-949",
+      "W1123-1136",
+      "W1338-1361",
+      "C1081-1091",
+      "C1154-1176"
+    ],
+    "recipe": [
+      "Use the same authentic owner and exact genuine handle for prepare, first install, and immediate second install.",
+      "Forward the actual current lineage for each call; perform no snapshot/capture/call or other observation between first install and retry.",
+      "On ordinary private or ready shared owner, the first install deletes the handle. The second fails the exact-type/retained-membership test W941-942 before destination-revision comparison W944, current-token validation W946, shared ambient checks/staging, or backend/RNG assignment.",
+      "Assert the actual consumed/foreign/fabricated membership refusal text and causal ordering; do not replace the handle or manufacture registry state.",
+      "Perform any managed observation only after the immediate retry if preserving that ordering; this observes post-refusal state, but does not independently create a missing pre-refusal identity baseline."
+    ],
+    "source_proven_nonmutation": "The ordinary consumed-refusal body reaches no provider, Parameter, gradient, storage, RNG-publication, owner revision, handle-deletion or local failure assignment. It exits through existing core scope mechanics.",
+    "limits": [
+      "Core operation revision/currency bookkeeping and completion still occur on entered refusal; do not assert process-domain metadata is unchanged.",
+      "If completion fails, poison/local failure handling can change health and exceptions independently; no healthy failure-control claim survives that condition.",
+      "A source-backed early refusal is not, by itself, the requested independent runtime before/after installed-identity witness.",
+      "Special shared bootstrap installed-state refusal precedes handle validation and must be tested/classified separately."
+    ]
+  },
+  "observation_semantics": [
+    {
+      "signatures": [
+        "OwnedWorldBackend.call(operation: Callable[[Any, WorldRandomSources], Any], *, lineage: RNGOperation | None) -> Any",
+        "OwnedWorldBackend.snapshot(*, lineage: RNGOperation | None) -> dict[str, Any]",
+        "OwnedWorldBackend.snapshot_with_capture(capture: Callable[[Any], Any], *, lineage: RNGOperation | None) -> tuple[dict[str, Any], Any]"
+      ],
+      "references": [
+        "W999-1058"
+      ],
+      "effects": [
+        "Successful managed call, snapshot and snapshot_with_capture all increment owner revision (W1013,1030,1058), even when the callback is read-only and consumes no RNG.",
+        "A read-only capture callback can return only scalar identity metadata for the actual live provider/Parameters/gradients/storage without returning or retaining those live objects; this is an available managed observation seam, not a revision-neutral one.",
+        "Returned tensors are owned copies and cannot serve as live storage-identity witnesses.",
+        "Observation between preparation and first install stales the owner's destination revision; reusing ancestor lineage does not waive that check.",
+        "Failed-entry/noncallable cases outside guarded regions have the narrower effects recorded in the diagnostic clarification; do not generalize successful revision advancement to every refused call."
+      ]
+    },
+    {
+      "signatures": [
+        "SharedWorldBackend.call(operation: Callable[[Any], Any], *, lineage: RNGOperation | None) -> Any",
+        "SharedWorldBackend.snapshot(*, lineage: RNGOperation | None) -> dict[str, Any]",
+        "_BackendOwner.validate_prepared(prepared: PreparedWorldBackend, *, lineage: RNGOperation | None) -> None"
+      ],
+      "references": [
+        "W1252-1278",
+        "W951-956"
+      ],
+      "effects": [
+        "Successful shared call/snapshot increment owner revision (W1264,1278). Shared owner has no snapshot_with_capture public method in this body.",
+        "validate_prepared does not observe live provider identity; it validates and replaces current token evidence, consuming the prior token. It is not an inert observation substitute.",
+        "Native rng_participant and core diagnostic status do not expose provider/Parameter/gradient/storage identity or grant prepared authority."
+      ]
+    }
+  ],
+  "unavailable_seams": [
+    "No public callback inside managed install at which to observe the exact final installed provider.",
+    "No public read-only identity getter that avoids owner revision change.",
+    "No public candidate getter or independent caller-owned prepared object from which exact final installed provider identity can be learned.",
+    "No permission to read private owner fields, retained candidate registry, or raw live provider outside the managed callback."
+  ],
+  "handoff": {
+    "allowed_now": "Record these facts and preserve the immediate same-handle refusal case. Keep all requested identity assertions as requirements; let the responsible fixture/review owner resolve the unsupported combined witness requirement explicitly.",
+    "not_authorized": "No test changes or API changes are approved by this supplier. Do not weaken identity to value equality, insert a staling observation while claiming immediate retry, use a stale/foreign-handle error as consumed evidence, or fake candidate authority.",
+    "bodies_not_inspected": "Neither conversion/restore fixture body nor replay producer/test bodies were read; no replay identity claim is made."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "command": {
+    "bytes": 619,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/fixtures/test_sealed_execution_timeout_0/out/attempt/queued/command.json",
+    "sha256": "ccb083fbe64f9552a2eadfe04b238fdf9f135cf0e7282d41ca44a713736cb404"
+  },
+  "disposition": "completed-unverified",
+  "end": "2026-11-14T10:02:46.952068Z",
+  "exit_code": 0,
+  "job_id": "queued",
+  "log": {
+    "bytes": 9,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/full03/fixtures/test_sealed_execution_timeout_0/out/attempt/queued/stdout.log",
+    "sha256": "08cfb1f08c9a2b3985853df5336808a27d616d731c6e944ff0a4e8e74dde5e5f"
+  },
+  "monotonic_end_ns": 129877292525254,
+  "monotonic_start_ns": 129877208177891,
+  "process_records": [],
+  "reason": "completion transport not integrated",
+  "signal": 0,
+  "start": "2026-11-14T10:02:46.867693Z"
+}

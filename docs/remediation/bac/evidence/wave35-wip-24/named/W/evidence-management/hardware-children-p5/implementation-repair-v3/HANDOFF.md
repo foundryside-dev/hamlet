@@ -1,0 +1,15 @@
+# P5 finite source/lifetime repair v3
+
+AUTHOR FROZEN, independent exact repair review pending. This addresses R1/R2/R3 of implementation-repair-v2/independent-review/review-v2.json without changing the adopted interface, selected obligation semantics, limits or source-authority boundary. All v1/v2 freezes, tests, probes and failures remain retained.
+
+R1: actual parent custody acknowledgement and reap endpoints must precede the unique observing parent's END, matched by identity and role. Existing requirements that both endpoints follow each actual recorder return transitively enclose both returns too. The 3/6/8/10 limits, inclusive bounds, 7.9-return/8.1-ack and both post-return acknowledgement/reap orders remain unchanged.
+
+R2: actual parent END is validated with the START role ID and kind. Every report bound to that parent START must fall within its UTC START/END lifetime. The common pure validation applies to standalone receipt publication as well.
+
+R3: each context required import applicable to the actual phase must match exactly the actual process name/reference mapping. Known required module names additionally bind their specified candidate source paths. Each inherited import must match its actual parent's mapping and, for fork inheritance, both child START and END mappings; known required aliases also bind specified paths. Candidate-file membership alone is insufficient.
+
+Retained RED red1 on the exact v2 source reproduced five semantic failures (two guard lifetime, parent role, inherited alias, required alias), with 269 tests passing. Two initially added report negatives used an invalid timestamp representation lacking fractional seconds, so those two RED passes were schema refusals and are not claimed as semantic reproductions. Their timestamps were corrected to the exact valid UTC format before final1. The independent v2 review retains the genuine report-time false acceptances on v2, including standalone. green1 retained 274 passes on an intermediate source; final1 retains 275 passes on the formatted frozen source/tests, including corrected early/late report negatives and standalone refusal without receipt publication. Counts overlap and are not summed. No existing test was removed.
+
+Final source 1511 lines; tests 1651; read-only P0 526 and historical verifier 752 give 4440 lines/four implementation bodies. Root explicitly reallocated source cap to1600 (tests2000; hard5000). With the reviewer's existing238-line probe, projected review total4678 across five bodies remains within5000. No additional implementation body was read or imported. Existing P0/historical hashes remain unchanged. All executions used the released one-CPU/4GiB inert slot with exact commands, source snapshots, execution metadata and evidence-local fixtures retained.
+
+No APP, P3/P4/Git implementation, Torch, CUDA, source producer child or hardware runtime was accessed/executed. Source-owner instrumentation, independent final review/root adoption, full-chain wiring and six actual CUDA groups remain outstanding. Actual CUDA UNRUN; server16 worker access unknown.

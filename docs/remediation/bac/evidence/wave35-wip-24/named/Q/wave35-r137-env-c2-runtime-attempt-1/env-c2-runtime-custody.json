@@ -1,0 +1,22 @@
+{
+  "job": "env-c2-runtime",
+  "base_commit": "a42d61920ab302e16a4aab885fbbd44640e5d908",
+  "candidate_tree": "6803c49183d76c4fd8768a7fd83efd8fab27a50d",
+  "exit_code": 0,
+  "counts": {
+    "passed": 4,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 7.25643999199383,
+  "source_guards": 824,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

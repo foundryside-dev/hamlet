@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[shape]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   ModuleNotFoundError: No module named 'townlet.training.native_rng'",
+  "candidate_tree": "7452243522ed237f42bb25c64c18c9b198cdf2de"
+}

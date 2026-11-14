@@ -18,6 +18,9 @@ Item-scope state lives in the item arena (``item_vfs``), not in ordinary storage
 
 from __future__ import annotations
 
+import os
+import threading
+import weakref
 from collections.abc import Mapping
 from collections.abc import Set as AbstractSet
 from copy import deepcopy
@@ -66,6 +69,18 @@ class ScopeArena:
 
     tensor: torch.Tensor
     index: dict[str, tuple[int, int]]
+
+
+class PreparedNativePersistentState:
+    """Owner-issued data, not a portable or independently usable permission."""
+
+    __slots__ = ("__weakref__",)
+
+    def __new__(cls) -> Any:
+        raise TypeError("Native persistent state must be prepared by its receiving registry")
+
+    def __reduce__(self) -> Any:
+        raise TypeError("Native persistent state cannot be copied or serialized")
 
 
 def item_row_world(row: int, items_per_world: int) -> int:
@@ -179,6 +194,11 @@ class VariableRegistry:
         self.item_profile_type_map: dict[str, dict[str, str]] = {}  # {profile_name → {var_name → type}}
         self.item_vfs_index_to_profile: dict[int, str] = {}  # {vfs_index → profile_name}
         self._initialize_item_storage_from_profiles()
+        self._native_persistent_states: weakref.WeakKeyDictionary[PreparedNativePersistentState, dict[str, Any]] = (
+            weakref.WeakKeyDictionary()
+        )
+        self._native_persistent_participant: Any = None
+        self._native_persistent_revision = 0
 
     @property
     def variables(self) -> dict[str, VariableDef]:
@@ -576,6 +596,115 @@ class VariableRegistry:
             self._validate_world_refs(var_id, state[var_id])
         for var_id in self._persistent_ids():
             self._write_storage(var_id, state[var_id].to(self.device))
+
+    def prepare_native_persistent_state(
+        self, state: Mapping[str, torch.Tensor], *, env: Any, parent_plan: Any
+    ) -> PreparedNativePersistentState:
+        """Own complete target-device payloads before native child installation."""
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.population.vectorized import validate_native_population_data
+
+        validate_native_population_data(plan=parent_plan, owner=env)
+        if env.vfs_registry is not self:
+            raise ValueError("Native persistent state requires this receiving ENV's registry")
+        if type(state) is not dict or any(type(key) is not str for key in state):
+            raise ValueError("Native persistent state requires ordinary exact string keys")
+        if any(type(value) is not torch.Tensor or bool(value.__dict__) or value.layout != torch.strided for value in state.values()):
+            raise ValueError("Native persistent state requires ordinary strided tensor transport without instance overrides")
+        domain = process_rng_domain()
+        with domain.admission(lineage=None) as gate:
+            device_objects = [self.device, *(value.device for value in state.values()), *(value.device for value in self._storage.values())]
+            devices = tuple(sorted({gate.resolve_cuda(device) for device in device_objects if device.type == "cuda"}))
+            if self._native_persistent_participant is None:
+                self._native_persistent_participant = domain.register(
+                    owner=self, cuda_devices=devices, entrypoints=frozenset({"prepare", "install"})
+                )
+            else:
+                gate.enroll(participant=self._native_persistent_participant, cuda_devices=devices)
+            with domain.device_invocation(
+                participant=self._native_persistent_participant, operation_kind="prepare", lineage=None, cuda_devices=devices
+            ):
+                validate_native_population_data(plan=parent_plan, owner=env)
+                self.validate_persistent_state(state)
+                for name in self._persistent_ids():
+                    self._validate_world_refs(name, state[name])
+                owned = {
+                    name: torch.Tensor.clone(torch.Tensor.to(torch.Tensor.detach(state[name]), self.device))
+                    for name in self._persistent_ids()
+                }
+                prepared = object.__new__(PreparedNativePersistentState)
+                self._native_persistent_states[prepared] = {
+                    "env": weakref.ref(env),
+                    "plan": weakref.ref(parent_plan),
+                    "pid": os.getpid(),
+                    "thread": threading.current_thread(),
+                    "revision": self._native_persistent_revision,
+                    "schema": self.variable_schema_hash,
+                    "storage": tuple((name, value, value._version) for name, value in self._storage.items()),
+                    "arenas": tuple(self._scope_arenas.items()),
+                    "backed": tuple(self._arena_backed.items()),
+                    "state": owned,
+                    "devices": devices,
+                    "consumed": False,
+                }
+                self._native_persistent_record(prepared, env, parent_plan)
+        return prepared
+
+    def _native_persistent_record(self, prepared: PreparedNativePersistentState, env: Any, parent_plan: Any) -> dict[str, Any]:
+        from townlet.population.vectorized import validate_native_population_data
+
+        record = self._native_persistent_states.get(prepared) if type(prepared) is PreparedNativePersistentState else None
+        if (
+            record is None
+            or record["consumed"]
+            or record["env"]() is not env
+            or record["plan"]() is not parent_plan
+            or record["pid"] != os.getpid()
+            or record["thread"] is not threading.current_thread()
+        ):
+            raise ValueError("Foreign, consumed or cross-execution native persistent preparation")
+        validate_native_population_data(plan=parent_plan, owner=env)
+        if env.vfs_registry is not self or record["revision"] != self._native_persistent_revision:
+            raise ValueError("Native persistent receiver changed")
+        if (
+            record["schema"] != self.variable_schema_hash
+            or len(record["storage"]) != len(self._storage)
+            or any(self._storage.get(name) is not value or value._version != version for name, value, version in record["storage"])
+            or tuple(self._arena_backed.items()) != record["backed"]
+            or len(self._scope_arenas) != len(record["arenas"])
+            or any(self._scope_arenas.get(name) is not arena for name, arena in record["arenas"])
+        ):
+            raise ValueError("Native persistent preparation is stale")
+        return record
+
+    def install_native_persistent_state(
+        self, *, prepared: PreparedNativePersistentState, env: Any, parent_plan: Any, attempt: Any, restored: Any
+    ) -> None:
+        """Publish preallocated storage through this actual ENV's finalizer."""
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+        from townlet.exploration.rng_custody import process_rng_domain
+
+        record = self._native_persistent_record(prepared, env, parent_plan)
+        validate_restore_finalizer(attempt=attempt, owner=env, restored=restored)
+        domain = process_rng_domain()
+        with domain.admission(lineage=None):
+            record = self._native_persistent_record(prepared, env, parent_plan)
+            with domain.device_invocation(
+                participant=self._native_persistent_participant, operation_kind="install", lineage=None, cuda_devices=record["devices"]
+            ) as operation:
+                record = self._native_persistent_record(prepared, env, parent_plan)
+                validate_restore_finalizer(attempt=attempt, owner=env, restored=restored)
+                record["consumed"] = True
+                self._native_persistent_revision += 1
+                try:
+                    for name, value in record["state"].items():
+                        if name in self._arena_backed:
+                            self._storage[name].copy_(value)
+                        else:
+                            self._storage[name] = value
+                except BaseException as error:
+                    domain.poison(operation=operation, error=error)
+                    raise
 
     def _get_vector_dims(self, var_def: VariableDef) -> int:
         """Return expected dimensionality for vector variables."""

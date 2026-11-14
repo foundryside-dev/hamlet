@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "58d551e4044e3822bf5f66c0f20c4244255ba57d",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rnd_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "Input: 'receiver is terminal after failed restore composition'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

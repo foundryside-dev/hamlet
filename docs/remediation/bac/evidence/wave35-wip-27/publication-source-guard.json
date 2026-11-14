@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "candidate_tree": "8b51496639637ad5d80005ea99167fb2fa39093f",
+  "approved_document_postimages": [
+    {
+      "bytes": 131591,
+      "path": "docs/remediation/bac/STATUS.md",
+      "root": "R",
+      "sha256": "d64e24a5044236a299f8c87cb48316d77a1f0a944d6472346b45d32c5dca0901"
+    },
+    {
+      "bytes": 42614,
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "root": "R",
+      "sha256": "770630379d5516e0b2160d76f876666730fb828be14e686a0d97d898aa32015d"
+    }
+  ],
+  "scope": "All source/config/protected hashes equal execution candidate except exact independently reviewed document postimages."
+}

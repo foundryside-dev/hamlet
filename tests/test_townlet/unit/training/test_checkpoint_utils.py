@@ -24,6 +24,7 @@ from townlet.training.checkpoint_utils import (
 )
 from townlet.training.state import PopulationCheckpoint
 from townlet.universe.compiler import UniverseCompiler
+from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
 
 
 @pytest.fixture(scope="module")
@@ -55,7 +56,9 @@ def test_demo_checkpoint_runtime_fields_require_exact_bound_values() -> None:
     payload["epsilon"] = 0.25
     payload["completed_live_agent_steps"] = 123
     payload["vfs_persistent_state"] = {"season": torch.tensor(3.0)}
-    payload["vfs_random_state"] = {"seed": 42, "episode": 3}
+    payload["vfs_random_state"] = VFSRandomness(
+        context=VFSWorldContext(training_seed=42, world_ids=("checkpoint-test-world",), world_episode_seqs=(3,))
+    ).state()
 
     validate_demo_checkpoint_runtime_fields(
         payload,

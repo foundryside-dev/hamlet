@@ -1,0 +1,37 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r165-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r165-focused-collection-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "focused-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+        "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_refuses_sparse_before_publication",
+        "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_rejects_key_overrides_without_callbacks",
+        "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+        "tests/test_townlet/regressions/bac/test_native_replay_data.py",
+        "tests/test_townlet/regressions/bac/test_native_rng_state.py",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+        "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+        "tests/test_townlet/regressions/bac/test_world_restore_attempt.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=long",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-focused-collection-attempt-1",
+        "--collect-only"
+      ]
+    }
+  ]
+}

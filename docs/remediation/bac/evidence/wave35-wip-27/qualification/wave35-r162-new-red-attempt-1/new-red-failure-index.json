@@ -1,0 +1,62 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "6cac386ec762206cf88eb4ceee836a5ed7ba14fc",
+  "unique_node_phase_failures": 8,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+    "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'",
+      "count": 6,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_inconsistent_transport[extra]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_inconsistent_transport[kind]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_inconsistent_transport[missing]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_outer_validation_is_observational",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_inconsistent_transport[rng_profile]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_inconsistent_transport[world_kind]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AssertionError: assert 'native_boundary' in frozenset({'action_dim', 'actions_hash', 'affordance_layout', 'affordances_hash', 'agent_ids', 'bars_hash', ...})",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_current_artifact_requires_native_boundary_field",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "RuntimeError: installation observation unavailable during an incompatible call",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_concurrent_completed_calls_do_not_leave_an_active_observer",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

@@ -128,21 +128,20 @@ class TestRunnerOrchestration:
 
         assert episode_count == 3, f"Database should have 3 episode records, got {episode_count}"
 
-    def test_runner_checkpoint_save_at_interval(self, tmp_path, config_pack_factory, monkeypatch):
-        """Verify runner saves checkpoint every 100 episodes.
+    def test_runner_checkpoint_save_at_interval(self, tmp_path, config_pack_factory):
+        """Verify runner saves checkpoints at the authored interval.
 
         Critical integration test: Runner should automatically save checkpoints
-        at regular intervals (every 100 episodes) without manual intervention.
+        at the configured interval without manual intervention.
         """
         from townlet.demo.runner import DemoRunner
-
-        monkeypatch.setattr(DemoRunner, "CHECKPOINT_INTERVAL", 5)
 
         def modifier(data: dict) -> None:
             training = data["training"]
             training["enabled_affordances"] = ["SLEEP"]
             training["intrinsic"]["survival_window"] = 10
             training["training_loop"]["max_episodes"] = 15
+            training["training_loop"]["checkpointing"]["interval"] = 5
             training["curriculum"]["strategy"] = "adversarial"
 
         config_dir = config_pack_factory(modifier=modifier)

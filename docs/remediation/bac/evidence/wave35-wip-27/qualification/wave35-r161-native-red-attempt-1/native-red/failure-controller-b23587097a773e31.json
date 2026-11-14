@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_data_cannot_be_constructed_or_fabricated_for_install",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: module 'townlet.training.replay_contract' has no attribute 'StagedReplayData'",
+  "candidate_tree": "7452243522ed237f42bb25c64c18c9b198cdf2de"
+}

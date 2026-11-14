@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r163-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r163-native-red-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "native-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_plain_tensor_instance_override_is_refused_without_running_callback",
+        "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+        "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_native_layout_rejects_unissued_parent_and_handle",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r163-native-red-attempt-1"
+      ]
+    }
+  ]
+}

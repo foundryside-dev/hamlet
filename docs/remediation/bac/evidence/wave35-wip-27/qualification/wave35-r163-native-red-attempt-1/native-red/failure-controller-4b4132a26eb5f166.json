@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_curriculum_refuses_fabricated_install_without_mutation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: 'StaticCurriculum' object has no attribute 'install_native_state'",
+  "candidate_tree": "34d6bace9a1ac608da2516cbf7a8475460e7b37f"
+}

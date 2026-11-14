@@ -1,0 +1,28 @@
+{
+  "name": "restore-poison",
+  "exit_code": 0,
+  "seconds": 13.672761164983967,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_bank_completion_failure_retains_published_outcome_poison",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "-rs",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r168-restore-poison-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r168-restore-poison-attempt-1/restore-poison.log",
+  "sha256": "fbcebdd40896815f037ac49a79e15c6832ce7ce5845567e1aafa169fb241e172",
+  "candidate_tree": "8b51496639637ad5d80005ea99167fb2fa39093f",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "manifest_sha256": "caf8081774a24cd9cd1865c8127ab6ca2d972eea612de8a93355c5af9c9a0160",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

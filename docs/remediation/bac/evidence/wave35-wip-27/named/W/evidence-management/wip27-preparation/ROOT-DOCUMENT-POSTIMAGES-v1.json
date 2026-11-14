@@ -1,0 +1,12 @@
+[
+  {
+    "destination": "docs/remediation/bac/STATUS.md",
+    "sha256": "d64e24a5044236a299f8c87cb48316d77a1f0a944d6472346b45d32c5dca0901",
+    "bytes": 131591
+  },
+  {
+    "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+    "sha256": "770630379d5516e0b2160d76f876666730fb828be14e686a0d97d898aa32015d",
+    "bytes": 42614
+  }
+]

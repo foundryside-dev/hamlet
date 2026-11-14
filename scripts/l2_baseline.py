@@ -12,7 +12,7 @@ training.yaml block is declared-but-inert (zero runtime consumers, verified
 2026-08-24) — so the measurement lives here, outside the engine.
 
 Subcommands:
-  train  --seed N --episodes E [--run-root runs/l2_baseline]
+  train  --seed N --episodes E --world-roster <json> [--run-root runs/l2_baseline]
          Copy configs/default_curriculum with ONLY the L2 seed rewritten; run
          DemoRunner headlessly to E episodes. Refuses on a dirty src/townlet or a
          HEAD that differs from an existing run-root pin.
@@ -43,6 +43,7 @@ MAX_STEPS_PER_EPISODE = 1000  # shipped L2 training_loop.max_steps_per_episode
 
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from townlet.config.world_roster import WorldRosterDeclaration, canonical_bytes  # noqa: E402
 from townlet.training.episode_accounting import read_episode_accounting  # noqa: E402
 
 # ---------------------------------------------------------------------------
@@ -99,6 +100,7 @@ def _git(*args: str) -> str:
 
 
 def cmd_train(args: argparse.Namespace) -> None:
+    roster = WorldRosterDeclaration.from_dict(json.loads(Path(args.world_roster).read_bytes()))
     dirty = _git("status", "--porcelain", "src/townlet")
     if dirty:
         raise SystemExit(f"src/townlet is dirty — the baseline must run on committed code:\n{dirty}")
@@ -126,7 +128,19 @@ def cmd_train(args: argparse.Namespace) -> None:
 
     diff = rewrite_seed(PACK, run_dir / "pack", seed=args.seed)
     (run_dir / "pack.diff").write_text(diff)
-    (run_dir / "meta.json").write_text(json.dumps({"seed": args.seed, "episodes": args.episodes, "pin": head, "level": LEVEL}, indent=2))
+    (run_dir / "meta.json").write_text(
+        json.dumps(
+            {
+                "seed": args.seed,
+                "episodes": args.episodes,
+                "pin": head,
+                "level": LEVEL,
+                "world_roster": roster.to_dict(),
+                "world_roster_manifest_digest": roster.manifest_digest,
+            },
+            indent=2,
+        )
+    )
 
     from townlet.demo.runner import DemoRunner
 
@@ -136,6 +150,7 @@ def cmd_train(args: argparse.Namespace) -> None:
         checkpoint_dir=run_dir / "checkpoints",
         max_episodes=args.episodes,
         level_name=LEVEL,
+        world_roster=roster,
     ) as runner:
         runner.run()
     print(f"[l2_baseline] seed {args.seed}: trained to {args.episodes} episodes in {run_dir}")
@@ -154,6 +169,14 @@ def cmd_eval(args: argparse.Namespace) -> None:
 
     run_dir = Path(args.run_dir)
     meta = json.loads((run_dir / "meta.json").read_text())
+    roster_bytes = (run_dir / "run-world-roster.json").read_bytes()
+    roster = WorldRosterDeclaration.from_dict(json.loads(roster_bytes))
+    if (
+        roster_bytes != canonical_bytes(roster.to_dict()) + b"\n"
+        or meta["world_roster"] != roster.to_dict()
+        or meta["world_roster_manifest_digest"] != roster.manifest_digest
+    ):
+        raise ValueError("Run world roster differs from its canonical authored metadata")
 
     with DemoRunner(
         config_dir=run_dir / "pack",
@@ -161,6 +184,7 @@ def cmd_eval(args: argparse.Namespace) -> None:
         checkpoint_dir=run_dir / "checkpoints",
         max_episodes=meta["episodes"],
         level_name=LEVEL,
+        world_roster=roster,
     ) as runner:
         # run() builds env/population, load_checkpoint() restores the trained
         # weights, and the pre-loop shutdown check returns before any training
@@ -258,6 +282,7 @@ def main() -> None:
     p_train = sub.add_parser("train", help="train one baseline seed headlessly")
     p_train.add_argument("--seed", type=int, required=True)
     p_train.add_argument("--episodes", type=int, required=True)
+    p_train.add_argument("--world-roster", type=Path, required=True, help="explicit world-roster-v1 JSON declaration")
     p_train.add_argument("--run-root", type=str, default="runs/l2_baseline")
     p_train.set_defaults(fn=cmd_train)
 

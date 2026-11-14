@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "9b82a469a1aa233a08666ca645a78296351cff7f",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_replay_data.py"
+  ],
+  "signatures": [
+    {
+      "error": "RuntimeError: Unrelated same-thread RNG reentry is forbidden",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_owns_data_without_publishing_or_ordinary_token",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

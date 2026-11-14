@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_install_refuses_unissued_data_without_consuming_ordinary_restore",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: 'ReplayBuffer' object has no attribute 'install_native_restore'",
+  "candidate_tree": "7452243522ed237f42bb25c64c18c9b198cdf2de"
+}

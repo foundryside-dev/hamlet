@@ -8,13 +8,16 @@ environment with tensor operations [num_agents, ...].
 from __future__ import annotations
 
 import math
+import os
 from collections.abc import Callable, Mapping
 from contextlib import AbstractContextManager
+from dataclasses import dataclass
 from numbers import Number, Real
 from pathlib import Path
+from threading import Thread, current_thread
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, cast
-from weakref import WeakSet, WeakValueDictionary
+from weakref import ReferenceType, WeakKeyDictionary, WeakSet, WeakValueDictionary, ref
 
 import torch
 
@@ -91,6 +94,35 @@ _EFFECT_ROLES = {
     "epsilon_install_receipt": "exploration",
     "selection_sync_receipt": "selection",
 }
+
+
+class PreparedNativeLayout:
+    """Opaque ENV-issued data preparation; publication needs the real finalizer."""
+
+    __slots__ = ("__weakref__",)
+
+    def __new__(cls):
+        raise TypeError("native layouts are issued by their receiving ENV")
+
+    def __copy__(self):
+        raise TypeError("native layout handles cannot be copied")
+
+    def __deepcopy__(self, memo):
+        raise TypeError("native layout handles cannot be copied")
+
+    def __reduce__(self):
+        raise TypeError("native layout handles cannot be serialized")
+
+
+@dataclass(frozen=True, slots=True)
+class _NativeLayoutData:
+    parent: ReferenceType[Any]
+    pid: int
+    thread: Thread
+    revision: int
+    next_revision: int
+    positions: dict[str, torch.Tensor]
+    assignments: tuple[tuple[str, torch.Tensor], ...]
 
 
 class WorldReceiptIssuer:
@@ -230,7 +262,10 @@ class WorldBoundaryAuthority:
 
     @env_guard
     def restored(self, *, restore: WorldRecord, boundary: WorldOwnerReceipt) -> WorldRecord:
+        from townlet.environment.restore_attempt import consume_restore_route
+
         env = self._bound_env()
+        consume_restore_route(env=env, prepared=restore, route="release")
         env._require_phase("fresh-bound")
         env._valid_record(restore, "prepared_restore")
         proof = WorldReceiptIssuer.validate(boundary, "restored_boundary", self._owner)
@@ -240,6 +275,38 @@ class WorldBoundaryAuthority:
             raise ValueError("joint restore evidence disagrees")
         return env._record(
             "release", {"release_kind": "restored", "next_batch_episode": restore.state["next_batch_episode"], "restore": restore}
+        )
+
+    def restore_bank_attempt(
+        self, *, prepared: WorldRecord, bank: Any, validate_parent_restore: Callable[..., Any], finalize_component: Callable[..., Any]
+    ) -> AbstractContextManager[Any]:
+        from townlet.environment.restore_attempt import restore_attempt
+
+        if self._env._world_restore_terminal:
+            raise ValueError("receiver is terminal after failed restore composition")
+        return restore_attempt(
+            authority=self,
+            prepared=prepared,
+            child=bank,
+            profile="bank",
+            validate_parent_restore=validate_parent_restore,
+            finalize_component=finalize_component,
+        )
+
+    def restore_runtime_attempt(
+        self, *, prepared: WorldRecord, runtime: Any, validate_parent_restore: Callable[..., Any], finalize_component: Callable[..., Any]
+    ) -> AbstractContextManager[Any]:
+        from townlet.environment.restore_attempt import restore_attempt
+
+        if self._env._world_restore_terminal:
+            raise ValueError("receiver is terminal after failed restore composition")
+        return restore_attempt(
+            authority=self,
+            prepared=prepared,
+            child=runtime,
+            profile="runtime",
+            validate_parent_restore=validate_parent_restore,
+            finalize_component=finalize_component,
         )
 
 
@@ -569,6 +636,8 @@ class VectorizedHamletEnv:
         # v2.1: all affordances from affordances.yaml are deployable; no curriculum-level
         # enabled_affordances gating via training.yaml.
         self._affordance_layout_cache: tuple[torch.Tensor, torch.Tensor] | None = None
+        self._native_layout_revision = 0
+        self._native_layout_preparations: WeakKeyDictionary[PreparedNativeLayout, _NativeLayoutData] = WeakKeyDictionary()
         if self.randomize_affordances:
             self._randomize_affordance_positions()
         else:
@@ -676,6 +745,7 @@ class VectorizedHamletEnv:
     def _apply_configured_affordance_positions(self) -> None:
         """Load static affordance positions from config/optimization data."""
         self._participation_ingress()
+        self._native_layout_revision += 1
 
         if self.substrate.position_dim == 0:
             empty = torch.zeros(0, dtype=self.substrate.position_dtype, device=self.device)
@@ -1971,8 +2041,56 @@ class VectorizedHamletEnv:
         """
         self._participation_ingress()
         validated_positions = self._validate_affordance_positions(checkpoint_data)
+        self._native_layout_revision += 1
         for name in self.affordances:
             self.affordances[name] = validated_positions[name]
+        self._affordance_layout_cache = None
+
+    @env_guard
+    def prepare_native_layout(self, state: dict, *, parent_plan: object) -> PreparedNativeLayout:
+        """Materialize owned layout tensors before the native restore starts."""
+        from townlet.population.vectorized import validate_native_population_data
+
+        self._participation_ingress()
+        validate_native_population_data(plan=parent_plan, owner=self)
+        positions = self._validate_affordance_positions(state)
+        prepared = object.__new__(PreparedNativeLayout)
+        self._native_layout_preparations[prepared] = _NativeLayoutData(
+            ref(parent_plan),
+            os.getpid(),
+            current_thread(),
+            self._native_layout_revision,
+            self._native_layout_revision + 1,
+            self.affordances,
+            tuple(positions.items()),
+        )
+        return prepared
+
+    @env_guard
+    def install_native_layout(self, *, prepared: object, parent_plan: object, attempt: object, restored: object) -> None:
+        """Publish preallocated layout only inside this ENV's genuine finalizer."""
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+        from townlet.population.vectorized import validate_native_population_data
+
+        self._participation_ingress()
+        validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+        validate_native_population_data(plan=parent_plan, owner=self)
+        if type(prepared) is not PreparedNativeLayout:
+            raise ValueError("native layout handle is foreign or unissued")
+        data = self._native_layout_preparations.get(prepared)
+        if (
+            data is None
+            or data.parent() is not parent_plan
+            or data.pid != os.getpid()
+            or data.thread is not current_thread()
+            or data.revision != self._native_layout_revision
+            or data.positions is not self.affordances
+        ):
+            raise ValueError("native layout preparation is stale, consumed or foreign")
+        del self._native_layout_preparations[prepared]
+        self._native_layout_revision = data.next_revision
+        for name, tensor in data.assignments:
+            self.affordances[name] = tensor
         self._affordance_layout_cache = None
 
     @env_guard
@@ -2068,6 +2186,7 @@ class VectorizedHamletEnv:
         if not self.affordances:
             return None
 
+        self._native_layout_revision += 1
         # Aspatial universes have no coordinates; store empty tensors for consistency
         if self.substrate.position_dim == 0:
             empty = torch.zeros(0, dtype=self.substrate.position_dtype, device=self.device)
@@ -2154,6 +2273,8 @@ class VectorizedHamletEnv:
         # predicate must never grant currentness after either has been recorded.
         self._world_restore_revoked: WeakSet[WorldRecord] = WeakSet()
         self._world_restore_terminal = False
+        self._world_restore_escrows: WeakKeyDictionary[WorldRecord, Any] = WeakKeyDictionary()
+        self._world_restore_attempt: Any = None
         self._world_equal: dict[str, WorldRecord] = {}
         self._world_bindings: dict[int, dict[str, Any]] = {}
         self._world_authority: WorldBoundaryAuthority | None = None
@@ -2182,6 +2303,15 @@ class VectorizedHamletEnv:
     @env_guard
     def accepted_episode_seqs(self) -> Mapping[str, int]:
         return MappingProxyType(dict(self._world_cursors))
+
+    @env_guard
+    def accepted_binding_batches(self) -> tuple[int, ...]:
+        """Return actual retained history references at an installed boundary."""
+        self._require_phase("bootstrap-ready", "released-completed")
+        if self._world_release is None:
+            raise ValueError("accepted history export requires its installed boundary release")
+        self._require_release(self._world_release)
+        return tuple(sorted(self._world_bindings))
 
     @property
     @env_guard
@@ -2379,12 +2509,21 @@ class VectorizedHamletEnv:
 
     def validate_accepted_episode(self, *, accepted: WorldAcceptedEpisode) -> None:
         """Authenticate current token identity; callers retain their phase checks."""
+        if self._world_restore_terminal:
+            raise ValueError("receiver is terminal after failed restore composition")
         self._accepted(accepted)
 
     def _participation_ingress(self) -> None:
         """Synchronous cooperative fence, not an inter-thread lock."""
+        if self._world_restore_terminal:
+            raise ValueError("receiver is terminal after failed restore composition")
         if self._participation_busy or self._participation_pending is not None:
             raise ValueError("initial participation owns the current operation window")
+
+    def _finish_restore_attempt_failure(self, attempt: Any) -> None:
+        from townlet.environment.restore_attempt import finish_restore_failure
+
+        finish_restore_failure(env=self, attempt=attempt)
 
     def _participation_state(self) -> dict[str, Any]:
         """Own finite ENV state; builtin read purity covers unencoded manager state.
@@ -2987,6 +3126,9 @@ class VectorizedHamletEnv:
 
     @env_guard
     def install_world_restore(self, *, prepared: WorldRecord, release: WorldRecord) -> WorldRecord:
+        from townlet.environment.restore_attempt import consume_restore_route
+
+        consume_restore_route(env=self, prepared=prepared, route="world")
         if self._world_restored is not None and self._world_restored == (prepared, release):
             self._require_phase("bootstrap-ready", "released-completed")
             assert self._world_release is not None

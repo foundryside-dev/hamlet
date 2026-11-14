@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_refuses_sparse_before_publication",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "persistent_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))\n\n    def test_native_persistent_stage_refuses_sparse_before_publication(persistent_compiled):\n        _, target, plan = native_pair(persistent_compiled)\n        env = target.population.env\n        owner = env.vfs_registry\n        before = owner.persistent_state()\n        assert \"native_persistent\" in before\n        payload = {name: value.to_sparse() for name, value in before.items()}\n>       with pytest.raises(ValueError, match=\"ordinary|layout|strided\"):\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE       Failed: DID NOT RAISE <class 'ValueError'>\n\ntests/test_townlet/regressions/bac/test_native_aux_state.py:134: Failed",
+  "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7"
+}

@@ -1,0 +1,120 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "7452243522ed237f42bb25c64c18c9b198cdf2de",
+  "unique_node_phase_failures": 21,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_replay_data.py",
+    "tests/test_townlet/regressions/bac/test_native_rng_state.py"
+  ],
+  "signatures": [
+    {
+      "error": "ModuleNotFoundError: No module named 'townlet.training.native_rng'",
+      "count": 16,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[state]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_device_inventory_is_exact_before_runtime_initialization[devices0]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[devices]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[dtype]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_device_inventory_is_exact_before_runtime_initialization[devices4]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_capture_preserves_ambient_stream_and_returns_owned_portable_state",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[shape]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_validation_owns_bytes_and_does_not_rewind_the_process",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_schema_validation_requires_no_domain_operation_or_rng_change",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_device_inventory_is_exact_before_runtime_initialization[devices1]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_device_inventory_is_exact_before_runtime_initialization[devices3]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[extra]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_arbitrary_parent_cannot_turn_valid_bytes_into_restore_authority",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[schema]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_device_inventory_is_exact_before_runtime_initialization[devices2]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_bad_state_refuses_before_any_global_generator_changes[bool_device]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'ReplayBuffer' object has no attribute 'stage_native_restore'",
+      "count": 3,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_refuses_unissued_parent_before_mutating_receiver",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_refuses_malformed_transport_before_live_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_owns_data_without_publishing_or_ordinary_token",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: module 'townlet.training.replay_contract' has no attribute 'StagedReplayData'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_data_cannot_be_constructed_or_fabricated_for_install",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'ReplayBuffer' object has no attribute 'install_native_restore'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_install_refuses_unissued_data_without_consuming_ordinary_restore",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

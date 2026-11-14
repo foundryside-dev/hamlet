@@ -159,7 +159,7 @@ class TestDoubleDoubleTraining:
 
         assert episode_count == 10, f"Database should have 10 episode records, got {episode_count}"
 
-    def test_checkpoint_persists_double_dqn_flag(self, tmp_path, config_pack_factory, monkeypatch):
+    def test_checkpoint_persists_double_dqn_flag(self, tmp_path, config_pack_factory):
         """Checkpoints should save and restore use_double_dqn flag.
 
         Verifies:
@@ -167,8 +167,6 @@ class TestDoubleDoubleTraining:
         - Loading checkpoint restores flag correctly
         - Training can resume with correct algorithm
         """
-        # Set checkpoint interval to 5 for faster testing
-        monkeypatch.setattr(DemoRunner, "CHECKPOINT_INTERVAL", 5)
 
         # Create config with 5 episodes to hit checkpoint interval
         def modifier(data: dict) -> None:
@@ -176,6 +174,7 @@ class TestDoubleDoubleTraining:
             training_loop = training["training_loop"]
 
             training_loop["max_episodes"] = 5
+            training_loop["checkpointing"]["interval"] = 5
             training_loop["max_steps_per_episode"] = 50
 
             replay = training["replay_buffer"]

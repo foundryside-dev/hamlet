@@ -1,0 +1,22 @@
+{
+  "job": "aux-green",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "58d551e4044e3822bf5f66c0f20c4244255ba57d",
+  "exit_code": 0,
+  "counts": {
+    "passed": 10,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 27.22112467698753,
+  "source_guards": 837,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

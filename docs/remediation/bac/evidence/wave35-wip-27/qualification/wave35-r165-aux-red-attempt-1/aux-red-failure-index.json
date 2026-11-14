@@ -1,0 +1,31 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_aux_state.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_refuses_sparse_before_publication",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AssertionError: untrusted key equality executed",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_rejects_key_overrides_without_callbacks",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

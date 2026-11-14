@@ -5,13 +5,14 @@ Unified Demo Server Entry Point
 Single-command interface for running Hamlet training, inference, and frontend together.
 
 Usage (v2.1 hierarchical configs):
-    python run_demo.py --config configs/default_curriculum --level L1_full_observability --episodes 10000
+    python run_demo.py --world-roster world-roster.json --config configs/default_curriculum --level L1_full_observability --episodes 10000
 
 Author: Hamlet Project
 Date: November 2, 2025
 """
 
 import argparse
+import json
 import logging
 import signal
 import sys
@@ -21,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from townlet.config.resolved_launch import resolve_launch
+from townlet.config.world_roster import WorldRosterDeclaration
 from townlet.demo.unified_server import UnifiedServer
 
 # Configure logging
@@ -36,19 +38,20 @@ def parse_args() -> argparse.Namespace:
         epilog="""
 Examples:
   # Start training + inference (then run frontend separately) for a given level
-  python run_demo.py --config configs/default_curriculum --level L1_full_observability --episodes 10000 --inference-port 8766
+  python run_demo.py --world-roster world-roster.json --config configs/default_curriculum \\
+      --level L1_full_observability --episodes 10000 --inference-port 8766
   # In another terminal: cd frontend && npm run dev
 
   # Resume from checkpoint
-  python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
+  python run_demo.py --world-roster world-roster.json --config configs/default_curriculum --level L1_full_observability \\
       --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints --inference-port 8766
 
   # Start a fresh branch when that checkpoint's VFS ABI no longer matches
-  python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
+  python run_demo.py --world-roster world-roster.json --config configs/default_curriculum --level L1_full_observability \\
       --checkpoint-dir runs/L1_full_observability/2025-11-02_123456/checkpoints --inference-port 8766 --force-new-vfs
 
   # Custom inference port
-  python run_demo.py --config configs/default_curriculum --level L1_full_observability \\
+  python run_demo.py --world-roster world-roster.json --config configs/default_curriculum --level L1_full_observability \\
       --episodes 5000 --inference-port 8800
 
 Note:
@@ -58,6 +61,12 @@ Note:
     )
 
     # Required arguments
+    parser.add_argument(
+        "--world-roster",
+        type=Path,
+        required=True,
+        help="Authored world-roster-v1 JSON declaration; use the saved run-world-roster.json when resuming",
+    )
     parser.add_argument(
         "--config",
         type=str,
@@ -114,6 +123,7 @@ def main():
 
     # The compiler owns declaration transport and located selection diagnostics.
     try:
+        world_roster = WorldRosterDeclaration.from_dict(json.loads(args.world_roster.read_bytes()))
         resolved = resolve_launch(Path(args.config), level_name=args.level)
     except Exception as error:
         logger.error("Failed to resolve launch: %s", error)
@@ -159,6 +169,7 @@ def main():
             inference_port=args.inference_port,
             level_name=level_name,
             force_new_vfs=args.force_new_vfs,
+            world_roster=world_roster,
         )
     except Exception as e:
         logger.error(f"Failed to create UnifiedServer: {e}")

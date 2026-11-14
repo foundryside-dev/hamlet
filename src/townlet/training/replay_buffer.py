@@ -26,6 +26,7 @@ from townlet.training.replay_contract import (
     ReplayReadiness,
     ReplayRequest,
     SamplingReceipt,
+    StagedReplayData,
     replay_device_prepare,
     replay_device_sample,
     replay_local,
@@ -163,9 +164,12 @@ class ReplayBuffer(ReplayCustody):
             return None, (self._historical_archives,)
         if route == "install_historical_archive":
             return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
-        if route in ("validate_serialized", "prepare_serialized", "load_for_mode"):
+        if route in ("validate_serialized", "prepare_serialized", "load_for_mode", "stage_native_restore"):
             return self._transport_inventory(
-                self._replay_argument(args, kwargs, 0, "state"), route, kwargs.get("expected_obs_dim"), count_field="size"
+                self._replay_argument(args, kwargs, 0, "state"),
+                "prepare_serialized" if route == "stage_native_restore" else route,
+                kwargs.get("expected_obs_dim"),
+                count_field="size",
             )
         if route == "materialize_validated":
             state = self._replay_argument(args, kwargs, 0, "state")
@@ -798,6 +802,46 @@ class ReplayBuffer(ReplayCustody):
 
             self._validate_replay(candidate, lease)
             self._publish_replay(candidate, publish)
+
+    def stage_native_restore(
+        self, state: Mapping[str, Any], *, expected_obs_dim: int, parent_plan: object, lineage: RNGOperation | None
+    ) -> StagedReplayData:
+        """Own all destination storage before the native child publication cut."""
+        from townlet.population.vectorized import validate_native_population_data
+
+        validate_native_population_data(plan=parent_plan, owner=self)
+        with self._device_operation(
+            "prepare", lineage, "stage_native_restore", (state,), {"expected_obs_dim": expected_obs_dim}, mutation=False
+        ):
+            validate_native_population_data(plan=parent_plan, owner=self)
+            material = self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+            data = self._issue_native_replay_data(material, parent_plan=parent_plan)
+        # Genuine prepare completion must succeed before the opaque data escapes.
+        return data
+
+    def install_native_restore(
+        self, data: object, *, parent_plan: object, attempt: object, restored: object, lineage: RNGOperation | None
+    ) -> None:
+        """Publish preallocated storage under the genuine fixed native finalizer."""
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+
+        with self._owner_operation(mutation=False):
+            self._native_replay_payload(data, parent_plan=parent_plan)
+            validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+        with self._device_operation("install", lineage, "install_native_restore", (data,), {}, mutation=False):
+            material = self._native_replay_payload(data, parent_plan=parent_plan)
+            validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+            if not isinstance(material, _ReplayRestoreCandidate) or not isinstance(data, StagedReplayData):
+                raise ValueError("Native uniform installation requires its owned storage data")
+
+            def publish() -> None:
+                for name in _STORAGE_FIELDS:
+                    setattr(self, name, getattr(material, name))
+                self.size, self.position, self.has_wrapped = material.size, material.position, material.has_wrapped
+                self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
+                self._historical_archives = material.archives
+
+            self._publish_native_replay_data(data, publish)
 
     def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None) -> None:
         """Resolve approved historical mode before any restore mutation."""

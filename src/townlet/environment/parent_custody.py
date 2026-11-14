@@ -179,9 +179,11 @@ class EnvCustody:
         if type(prepared) is not WorldRecord or env._world_records.get(id(prepared)) is not prepared:
             raise ValueError("prepared world restore is foreign, copied or unissued")
         seal = self._restore_seals.get(prepared)
+        escrow = env._world_restore_escrows.get(prepared)
         if (
             seal is None
             or prepared in env._world_restore_revoked
+            or (escrow is not None and escrow.status not in ("active", "complete"))
             or env._world_restore_terminal is not False
             or type(prepared.kind) is not str
             or prepared.kind != "prepared_restore"
@@ -297,6 +299,12 @@ class EnvCustody:
     @contextmanager
     def call(self, name: str, arguments: dict[str, Any]) -> Iterator[None]:
         self.check_process()
+        if (
+            self.owner._world_restore_terminal
+            and name not in ("world_phase", "accepted_episode_seqs", "get_action_label_names")
+            and not (name == "abandon_episode" and arguments.get("reason") == "runtime_failure")
+        ):
+            raise ValueError("receiver is terminal after failed restore composition")
         thread = current_thread()
         if self.active is not None and self.active[1] is thread:
             if name in ("world_phase", "accepted_episode_seqs"):

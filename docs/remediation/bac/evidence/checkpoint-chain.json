@@ -6,7 +6,7 @@
     "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
   },
   "chain_semantics": "Natural publication-label order; links authenticate exact checkpoint bytes, not inferred Git ancestry or current-source equivalence. Missing wave labels are not synthesized.",
-  "current_local_candidate": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+  "current_local_candidate": "8b51496639637ad5d80005ea99167fb2fa39093f",
   "entries": [
     {
       "artifact_checks": {
@@ -2031,15 +2031,55 @@
         "bytes": 594877
       },
       "publication": "WIP checkpoint; exact remote/CI verification separate"
+    },
+    {
+      "id": "wave35-wip-27",
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-27.json",
+        "sha256": "1cfd47ec73853d0e5c4401453f29e3e60bad06db09b0010c26e06bb59990294e",
+        "bytes": 414668
+      },
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-26.json",
+        "sha256": "5e778dd2efe4b620419ef0ed5a29634c0c5309a2fe68e07477b5279ec97e2ad7"
+      },
+      "previous_catalog_entry": "wave35-wip-26",
+      "identity": {
+        "evidence_base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+        "evidence_candidate_tree": "8b51496639637ad5d80005ea99167fb2fa39093f",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+          "src": "de3d5f7db0abb623af601241c416c9330512b65c",
+          "tests": "be2466329b4dd357f67301913d16140f12a1625b"
+        }
+      },
+      "status": "ACTIVE WIP; partial checkpoint, PW04 and final gates open",
+      "packet": "R168 real runner checkpoint/restore/continued-learning and corruption refusal2PASS; native80PASS and isolatedpoison1PASS separately. NR-1 learnerhistory defect, nativePER/SEQ and remaining acceptance/final gates open. Mypy18FAIL and defaults612>600FAIL; RuffPASS. Originalaccounting28/38/66 unchanged.",
+      "round": 168,
+      "receipt_pointer": "#/receipt",
+      "package_accounting": {
+        "qualified": 28,
+        "remaining": 38,
+        "total": 66
+      },
+      "qualified_progress": "28 qualified /38 remaining /66 original packages unchanged",
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-27/selection-plan.json",
+        "sha256": "08dd3dd2fa8e502ed309d238bc940561d67e1bef3277b01417df577303f1020d",
+        "bytes": 490121
+      },
+      "publication": "WIP checkpoint; exact remote/CI verification separate"
     }
   ],
-  "latest_verified_remote_publication_at_assembly": "wave35-wip-25",
+  "latest_verified_remote_publication_at_assembly": "wave35-wip-26",
   "current_checkpoint": {
-    "path": "docs/remediation/bac/evidence/wave35-wip-26.json",
-    "sha256": "5e778dd2efe4b620419ef0ed5a29634c0c5309a2fe68e07477b5279ec97e2ad7",
-    "bytes": 494434,
-    "candidate_tree": "39f5b5c3ca7688b29ccc1fbe501b826ebae4f2ee",
+    "path": "docs/remediation/bac/evidence/wave35-wip-27.json",
+    "sha256": "1cfd47ec73853d0e5c4401453f29e3e60bad06db09b0010c26e06bb59990294e",
+    "bytes": 414668,
+    "candidate_tree": "8b51496639637ad5d80005ea99167fb2fa39093f",
     "publication": "WIP checkpoint; exact remote/CI verification separate"
   },
-  "latest_verified_remote_commit_at_assembly": "f2bfae2ee6fbeca120754eefa7e32cb2442c3c9e"
+  "latest_verified_remote_commit_at_assembly": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5"
 }

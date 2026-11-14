@@ -12,6 +12,7 @@ exact equality is reported separately.
 
 Brain widths are never synthesized here. ``--brain-template`` is a required,
 complete ``brain.yaml`` whose architecture and aggregator must match the cell.
+``--world-roster`` supplies the required explicit world-roster-v1 JSON declaration.
 """
 
 from __future__ import annotations
@@ -40,6 +41,7 @@ MAX_STEPS_PER_EPISODE = 1000
 
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+from townlet.config.world_roster import WorldRosterDeclaration, canonical_bytes  # noqa: E402
 from townlet.determinism import seed_all  # noqa: E402
 from townlet.training.checkpoint_utils import safe_torch_load, verify_checkpoint_digest  # noqa: E402
 from townlet.training.episode_accounting import read_episode_accounting  # noqa: E402
@@ -178,6 +180,19 @@ def _hardware_metadata() -> dict[str, Any]:
     }
 
 
+def read_run_world_roster(run_dir: Path, metadata: dict[str, Any]) -> WorldRosterDeclaration:
+    """Read the exact persisted declaration and require matching run provenance."""
+    manifest = (run_dir / "run-world-roster.json").read_bytes()
+    roster = WorldRosterDeclaration.from_dict(json.loads(manifest))
+    if (
+        manifest != canonical_bytes(roster.to_dict()) + b"\n"
+        or metadata["world_roster"] != roster.to_dict()
+        or metadata["world_roster_manifest_digest"] != roster.manifest_digest
+    ):
+        raise ValueError("Run world roster differs from its canonical authored metadata")
+    return roster
+
+
 def validate_resume_run(
     run_dir: Path,
     *,
@@ -187,6 +202,7 @@ def validate_resume_run(
     aggregator: str,
     seed: int,
     budget: int,
+    world_roster: WorldRosterDeclaration,
 ) -> dict[str, Any]:
     """Validate that an existing run is the exact unfinished cohort member requested."""
     meta_path = run_dir / "meta.json"
@@ -198,6 +214,8 @@ def validate_resume_run(
         raise FileNotFoundError(f"resume requires a checkpoint under {run_dir / 'checkpoints'}")
 
     metadata = json.loads(meta_path.read_text())
+    if read_run_world_roster(run_dir, metadata) != world_roster:
+        raise ValueError("Resume requires the exact original authored world roster and order")
     expected: dict[str, Any] = {
         "format": "l2-token-regression-1",
         "architecture": architecture,
@@ -206,6 +224,8 @@ def validate_resume_run(
         "level": LEVEL,
         "requested_live_agent_steps": budget,
         "budget_stop_rule": BUDGET_STOP_RULE,
+        "world_roster": world_roster.to_dict(),
+        "world_roster_manifest_digest": world_roster.manifest_digest,
         **identity,
         "brain_template_sha256": hashlib.sha256(brain_template.read_bytes()).hexdigest(),
     }
@@ -216,8 +236,18 @@ def validate_resume_run(
 
 
 def prepare_run(
-    *, run_root: Path, brain_template: Path, architecture: str, aggregator: str, seed: int, budget: int, resume: bool = False
+    *,
+    run_root: Path,
+    brain_template: Path,
+    architecture: str,
+    aggregator: str,
+    seed: int,
+    budget: int,
+    world_roster: WorldRosterDeclaration,
+    resume: bool = False,
 ) -> tuple[Path, dict[str, Any]]:
+    if not isinstance(world_roster, WorldRosterDeclaration):
+        raise TypeError("Training requires an explicit WorldRosterDeclaration")
     if seed not in SEEDS:
         raise ValueError(f"seed must be one of {SEEDS}")
     expected_budget = BASELINE_ENV_STEP_BUDGETS[seed]
@@ -238,6 +268,7 @@ def prepare_run(
             aggregator=aggregator,
             seed=seed,
             budget=budget,
+            world_roster=world_roster,
         )
     if resume:
         raise FileNotFoundError(f"{run_dir} does not exist — --resume never creates a new run")
@@ -257,6 +288,8 @@ def prepare_run(
         "level": LEVEL,
         "requested_live_agent_steps": budget,
         "budget_stop_rule": BUDGET_STOP_RULE,
+        "world_roster": world_roster.to_dict(),
+        "world_roster_manifest_digest": world_roster.manifest_digest,
         **identity,
         "brain_template": str(brain_template.resolve()),
         "brain_template_sha256": hashlib.sha256(template_bytes).hexdigest(),
@@ -294,6 +327,8 @@ def normalized_train_command(args: argparse.Namespace) -> list[str]:
         args.aggregator,
         "--brain-template",
         str(Path(args.brain_template).resolve()),
+        "--world-roster",
+        str(Path(args.world_roster).resolve()),
         "--seed",
         str(args.seed),
         "--env-step-budget",
@@ -436,6 +471,7 @@ def require_budget_complete_for_eval(metadata: dict[str, Any], run_dir: Path) ->
 
 
 def cmd_train(args: argparse.Namespace) -> None:
+    roster = WorldRosterDeclaration.from_dict(json.loads(Path(args.world_roster).read_bytes()))
     run_dir, metadata = prepare_run(
         run_root=Path(args.run_root),
         brain_template=Path(args.brain_template),
@@ -444,6 +480,7 @@ def cmd_train(args: argparse.Namespace) -> None:
         seed=args.seed,
         budget=args.env_step_budget,
         resume=args.resume,
+        world_roster=roster,
     )
     from townlet.demo.runner import DemoRunner
 
@@ -460,6 +497,7 @@ def cmd_train(args: argparse.Namespace) -> None:
             max_episodes=None,
             level_name=LEVEL,
             max_environment_steps=args.env_step_budget,
+            world_roster=roster,
         ) as runner:
             runner.run()
             metadata.update(runtime_model_metadata(runner))
@@ -501,6 +539,7 @@ def cmd_eval(args: argparse.Namespace) -> None:
 
     run_dir = Path(args.run_dir)
     metadata = json.loads((run_dir / "meta.json").read_text())
+    roster = read_run_world_roster(run_dir, metadata)
     require_budget_complete_for_eval(metadata, run_dir)
     if (run_dir / "greedy_eval.json").exists():
         raise FileExistsError(f"{run_dir / 'greedy_eval.json'} already exists — refusing to overwrite evaluation evidence")
@@ -510,6 +549,7 @@ def cmd_eval(args: argparse.Namespace) -> None:
         checkpoint_dir=run_dir / "checkpoints",
         max_episodes=None,
         level_name=LEVEL,
+        world_roster=roster,
     ) as runner:
         runner.should_shutdown = True
         runner.run()
@@ -735,6 +775,7 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--architecture", required=True, choices=ARCHITECTURES)
     train.add_argument("--aggregator", required=True, choices=AGGREGATORS)
     train.add_argument("--brain-template", required=True)
+    train.add_argument("--world-roster", type=Path, required=True, help="explicit world-roster-v1 JSON declaration")
     train.add_argument("--seed", required=True, type=int, choices=SEEDS)
     train.add_argument("--env-step-budget", required=True, type=int)
     train.add_argument("--run-root", default="runs/l2_token_regression")

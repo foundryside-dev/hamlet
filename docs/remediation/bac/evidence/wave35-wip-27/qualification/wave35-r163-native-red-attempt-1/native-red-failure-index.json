@@ -1,0 +1,113 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "34d6bace9a1ac608da2516cbf7a8475460e7b37f",
+  "unique_node_phase_failures": 13,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+    "tests/test_townlet/regressions/bac/test_native_rng_state.py",
+    "tests/test_townlet/regressions/bac/test_world_restore_attempt.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_plain_tensor_instance_override_is_refused_without_running_callback[owned-clone]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_plain_tensor_instance_override_is_refused_without_running_callback[schema-is_contiguous]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_plain_tensor_instance_override_is_refused_without_running_callback[schema-clone]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_plain_tensor_instance_override_is_refused_without_running_callback[owned-is_contiguous]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "RuntimeError: Unrelated same-thread RNG reentry is forbidden",
+      "count": 3,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_real_curriculum_plan_stages_without_publication",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_real_registry_plan_stages_without_publication",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_real_curriculum_plan_refuses_invalid_state_before_publication",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'VectorizedHamletEnv' object has no attribute 'prepare_native_layout'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_native_layout_rejects_unissued_parent_and_handle[prepare]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'VectorizedHamletEnv' object has no attribute 'install_native_layout'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_native_layout_rejects_unissued_parent_and_handle[install]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'StaticCurriculum' object has no attribute 'install_native_state'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_curriculum_refuses_fabricated_install_without_mutation",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'VariableRegistry' object has no attribute 'prepare_native_persistent_state'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_registry_refuses_foreign_parent_without_mutation",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'VariableRegistry' object has no attribute 'install_native_persistent_state'. Did you mean: 'validate_persistent_state'?",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_registry_refuses_fabricated_install_without_mutation",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AttributeError: 'StaticCurriculum' object has no attribute 'prepare_native_state'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_curriculum_refuses_foreign_parent_without_mutation",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

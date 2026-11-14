@@ -1,0 +1,23 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 8 items
+
+tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py F [ 12%]
+                                                                         [ 12%]
+tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py FF [ 37%]
+FFFFF                                                                    [100%]
+
+=================================== FAILURES ===================================
+/workspace/hamlet/src/townlet/exploration/parent_custody.py:141: RuntimeError: installation observation unavailable during an incompatible call
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:18: AssertionError: assert 'native_boundary' in frozenset({'action_dim', 'actions_hash', 'affordance_layout', 'affordances_hash', 'agent_ids', 'bars_hash', ...})
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:25: AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:43: AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:43: AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:43: AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:43: AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:43: AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'
+============================== 8 failed in 7.28s ===============================

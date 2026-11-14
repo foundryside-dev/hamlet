@@ -9,8 +9,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from collections.abc import Callable, Mapping
-from contextlib import AbstractContextManager
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import AbstractContextManager, contextmanager
 from copy import deepcopy
 from dataclasses import dataclass, fields, replace
 from functools import wraps
@@ -28,7 +28,7 @@ from townlet.config.training_v2_config import TrainingV2Config
 if TYPE_CHECKING:
     from townlet.config.world_roster import WorldAcceptedEpisode
     from townlet.exploration.epsilon_greedy import EpsilonGreedyExploration
-    from townlet.exploration.parent_custody import RuntimeParentCustody
+    from townlet.exploration.parent_custody import RestoreInstallationOutcome, RuntimeParentCustody
     from townlet.exploration.world_curiosity_state import CuriosityStepStamp
 
 Strategy = Literal["none", "rnd", "adaptive_rnd", "count_based", "icm"]
@@ -757,16 +757,57 @@ def _runtime_keys(value: Any, names: tuple[str, ...], location: str) -> None:
 def _runtime_operation(method: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(method)
     def invoke(self: ExplorationRuntime, *args: Any, **kwargs: Any) -> Any:
-        from townlet.exploration.parent_custody import _runtime_call
+        from townlet.exploration.parent_custody import (
+            _begin_installation,
+            _finish_installation,
+            _incorporate_bank_result,
+            _runtime_call,
+        )
 
-        with _runtime_call(self, method.__name__):
-            if self._operation_active:
-                raise RuntimeError("reentrant runtime operation")
-            self._operation_active = True
-            try:
-                return method(self, *args, **kwargs)
-            finally:
-                self._operation_active = False
+        cell = publication = None
+        try:
+            with self._lock:
+                if method.__name__ == "install_restore":
+                    prepared = kwargs.get("prepared")
+                    if type(prepared) is PreparedExplorationRestore:
+                        publication = self._restores.get(prepared)
+                    if publication is not None:
+                        cell = _begin_installation(publication.outcome, self)
+                overlay = self._world_restore_context
+                if overlay is not None:
+                    if overlay[1].operation == "prepare":
+                        permitted = ("prepare_restore", "prepare_private_initialization")
+                    else:
+                        permitted = ("install_restore",)
+                    _runtime_require(
+                        not self._world_restore_used and method.__name__ in permitted, "restore overlay permits one selected call"
+                    )
+                    self._world_restore_used = True
+            with _runtime_call(self, method.__name__):
+                if self._operation_active:
+                    raise RuntimeError("reentrant runtime operation")
+                previous = self._installation_active
+                if cell is not None:
+                    self._installation_active = cell
+                self._operation_active = True
+                try:
+                    result = method(self, *args, **kwargs)
+                finally:
+                    try:
+                        if cell is not None:
+                            assert publication is not None
+                            _incorporate_bank_result(cell, publication.bank_outcome, self._bank)
+                            cell.runtime_handle_consumed = self._restores is publication.empty_handles
+                    finally:
+                        self._operation_active = False
+                        if cell is not None:
+                            self._installation_active = previous
+            if cell is not None:
+                cell.returned_normally = True
+            return result
+        finally:
+            if cell is not None:
+                _finish_installation(cell)
 
     return invoke
 
@@ -800,6 +841,9 @@ class _ExplorationPublication:
     parent_restore: Any
     next_revision: int
     empty_handles: dict[PreparedExplorationRestore, Any]
+    outcome: RestoreInstallationOutcome
+    bank_outcome: RestoreInstallationOutcome
+    attempt: Any
 
 
 class ExplorationRuntime:
@@ -832,6 +876,9 @@ class ExplorationRuntime:
         _runtime_require(callable(validate_committed_batch) and callable(validate_parent_cadence), "parent cadence callbacks required")
         self._lock = RLock()
         self._operation_active = True
+        self._installation_active: Any = None
+        self._world_restore_context: tuple[Any, Any] | None = None
+        self._world_restore_used = False
         self._revision = 0
         self._restores: dict[PreparedExplorationRestore, _ExplorationPublication] = {}
         self._codec = checkpoint
@@ -848,6 +895,7 @@ class ExplorationRuntime:
                 issuer_factory=issuer_factory,
                 report_allocation=report_allocation,
             )
+            self._restore_receiver = (self._bank, self._bank._issuer)
             self._estimate = allocation_estimate(policy=self._policy, descriptor=self._bank.descriptor, device=self._bank.device)
             self._state: tuple[EpsilonGreedyExploration, _ParentCadence] = (
                 make_policy_selector(self._policy),
@@ -865,6 +913,53 @@ class ExplorationRuntime:
         from townlet.exploration.parent_custody import _retain_runtime
 
         return _retain_runtime(self)
+
+    def restore_installation_outcome(self, *, prepared: PreparedExplorationRestore) -> RestoreInstallationOutcome:
+        """Return the preallocated first-attempt observation, without native work.
+
+        Cache this object before install. Its sealed result remains immutable
+        after consumption/poison or a lawful unconsumed standalone retry.
+        """
+        from townlet.exploration.parent_custody import _check_installation_lookup, _validate_installation_outcome
+
+        with self._lock:
+            _check_installation_lookup(self, busy=self._operation_active or self._installation_active is not None)
+            _runtime_require(
+                type(prepared) is PreparedExplorationRestore and prepared in self._restores, "foreign or consumed runtime restore"
+            )
+            outcome = self._restores[prepared].outcome
+            _validate_installation_outcome(outcome, self)
+            return outcome
+
+    def validate_restore_receiver(self, *, curiosity_owner: Any) -> None:
+        """Authenticate the original BANK/issuer association without an invocation."""
+        from townlet.exploration.parent_custody import _check_installation_lookup
+
+        with self._lock:
+            _check_installation_lookup(self, busy=self._operation_active or self._installation_active is not None)
+            _runtime_require(
+                curiosity_owner is self._bank
+                and self._bank is self._restore_receiver[0]
+                and self._bank._issuer is self._restore_receiver[1],
+                "restore receiver is not this runtime's actual BANK owner",
+            )
+
+    @contextmanager
+    def correlate_world_restore(self, *, attempt: Any) -> Iterator[None]:
+        """One C-issued prepare/install call under authentic retained ENV custody."""
+        from townlet.environment.restore_attempt import runtime_restore_context
+
+        with self._lock:
+            _runtime_require(not self._operation_active and self._world_restore_context is None, "runtime restore overlay is not idle")
+            with runtime_restore_context(attempt=attempt, runtime=self) as context:
+                self._world_restore_context = (attempt, context)
+                self._world_restore_used = False
+                try:
+                    yield
+                    _runtime_require(self._world_restore_used, "restore overlay did not execute its selected call")
+                finally:
+                    self._world_restore_context = None
+                    self._world_restore_used = False
 
     def _bank_call(self, method: str, **kwargs: Any) -> Any:
         from townlet.exploration.parent_custody import _forward_bank
@@ -1177,7 +1272,13 @@ class ExplorationRuntime:
     def _correlate_cadence(self, cadence: _ParentCadence, *, mode: str, accepted: Any, parent_restore: Any) -> None:
         revision, bank_revision = self._revision, self._bank.mutation_revision
         view = self._codec.owned(cadence)
+        overlay = self._world_restore_context
+        if overlay is not None:
+            _runtime_require(parent_restore is overlay[1].prepared, "runtime cadence names another prepared world")
+            overlay[1].scope.validate_prepared_restore(prepared=parent_restore)
         result = self._validate_parent_cadence(cadence=view, mode=mode, accepted=accepted, parent_restore=parent_restore)
+        if overlay is not None:
+            overlay[1].scope.validate_prepared_restore(prepared=parent_restore)
         _runtime_require(result is None, "parent cadence validator must return None")
         _runtime_require(self._codec.same(view, cadence), "parent callback changed cadence view")
         self._fresh(revision, bank_revision)
@@ -1227,6 +1328,8 @@ class ExplorationRuntime:
         parent_restore: Any,
         revision: int,
         bank_revision: int,
+        token: PreparedExplorationRestore,
+        outcome: RestoreInstallationOutcome,
     ) -> PreparedExplorationRestore:
         from townlet.exploration.provider_factory import make_policy_selector
 
@@ -1235,17 +1338,46 @@ class ExplorationRuntime:
         # never passes through this selector's permissive loader.
         selector.load_state(selector_state)
         state = (selector, cadence)
-        token = PreparedExplorationRestore()
-        publication = _ExplorationPublication(revision, bank_revision, bank_handle, state, mode, accepted, parent_restore, revision + 1, {})
+        bank_outcome = self._bank.restore_installation_outcome(prepared=bank_handle)
+        attempt = None
+        if self._world_restore_context is not None:
+            attempt = self._world_restore_context[0]
+        publication = _ExplorationPublication(
+            revision,
+            bank_revision,
+            bank_handle,
+            state,
+            mode,
+            accepted,
+            parent_restore,
+            revision + 1,
+            {},
+            outcome,
+            bank_outcome,
+            attempt,
+        )
         self._correlate_cadence(cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
         self._fresh(revision, bank_revision)
         self._restores[token] = publication
         return token
 
     @_runtime_operation
+    def validate_restore_data(self, *, state: Any, mode: str) -> None:
+        """Validate current native data without parent authority or install handles."""
+        revision, bank_revision = self._revision, self._bank.mutation_revision
+        bank_state, _, _ = self._parse(state, initialization=False)
+        self._fresh(revision, bank_revision)
+        self._bank_call("validate_restore_data", state=bank_state, mode=mode)
+        self._fresh(revision, bank_revision)
+
+    @_runtime_operation
     def prepare_restore(
         self, *, state: Any, mode: str, accepted: Any, parent_restore: Any, validate_parent_restore: Any
     ) -> PreparedExplorationRestore:
+        from townlet.exploration.parent_custody import _new_installation_outcome
+
+        token = PreparedExplorationRestore()
+        outcome = _new_installation_outcome(self, token, runtime=True)
         revision, bank_revision = self._revision, self._bank.mutation_revision
         bank_state, selector, cadence = self._parse(state, initialization=False)
         self._correlate_cadence(cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
@@ -1267,12 +1399,18 @@ class ExplorationRuntime:
             parent_restore=parent_restore,
             revision=revision,
             bank_revision=bank_revision,
+            token=token,
+            outcome=outcome,
         )
 
     @_runtime_operation
     def prepare_private_initialization(
         self, *, state: Any, initialization: str, parent_restore: Any, validate_parent_restore: Any
     ) -> PreparedExplorationRestore:
+        from townlet.exploration.parent_custody import _new_installation_outcome
+
+        token = PreparedExplorationRestore()
+        outcome = _new_installation_outcome(self, token, runtime=True)
         revision, bank_revision = self._revision, self._bank.mutation_revision
         bank_state, selector, cadence = self._parse(state, initialization=True)
         if bank_state.get("bank_phase") == "initial":
@@ -1297,6 +1435,8 @@ class ExplorationRuntime:
             parent_restore=parent_restore,
             revision=revision,
             bank_revision=bank_revision,
+            token=token,
+            outcome=outcome,
         )
 
     @_runtime_operation
@@ -1305,6 +1445,10 @@ class ExplorationRuntime:
 
         _runtime_require(type(prepared) is PreparedExplorationRestore and prepared in self._restores, "foreign or consumed runtime restore")
         publication = self._restores[prepared]
+        attempt = None
+        if self._world_restore_context is not None:
+            attempt = self._world_restore_context[0]
+        _runtime_require(publication.attempt is attempt, "composed runtime restore requires its original live attempt")
         self._fresh(publication.revision, publication.bank_revision)
         self._correlate_cadence(
             publication.state[1], mode=publication.mode, accepted=publication.accepted, parent_restore=publication.parent_restore
@@ -1314,9 +1458,17 @@ class ExplorationRuntime:
         # Its own handle/freshness checks remain authoritative. No fallible work,
         # callback, loader, allocation or corrective check follows its publish.
         _forward_bank(self, "install_restore", {"prepared": publication.bank_handle})
+        active = self._installation_active
+        if active is not None:
+            active.runtime_publication = 3
+            active.refresh()
         self._state = publication.state
         self._revision = publication.next_revision
         self._restores = publication.empty_handles
+        if active is not None:
+            active.runtime_publication = 2
+            active.runtime_handle_consumed = True
+            active.refresh()
 
 
 def build_exploration(

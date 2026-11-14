@@ -1,0 +1,209 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py F            [ 50%]
+tests/test_townlet/regressions/bac/test_rnd_service.py F                 [100%]
+
+=================================== FAILURES ===================================
+________________ test_shared_runner_checkpoint_still_roundtrips ________________
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_shared_runner_checkpoint_0')
+
+    def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
+        """A completed checkpoint resumes the next real learning episode exactly."""
+        import hashlib
+        import shutil
+    
+        from townlet.config.world_roster import WorldRosterDeclaration
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        document = yaml.safe_load(training_path.read_text())
+        training = document["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        training["bac_options"]["rnd"]["max_pending_rows"] = 6
+        training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
+        training_path.write_text(yaml.safe_dump(document, sort_keys=False))
+        roster = WorldRosterDeclaration(("roundtrip-world-A", "roundtrip-world-B"))
+        uninterrupted = tmp_path / "uninterrupted"
+    
+        def read_checkpoint(directory: Path, completed_episodes: int) -> dict[str, Any]:
+            artifact = directory / "checkpoints" / f"checkpoint_ep{completed_episodes:05d}.pt"
+            digest = artifact.with_suffix(".pt.sha256")
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+            payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
+            assert payload["episode"] == completed_episodes
+            assert payload["population_state"]["clock_ledger"]["completed_batch_episodes"] == completed_episodes
+            return payload
+    
+        with DemoRunner(
+            config_dir=pack,
+            db_path=uninterrupted / "run.db",
+            checkpoint_dir=uninterrupted / "checkpoints",
+            world_roster=roster,
+            level_name="L0_0_minimal",
+            max_episodes=3,
+        ) as runner:
+            runner.run()
+>           saved = read_checkpoint(uninterrupted, 2)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:509: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directory = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_shared_runner_checkpoint_0/uninterrupted')
+completed_episodes = 2
+
+    def read_checkpoint(directory: Path, completed_episodes: int) -> dict[str, Any]:
+        artifact = directory / "checkpoints" / f"checkpoint_ep{completed_episodes:05d}.pt"
+        digest = artifact.with_suffix(".pt.sha256")
+>       assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+                              ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:494: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_shared_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt')
+
+    def read_bytes(self):
+        """
+        Open the file in bytes mode, read it, and close the file.
+        """
+>       with self.open(mode='rb') as f:
+             ^^^^^^^^^^^^^^^^^^^^
+
+/usr/lib/python3.13/pathlib/_abc.py:625: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_shared_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_shared_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt'
+
+/usr/lib/python3.13/pathlib/_local.py:539: FileNotFoundError
+______ test_native_runner_checkpoint_retains_tail_and_rejects_corruption _______
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_native_runner_checkpoint_0')
+
+    def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
+        import hashlib
+        import random
+        import shutil
+        from pathlib import Path
+    
+        import numpy as np
+        import yaml
+    
+        from tests.test_townlet.regressions.bac.test_pw_local_service import _equal
+        from townlet.config.world_roster import WorldRosterDeclaration
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import persist_checkpoint_digest, safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        doc = yaml.safe_load(training_path.read_text())
+        training = doc["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        training["bac_options"]["rnd"]["max_pending_rows"] = 6
+        training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
+        training_path.write_text(yaml.safe_dump(doc, sort_keys=False))
+        world_roster = WorldRosterDeclaration(("native-world-A", "native-world-B"))
+    
+        def runner_kwargs(directory, episodes):
+            return dict(
+                config_dir=pack,
+                db_path=directory / "run.db",
+                checkpoint_dir=directory / "checkpoints",
+                max_episodes=episodes,
+                world_roster=world_roster,
+                level_name="L0_0_minimal",
+            )
+    
+        def read_checkpoint(directory, episode):
+            artifact = directory / "checkpoints" / f"checkpoint_ep{episode:05d}.pt"
+            digest = artifact.with_suffix(".pt.sha256")
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+            payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
+            assert payload["episode"] == episode
+            return payload
+    
+        def rnd_state(payload):
+            return payload["population_state"]["exploration_state"]["bank"]["shared_backend"]["native"]["rnd_state"]
+    
+        uninterrupted = tmp_path / "uninterrupted"
+        with DemoRunner(**runner_kwargs(uninterrupted, 3)) as runner:
+            runner.run()
+>           saved = read_checkpoint(uninterrupted, 2)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:322: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+directory = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_native_runner_checkpoint_0/uninterrupted')
+episode = 2
+
+    def read_checkpoint(directory, episode):
+        artifact = directory / "checkpoints" / f"checkpoint_ep{episode:05d}.pt"
+        digest = artifact.with_suffix(".pt.sha256")
+>       assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+                              ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:311: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_native_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt')
+
+    def read_bytes(self):
+        """
+        Open the file in bytes mode, read it, and close the file.
+        """
+>       with self.open(mode='rb') as f:
+             ^^^^^^^^^^^^^^^^^^^^
+
+/usr/lib/python3.13/pathlib/_abc.py:625: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_native_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1/test_native_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt'
+
+/usr/lib/python3.13/pathlib/_local.py:539: FileNotFoundError
+============================== 2 failed in 17.10s ==============================

@@ -87,6 +87,7 @@ class ManualPhysicalSession:
                 or env._world_role_owners["population"] is not self._owner
                 or env._world_authority is not self._authority
                 or env._exploration_bound
+                or env._world_restore_terminal
                 or self._failed
                 or self._busy
             ):

@@ -11,7 +11,11 @@ import copy
 import hashlib
 import logging
 import math
-from collections.abc import Mapping, Sequence
+import os
+import threading
+import weakref
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, replace
 from numbers import Real
 from typing import TYPE_CHECKING, Any, cast
@@ -30,6 +34,7 @@ from townlet.config.brain_config import BrainConfig
 from townlet.config.exploration_policy import ExplorationRuntime, IntrinsicStepHandoff
 from townlet.curriculum.base import CurriculumManager
 from townlet.exploration.action_selection import epsilon_greedy_action_selection_eligible
+from townlet.exploration.rng_custody import process_rng_domain
 from townlet.population.base import PopulationManager
 from townlet.population.runtime_registry import AgentRuntimeRegistry
 from townlet.training.checkpoint_utils import TokenRosterReport
@@ -77,6 +82,29 @@ POPULATION_UNIVERSE_METADATA_KEYS = frozenset(
 
 EpisodeContainer = dict[str, list[torch.Tensor]]
 ReplayStorage = ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer
+
+
+class NativePopulationData:
+    """Opaque owned data preparation; never a boundary/install permission."""
+
+    __slots__ = ("__weakref__",)
+
+    def __reduce__(self) -> Any:
+        raise TypeError("Native population data cannot be serialized or copied")
+
+
+_NATIVE_DATA_ISSUERS: weakref.WeakKeyDictionary[NativePopulationData, weakref.ReferenceType[Any]] = weakref.WeakKeyDictionary()
+
+
+def validate_native_population_data(*, plan: object, owner: object) -> None:
+    """Authenticate a staged child's genuine POP plan, without granting install authority."""
+    if type(plan) is not NativePopulationData:
+        raise ValueError("Foreign native population data")
+    issuer_ref = _NATIVE_DATA_ISSUERS.get(plan)
+    issuer = issuer_ref() if issuer_ref is not None else None
+    if not isinstance(issuer, VectorizedPopulation):
+        raise ValueError("Foreign or expired native population data")
+    VectorizedPopulation.validate_native_restore_plan(issuer, plan=plan, owner=owner)
 
 
 @dataclass(frozen=True)
@@ -491,6 +519,8 @@ class VectorizedPopulation(PopulationManager):
         self._service_receipts: tuple[Any, ...] = ()
         self._checkpoint_revision = 0
         self._population_restores: dict[PreparedPopulationRestore, Any] = {}
+        self._native_population_data: weakref.WeakKeyDictionary[NativePopulationData, dict[str, Any]] = weakref.WeakKeyDictionary()
+        self._native_participant: Any = None
         self._preparing_checkpoint: Any = None
         self._pending_batch_commit: Any = None
         self._batch_commit_active = False
@@ -2828,7 +2858,7 @@ class VectorizedPopulation(PopulationManager):
                     f"scheduler={learning_rate}, optimizer={optimizer_value}."
                 )
 
-    def _validate_checkpoint_state(self, checkpoint: Mapping[str, object]) -> Any:
+    def _validate_checkpoint_state(self, checkpoint: Mapping[str, object], *, validate_replay: bool = True) -> Any:
         """
         Validate a complete population checkpoint without mutating runtime state.
 
@@ -2992,6 +3022,12 @@ class VectorizedPopulation(PopulationManager):
         )
         if self.scheduler is not None:
             self._validate_scheduler_checkpoint_state("scheduler", scheduler_state, self.scheduler, optimizer_learning_rates)
+        if not validate_replay:
+            return None
+        return self._validate_checkpoint_replay(checkpoint, current_obs_dim=current_obs_dim)
+
+    def _validate_checkpoint_replay(self, checkpoint: Mapping[str, Any], *, current_obs_dim: int) -> Any:
+        """Let the real replay owner validate under its own idle/device admission."""
         replay_state = cast(Mapping[str, Any], checkpoint["replay_buffer"])
         replay_target = self.replay_buffer
         # Captured6 has no PER clock/state. Prepare its actual selected target at
@@ -3009,7 +3045,7 @@ class VectorizedPopulation(PopulationManager):
                 raise ValueError("Sequential replay vector tick must equal the restored population total_steps")
         return replay_target, validated_replay
 
-    def _checkpoint_clocks(self, checkpoint: Mapping[str, Any]) -> tuple[ClockLedger, Any]:
+    def _checkpoint_clocks(self, checkpoint: Mapping[str, Any], *, world_ids: tuple[str, ...] | None = None) -> tuple[ClockLedger, Any]:
         raw = self._require_exact_mapping("clock_ledger", checkpoint["clock_ledger"], frozenset(asdict(ClockLedger())))
         ledger = ClockLedger(**{key: self._require_nonnegative_int(f"clock_ledger.{key}", value) for key, value in raw.items()})
         if ledger.vector_ticks != checkpoint["total_steps"] or ledger.optimizer_updates != checkpoint["training_step_counter"]:
@@ -3036,12 +3072,314 @@ class VectorizedPopulation(PopulationManager):
             or len(ids) != self.num_agents
             or any(type(item) is not str for item in ids)
             or len(set(ids)) != len(ids)
-            or set(ids) != set(self.env.world_ids)
+            or set(ids) != set(self.env.world_ids if world_ids is None else world_ids)
         ):
             raise ValueError("Progress requires actual portable world membership")
         if type(seqs) is not list or len(seqs) != self.num_agents or any(type(item) is not int or item < 1 for item in seqs):
             raise ValueError("Progress requires actual positive accepted world sequences")
         return ledger, progress
+
+    def validate_native_checkpoint_data(self, checkpoint: Mapping[str, Any], *, mode: str) -> None:
+        """Validate portable POP data without preparing a runtime/BANK installation.
+
+        This is not an ENV boundary attestation. Runtime native validation and
+        cross-owner history correlation remain the genuine composed restore's work.
+        """
+        self._require_operation_idle()
+        with process_rng_domain().admission(lineage=None):
+            world_ids = self.env.world_ids
+            with self._native_device_scope(checkpoint):
+                self._validate_native_population_fields(checkpoint, mode=mode, world_ids=world_ids)
+            self._validate_checkpoint_replay(checkpoint, current_obs_dim=self.env.observation_dim)
+
+    def _validate_native_population_fields(self, checkpoint: Mapping[str, Any], *, mode: str, world_ids: tuple[str, ...]) -> None:
+        self._validate_checkpoint_state(checkpoint, validate_replay=False)
+        ledger, progress = self._checkpoint_clocks(checkpoint, world_ids=world_ids)
+        if mode not in {"initial", "completed_boundary"} or (mode == "initial") != (progress is None):
+            raise ValueError("Native boundary kind disagrees with population progress")
+        runtime_state = checkpoint["exploration_state"]
+        if not isinstance(runtime_state, Mapping):
+            raise ValueError("Native population requires exploration runtime state")
+        cadence = self._require_exact_mapping("exploration cadence", runtime_state.get("cadence"), frozenset({"schema", "last_committed"}))
+        if cadence["schema"] != "parent-global-epsilon-cadence-v1":
+            raise ValueError("Unsupported native population cadence")
+        committed = cadence["last_committed"]
+        if mode == "initial":
+            if committed is not None:
+                raise ValueError("INITIAL cannot contain a committed batch")
+        else:
+            last = self._require_exact_mapping(
+                "last committed cadence",
+                committed,
+                frozenset({"batch_episode", "completion_content", "epsilon_before", "epsilon_after"}),
+            )
+            batch = self._require_nonnegative_int("last committed batch", last["batch_episode"])
+            if ledger.completed_batch_episodes < 1 or batch != progress["accepted_identity"]["batch_episode"]:
+                raise ValueError("Completed native cadence disagrees with population progress")
+
+    def capture_native_checkpoint_data(self, *, mode: str) -> dict[str, Any]:
+        """Own a snapshot independent of subsequent live tensor/optimizer updates."""
+        state = self.get_checkpoint_state()
+        with self._native_device_scope(state):
+            state = copy.deepcopy(state)
+        self.validate_native_checkpoint_data(state, mode=mode)
+        if not self._same_replay_state(state["exploration_state"]["cadence"], self._parent_cadence):
+            raise ValueError("Snapshot cadence differs from the actual population commitment")
+        return state
+
+    def _native_owner_identities(self) -> tuple[object, ...]:
+        return (
+            self,
+            self.env,
+            self.exploration,
+            self.curriculum,
+            self.q_network,
+            self.target_network,
+            self.optimizer,
+            self.scheduler,
+            self.replay_buffer,
+            *self.q_network.parameters(),
+            *self.target_network.parameters(),
+            *(parameter for group in self.optimizer.param_groups for parameter in group["params"]),
+        )
+
+    def validate_native_restore_plan(self, *, plan: NativePopulationData, owner: object) -> None:
+        """Pure owner/data association check; C3 must separately authorize publication."""
+        record = self._native_population_data.get(plan) if type(plan) is NativePopulationData else None
+        if record is None or record["pid"] != os.getpid() or record["thread"] != threading.get_ident():
+            raise ValueError("Foreign, consumed or cross-execution native population data")
+        current = self._native_owner_identities()
+        if len(current) != len(record["owners"]) or any(a is not b for a, b in zip(current, record["owners"], strict=True)):
+            raise ValueError("Native population receiving owners changed")
+        if not any(owner is candidate for candidate in (self, self.replay_buffer, self.curriculum, self.env)):
+            raise ValueError("Native data does not belong to this child owner")
+        if record["revision"] != self._checkpoint_revision:
+            raise ValueError("Stale native population data")
+        if (
+            self._failed_step
+            or self._owned_reset_pending
+            or self._vector_steps
+            or self._step_active
+            or self._accepted is not None
+            or self._pending_batch_commit is not None
+        ):
+            raise ValueError("Native population receiver is no longer healthy and fresh")
+
+    def native_replay_restore_state(self, *, plan: NativePopulationData) -> dict[str, Any]:
+        """Return owned transport for genuine replay staging, never install permission."""
+        self.validate_native_restore_plan(plan=plan, owner=self.replay_buffer)
+        return copy.deepcopy(self._native_population_data[plan]["checkpoint"]["replay_buffer"])
+
+    @contextmanager
+    def _native_device_scope(self, checkpoint: Mapping[str, Any]) -> Iterator[tuple[int, ...]]:
+        """Pin every source/destination tensor device before native data copying."""
+        devices: set[int] = set()
+        pending: list[object] = [checkpoint, self.q_network.state_dict(), self.target_network.state_dict(), self.optimizer.state_dict()]
+        pending.extend([self.current_epsilons, self.scheduler.state_dict() if self.scheduler is not None else None])
+        seen: set[int] = set()
+        while pending:
+            value = pending.pop()
+            if id(value) in seen:
+                continue
+            seen.add(id(value))
+            if isinstance(value, torch.Tensor) and value.device.type == "cuda":
+                if value.device.index is None:
+                    raise ValueError("Native tensor preparation requires indexed CUDA devices")
+                devices.add(value.device.index)
+            elif isinstance(value, Mapping):
+                pending.extend(value.values())
+            elif isinstance(value, (tuple, list)):
+                pending.extend(value)
+        inventory, domain = tuple(sorted(devices)), process_rng_domain()
+        with domain.admission(lineage=None) as gate:
+            for index in inventory:
+                gate.resolve_cuda(torch.device("cuda", index))
+            if self._native_participant is None:
+                self._native_participant = domain.register(
+                    owner=self, cuda_devices=inventory, entrypoints=frozenset({"prepare", "install"})
+                )
+            else:
+                gate.enroll(participant=self._native_participant, cuda_devices=inventory)
+            with domain.device_invocation(
+                participant=self._native_participant, operation_kind="prepare", lineage=None, cuda_devices=inventory
+            ):
+                yield inventory
+
+    def prepare_native_checkpoint_data(self, checkpoint: Mapping[str, Any], *, mode: str) -> NativePopulationData:
+        """Materialize owned data under genuine device preparation custody."""
+        with process_rng_domain().admission(lineage=None):
+            self._require_operation_idle()
+            if self.env.world_phase != "fresh-bound":
+                raise ValueError("Native data preparation requires the genuine fresh-bound receiver")
+            world_ids = self.env.world_ids
+            with self._native_device_scope(checkpoint) as inventory:
+                plan = self._prepare_native_checkpoint_data(checkpoint, mode=mode, world_ids=world_ids)
+                self._native_population_data[plan]["devices"] = inventory
+            try:
+                self._validate_checkpoint_replay(self._native_population_data[plan]["checkpoint"], current_obs_dim=self.env.observation_dim)
+            except BaseException:
+                del self._native_population_data[plan]
+                raise
+            _NATIVE_DATA_ISSUERS[plan] = weakref.ref(self)
+        return plan
+
+    def _prepare_native_checkpoint_data(
+        self, checkpoint: Mapping[str, Any], *, mode: str, world_ids: tuple[str, ...]
+    ) -> NativePopulationData:
+        """Stage native model data without replacing any bound owner or preparing BANK.
+
+        Replay still needs its own data staging; C3 correlation, world authority,
+        runtime installation and the fixed finalizer are deliberately separate.
+        """
+        self._require_operation_idle()
+        if (
+            self._accepted is not None
+            or self._failed_step
+            or self._owned_reset_pending
+            or self._vector_steps
+            or self._pending_batch_commit is not None
+        ):
+            raise ValueError("Native data preparation requires the genuine fresh-bound receiver")
+        revision, owners = self._checkpoint_revision, self._native_owner_identities()
+        owned = copy.deepcopy(checkpoint)
+        self._validate_native_population_fields(owned, mode=mode, world_ids=world_ids)
+        ledger, progress = self._checkpoint_clocks(owned, world_ids=world_ids)
+        q, target, optimizer, scheduler = copy.deepcopy((self.q_network, self.target_network, self.optimizer, self.scheduler))
+        q.load_state_dict(owned["q_network"])
+        target.load_state_dict(owned["target_network"])
+        optimizer.load_state_dict(owned["optimizer"])
+        if scheduler is not None:
+            scheduler.load_state_dict(owned["scheduler"])
+        # Rebind candidate optimizer payload to the EXISTING receiving Parameters.
+        # Nothing in this preparation changes the live optimizer or its groups.
+        parameters = {
+            staged: receiving
+            for staged_group, receiving_group in zip(optimizer.param_groups, self.optimizer.param_groups, strict=True)
+            for staged, receiving in zip(staged_group["params"], receiving_group["params"], strict=True)
+        }
+        optimizer_state = copy.copy(optimizer.state)
+        optimizer_state.clear()
+        for parameter, state in optimizer.state.items():
+            optimizer_state[parameters[parameter]] = state
+        optimizer_groups = [
+            dict(group, params=[parameters[parameter] for parameter in group["params"]]) for group in optimizer.param_groups
+        ]
+        epsilons = torch.full_like(self.current_epsilons, owned["exploration_state"]["selector"]["epsilon"])
+        plan = NativePopulationData()
+        self._native_population_data[plan] = {
+            "pid": os.getpid(),
+            "thread": threading.get_ident(),
+            "revision": revision,
+            "owners": owners,
+            "checkpoint": owned,
+            "mode": mode,
+            "ledger": ledger,
+            "progress": progress,
+            "q_state": q.state_dict(),
+            "target_state": target.state_dict(),
+            "optimizer_state": optimizer_state,
+            "optimizer_groups": optimizer_groups,
+            "scheduler_state": scheduler.state_dict() if scheduler is not None else None,
+            "copies": tuple(zip(self.q_network.state_dict(keep_vars=True).values(), q.state_dict().values(), strict=True))
+            + tuple(zip(self.target_network.state_dict(keep_vars=True).values(), target.state_dict().values(), strict=True)),
+            "epsilons": epsilons,
+            "epsilon_entries": tuple(epsilons.unbind()),
+            "published": False,
+        }
+        try:
+            self.validate_native_restore_plan(plan=plan, owner=self)
+        except BaseException:
+            del self._native_population_data[plan]
+            raise
+        return plan
+
+    @contextmanager
+    def native_restore_cadence(self, *, plan: NativePopulationData, prepared: Any) -> Iterator[None]:
+        self._require_operation_idle()
+        self.validate_native_restore_plan(plan=plan, owner=self)
+        record = self._native_population_data[plan]
+        self._preparing_checkpoint = record["checkpoint"]["exploration_state"]["cadence"], record["mode"], prepared
+        try:
+            yield
+        finally:
+            self._preparing_checkpoint = None
+
+    def validate_native_parent_restore(self, *, plan: NativePopulationData, prepared: Any, curiosity_state: Any) -> None:
+        self.validate_native_restore_plan(plan=plan, owner=self)
+        record, world = self._native_population_data[plan], prepared.state
+        ledger, progress = record["ledger"], record["progress"]
+        expected = record["checkpoint"]["exploration_state"]
+        if not self._same_replay_state(curiosity_state, expected["bank"]):
+            raise ValueError("BANK restore differs from the owned native population plan")
+        if curiosity_state["initialization_origin"] is None:
+            serviced = sum(
+                self._require_nonnegative_int("world service position", world["cursor"]["cumulative_service_position"])
+                for world in curiosity_state["worlds"]
+            )
+            if serviced != ledger.eligible_transitions:
+                raise ValueError("Native eligible transitions disagree with actual BANK world service positions")
+        if world["next_batch_episode"] != ledger.completed_batch_episodes:
+            raise ValueError("World successor differs from actual completed population count")
+        if record["mode"] == "initial":
+            if world["kind"] != "INITIAL" or world["last_closed_episode"] is not None:
+                raise ValueError("INITIAL population requires INITIAL world history")
+        else:
+            last, cadence = world["last_closed_episode"], expected["cadence"]["last_committed"]
+            if world["kind"] != "COMPLETED" or last is None:
+                raise ValueError("Completed population requires completed world history")
+            identity = {key: last[key] for key in ("batch_episode", "world_ids", "world_episode_seqs")}
+            if identity != progress["accepted_identity"] or last["batch_episode"] != cadence["batch_episode"]:
+                raise ValueError("Native vector progress/cadence disagree with the last closed world episode")
+            if not self._same_replay_state(last["completion_content"], cadence["completion_content"]):
+                raise ValueError("Native cadence differs from actual completed world content")
+
+    def install_native_model_data(self, *, plan: NativePopulationData, attempt: Any, restored: Any) -> None:
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+
+        self.validate_native_restore_plan(plan=plan, owner=self)
+        validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+        record, domain = self._native_population_data[plan], process_rng_domain()
+        if record["published"]:
+            raise ValueError("Native model data already published")
+        if self.exploration.epsilon != record["checkpoint"]["exploration_state"]["selector"]["epsilon"]:
+            raise ValueError("Installed runtime epsilon differs from the staged selection inputs")
+        with domain.admission(lineage=None):
+            with domain.device_invocation(
+                participant=self._native_participant, operation_kind="install", lineage=None, cuda_devices=record["devices"]
+            ) as operation:
+                self.validate_native_restore_plan(plan=plan, owner=self)
+                validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+                try:
+                    with torch.no_grad():
+                        for receiving, incoming in record["copies"]:
+                            receiving.copy_(incoming)
+                    self.optimizer.state, self.optimizer.param_groups = record["optimizer_state"], record["optimizer_groups"]
+                    if self.scheduler is not None:
+                        self.scheduler.load_state_dict(record["scheduler_state"])
+                    self.current_epsilons = record["epsilons"]
+                    for index, epsilon in enumerate(record["epsilon_entries"]):
+                        self.runtime_registry.set_epsilon(agent_idx=index, epsilon=epsilon)
+                    self.total_steps, self.training_step_counter = record["ledger"].vector_ticks, record["ledger"].optimizer_updates
+                    self._clock_ledger, self._vector_step_progress = record["ledger"], record["progress"]
+                    self._parent_cadence = record["checkpoint"]["exploration_state"]["cadence"]
+                    self._last_beta_tick, self._bound_replay, self._replay_was_loaded = self.total_steps, self.replay_buffer, True
+                    self._constructor_replay, self._constructor_replay_state, self._last_readiness = None, None, None
+                except BaseException as error:
+                    self._failed_step = True
+                    domain.poison(operation=operation, error=error)
+                    raise
+        record["published"] = True
+
+    def finish_native_checkpoint_data(self, *, plan: NativePopulationData, attempt: Any, restored: Any) -> None:
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+
+        self.validate_native_restore_plan(plan=plan, owner=self)
+        validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+        if not self._native_population_data[plan]["published"]:
+            raise ValueError("Native model publication has not completed")
+        self._checkpoint_revision += 1
+        del self._native_population_data[plan]
+        del _NATIVE_DATA_ISSUERS[plan]
 
     def prepare_checkpoint_state(
         self, checkpoint: Mapping[str, Any], *, mode: str, parent_restore: Any, validate_parent_restore: Any, initialization: str | None

@@ -1,0 +1,20 @@
+{
+  "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r161-restore-poison-attempt-1-spec.json",
+  "spec_sha256": "847b2f27d8c4aef58f9951d150e331937ae2c274a55c8f108c90a215ef9c8bf7",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py",
+    "/workspace/bac-review-2026-11-01/qualification/wave35-r161-restore-poison-attempt-1-spec.json"
+  ],
+  "start_utc": "2026-11-14T18:54:04.945776+00:00",
+  "orchestrator_pid": 263291,
+  "script_sha256": "847f0889be5f818aeebce0cba0ddc2601f7742c09f7b8af69700df4f1a66a510",
+  "environment_delta": {},
+  "scope": "Outer launcher observations; original job results and import custody remain separate",
+  "launcher_pid": 263294,
+  "launcher_start_ticks": 16175528,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T18:54:19.023752+00:00",
+  "elapsed_seconds": 14.07798571899184
+}

@@ -1,0 +1,29 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r161-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r161-callers-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "callers",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/unit/demo/test_unified_server_unit.py",
+        "tests/test_townlet/unit/scripts/test_l2_baseline.py",
+        "tests/test_townlet/unit/scripts/test_l2_token_regression.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r161-callers-attempt-1"
+      ]
+    }
+  ]
+}

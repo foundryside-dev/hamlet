@@ -1,0 +1,8 @@
+Scanning 203 Python file(s)...
+Progress: 1/203 files scannedProgress: 10/203 files scannedProgress: 20/203 files scannedProgress: 30/203 files scannedProgress: 40/203 files scannedProgress: 50/203 files scannedProgress: 60/203 files scannedProgress: 70/203 files scannedProgress: 80/203 files scannedProgress: 90/203 files scannedProgress: 100/203 files scannedProgress: 110/203 files scannedProgress: 120/203 files scannedProgress: 130/203 files scannedProgress: 140/203 files scannedProgress: 150/203 files scannedProgress: 160/203 files scannedProgress: 170/203 files scannedProgress: 180/203 files scannedProgress: 190/203 files scannedProgress: 200/203 files scannedProgress: 203/203 files scanned
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+No defaults detected. Clean.
+(612 violation(s) whitelisted)
+Ratchet: 612 whitelisted violation(s) exceed the ceiling of 600 in .defaults-ratchet. A new default landed in a waived file; remove it (run with --show-whitelisted to list them).

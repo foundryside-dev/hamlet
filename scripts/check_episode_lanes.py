@@ -544,6 +544,7 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
     import yaml
 
     import townlet
+    from townlet.config.world_roster import WorldRosterDeclaration
     from townlet.curriculum.static import StaticCurriculum
     from townlet.determinism import seed_all
     from townlet.environment.vectorized_env import VectorizedHamletEnv
@@ -578,7 +579,16 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
         effective_inventory = config_inventory(pack)
         config_identity = {"authored": original_inventory, "effective": effective_inventory}
         universe = UniverseCompiler().compile(pack, primary_level=level_name, use_cache=False)
-        env = VectorizedHamletEnv(universe=universe, level_name=level_name, num_agents=2, device=torch.device("cpu"))
+        roster = WorldRosterDeclaration(("episode-lanes-early-world", "episode-lanes-late-world"))
+        env = VectorizedHamletEnv(
+            universe=universe,
+            level_name=level_name,
+            num_agents=2,
+            device=torch.device("cpu"),
+            world_roster=roster,
+            training_seed=training["seed"],
+            lane_world_ids=roster.world_ids,
+        )
         wait = env.action_space.get_action_by_name("WAIT").id
         end = env.action_space.get_action_by_name("END_LANE").id
         schedule = [[wait, wait], [end, wait], [wait, wait], [wait, wait], [wait, end]]
@@ -818,6 +828,7 @@ def run_producer(args: argparse.Namespace) -> dict[str, Any]:
                     max_episodes=1,
                     level_name=level_name,
                     max_environment_steps=6,
+                    world_roster=roster,
                 ) as runner,
             ):
                 runner.run()

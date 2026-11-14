@@ -1,0 +1,1026 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py .            [ 50%]
+tests/test_townlet/regressions/bac/test_rnd_service.py F                 [100%]
+
+=================================== FAILURES ===================================
+______ test_native_runner_checkpoint_retains_tail_and_rejects_corruption _______
+
+self = <test_rnd_service.test_native_runner_checkpoint_retains_tail_and_rejects_corruption.<locals>.ObservedRunner object at 0x7fed32139550>
+
+    def load_checkpoint(self):
+        before = receiver_state(self)
+        assert before["phase"] == "fresh-bound" and before["release"] is None
+        assert before["population"]["total_steps"] == 0 < saved["population_state"]["total_steps"]
+        try:
+>           return super().load_checkpoint()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:370: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_rnd_service.test_native_runner_checkpoint_retains_tail_and_rejects_corruption.<locals>.ObservedRunner object at 0x7fed32139550>
+
+    def load_checkpoint(self) -> int | None:
+        """Load latest checkpoint if exists.
+    
+        Returns:
+            Episode number of loaded checkpoint, or None if no checkpoint
+            (or when force-new-VFS explicitly branches instead of resuming)
+        """
+        if self.env is None or self.population is None or self.curriculum is None:
+            raise RuntimeError("Checkpoint load requires initialized env, population, and curriculum components.")
+    
+        env = self.env
+        population = self.population
+        curriculum = self.curriculum
+    
+        # Find latest checkpoint
+        checkpoints = sorted(self.checkpoint_dir.glob("checkpoint_ep*.pt"))
+        if not checkpoints:
+            logger.info("No checkpoints found, starting from scratch")
+            return None
+    
+        latest_checkpoint = checkpoints[-1]
+        logger.info(f"Loading checkpoint: {latest_checkpoint}")
+    
+        verify_checkpoint_digest(latest_checkpoint, required=True)
+        # The verified digest pins the trusted Python payload we unpickle below.
+        checkpoint = safe_torch_load(latest_checkpoint, allow_unsafe_pickle=True)
+        validate_demo_checkpoint_payload(checkpoint)
+    
+        # WS-1 task 5: the shared identity gate (format version, VFS ABI, dimensions,
+        # content hashes, primary_level). The serving path runs the identical chain.
+        if not assert_checkpoint_identity(checkpoint, self.compiled, force_new_vfs=self.force_new_vfs):
+            return None
+    
+        # Validate every outer and nested runtime-bound value before mutation.
+        validate_demo_checkpoint_runtime_fields(
+            checkpoint,
+            position_dim=env.substrate.position_dim,
+            substrate_type=type(env.substrate).__name__,
+            num_agents=population.num_agents,
+        )
+        completed_live_agent_steps = checkpoint["completed_live_agent_steps"]
+        if self.max_environment_steps is not None and completed_live_agent_steps > self.max_environment_steps:
+            raise ValueError(
+                "Checkpoint completed_live_agent_steps exceeds this run's environment-step budget: "
+                f"checkpoint={completed_live_agent_steps}, budget={self.max_environment_steps}."
+            )
+        validate_demo_native_boundary(checkpoint, cuda_devices=self.native_cuda_devices)
+        native = checkpoint["native_boundary"]
+        ledger = checkpoint["population_state"]["clock_ledger"]
+        if (
+            checkpoint["episode"] != ledger["completed_batch_episodes"]
+            or completed_live_agent_steps != ledger["eligible_transitions"]
+            or checkpoint["epsilon"] != checkpoint["population_state"]["exploration_state"]["selector"]["epsilon"]
+        ):
+            raise ValueError("Runner continuation fields disagree with the actual native population state")
+        mode = "initial" if native["kind"] == "INITIAL" else "completed_boundary"
+        plan = population.prepare_native_checkpoint_data(checkpoint["population_state"], mode=mode)
+        replay_data = population.replay_buffer.stage_native_restore(
+            population.native_replay_restore_state(plan=plan), expected_obs_dim=env.observation_dim, parent_plan=plan, lineage=None
+        )
+        curriculum_data = curriculum.prepare_native_state(checkpoint["curriculum_state"], parent_plan=plan)
+        layout_data = env.prepare_native_layout(checkpoint["affordance_layout"], parent_plan=plan)
+        persistent_data = env.vfs_registry.prepare_native_persistent_state(checkpoint["vfs_persistent_state"], env=env, parent_plan=plan)
+        rng_data = self.native_rng.prepare(native["rng_state"], parent=population, parent_plan=plan)
+        world_prepared = env.prepare_world_restore(
+            kind=native["kind"],
+            state=native["world_state"],
+            world_roster=self.world_roster,
+            destination_world_ids=env.world_ids,
+            semantic_execution_identity=env.semantic_execution_identity,
+        )
+    
+        def validate_parent_restore(*, prepared: Any, curiosity_state: Any) -> None:
+            if prepared is not world_prepared:
+                raise ValueError("Native parent comparator received another world preparation")
+            population.validate_native_parent_restore(plan=plan, prepared=prepared, curiosity_state=curiosity_state)
+    
+        def finalize_component(*, restored: Any) -> None:
+            population.install_native_model_data(plan=plan, attempt=attempt, restored=restored)
+            population.replay_buffer.install_native_restore(replay_data, parent_plan=plan, attempt=attempt, restored=restored, lineage=None)
+            curriculum.install_native_state(prepared=curriculum_data, parent_plan=plan, attempt=attempt, restored=restored)
+            env.install_native_layout(prepared=layout_data, parent_plan=plan, attempt=attempt, restored=restored)
+            env.vfs_registry.install_native_persistent_state(
+                prepared=persistent_data, env=env, parent_plan=plan, attempt=attempt, restored=restored
+            )
+            self.native_rng.install(prepared=rng_data, parent_plan=plan, attempt=attempt, restored=restored)
+            population.finish_native_checkpoint_data(plan=plan, attempt=attempt, restored=restored)
+    
+        with self.boundary_authority.restore_runtime_attempt(
+            prepared=world_prepared,
+            runtime=self.exploration,
+            validate_parent_restore=validate_parent_restore,
+            finalize_component=finalize_component,
+        ) as attempt:
+            with population.native_restore_cadence(plan=plan, prepared=world_prepared):
+>               attempt.prepare_child(state=checkpoint["population_state"]["exploration_state"], mode=mode)
+
+src/townlet/demo/runner.py:605: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.restore_attempt.WorldRestoreAttempt object at 0x7fed3072bfe0>
+
+    def prepare_child(self, *, state: Any, mode: str) -> None:
+>       self._prepare(state, mode, None)
+
+src/townlet/environment/restore_attempt.py:296: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.restore_attempt.WorldRestoreAttempt object at 0x7fed3072bfe0>
+state = {'bank': {'bank_phase': 'completed_boundary', 'completion': {'boundary_key': 1, 'completion_content': (('7b22626174636...y_scope': 'shared', 'decay_rate': 0.995, 'drive_base_weight': 0.1, ...}, 'schema': 'exploration-runtime-state-v1', ...}
+mode = 'completed_boundary', initialization = None
+
+    def _prepare(self, state: Any, mode: str | None, initialization: str | None) -> None:
+        with self._stage("ACQUIRED", "PREPARING", "PREPARED") as record:
+            if mode is None and initialization is None:
+                raise ValueError("restore mode or private initialization must be explicit")
+            with self._retained(record, "prepare"):
+                record.preparation_entered = True
+                if initialization is None:
+>                   handle = record.child.prepare_restore(
+                        state=state,
+                        mode=mode,
+                        accepted=None,
+                        parent_restore=record.prepared,
+                        validate_parent_restore=record.parent_adapter,
+                    )
+
+src/townlet/environment/restore_attempt.py:275: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fed30fc3230>
+args = ()
+kwargs = {'accepted': None, 'mode': 'completed_boundary', 'parent_restore': WorldRecord(kind='prepared_restore', _owner=<townle...e': 'shared', 'decay_rate': 0.995, 'drive_base_weight': 0.1, ...}, 'schema': 'exploration-runtime-state-v1', ...}, ...}
+_begin_installation = <function _begin_installation at 0x7fed416c9f80>
+_finish_installation = <function _finish_installation at 0x7fed416c9da0>
+_incorporate_bank_result = <function _incorporate_bank_result at 0x7fed416cba60>
+_runtime_call = <function _runtime_call at 0x7fed416c8040>, cell = None
+publication = None
+overlay = (<townlet.environment.restore_attempt.WorldRestoreAttempt object at 0x7fed3072bfe0>, RuntimeRestoreContext(scope=<town..._seed': 42, 'world_ids': ('native-world-A', 'native-world-B'), 'world_episode_seqs': (2, 2)})})), operation='prepare'))
+permitted = ('prepare_restore', 'prepare_private_initialization')
+previous = None
+
+    @wraps(method)
+    def invoke(self: ExplorationRuntime, *args: Any, **kwargs: Any) -> Any:
+        from townlet.exploration.parent_custody import (
+            _begin_installation,
+            _finish_installation,
+            _incorporate_bank_result,
+            _runtime_call,
+        )
+    
+        cell = publication = None
+        try:
+            with self._lock:
+                if method.__name__ == "install_restore":
+                    prepared = kwargs.get("prepared")
+                    if type(prepared) is PreparedExplorationRestore:
+                        publication = self._restores.get(prepared)
+                    if publication is not None:
+                        cell = _begin_installation(publication.outcome, self)
+                overlay = self._world_restore_context
+                if overlay is not None:
+                    permitted = (
+                        ("prepare_restore", "prepare_private_initialization") if overlay[1].operation == "prepare" else ("install_restore",)
+                    )
+                    _runtime_require(
+                        not self._world_restore_used and method.__name__ in permitted, "restore overlay permits one selected call"
+                    )
+                    self._world_restore_used = True
+            with _runtime_call(self, method.__name__):
+                if self._operation_active:
+                    raise RuntimeError("reentrant runtime operation")
+                previous = self._installation_active
+                if cell is not None:
+                    self._installation_active = cell
+                self._operation_active = True
+                try:
+>                   result = method(self, *args, **kwargs)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/config/exploration_policy.py:793: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fed30fc3230>
+
+    @_runtime_operation
+    def prepare_restore(
+        self, *, state: Any, mode: str, accepted: Any, parent_restore: Any, validate_parent_restore: Any
+    ) -> PreparedExplorationRestore:
+        from townlet.exploration.parent_custody import _new_installation_outcome
+    
+        token = PreparedExplorationRestore()
+        outcome = _new_installation_outcome(self, token, runtime=True)
+        revision, bank_revision = self._revision, self._bank.mutation_revision
+>       bank_state, selector, cadence = self._parse(state, initialization=False)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/config/exploration_policy.py:1370: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.config.exploration_policy.ExplorationRuntime object at 0x7fed30fc3230>
+state = {'bank': {'bank_phase': 'completed_boundary', 'completion': {'boundary_key': 1, 'completion_content': (('7b22626174636...y_scope': 'shared', 'decay_rate': 0.995, 'drive_base_weight': 0.1, ...}, 'schema': 'exploration-runtime-state-v1', ...}
+
+    def _parse(self, state: Any, *, initialization: bool) -> tuple[Any, dict[str, Any], _ParentCadence]:
+        if isinstance(state, Mapping):
+            _runtime_require(
+                state.get("schema") not in ("exploration-runtime-failure-diagnostic-v1", "exploration-runtime-diagnostic-v1"),
+                "diagnostics are not restore transport",
+            )
+            bank = state.get("bank")
+            if isinstance(bank, Mapping):
+                _runtime_require(
+                    bank.get("schema") not in ("curiosity-bank-failure-diagnostic-v1", "curiosity-bank-diagnostic-v1"),
+                    "BANK diagnostics are not restore transport",
+                )
+        _runtime_keys(state, ("schema", "policy", "bank", "selector", "cadence"), "exploration runtime")
+        _runtime_require(state["schema"] == "exploration-runtime-state-v1", "unsupported exploration runtime schema")
+        policy = ResolvedExplorationPolicy.from_dict(state["policy"])
+        _runtime_require(self._codec.same(policy.to_dict(), state["policy"]), "runtime policy must roundtrip completely")
+        if not initialization:
+            _runtime_require(self._codec.same(policy.to_dict(), self._policy.to_dict()), "complete receiving runtime policy mismatch")
+        _runtime_require(isinstance(state["bank"], Mapping), "current BANK transport required")
+        _runtime_require(self._codec.same(state["bank"].get("policy"), policy.to_dict()), "runtime and BANK policy disagree")
+        self._validate_selector_cadence(policy, state["selector"], state["cadence"])
+        if initialization:
+            _runtime_require(
+                (policy.epsilon_start, policy.epsilon_end, policy.epsilon_decay)
+                == (self._policy.epsilon_start, self._policy.epsilon_end, self._policy.epsilon_decay),
+                "private initialization must preserve the global epsilon schedule",
+            )
+        record = state["cadence"]["last_committed"]
+        if record is None:
+            size = 0
+        else:
+            size = sum(len(item[0]) // 2 for item in record["completion_content"])
+        self._report_extra("runtime_prepare", size, self._codec.tensor_bytes(state))
+>       owned = self._codec.owned(state)
+                ^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/config/exploration_policy.py:1257: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'bank': {'bank_phase': 'completed_boundary', 'completion': {'boundary_key': 1, 'completion_content': (('7b22626174636...y_scope': 'shared', 'decay_rate': 0.995, 'drive_base_weight': 0.1, ...}, 'schema': 'exploration-runtime-state-v1', ...}
+
+    def owned(value: Any) -> Any:
+        """Closed portable data only; reject unsupported storage before cloning."""
+        if isinstance(value, torch.Tensor):
+            require(value.layout == torch.strided and value.device.type in ("cpu", "cuda"), "portable dense CPU/CUDA tensor required")
+            require(bool(torch.isfinite(value).all()), "nonfinite transported tensor")
+            return value.detach().clone()
+        if isinstance(value, np.ndarray):
+            require(not value.dtype.hasobject, "object arrays are not portable")
+            return value.copy()
+        if isinstance(value, np.floating):
+            require(bool(np.isfinite(value)), "nonfinite native NumPy scalar")
+            return value.copy()
+        if type(value) is OrderedDict:
+            # Current Torch state_dict carries ordered entries and module metadata.
+            result = OrderedDict((owned(key), owned(item)) for key, item in value.items())
+            if hasattr(value, "_metadata"):
+                setattr(result, "_metadata", owned(value._metadata))
+            return result
+        if type(value) is dict:
+>           return {owned(key): owned(item) for key, item in value.items()}
+                                ^^^^^^^^^^^
+
+src/townlet/exploration/curiosity_checkpoint.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'bank_phase': 'completed_boundary', 'completion': {'boundary_key': 1, 'completion_content': (('7b2262617463685f657069..._ids': ['native-world-A', 'native-world-B'], 'guarantee': 'shared_population_state', 'observation_dim': 118, ...}, ...}
+
+    def owned(value: Any) -> Any:
+        """Closed portable data only; reject unsupported storage before cloning."""
+        if isinstance(value, torch.Tensor):
+            require(value.layout == torch.strided and value.device.type in ("cpu", "cuda"), "portable dense CPU/CUDA tensor required")
+            require(bool(torch.isfinite(value).all()), "nonfinite transported tensor")
+            return value.detach().clone()
+        if isinstance(value, np.ndarray):
+            require(not value.dtype.hasobject, "object arrays are not portable")
+            return value.copy()
+        if isinstance(value, np.floating):
+            require(bool(np.isfinite(value)), "nonfinite native NumPy scalar")
+            return value.copy()
+        if type(value) is OrderedDict:
+            # Current Torch state_dict carries ordered entries and module metadata.
+            result = OrderedDict((owned(key), owned(item)) for key, item in value.items())
+            if hasattr(value, "_metadata"):
+                setattr(result, "_metadata", owned(value._metadata))
+            return result
+        if type(value) is dict:
+>           return {owned(key): owned(item) for key, item in value.items()}
+                                ^^^^^^^^^^^
+
+src/townlet/exploration/curiosity_checkpoint.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'gradients': {'rnd.predictor_network': {'net.0.bias': tensor([ 0.0000e+00,  0.0000e+00, -1.2406e-04,  0.0000e+00,  0.... {'current_intrinsic_weight': 1.0, 'decay_rate': 0.995, 'initial_intrinsic_weight': 1.0, 'max_episode_length': 3, ...}}
+
+    def owned(value: Any) -> Any:
+        """Closed portable data only; reject unsupported storage before cloning."""
+        if isinstance(value, torch.Tensor):
+            require(value.layout == torch.strided and value.device.type in ("cpu", "cuda"), "portable dense CPU/CUDA tensor required")
+            require(bool(torch.isfinite(value).all()), "nonfinite transported tensor")
+            return value.detach().clone()
+        if isinstance(value, np.ndarray):
+            require(not value.dtype.hasobject, "object arrays are not portable")
+            return value.copy()
+        if isinstance(value, np.floating):
+            require(bool(np.isfinite(value)), "nonfinite native NumPy scalar")
+            return value.copy()
+        if type(value) is OrderedDict:
+            # Current Torch state_dict carries ordered entries and module metadata.
+            result = OrderedDict((owned(key), owned(item)) for key, item in value.items())
+            if hasattr(value, "_metadata"):
+                setattr(result, "_metadata", owned(value._metadata))
+            return result
+        if type(value) is dict:
+>           return {owned(key): owned(item) for key, item in value.items()}
+                                ^^^^^^^^^^^
+
+src/townlet/exploration/curiosity_checkpoint.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'current_intrinsic_weight': 1.0, 'decay_rate': 0.995, 'initial_intrinsic_weight': 1.0, 'max_episode_length': 3, ...}
+
+    def owned(value: Any) -> Any:
+        """Closed portable data only; reject unsupported storage before cloning."""
+        if isinstance(value, torch.Tensor):
+            require(value.layout == torch.strided and value.device.type in ("cpu", "cuda"), "portable dense CPU/CUDA tensor required")
+            require(bool(torch.isfinite(value).all()), "nonfinite transported tensor")
+            return value.detach().clone()
+        if isinstance(value, np.ndarray):
+            require(not value.dtype.hasobject, "object arrays are not portable")
+            return value.copy()
+        if isinstance(value, np.floating):
+            require(bool(np.isfinite(value)), "nonfinite native NumPy scalar")
+            return value.copy()
+        if type(value) is OrderedDict:
+            # Current Torch state_dict carries ordered entries and module metadata.
+            result = OrderedDict((owned(key), owned(item)) for key, item in value.items())
+            if hasattr(value, "_metadata"):
+                setattr(result, "_metadata", owned(value._metadata))
+            return result
+        if type(value) is dict:
+>           return {owned(key): owned(item) for key, item in value.items()}
+                                ^^^^^^^^^^^
+
+src/townlet/exploration/curiosity_checkpoint.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'adam_restore_recipe': {'algorithm': 'torch.optim.Adam', 'groups': [{'options': {'amsgrad': False, 'betas': (0.9, 0.9...ight', 'predictor_network.net.4.bias']}], 'version': 1}, 'embed_dim': 128, 'epsilon': 1.0, 'epsilon_decay': 0.995, ...}
+
+    def owned(value: Any) -> Any:
+        """Closed portable data only; reject unsupported storage before cloning."""
+        if isinstance(value, torch.Tensor):
+            require(value.layout == torch.strided and value.device.type in ("cpu", "cuda"), "portable dense CPU/CUDA tensor required")
+            require(bool(torch.isfinite(value).all()), "nonfinite transported tensor")
+            return value.detach().clone()
+        if isinstance(value, np.ndarray):
+            require(not value.dtype.hasobject, "object arrays are not portable")
+            return value.copy()
+        if isinstance(value, np.floating):
+            require(bool(np.isfinite(value)), "nonfinite native NumPy scalar")
+            return value.copy()
+        if type(value) is OrderedDict:
+            # Current Torch state_dict carries ordered entries and module metadata.
+            result = OrderedDict((owned(key), owned(item)) for key, item in value.items())
+            if hasattr(value, "_metadata"):
+                setattr(result, "_metadata", owned(value._metadata))
+            return result
+        if type(value) is dict:
+>           return {owned(key): owned(item) for key, item in value.items()}
+                                ^^^^^^^^^^^
+
+src/townlet/exploration/curiosity_checkpoint.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'admitted_rows': 12, 'consumed_rows': 10, 'dropped_rows': 0, 'optimizer_epoch_origin': 0, ...}
+
+    def owned(value: Any) -> Any:
+        """Closed portable data only; reject unsupported storage before cloning."""
+        if isinstance(value, torch.Tensor):
+            require(value.layout == torch.strided and value.device.type in ("cpu", "cuda"), "portable dense CPU/CUDA tensor required")
+            require(bool(torch.isfinite(value).all()), "nonfinite transported tensor")
+            return value.detach().clone()
+        if isinstance(value, np.ndarray):
+            require(not value.dtype.hasobject, "object arrays are not portable")
+            return value.copy()
+        if isinstance(value, np.floating):
+            require(bool(np.isfinite(value)), "nonfinite native NumPy scalar")
+            return value.copy()
+        if type(value) is OrderedDict:
+            # Current Torch state_dict carries ordered entries and module metadata.
+            result = OrderedDict((owned(key), owned(item)) for key, item in value.items())
+            if hasattr(value, "_metadata"):
+                setattr(result, "_metadata", owned(value._metadata))
+            return result
+        if type(value) is dict:
+>           return {owned(key): owned(item) for key, item in value.items()}
+                                ^^^^^^^^^^^
+
+src/townlet/exploration/curiosity_checkpoint.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = tensor([[    nan,  1.0000,  0.7143,  0.0000,  0.0000,  1.0000,  0.9600,  0.0000,
+          1.0000,  0.9900,  0.0000,  ...  0.0000,  0.0000,  0.0000,  0.0000,  0.0000,  0.0000,
+          0.0000,  0.0000,  0.0000,  1.0000,  0.5000,  0.8660]])
+
+    def owned(value: Any) -> Any:
+        """Closed portable data only; reject unsupported storage before cloning."""
+        if isinstance(value, torch.Tensor):
+            require(value.layout == torch.strided and value.device.type in ("cpu", "cuda"), "portable dense CPU/CUDA tensor required")
+>           require(bool(torch.isfinite(value).all()), "nonfinite transported tensor")
+
+src/townlet/exploration/curiosity_checkpoint.py:112: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, message = 'nonfinite transported tensor'
+
+    def require(condition: bool, message: str) -> None:
+        if not condition:
+>           raise ValueError(message)
+E           ValueError: nonfinite transported tensor
+
+src/townlet/exploration/curiosity_checkpoint.py:67: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r167-runner-acceptance-attempt-1/test_native_runner_checkpoint_0')
+
+    def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
+        import hashlib
+        import random
+        import shutil
+        from pathlib import Path
+    
+        import numpy as np
+        import yaml
+    
+        from tests.test_townlet.regressions.bac.test_pw_local_service import _equal
+        from townlet.config.world_roster import WorldRosterDeclaration
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import persist_checkpoint_digest, safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        doc = yaml.safe_load(training_path.read_text())
+        training = doc["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        training["bac_options"]["rnd"]["max_pending_rows"] = 6
+        training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
+        training_path.write_text(yaml.safe_dump(doc, sort_keys=False))
+        world_roster = WorldRosterDeclaration(("native-world-A", "native-world-B"))
+    
+        def runner_kwargs(directory, episodes):
+            return dict(
+                config_dir=pack,
+                db_path=directory / "run.db",
+                checkpoint_dir=directory / "checkpoints",
+                max_episodes=episodes,
+                world_roster=world_roster,
+                level_name="L0_0_minimal",
+            )
+    
+        def read_checkpoint(directory, episode):
+            artifact = directory / "checkpoints" / f"checkpoint_ep{episode:05d}.pt"
+            digest = artifact.with_suffix(".pt.sha256")
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+            payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
+            assert payload["episode"] == episode
+            return payload
+    
+        def rnd_state(payload):
+            return payload["population_state"]["exploration_state"]["bank"]["shared_backend"]["native"]["rnd_state"]
+    
+        uninterrupted = tmp_path / "uninterrupted"
+        with DemoRunner(**runner_kwargs(uninterrupted, 3)) as runner:
+            runner.run()
+            saved = read_checkpoint(uninterrupted, 2)
+            expected = read_checkpoint(uninterrupted, 3)
+        state, next_state = rnd_state(saved), rnd_state(expected)
+        service = state["predictor_service"]
+        assert (service["admitted_rows"], service["consumed_rows"], service["optimizer_updates"]) == (12, 10, 2)
+        assert service["pending_observations"].shape == (2, state["obs_dim"])
+        assert next_state["predictor_service"]["optimizer_updates"] > service["optimizer_updates"]
+        assert any(not torch.equal(value, next_state["predictor_network"][key]) for key, value in state["predictor_network"].items())
+        assert {int(moment["step"].item()) for moment in next_state["optimizer"]["state"].values()} == {3}
+    
+        def copy_artifact(directory):
+            (directory / "checkpoints").mkdir(parents=True)
+            shutil.copy2(uninterrupted / "run-world-roster.json", directory / "run-world-roster.json")
+            artifact = uninterrupted / "checkpoints/checkpoint_ep00002.pt"
+            for path in (artifact, artifact.with_suffix(".pt.sha256")):
+                shutil.copy2(path, directory / "checkpoints" / path.name)
+            return directory / "checkpoints" / artifact.name
+    
+        def receiver_state(receiver):
+            population, env = receiver.population, receiver.env
+            assert population is not None and env is not None and receiver.curriculum is not None
+            return dict(
+                population=copy.deepcopy(population.get_checkpoint_state()),
+                curriculum=receiver.curriculum.checkpoint_state(),
+                layout=env.get_affordance_positions(),
+                persistent=env.vfs_registry.persistent_state(),
+                vfs=env.vfs_random_state(),
+                phase=env.world_phase,
+                release=receiver.boundary_release,
+                bindings=tuple(id(owner) for owner in env._env_custody.binding()),
+                target_owner=id(population.target_network),
+                parameters=tuple(
+                    id(parameter) for network in (population.q_network, population.target_network) for parameter in network.parameters()
+                ),
+                optimizer_parameters=tuple(id(parameter) for group in population.optimizer.param_groups for parameter in group["params"]),
+                torch_rng=torch.get_rng_state().clone(),
+                numpy_rng=copy.deepcopy(np.random.get_state()),
+                python_rng=random.getstate(),
+            )
+    
+        class ObservedRunner(DemoRunner):
+            """Observe the real load cut without replacing construction or restore."""
+    
+            def load_checkpoint(self):
+                before = receiver_state(self)
+                assert before["phase"] == "fresh-bound" and before["release"] is None
+                assert before["population"]["total_steps"] == 0 < saved["population_state"]["total_steps"]
+                try:
+                    return super().load_checkpoint()
+                except ValueError:
+                    _equal(before, receiver_state(self))
+                    self.refusal_observed = True
+                    raise
+    
+        for damage in ("tail_nan", "missing", "empty", "reset_steps", "capturable", "clock_position", "clock_unit"):
+            bad = copy.deepcopy(saved)
+            next(iter(bad["population_state"]["q_network"].values())).fill_(99)
+            damaged_rnd = rnd_state(bad)
+            if damage == "tail_nan":
+                damaged_rnd["predictor_service"]["pending_observations"][0, 0] = float("nan")
+                reason = "finite|NaN|nan"
+            elif damage == "clock_position":
+                damaged_rnd["predictor_service"]["service_position"] = -1
+                reason = "clock|service|position"
+            elif damage == "clock_unit":
+                damaged_rnd["predictor_service"]["service_clock_unit"] = "world_eligible_admission"
+                reason = "clock|service|position"
+            else:
+                corrupt_optimizer(damaged_rnd, damage)
+                reason = "optimizer|Optimizer|Adam|adam"
+            directory = tmp_path / damage
+            artifact = copy_artifact(directory)
+            torch.save(bad, artifact)
+            persist_checkpoint_digest(artifact)
+            original_bytes = artifact.read_bytes()
+            with ObservedRunner(**runner_kwargs(directory, 2)) as refused:
+                refused.refusal_observed = False
+                with pytest.raises(ValueError, match=reason):
+>                   refused.run()
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:400: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_rnd_service.test_native_runner_checkpoint_retains_tail_and_rejects_corruption.<locals>.ObservedRunner object at 0x7fed32139550>
+
+    def run(self):
+        """Run demo training loop."""
+        self._validate_world_roster_manifest(canonical_bytes(self.world_roster.to_dict()) + b"\n")
+        logger.info(f"Starting demo runner: {self.max_episodes} episodes")
+        logger.info(f"Database: {self.db_path}")
+        logger.info(f"Checkpoints: {self.checkpoint_dir}")
+    
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
+    
+        # Initialize training components
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        if torch.cuda.is_available():
+            device = torch.device("cuda", torch.cuda.current_device())
+        else:
+            device = torch.device("cpu")
+    
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        # Extract config parameters from DTOs (all required, validated at load time)
+        effective_training = self.effective_run.training
+        loop_cfg = effective_training.training_loop
+        num_agents = effective_training.population.size
+        grid_cells = self.compiled.metadata.grid_cells
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
+    
+        # Create environment from compiled universe
+        self.env = VectorizedHamletEnv.from_universe(
+            self.compiled,
+            level_name=self.level_name,
+            num_agents=num_agents,
+            device=device,
+            world_roster=self.world_roster,
+            training_seed=effective_training.seed,
+            lane_world_ids=self.world_roster.world_ids,
+        )
+    
+        # Dimensions sourced from compiled metadata
+        obs_dim = level_meta.token_spec.total_dims
+        action_dim = level_meta.action_metadata.total_actions
+    
+        # Create curriculum (all params required per PDR-002)
+        self.curriculum = build_curriculum(
+            effective_training,
+            curriculum_options=self.effective_run.options.curriculum,
+            static_policy=self.effective_run.static_policy,
+            device=device,
+        )
+    
+        # Resolved authoring selects the provider family and curiosity scope.
+        # Retain the actual BANK owner, distinct from its runtime facade.
+        def curiosity_issuer(bank: Any) -> WorldReceiptIssuer:
+            self.curiosity_bank = bank
+            return WorldReceiptIssuer(owner=bank)
+    
+        def validate_committed_batch(*, batch_episode: int, outcomes: tuple[Any, ...]) -> None:
+            if self.population is None:
+                raise RuntimeError("Exploration requires its constructed population owner")
+            self.population.validate_committed_batch(batch_episode=batch_episode, outcomes=outcomes)
+    
+        def validate_parent_cadence(*, cadence: Any, mode: str, accepted: Any, parent_restore: Any) -> None:
+            if self.population is None:
+                raise RuntimeError("Exploration requires its constructed population owner")
+            self.population.validate_parent_cadence(cadence=cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
+    
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            self.effective_run.exploration,
+            world_ids=self.world_roster.world_ids,
+            observation_dim=obs_dim,
+            action_dim=action_dim,
+            training_seed=effective_training.seed,
+        )
+        self.exploration = build_exploration(
+            policy=self.effective_run.exploration,
+            descriptor=descriptor,
+            device=device,
+            validate_accepted_episode=self.env.validate_accepted_episode,
+            issuer_factory=curiosity_issuer,
+            report_allocation=lambda estimate: logger.info("Curiosity allocation estimate: %r", estimate),
+            validate_committed_batch=validate_committed_batch,
+            validate_parent_cadence=validate_parent_cadence,
+        )
+    
+        # Get training hyperparameters from config (all required per PDR-002)
+        train_frequency = loop_cfg.train_frequency
+        batch_size = effective_training.replay_buffer.batch_size
+        sequence_length = loop_cfg.sequence_length
+        max_grad_norm = loop_cfg.max_grad_norm
+    
+        # Create agent IDs
+        agent_ids = [f"agent_{i}" for i in range(num_agents)]
+    
+        base_brain_config = self.brain_config
+        logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
+    
+        # Consume the canonical resolved policy, including all five brain overrides.
+        effective_brain_config = self.effective_run.effective_brain
+        replay_options = self.effective_run.options.replay
+        assert replay_options is not None
+        if "max_episodes" in self.launch_overrides:
+            episode_limit_origin = f"launch_overrides.max_episodes({self.max_episodes})"
+        else:
+            episode_limit_origin = f"training.training_loop.max_episodes({self.max_episodes}) at {self.training_config_origin}"
+        beta_horizon_origin = (
+            f"{episode_limit_origin} * training.training_loop.max_steps_per_episode({loop_cfg.max_steps_per_episode}) "
+            f"at {self.training_config_origin}; upper-bound vector ticks"
+        )
+    
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
+        self.population = VectorizedPopulation.for_training(
+            env=self.env,
+            curriculum=self.curriculum,
+            exploration=self.exploration,
+            agent_ids=agent_ids,
+            device=device,
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+            tb_logger=self.tb_logger,
+            train_frequency=train_frequency,
+            batch_size=batch_size,
+            sequence_length=sequence_length,
+            max_grad_norm=max_grad_norm,
+            brain_config=effective_brain_config,
+            max_episodes=self.max_episodes,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
+            replay_options=replay_options,
+            min_transitions=effective_training.replay_buffer.min_size,
+            replay_rng=np.random.Generator(np.random.PCG64(effective_training.seed)),
+            replay_origin="authored",
+            beta_vector_tick_horizon=self.max_episodes * loop_cfg.max_steps_per_episode,
+            beta_horizon_origin=beta_horizon_origin,
+            current_vector_tick=0,
+        )
+    
+        self.curriculum.initialize_population(num_agents)
+    
+        # Bind authentic live owners after POP has installed its ENV runtime hook.
+        # BANK owns curiosity; the facade owns selection and global exploration.
+        self.boundary_authority = self.env.bind_boundary_authority(
+            owner=self,
+            role_owners={
+                "population": self.population,
+                "curiosity": self.curiosity_bank,
+                "curriculum": self.curriculum,
+                "exploration": self.exploration,
+                "network": self.population.q_network,
+                "optimizer": self.population.optimizer,
+                "scheduler": self.population if self.population.scheduler is None else self.population.scheduler,
+                "replay": self.population.replay_buffer,
+                "selection": self.exploration,
+            },
+        )
+        self.boundary_release = None
+        cuda_index = device.index
+        if device.type == "cuda" and cuda_index is None:
+            raise ValueError("Native runner continuation requires an indexed CUDA device")
+        self.native_cuda_devices: tuple[int, ...] = () if cuda_index is None else (cuda_index,)
+        self.native_rng = NativeRNGState(cuda_devices=self.native_cuda_devices)
+        self._last_native_checkpoint = None
+    
+        # Initialize episode recorder if enabled
+        recording_cfg = self.training_config.recording
+        if recording_cfg and recording_cfg.enabled:
+            from townlet.recording.recorder import EpisodeRecorder
+    
+            recording_payload = recording_cfg.model_dump(exclude_none=True)
+            # Create recording output directory
+            recording_output_dir = self.checkpoint_dir / (recording_cfg.output_dir or "recordings")
+            recording_output_dir.mkdir(parents=True, exist_ok=True)
+    
+            self.recorder = EpisodeRecorder(
+                config=recording_payload,
+                output_dir=recording_output_dir,
+                database=self.db,
+                curriculum=self.curriculum,
+            )
+            logger.info(f"Episode recording enabled: {recording_output_dir}")
+        else:
+            logger.info("Episode recording disabled")
+    
+        # Try to resume from checkpoint
+>       loaded_episode = self.load_checkpoint()
+                         ^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/demo/runner.py:809: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_rnd_service.test_native_runner_checkpoint_retains_tail_and_rejects_corruption.<locals>.ObservedRunner object at 0x7fed32139550>
+
+    def load_checkpoint(self):
+        before = receiver_state(self)
+        assert before["phase"] == "fresh-bound" and before["release"] is None
+        assert before["population"]["total_steps"] == 0 < saved["population_state"]["total_steps"]
+        try:
+            return super().load_checkpoint()
+        except ValueError:
+>           _equal(before, receiver_state(self))
+                           ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:372: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+receiver = <test_rnd_service.test_native_runner_checkpoint_retains_tail_and_rejects_corruption.<locals>.ObservedRunner object at 0x7fed32139550>
+
+    def receiver_state(receiver):
+        population, env = receiver.population, receiver.env
+        assert population is not None and env is not None and receiver.curriculum is not None
+        return dict(
+            population=copy.deepcopy(population.get_checkpoint_state()),
+            curriculum=receiver.curriculum.checkpoint_state(),
+>           layout=env.get_affordance_positions(),
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            persistent=env.vfs_registry.persistent_state(),
+            vfs=env.vfs_random_state(),
+            phase=env.world_phase,
+            release=receiver.boundary_release,
+            bindings=tuple(id(owner) for owner in env._env_custody.binding()),
+            target_owner=id(population.target_network),
+            parameters=tuple(
+                id(parameter) for network in (population.q_network, population.target_network) for parameter in network.parameters()
+            ),
+            optimizer_parameters=tuple(id(parameter) for group in population.optimizer.param_groups for parameter in group["params"]),
+            torch_rng=torch.get_rng_state().clone(),
+            numpy_rng=copy.deepcopy(np.random.get_state()),
+            python_rng=random.getstate(),
+        )
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:346: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fed3056ac10>,)
+kwargs = {}
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fed3056ac10>
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7fed3056ac10>
+
+    @wraps(method)
+    def guarded(*args: P.args, **kwargs: P.kwargs) -> R:
+        self: Any
+        if args:
+            self = args[0]
+        else:
+            self = kwargs["self"]
+        if method.__qualname__.startswith("WorldBoundaryAuthority."):
+            env = self._env
+        else:
+            env = self
+>       with env._env_custody.call(method.__name__, kwargs):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/environment/parent_custody.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <contextlib._GeneratorContextManager object at 0x7fed30392c80>
+
+    def __enter__(self):
+        # do not keep args and kwds alive unnecessarily
+        # they are only needed for recreation, which is not possible anymore
+        del self.args, self.kwds, self.func
+        try:
+>           return next(self.gen)
+                   ^^^^^^^^^^^^^^
+
+/usr/lib/python3.13/contextlib.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7fed41abd480>
+name = 'get_affordance_positions', arguments = {}
+
+    @contextmanager
+    def call(self, name: str, arguments: dict[str, Any]) -> Iterator[None]:
+        self.check_process()
+        if (
+            self.owner._world_restore_terminal
+            and name not in ("world_phase", "accepted_episode_seqs", "get_action_label_names")
+            and not (name == "abandon_episode" and arguments.get("reason") == "runtime_failure")
+        ):
+>           raise ValueError("receiver is terminal after failed restore composition")
+E           ValueError: receiver is terminal after failed restore composition
+
+src/townlet/environment/parent_custody.py:307: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r167-runner-acceptance-attempt-1/test_native_runner_checkpoint_0')
+
+    def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
+        import hashlib
+        import random
+        import shutil
+        from pathlib import Path
+    
+        import numpy as np
+        import yaml
+    
+        from tests.test_townlet.regressions.bac.test_pw_local_service import _equal
+        from townlet.config.world_roster import WorldRosterDeclaration
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import persist_checkpoint_digest, safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        doc = yaml.safe_load(training_path.read_text())
+        training = doc["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        training["bac_options"]["rnd"]["max_pending_rows"] = 6
+        training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
+        training_path.write_text(yaml.safe_dump(doc, sort_keys=False))
+        world_roster = WorldRosterDeclaration(("native-world-A", "native-world-B"))
+    
+        def runner_kwargs(directory, episodes):
+            return dict(
+                config_dir=pack,
+                db_path=directory / "run.db",
+                checkpoint_dir=directory / "checkpoints",
+                max_episodes=episodes,
+                world_roster=world_roster,
+                level_name="L0_0_minimal",
+            )
+    
+        def read_checkpoint(directory, episode):
+            artifact = directory / "checkpoints" / f"checkpoint_ep{episode:05d}.pt"
+            digest = artifact.with_suffix(".pt.sha256")
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+            payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
+            assert payload["episode"] == episode
+            return payload
+    
+        def rnd_state(payload):
+            return payload["population_state"]["exploration_state"]["bank"]["shared_backend"]["native"]["rnd_state"]
+    
+        uninterrupted = tmp_path / "uninterrupted"
+        with DemoRunner(**runner_kwargs(uninterrupted, 3)) as runner:
+            runner.run()
+            saved = read_checkpoint(uninterrupted, 2)
+            expected = read_checkpoint(uninterrupted, 3)
+        state, next_state = rnd_state(saved), rnd_state(expected)
+        service = state["predictor_service"]
+        assert (service["admitted_rows"], service["consumed_rows"], service["optimizer_updates"]) == (12, 10, 2)
+        assert service["pending_observations"].shape == (2, state["obs_dim"])
+        assert next_state["predictor_service"]["optimizer_updates"] > service["optimizer_updates"]
+        assert any(not torch.equal(value, next_state["predictor_network"][key]) for key, value in state["predictor_network"].items())
+        assert {int(moment["step"].item()) for moment in next_state["optimizer"]["state"].values()} == {3}
+    
+        def copy_artifact(directory):
+            (directory / "checkpoints").mkdir(parents=True)
+            shutil.copy2(uninterrupted / "run-world-roster.json", directory / "run-world-roster.json")
+            artifact = uninterrupted / "checkpoints/checkpoint_ep00002.pt"
+            for path in (artifact, artifact.with_suffix(".pt.sha256")):
+                shutil.copy2(path, directory / "checkpoints" / path.name)
+            return directory / "checkpoints" / artifact.name
+    
+        def receiver_state(receiver):
+            population, env = receiver.population, receiver.env
+            assert population is not None and env is not None and receiver.curriculum is not None
+            return dict(
+                population=copy.deepcopy(population.get_checkpoint_state()),
+                curriculum=receiver.curriculum.checkpoint_state(),
+                layout=env.get_affordance_positions(),
+                persistent=env.vfs_registry.persistent_state(),
+                vfs=env.vfs_random_state(),
+                phase=env.world_phase,
+                release=receiver.boundary_release,
+                bindings=tuple(id(owner) for owner in env._env_custody.binding()),
+                target_owner=id(population.target_network),
+                parameters=tuple(
+                    id(parameter) for network in (population.q_network, population.target_network) for parameter in network.parameters()
+                ),
+                optimizer_parameters=tuple(id(parameter) for group in population.optimizer.param_groups for parameter in group["params"]),
+                torch_rng=torch.get_rng_state().clone(),
+                numpy_rng=copy.deepcopy(np.random.get_state()),
+                python_rng=random.getstate(),
+            )
+    
+        class ObservedRunner(DemoRunner):
+            """Observe the real load cut without replacing construction or restore."""
+    
+            def load_checkpoint(self):
+                before = receiver_state(self)
+                assert before["phase"] == "fresh-bound" and before["release"] is None
+                assert before["population"]["total_steps"] == 0 < saved["population_state"]["total_steps"]
+                try:
+                    return super().load_checkpoint()
+                except ValueError:
+                    _equal(before, receiver_state(self))
+                    self.refusal_observed = True
+                    raise
+    
+        for damage in ("tail_nan", "missing", "empty", "reset_steps", "capturable", "clock_position", "clock_unit"):
+            bad = copy.deepcopy(saved)
+            next(iter(bad["population_state"]["q_network"].values())).fill_(99)
+            damaged_rnd = rnd_state(bad)
+            if damage == "tail_nan":
+                damaged_rnd["predictor_service"]["pending_observations"][0, 0] = float("nan")
+                reason = "finite|NaN|nan"
+            elif damage == "clock_position":
+                damaged_rnd["predictor_service"]["service_position"] = -1
+                reason = "clock|service|position"
+            elif damage == "clock_unit":
+                damaged_rnd["predictor_service"]["service_clock_unit"] = "world_eligible_admission"
+                reason = "clock|service|position"
+            else:
+                corrupt_optimizer(damaged_rnd, damage)
+                reason = "optimizer|Optimizer|Adam|adam"
+            directory = tmp_path / damage
+            artifact = copy_artifact(directory)
+            torch.save(bad, artifact)
+            persist_checkpoint_digest(artifact)
+            original_bytes = artifact.read_bytes()
+            with ObservedRunner(**runner_kwargs(directory, 2)) as refused:
+                refused.refusal_observed = False
+>               with pytest.raises(ValueError, match=reason):
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: Regex pattern did not match.
+E                Regex: 'finite|NaN|nan'
+E                Input: 'receiver is terminal after failed restore composition'
+
+tests/test_townlet/regressions/bac/test_rnd_service.py:399: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:774 Loading /workspace/bac-review-2026-11-01/qualification/scratch/wave35-r167-runner-acceptance-attempt-1/test_native_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:774 Loading /workspace/bac-review-2026-11-01/qualification/scratch/wave35-r167-runner-acceptance-attempt-1/test_native_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00003.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:774 Loading /workspace/bac-review-2026-11-01/qualification/scratch/wave35-r167-runner-acceptance-attempt-1/test_native_runner_checkpoint_0/tail_nan/checkpoints/checkpoint_ep00002.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+========================= 1 failed, 1 passed in 23.91s =========================

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_plain_tensor_instance_override_is_refused_without_running_callback[schema-clone]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   Failed: DID NOT RAISE <class 'ValueError'>",
+  "candidate_tree": "34d6bace9a1ac608da2516cbf7a8475460e7b37f"
+}

@@ -11,6 +11,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from townlet.config.world_roster import WorldRosterDeclaration, canonical_bytes
+
 _SCRIPT = Path(__file__).parents[4] / "scripts" / "l2_token_regression.py"
 
 
@@ -336,6 +338,7 @@ class TestInvocationTiming:
             architecture="token_recurrent",
             aggregator="attention",
             brain_template=str(tmp_path / "brain.yaml"),
+            world_roster=str(tmp_path / "world-roster.json"),
             seed=45,
             env_step_budget=regression.BASELINE_ENV_STEP_BUDGETS[45],
             run_root=str(tmp_path / "runs"),
@@ -355,6 +358,8 @@ class TestInvocationTiming:
             "attention",
             "--brain-template",
             str((tmp_path / "brain.yaml").resolve()),
+            "--world-roster",
+            str((tmp_path / "world-roster.json").resolve()),
             "--seed",
             "45",
             "--env-step-budget",
@@ -438,6 +443,8 @@ class TestResume:
             "brain_templates_tree": "templates-tree",
             "brain_template": str(template.resolve()),
             "brain_template_sha256": regression.hashlib.sha256(template.read_bytes()).hexdigest(),
+            "world_roster": WorldRosterDeclaration(("token-test-world",)).to_dict(),
+            "world_roster_manifest_digest": WorldRosterDeclaration(("token-test-world",)).manifest_digest,
         }
 
     def test_resume_accepts_only_matching_unfinished_run(self, regression, tmp_path):
@@ -448,6 +455,7 @@ class TestResume:
         (run_dir / "checkpoints").mkdir()
         (run_dir / "checkpoints" / "checkpoint_ep00001.pt").write_bytes(b"checkpoint")
         metadata = self._metadata(regression, template)
+        (run_dir / "run-world-roster.json").write_bytes(canonical_bytes(metadata["world_roster"]) + b"\n")
         (run_dir / "meta.json").write_text(json.dumps(metadata))
 
         resumed = regression.validate_resume_run(
@@ -463,6 +471,7 @@ class TestResume:
             aggregator="mean",
             seed=45,
             budget=regression.BASELINE_ENV_STEP_BUDGETS[45],
+            world_roster=WorldRosterDeclaration(("token-test-world",)),
         )
 
         assert resumed == metadata
@@ -484,6 +493,7 @@ class TestResume:
         (run_dir / "checkpoints").mkdir()
         (run_dir / "checkpoints" / "checkpoint_ep00001.pt").write_bytes(b"checkpoint")
         metadata = self._metadata(regression, template)
+        (run_dir / "run-world-roster.json").write_bytes(canonical_bytes(metadata["world_roster"]) + b"\n")
         metadata.update(mutation)
         (run_dir / "meta.json").write_text(json.dumps(metadata))
 
@@ -501,6 +511,7 @@ class TestResume:
                 aggregator="mean",
                 seed=45,
                 budget=regression.BASELINE_ENV_STEP_BUDGETS[45],
+                world_roster=WorldRosterDeclaration(("token-test-world",)),
             )
 
     def test_resume_refuses_evaluated_or_checkpointless_run(self, regression, tmp_path):
@@ -510,6 +521,7 @@ class TestResume:
         (run_dir / "pack").mkdir(parents=True)
         (run_dir / "checkpoints").mkdir()
         metadata = self._metadata(regression, template)
+        (run_dir / "run-world-roster.json").write_bytes(canonical_bytes(metadata["world_roster"]) + b"\n")
         (run_dir / "meta.json").write_text(json.dumps(metadata))
         kwargs = {
             "identity": {
@@ -523,6 +535,7 @@ class TestResume:
             "aggregator": "mean",
             "seed": 45,
             "budget": regression.BASELINE_ENV_STEP_BUDGETS[45],
+            "world_roster": WorldRosterDeclaration(("token-test-world",)),
         }
 
         with pytest.raises(FileNotFoundError, match="checkpoint"):

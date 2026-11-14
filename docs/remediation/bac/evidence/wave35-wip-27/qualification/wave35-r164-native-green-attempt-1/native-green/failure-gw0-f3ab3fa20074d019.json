@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_refuses_malformed_transport_before_live_mutation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "E   RuntimeError: Unrelated same-thread RNG reentry is forbidden",
+  "candidate_tree": "9b82a469a1aa233a08666ca645a78296351cff7f"
+}

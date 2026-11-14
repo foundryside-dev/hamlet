@@ -1,0 +1,42 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "9b82a469a1aa233a08666ca645a78296351cff7f",
+  "unique_node_phase_failures": 3,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+    "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_conflicting_outer_vfs_state",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "AssertionError: status",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_runtime_prepare_overlay_refusal_seals_first_install_attempt",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: Demo checkpoint vfs_random_state must be {'seed': int >= 0, 'episode': int >= 0}.",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_runtime_fields_accept_current_world_vfs_state",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

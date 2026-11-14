@@ -1,0 +1,63 @@
+{
+  "schema": "bac-independent-final-seal-comparison-v1",
+  "reviewer": "/root/bac_wip27_terminal_independent",
+  "producer": "/root/bac_wip27_evidence_preparation",
+  "independent": true,
+  "disposition": "APPROVE BOUNDED PUBLICATION",
+  "status": "PASS; FINAL RECEIPT AGREES WITH FROZEN SUBJECT AND CONTRACT",
+  "final_receipt": {
+    "root": "W",
+    "path": "evidence-management/wip27-preparation/root-terminal-receipt-v1.json",
+    "bytes": 846349,
+    "sha256": "f4dfcbcd03050e85f13c92a8a0478028190e3aea5d0bd996936df0a16a165ff7"
+  },
+  "pre_review_receipt": {
+    "root": "W",
+    "path": "wave35/WIP27-PRE-REVIEW-RECEIPT-v1.json",
+    "bytes": 844537,
+    "sha256": "882f4a9e912fde288f87929206584bb4a9b141382c889dbdb22be3f60b4e127f"
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/WIP27-CHECKPOINT-CONTRACT-v1.json",
+    "bytes": 12328,
+    "sha256": "ef1bd6b157675156d8f6e4da5d5a32a5af4d4dcfd53cfe229929590a8f9e674a"
+  },
+  "reviewed_subject": {
+    "root": "W",
+    "path": "wave35/WIP27-QUALIFICATION-SUBJECT-v1.json",
+    "bytes": 805759,
+    "sha256": "765775231720fca944afc85bde22e1f770c2abf688f83ddf8ba62c6f842984fd"
+  },
+  "candidate_manifest": {
+    "bytes": 225294,
+    "path": "wave35/r168-candidate.json",
+    "root": "W",
+    "sha256": "caf8081774a24cd9cd1865c8127ab6ca2d972eea612de8a93355c5af9c9a0160"
+  },
+  "candidate_tree": "8b51496639637ad5d80005ea99167fb2fa39093f",
+  "changed_fields": [
+    "status",
+    "reviews"
+  ],
+  "checks": [
+    "Final status is SEALED FOR EVIDENCE SELECTION.",
+    "All frozen subject fields except descriptive status match final receipt exactly.",
+    "Contract reference and complete required component list agree.",
+    "Inserted review and independence JSON sizes/hashes match immutable original review bytes; producer/reviewer/scope/disposition agree.",
+    "Review binds exact candidate, frozen subject, contract and pre-review receipt. No attempts, results, documents, dependencies, remaining gates or accounting changed."
+  ],
+  "read_budget_clarification": {
+    "source_files": 2,
+    "charged_whole_file_lines": 2226,
+    "files": {
+      "tests/test_townlet/regressions/bac/test_pw_local_service.py": 1509,
+      "tests/test_townlet/regressions/bac/test_rnd_service.py": 717
+    },
+    "inspected_named_test_function_lines": 249,
+    "limit_bodies": 5,
+    "limit_lines": 5000,
+    "note": "Original review 249 lines describes inspected named function excerpts, not whole-file budget charge; whole-file charge is 2226. No additional application bodies inspected."
+  },
+  "scope": "Independent final seal comparison only. Original bounded durability approval and limitations remain unchanged. No package or global gate closure; root owns publication/source equivalence, materialization, remote and CI checks."
+}

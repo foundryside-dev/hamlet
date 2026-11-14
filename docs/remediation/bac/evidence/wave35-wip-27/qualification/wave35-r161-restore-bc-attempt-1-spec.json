@@ -1,0 +1,34 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r161-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r161-restore-bc-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "restore-bc",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py",
+        "tests/test_townlet/regressions/bac/test_world_restore_attempt.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r161-restore-bc-attempt-1",
+        "-k",
+        "not poison",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

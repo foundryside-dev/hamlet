@@ -268,14 +268,17 @@ def test_configured_direct_operation_is_one_batch_and_update_adapter_advances_cl
 
 def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
     import hashlib
+    import random
     import shutil
     from pathlib import Path
 
+    import numpy as np
     import yaml
 
+    from tests.test_townlet.regressions.bac.test_pw_local_service import _equal
     from townlet.config.world_roster import WorldRosterDeclaration
     from townlet.demo.runner import DemoRunner
-    from townlet.training.checkpoint_utils import safe_torch_load
+    from townlet.training.checkpoint_utils import persist_checkpoint_digest, safe_torch_load
 
     root = Path(__file__).resolve().parents[4]
     pack = tmp_path / "pack"
@@ -285,73 +288,140 @@ def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
     training = doc["training"]
     training["population"]["size"] = 2
     training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
-    training["training_loop"].update(max_episodes=2, max_steps_per_episode=3, train_frequency=1)
+    training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
     training["training_loop"]["checkpointing"]["interval"] = 1
     training["bac_options"]["rnd"]["max_pending_rows"] = 6
+    training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
     training_path.write_text(yaml.safe_dump(doc, sort_keys=False))
     world_roster = WorldRosterDeclaration(("native-world-A", "native-world-B"))
-    with DemoRunner(
-        config_dir=pack,
-        db_path=tmp_path / "run.db",
-        checkpoint_dir=tmp_path / "checkpoints",
-        max_episodes=2,
-        world_roster=world_roster,
-        level_name="L0_0_minimal",
-    ) as runner:
-        runner.run()
-        artifact = tmp_path / "checkpoints/checkpoint_ep00002.pt"
+
+    def runner_kwargs(directory, episodes):
+        return dict(
+            config_dir=pack,
+            db_path=directory / "run.db",
+            checkpoint_dir=directory / "checkpoints",
+            max_episodes=episodes,
+            world_roster=world_roster,
+            level_name="L0_0_minimal",
+        )
+
+    def read_checkpoint(directory, episode):
+        artifact = directory / "checkpoints" / f"checkpoint_ep{episode:05d}.pt"
         digest = artifact.with_suffix(".pt.sha256")
         assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
         payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
-        saved = payload["population_state"]
-        state = saved["exploration_state"]["rnd_state"]
-        service = state["predictor_service"]
-        assert (service["admitted_rows"], service["consumed_rows"], service["optimizer_updates"]) == (12, 10, 2)
-        assert service["pending_observations"].shape == (2, state["obs_dim"])
-        population = runner.population
-        assert population is not None
-        before = copy.deepcopy(population.get_checkpoint_state())
+        assert payload["episode"] == episode
+        return payload
+
+    def rnd_state(payload):
+        return payload["population_state"]["exploration_state"]["bank"]["shared_backend"]["native"]["rnd_state"]
+
+    uninterrupted = tmp_path / "uninterrupted"
+    with DemoRunner(**runner_kwargs(uninterrupted, 3)) as runner:
+        runner.run()
+        saved = read_checkpoint(uninterrupted, 2)
+        expected = read_checkpoint(uninterrupted, 3)
+    state, next_state = rnd_state(saved), rnd_state(expected)
+    service = state["predictor_service"]
+    assert (service["admitted_rows"], service["consumed_rows"], service["optimizer_updates"]) == (12, 10, 2)
+    assert service["pending_observations"].shape == (2, state["obs_dim"])
+    assert next_state["predictor_service"]["optimizer_updates"] > service["optimizer_updates"]
+    assert any(not torch.equal(value, next_state["predictor_network"][key]) for key, value in state["predictor_network"].items())
+    assert {int(moment["step"].item()) for moment in next_state["optimizer"]["state"].values()} == {3}
+
+    def copy_artifact(directory):
+        (directory / "checkpoints").mkdir(parents=True)
+        shutil.copy2(uninterrupted / "run-world-roster.json", directory / "run-world-roster.json")
+        artifact = uninterrupted / "checkpoints/checkpoint_ep00002.pt"
+        for path in (artifact, artifact.with_suffix(".pt.sha256")):
+            shutil.copy2(path, directory / "checkpoints" / path.name)
+        return directory / "checkpoints" / artifact.name
+
+    def receiver_state(receiver):
+        population, env = receiver.population, receiver.env
+        assert population is not None and env is not None and receiver.curriculum is not None
+        return dict(
+            population=copy.deepcopy(population.get_checkpoint_state()),
+            curriculum=receiver.curriculum.checkpoint_state(),
+            layout=env.get_affordance_positions(),
+            persistent=env.vfs_registry.persistent_state(),
+            vfs=env.vfs_random_state(),
+            phase=env.world_phase,
+            release=receiver.boundary_release,
+            bindings=tuple(id(owner) for owner in env._env_custody.binding()),
+            target_owner=id(population.target_network),
+            parameters=tuple(
+                id(parameter) for network in (population.q_network, population.target_network) for parameter in network.parameters()
+            ),
+            optimizer_parameters=tuple(id(parameter) for group in population.optimizer.param_groups for parameter in group["params"]),
+            torch_rng=torch.get_rng_state().clone(),
+            numpy_rng=copy.deepcopy(np.random.get_state()),
+            python_rng=random.getstate(),
+        )
+
+    class ObservedRunner(DemoRunner):
+        """Observe the real load cut without replacing construction or restore."""
+
+        def load_checkpoint(self):
+            before = receiver_state(self)
+            assert before["phase"] == "fresh-bound" and before["release"] is None
+            assert before["population"]["total_steps"] == 0 < saved["population_state"]["total_steps"]
+            try:
+                return super().load_checkpoint()
+            except ValueError:
+                _equal(before, receiver_state(self))
+                self.refusal_observed = True
+                raise
+
+    for damage in ("tail_nan", "missing", "empty", "reset_steps", "capturable", "clock_position", "clock_unit"):
         bad = copy.deepcopy(saved)
-        next(iter(bad["q_network"].values())).fill_(99)
-        bad["exploration_state"]["rnd_state"]["predictor_service"]["pending_observations"][0, 0] = float("nan")
-        with pytest.raises(ValueError):
-            population.load_checkpoint_state(bad)
-        equal(before, population.get_checkpoint_state())
-        for damage in ("missing", "empty", "reset_steps", "capturable"):
-            bad = copy.deepcopy(saved)
-            next(iter(bad["q_network"].values())).fill_(99)
-            bad["total_steps"] += 10
-            corrupt_optimizer(bad["exploration_state"]["rnd_state"], damage)
-            for operation in (population.validate_checkpoint_state, population.load_checkpoint_state):
-                with pytest.raises(ValueError):
-                    operation(bad)
-                equal(before, population.get_checkpoint_state())
-        rnd = population.exploration.rnd
-        next_rows = torch.linspace(0, 1, 3 * state["obs_dim"]).reshape(3, state["obs_dim"])
-        rnd.update({"observations": next_rows})
-        expected = rnd.checkpoint_state()
-        assert runner.load_checkpoint() is not None
-        rnd = population.exploration.rnd
-        equal(state, rnd.checkpoint_state())
-        rnd.update({"observations": next_rows})
-        equal(expected, rnd.checkpoint_state())
-    fresh_dir = tmp_path / "fresh-checkpoints"
-    fresh_dir.mkdir()
-    shutil.copy2(artifact, fresh_dir / artifact.name)
-    shutil.copy2(digest, fresh_dir / digest.name)
-    with DemoRunner(
-        config_dir=pack,
-        db_path=tmp_path / "fresh.db",
-        checkpoint_dir=fresh_dir,
-        max_episodes=payload["episode"],
-        world_roster=world_roster,
-        level_name="L0_0_minimal",
-    ) as fresh:
-        fresh.run()
-        restored = fresh.population.exploration.rnd
-        equal(state, restored.checkpoint_state())
-        restored.update({"observations": next_rows})
-        equal(expected, restored.checkpoint_state())
+        next(iter(bad["population_state"]["q_network"].values())).fill_(99)
+        damaged_rnd = rnd_state(bad)
+        if damage == "tail_nan":
+            damaged_rnd["predictor_service"]["pending_observations"][0, 0] = float("nan")
+            reason = "finite|NaN|nan"
+        elif damage == "clock_position":
+            damaged_rnd["predictor_service"]["service_position"] = -1
+            reason = "clock|service|position"
+        elif damage == "clock_unit":
+            damaged_rnd["predictor_service"]["service_clock_unit"] = "world_eligible_admission"
+            reason = "clock|service|position"
+        else:
+            corrupt_optimizer(damaged_rnd, damage)
+            reason = "optimizer|Optimizer|Adam|adam"
+        directory = tmp_path / damage
+        artifact = copy_artifact(directory)
+        torch.save(bad, artifact)
+        persist_checkpoint_digest(artifact)
+        original_bytes = artifact.read_bytes()
+        with ObservedRunner(**runner_kwargs(directory, 2)) as refused:
+            refused.refusal_observed = False
+            with pytest.raises(ValueError, match=reason):
+                refused.run()
+            assert refused.refusal_observed
+        assert artifact.read_bytes() == original_bytes
+
+    # The unchanged artifact must restore exactly, and the next real runner
+    # episode must reproduce the uninterrupted learner/provider update.
+    for episodes, oracle in ((2, saved), (3, expected)):
+        directory = tmp_path / f"fresh-{episodes}"
+        copy_artifact(directory)
+        with DemoRunner(**runner_kwargs(directory, episodes)) as fresh:
+            fresh.run()
+            actual = read_checkpoint(directory, episodes)
+        for key in (
+            "population_state",
+            "curriculum_state",
+            "affordance_layout",
+            "vfs_persistent_state",
+            "vfs_random_state",
+            "native_boundary",
+            "agent_ids",
+            "epsilon",
+            "completed_live_agent_steps",
+        ):
+            _equal(oracle[key], actual[key])
+        _equal(rnd_state(oracle), rnd_state(actual))
 
 
 @pytest.mark.parametrize("mode,count", [("paced_fifo", 5), ("occupancy_fifo", 8)])

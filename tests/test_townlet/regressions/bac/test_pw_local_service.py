@@ -549,6 +549,7 @@ def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
         "affordance_layout",
         "vfs_persistent_state",
         "vfs_random_state",
+        "native_boundary",
         "agent_ids",
         "epsilon",
         "completed_live_agent_steps",

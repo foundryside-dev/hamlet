@@ -1,0 +1,42 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/training/replay_contract.py:571: error: Argument "plan" to "validate_native_population_data" has incompatible type "object"; expected "NativePopulationData"  [arg-type]
+src/townlet/training/replay_contract.py:591: error: Argument "plan" to "validate_native_population_data" has incompatible type "object"; expected "NativePopulationData"  [arg-type]
+src/townlet/training/replay_buffer.py:812: error: Argument "plan" to "validate_native_population_data" has incompatible type "object"; expected "NativePopulationData"  [arg-type]
+src/townlet/training/replay_buffer.py:816: error: Argument "plan" to "validate_native_population_data" has incompatible type "object"; expected "NativePopulationData"  [arg-type]
+src/townlet/training/replay_buffer.py:830: error: Argument "restored" to "validate_restore_finalizer" has incompatible type "object"; expected "WorldRecord"  [arg-type]
+src/townlet/training/replay_buffer.py:833: error: Argument "restored" to "validate_restore_finalizer" has incompatible type "object"; expected "WorldRecord"  [arg-type]
+src/townlet/population/vectorized.py:726: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:726: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:726: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:726: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:727: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:727: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:727: error: Missing named argument "lineage" for "prepare_archived_import" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:727: note: "prepare_archived_import" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:729: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:729: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:730: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:730: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Missing named argument "vector_step" for "step" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:128: note: "step" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+src/townlet/demo/runner.py:561: error: Item "SequentialReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "stage_native_restore"  [union-attr]
+src/townlet/demo/runner.py:561: error: Item "PrioritizedReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "stage_native_restore"  [union-attr]
+src/townlet/demo/runner.py:564: error: "CurriculumManager" has no attribute "prepare_native_state"  [attr-defined]
+src/townlet/demo/runner.py:565: error: "VectorizedHamletEnv" has no attribute "prepare_native_layout"  [attr-defined]
+src/townlet/demo/runner.py:566: error: "VariableRegistry" has no attribute "prepare_native_persistent_state"; maybe "restore_persistent_state"?  [attr-defined]
+src/townlet/demo/runner.py:583: error: Item "SequentialReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "install_native_restore"  [union-attr]
+src/townlet/demo/runner.py:583: error: Item "PrioritizedReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "install_native_restore"  [union-attr]
+src/townlet/demo/runner.py:584: error: "CurriculumManager" has no attribute "install_native_state"  [attr-defined]
+src/townlet/demo/runner.py:585: error: "VectorizedHamletEnv" has no attribute "install_native_layout"  [attr-defined]
+src/townlet/demo/runner.py:586: error: "VariableRegistry" has no attribute "install_native_persistent_state"; maybe "validate_persistent_state"?  [attr-defined]
+src/townlet/demo/runner.py:843: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:915: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:1038: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 28 errors in 5 files (checked 203 source files)

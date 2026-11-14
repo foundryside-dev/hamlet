@@ -18,6 +18,18 @@ class PreparedCurriculumOutcomes:
     outcomes: tuple[FrozenLaneOutcome, ...]
 
 
+class PreparedNativeCurriculum:
+    """Source-issued data for one genuine native restore finalizer."""
+
+    __slots__ = ("__weakref__",)
+
+    def __new__(cls) -> Any:
+        raise TypeError("Native curriculum state must be prepared by its receiving owner")
+
+    def __reduce__(self) -> Any:
+        raise TypeError("Native curriculum preparations cannot be copied or serialized")
+
+
 class CurriculumManager(ABC):
     """One completion protocol; decisions only read previously committed state."""
 
@@ -63,4 +75,14 @@ class CurriculumManager(ABC):
     @abstractmethod
     def load_state(self, state: dict[str, Any]) -> None:
         """Install validated current state and invalidate prior prepared owners."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def prepare_native_state(self, state: dict[str, Any], *, parent_plan: Any) -> PreparedNativeCurriculum:
+        """Own all publication data before the native BANK preparation cut."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def install_native_state(self, *, prepared: PreparedNativeCurriculum, parent_plan: Any, attempt: Any, restored: Any) -> None:
+        """Publish once in the actual native restore finalizer."""
         raise NotImplementedError

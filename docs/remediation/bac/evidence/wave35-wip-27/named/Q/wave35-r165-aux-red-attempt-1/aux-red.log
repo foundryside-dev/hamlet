@@ -1,0 +1,125 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/test_townlet/regressions/bac/test_native_aux_state.py FF           [100%]
+
+=================================== FAILURES ===================================
+________ test_native_persistent_stage_refuses_sparse_before_publication ________
+
+persistent_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_native_persistent_stage_refuses_sparse_before_publication(persistent_compiled):
+        _, target, plan = native_pair(persistent_compiled)
+        env = target.population.env
+        owner = env.vfs_registry
+        before = owner.persistent_state()
+        assert "native_persistent" in before
+        payload = {name: value.to_sparse() for name, value in before.items()}
+>       with pytest.raises(ValueError, match="ordinary|layout|strided"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_aux_state.py:134: Failed
+_____ test_native_persistent_stage_rejects_key_overrides_without_callbacks _____
+
+persistent_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_native_persistent_stage_rejects_key_overrides_without_callbacks(persistent_compiled):
+        _, target, plan = native_pair(persistent_compiled)
+        env = target.population.env
+        owner = env.vfs_registry
+        calls = []
+    
+        class Key(str):
+            armed = False
+    
+            def __hash__(self):
+                if self.armed:
+                    calls.append("hash")
+                    raise AssertionError("untrusted key hash executed")
+                return str.__hash__(self)
+    
+            def __eq__(self, other):
+                if self.armed:
+                    calls.append("eq")
+                    raise AssertionError("untrusted key equality executed")
+                return str.__eq__(self, other)
+    
+        before = owner.persistent_state()
+        payload = {Key(name): value for name, value in before.items()}
+        calls.clear()
+        Key.armed = True
+        try:
+            with pytest.raises(ValueError, match="ordinary|keys"):
+>               owner.prepare_native_persistent_state(payload, env=env, parent_plan=plan)
+
+tests/test_townlet/regressions/bac/test_native_aux_state.py:166: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.vfs.registry.VariableRegistry object at 0x7f03089a0050>
+state = {'native_persistent': tensor([1., 1., 1., 1., 1., 1., 1., 1.])}
+
+    def prepare_native_persistent_state(
+        self, state: Mapping[str, torch.Tensor], *, env: Any, parent_plan: Any
+    ) -> PreparedNativePersistentState:
+        """Own complete target-device payloads before native child installation."""
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.population.vectorized import validate_native_population_data
+    
+        validate_native_population_data(plan=parent_plan, owner=env)
+        if env.vfs_registry is not self:
+            raise ValueError("Native persistent state requires this receiving ENV's registry")
+        if type(state) is not dict or any(type(value) is not torch.Tensor or bool(value.__dict__) for value in state.values()):
+            raise ValueError("Native persistent state requires ordinary tensor transport without instance overrides")
+        domain = process_rng_domain()
+        with domain.admission(lineage=None) as gate:
+            device_objects = [self.device, *(value.device for value in state.values()), *(value.device for value in self._storage.values())]
+            devices = tuple(sorted({gate.resolve_cuda(device) for device in device_objects if device.type == "cuda"}))
+            if self._native_persistent_participant is None:
+                self._native_persistent_participant = domain.register(
+                    owner=self, cuda_devices=devices, entrypoints=frozenset({"prepare", "install"})
+                )
+            else:
+                gate.enroll(participant=self._native_persistent_participant, cuda_devices=devices)
+            with domain.device_invocation(
+                participant=self._native_persistent_participant, operation_kind="prepare", lineage=None, cuda_devices=devices
+            ):
+                validate_native_population_data(plan=parent_plan, owner=env)
+>               self.validate_persistent_state(state)
+
+src/townlet/vfs/registry.py:626: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.vfs.registry.VariableRegistry object at 0x7f03089a0050>
+state = {'native_persistent': tensor([1., 1., 1., 1., 1., 1., 1., 1.])}
+
+    def validate_persistent_state(self, state: Mapping[str, torch.Tensor]) -> None:
+        """Refuse a snapshot whose ids, shapes or dtypes differ from this registry.
+    
+        The checkpoint identity gate compares ``vfs_hash`` and ``variables_hash`` before
+        any restore, so a mismatch here is unreachable for a checkpoint of this universe:
+        reaching it is an engine defect, and it raises rather than restoring a subset.
+        """
+        expected = set(self._persistent_ids())
+        actual = set(state)
+>       if actual != expected:
+           ^^^^^^^^^^^^^^^^^^
+
+src/townlet/vfs/registry.py:571: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = 'native_persistent', other = 'native_persistent'
+
+    def __eq__(self, other):
+        if self.armed:
+            calls.append("eq")
+>           raise AssertionError("untrusted key equality executed")
+E           AssertionError: untrusted key equality executed
+
+tests/test_townlet/regressions/bac/test_native_aux_state.py:157: AssertionError
+============================== 2 failed in 8.21s ===============================

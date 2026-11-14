@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import signal
@@ -32,9 +33,11 @@ from townlet.training.checkpoint_utils import (
     safe_torch_load,
     validate_demo_checkpoint_payload,
     validate_demo_checkpoint_runtime_fields,
+    validate_demo_native_boundary,
     verify_checkpoint_digest,
 )
 from townlet.training.episode import RunnerCompletionReason, freeze_lane_outcome
+from townlet.training.native_rng import NativeRNGState
 from townlet.training.state import BatchedAgentState
 from townlet.training.tensorboard_logger import TensorBoardLogger
 from townlet.universe.compiled import CompiledUniverse
@@ -87,7 +90,6 @@ class DemoRunner:
 
     HEARTBEAT_INTERVAL = 10
     SUMMARY_INTERVAL = 50
-    CHECKPOINT_INTERVAL = 100
 
     def __init__(
         self,
@@ -209,6 +211,7 @@ class DemoRunner:
         self.env: VectorizedHamletEnv | None = None
         self.population: VectorizedPopulation | None = None
         self.curriculum: CurriculumManager | None = None
+        self._last_native_checkpoint: dict[str, Any] | None = None
         self.exploration: ExplorationRuntime | None = None
         self.recorder = None  # Episode recorder (initialized if recording enabled)
 
@@ -390,46 +393,89 @@ class DemoRunner:
         env.install_boundary_release(release)
         self.boundary_release = release
         work.update(stage="completed", release=release)
+        self._capture_native_boundary()
 
-    def save_checkpoint(self) -> None:
-        """Save checkpoint at current episode."""
-        if self.env is None or self.population is None or self.curriculum is None:
-            raise RuntimeError("Checkpoint save requires initialized env, population, and curriculum components.")
+    def _capture_native_component_data(self, *, kind: str) -> dict[str, Any]:
+        """Own boundary data before attestation; this alone grants no ENV authority.
 
-        env = self.env
-        population = self.population
-        curriculum = self.curriculum
-
-        # P1.1 Phase 5: Flush all agents before checkpoint
-        self.flush_all_agents()
-
-        completed_episodes = population.clock_ledger.completed_batch_episodes
-        checkpoint_path = self.checkpoint_dir / f"checkpoint_ep{completed_episodes:05d}.pt"
-
-        population_state = population.get_checkpoint_state()
-        curriculum_state = curriculum.checkpoint_state()
-        affordance_layout = env.get_affordance_positions()
-        population.validate_checkpoint_state(population_state)
+        The native controller must add its authentic world snapshot and coherent
+        outer RNG state before retaining or persisting a resumable artifact.
+        """
+        env, population, curriculum = self.env, self.population, self.curriculum
+        if env is None or population is None or curriculum is None:
+            raise RuntimeError("Native snapshot requires initialized training owners")
+        phases = {"INITIAL": "bootstrap-ready", "COMPLETED": "released-completed"}
+        if kind not in phases or env.world_phase != phases[kind]:
+            raise ValueError("Native snapshot requires an actual INITIAL or COMPLETED boundary")
+        release = self.boundary_release
+        if release is None:
+            raise ValueError("Native snapshot requires its installed boundary release")
+        mode = "initial" if kind == "INITIAL" else "completed_boundary"
+        population_state = population.capture_native_checkpoint_data(mode=mode)
+        curriculum_state = copy.deepcopy(curriculum.checkpoint_state())
         curriculum.validate_checkpoint_state(curriculum_state)
-        env.validate_affordance_positions(affordance_layout)
+        layout = copy.deepcopy(env.get_affordance_positions())
+        env.validate_affordance_positions(layout)
+        persistent = copy.deepcopy(env.vfs_registry.persistent_state())
+        env.vfs_registry.validate_persistent_state(persistent)
+        completed = population_state["clock_ledger"]["completed_batch_episodes"]
+        if release.next_batch_episode != completed:
+            raise ValueError("Runner release and completed native population count disagree")
+        return {
+            "population_state": population_state,
+            "curriculum_state": curriculum_state,
+            "affordance_layout": layout,
+            "vfs_persistent_state": persistent,
+            "agent_ids": copy.deepcopy(population.agent_ids),
+            "episode": completed,
+            "epsilon": population._get_current_epsilon_value(),
+            "completed_live_agent_steps": self.completed_live_agent_steps,
+        }
 
-        # P1.1 Phase 2: Use population's complete checkpoint state
+    def _capture_native_boundary(self) -> None:
+        """Retain one fully owned lawful boundary, including its ambient RNG state."""
+        if self.env is None or self.population is None or self.curriculum is None:
+            raise RuntimeError("Native capture requires actual initialized owners")
+        env, population = self.env, self.population
+        kind = "INITIAL" if env.world_phase == "bootstrap-ready" else "COMPLETED"
+        components = self._capture_native_component_data(kind=kind)
+        initial = None
+        if kind == "INITIAL":
+            state = components["population_state"]
+            common = dict(
+                semantic_execution_identity=env.semantic_execution_identity,
+                bootstrap_first_batch=self.boundary_release.next_batch_episode,
+                world_binding=env.world_ids,
+            )
+            readings = {
+                "population": (population, state),
+                "curriculum": (self.curriculum, components["curriculum_state"]),
+                "exploration": (self.exploration, state["exploration_state"]),
+                "network": (population.q_network, state["q_network"]),
+                "optimizer": (population.optimizer, state["optimizer"]),
+                "scheduler": (population if population.scheduler is None else population.scheduler, state["scheduler"]),
+                "replay": (population.replay_buffer, state["replay_buffer"]),
+                "selection": (self.exploration, state["exploration_state"]["selector"]),
+            }
+            children = {
+                role: WorldReceiptIssuer(owner=owner).issue(kind="initial_owner", payload=dict(role=role, state=reading, **common))
+                for role, (owner, reading) in readings.items()
+            }
+            proof = WorldReceiptIssuer(owner=self).issue(kind="initial_owners", payload=dict(children, **common))
+            initial = self.boundary_authority.prepare_initial_snapshot(release=self.boundary_release, owners=proof)
+        world = env.checkpoint_world_state(
+            kind=kind, release=self.boundary_release, retained_binding_batches=env.accepted_binding_batches(), initial=initial
+        )
         checkpoint: dict[str, Any] = {
             "version": CHECKPOINT_FORMAT_VERSION,
-            "episode": completed_episodes,
             "timestamp": time.time(),
             "substrate_metadata": {
                 "position_dim": env.substrate.position_dim,
                 "substrate_type": type(env.substrate).__name__,
             },
-            "population_state": population_state,
-            "curriculum_state": curriculum_state,
-            "affordance_layout": affordance_layout,
-            "vfs_persistent_state": env.vfs_registry.persistent_state(),
-            "vfs_random_state": env.vfs_random_state(),
-            "agent_ids": population.agent_ids,
-            "epsilon": population._get_current_epsilon_value(),
-            "completed_live_agent_steps": self.completed_live_agent_steps,
+            **components,
+            "vfs_random_state": copy.deepcopy(world["vfs_random_context"]),
+            "native_boundary": {"kind": kind, "world_state": world, "rng_state": self.native_rng.capture()},
             "training_config": self.training_config.model_dump(),
             "config_dir": str(self.config_dir),
         }
@@ -445,6 +491,15 @@ class DemoRunner:
             num_agents=population.num_agents,
         )
 
+        validate_demo_native_boundary(checkpoint, cuda_devices=self.native_cuda_devices)
+        self._last_native_checkpoint = checkpoint
+
+    def save_checkpoint(self) -> None:
+        """Persist the last lawful boundary, including after zero-step quarantine."""
+        checkpoint = self._last_native_checkpoint
+        if checkpoint is None:
+            raise RuntimeError("No genuine native boundary has been captured")
+        checkpoint_path = self.checkpoint_dir / f"checkpoint_ep{checkpoint['episode']:05d}.pt"
         torch.save(checkpoint, checkpoint_path)
         persist_checkpoint_digest(checkpoint_path)
         logger.info(f"Checkpoint saved: {checkpoint_path}")
@@ -498,16 +553,67 @@ class DemoRunner:
                 "Checkpoint completed_live_agent_steps exceeds this run's environment-step budget: "
                 f"checkpoint={completed_live_agent_steps}, budget={self.max_environment_steps}."
             )
-        population.validate_checkpoint_state(checkpoint["population_state"])
-        curriculum.validate_checkpoint_state(checkpoint["curriculum_state"])
-        env.validate_affordance_positions(checkpoint["affordance_layout"])
-        env.vfs_registry.validate_persistent_state(checkpoint["vfs_persistent_state"])
+        validate_demo_native_boundary(checkpoint, cuda_devices=self.native_cuda_devices)
+        native = checkpoint["native_boundary"]
+        ledger = checkpoint["population_state"]["clock_ledger"]
+        if (
+            checkpoint["episode"] != ledger["completed_batch_episodes"]
+            or completed_live_agent_steps != ledger["eligible_transitions"]
+            or checkpoint["epsilon"] != checkpoint["population_state"]["exploration_state"]["selector"]["epsilon"]
+        ):
+            raise ValueError("Runner continuation fields disagree with the actual native population state")
+        mode = "initial" if native["kind"] == "INITIAL" else "completed_boundary"
+        self.exploration.validate_restore_data(state=checkpoint["population_state"]["exploration_state"], mode=mode)
+        plan = population.prepare_native_checkpoint_data(checkpoint["population_state"], mode=mode)
+        replay_data = population.replay_buffer.stage_native_restore(
+            population.native_replay_restore_state(plan=plan), expected_obs_dim=env.observation_dim, parent_plan=plan, lineage=None
+        )
+        curriculum_data = curriculum.prepare_native_state(checkpoint["curriculum_state"], parent_plan=plan)
+        layout_data = env.prepare_native_layout(checkpoint["affordance_layout"], parent_plan=plan)
+        persistent_data = env.vfs_registry.prepare_native_persistent_state(checkpoint["vfs_persistent_state"], env=env, parent_plan=plan)
+        rng_data = self.native_rng.prepare(native["rng_state"], parent=population, parent_plan=plan)
+        world_prepared = env.prepare_world_restore(
+            kind=native["kind"],
+            state=native["world_state"],
+            world_roster=self.world_roster,
+            destination_world_ids=env.world_ids,
+            semantic_execution_identity=env.semantic_execution_identity,
+        )
 
-        population.load_checkpoint_state(checkpoint["population_state"])
-        curriculum.load_state(checkpoint["curriculum_state"])
-        env.set_affordance_positions(checkpoint["affordance_layout"])
-        env.vfs_registry.restore_persistent_state(checkpoint["vfs_persistent_state"])
-        env.restore_vfs_random_state(checkpoint["vfs_random_state"])
+        def validate_parent_restore(*, prepared: Any, curiosity_state: Any) -> None:
+            if prepared is not world_prepared:
+                raise ValueError("Native parent comparator received another world preparation")
+            population.validate_native_parent_restore(plan=plan, prepared=prepared, curiosity_state=curiosity_state)
+
+        def finalize_component(*, restored: Any) -> None:
+            population.install_native_model_data(plan=plan, attempt=attempt, restored=restored)
+            population.replay_buffer.install_native_restore(replay_data, parent_plan=plan, attempt=attempt, restored=restored, lineage=None)
+            curriculum.install_native_state(prepared=curriculum_data, parent_plan=plan, attempt=attempt, restored=restored)
+            env.install_native_layout(prepared=layout_data, parent_plan=plan, attempt=attempt, restored=restored)
+            env.vfs_registry.install_native_persistent_state(
+                prepared=persistent_data, env=env, parent_plan=plan, attempt=attempt, restored=restored
+            )
+            self.native_rng.install(prepared=rng_data, parent_plan=plan, attempt=attempt, restored=restored)
+            population.finish_native_checkpoint_data(plan=plan, attempt=attempt, restored=restored)
+
+        with self.boundary_authority.restore_runtime_attempt(
+            prepared=world_prepared,
+            runtime=self.exploration,
+            validate_parent_restore=validate_parent_restore,
+            finalize_component=finalize_component,
+        ) as attempt:
+            with population.native_restore_cadence(plan=plan, prepared=world_prepared):
+                attempt.prepare_child(state=checkpoint["population_state"]["exploration_state"], mode=mode)
+            boundary = WorldReceiptIssuer(owner=self).issue(
+                kind="restored_boundary", payload={"kind": native["kind"], "state": native["world_state"], "prepared": world_prepared}
+            )
+            attempt.issue_release(boundary=boundary)
+            with population.native_restore_cadence(plan=plan, prepared=world_prepared):
+                attempt.install_child()
+            attempt.install_world()
+            release = attempt.finish()
+        self.boundary_release = release
+        self._last_native_checkpoint = checkpoint
         population.agent_ids = checkpoint["agent_ids"]
         self.current_episode = checkpoint["episode"]
         self.completed_live_agent_steps = completed_live_agent_steps
@@ -673,6 +779,12 @@ class DemoRunner:
             },
         )
         self.boundary_release = None
+        cuda_index = device.index
+        if device.type == "cuda" and cuda_index is None:
+            raise ValueError("Native runner continuation requires an indexed CUDA device")
+        self.native_cuda_devices: tuple[int, ...] = () if cuda_index is None else (cuda_index,)
+        self.native_rng = NativeRNGState(cuda_devices=self.native_cuda_devices)
+        self._last_native_checkpoint = None
 
         # Initialize episode recorder if enabled
         recording_cfg = self.training_config.recording
@@ -703,6 +815,8 @@ class DemoRunner:
             # restore. Bootstrap only after establishing this is a fresh run.
             self.boundary_release = self.boundary_authority.bootstrap(first_batch_episode=self.current_episode)
             self.env.install_boundary_release(self.boundary_release)
+            self.population.sync_exploration_metrics()
+            self._capture_native_boundary()
 
         # Phase 4 - Log hyperparameters to TensorBoard
         self.hparams = {
@@ -1170,8 +1284,8 @@ class DemoRunner:
                     )
                     logger.info("=" * 80)
 
-                # Checkpoint every CHECKPOINT_INTERVAL episodes
-                if self.population.clock_ledger.completed_batch_episodes % self.CHECKPOINT_INTERVAL == 0:
+                # Honor the resolved, authored checkpoint cadence.
+                if self.population.clock_ledger.completed_batch_episodes % loop_cfg.checkpointing.interval == 0:
                     self.save_checkpoint()
 
                 self.current_episode += 1

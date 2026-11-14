@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_current_artifact_requires_native_boundary_field",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AssertionError: assert 'native_boundary' in frozenset({'action_dim', 'actions_hash', 'affordance_layout', 'affordances_hash', 'agent_ids', 'bars_hash', ...})\n     +  where frozenset({'action_dim', 'actions_hash', 'affordance_layout', 'affordances_hash', 'agent_ids', 'bars_hash', ...}) = checkpoint_utils.DEMO_CHECKPOINT_KEYS",
+  "candidate_tree": "6cac386ec762206cf88eb4ceee836a5ed7ba14fc"
+}

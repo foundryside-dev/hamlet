@@ -11,9 +11,10 @@ from collections.abc import Callable, Iterator, Mapping
 from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass, fields, replace
 from functools import wraps
+from os import getpid
 from threading import RLock, current_thread
 from typing import Any, Concatenate, Literal, NoReturn, cast
-from weakref import WeakKeyDictionary
+from weakref import ReferenceType, WeakKeyDictionary, ref
 
 import numpy as np
 import numpy.typing as npt
@@ -41,6 +42,31 @@ class PreparedReplay:
 
     def __reduce__(self) -> NoReturn:
         raise TypeError("Prepared replay capabilities cannot be copied or serialized")
+
+
+class StagedReplayData:
+    """Opaque owned data; installation requires separate live parent authority."""
+
+    __slots__ = ("__weakref__",)
+
+    def __new__(cls) -> NoReturn:
+        raise TypeError("Native replay data is issued by its receiving owner")
+
+    def __init__(self) -> None:
+        raise TypeError("Native replay data cannot be reinitialized")
+
+    def __reduce__(self) -> NoReturn:
+        raise TypeError("Native replay data cannot be copied or serialized")
+
+
+@dataclass(frozen=True)
+class _NativeReplayData:
+    revision: int
+    configuration: tuple[int, torch.device]
+    parent: ReferenceType[object]
+    pid: int
+    thread: object
+    payload: object
 
 
 class _ReplayPrefixStopError(Exception):
@@ -219,6 +245,7 @@ class ReplayCustody:
         self._replay_healthy = True
         self._replay_scope: tuple[object, torch.device | None, str] | None = None
         self._replay_prepared: WeakKeyDictionary[PreparedReplay, tuple[int, RNGCurrentToken, object]] = WeakKeyDictionary()
+        self._replay_native_data: WeakKeyDictionary[StagedReplayData, _NativeReplayData] = WeakKeyDictionary()
         self._replay_participant = process_rng_domain().register(
             owner=self, cuda_devices=cuda_devices, entrypoints=frozenset({"sample", "prepare", "install"})
         )
@@ -426,7 +453,11 @@ class ReplayCustody:
     ) -> tuple[torch.device | None, tuple[int, ...]]:
         device, values = self._replay_inventory(route, args, kwargs)
         if admitted:
-            values = (*values, *(record[2] for record in self._replay_prepared.values()))
+            values = (
+                *values,
+                *(record[2] for record in self._replay_prepared.values()),
+                *(record.payload for record in self._replay_native_data.values()),
+            )
         return device, self._replay_cuda_devices(values)
 
     def _quarantine_replay(self) -> None:
@@ -533,6 +564,43 @@ class ReplayCustody:
         token = process_rng_domain().current_token(participant=self._replay_participant, operation=lease)
         self._replay_prepared[handle] = (self._replay_revision, token, payload)
         return handle
+
+    def _issue_native_replay_data(self, payload: object, *, parent_plan: object) -> StagedReplayData:
+        from townlet.population.vectorized import validate_native_population_data
+
+        validate_native_population_data(plan=parent_plan, owner=self)
+        handle = object.__new__(StagedReplayData)
+        self._replay_native_data[handle] = _NativeReplayData(
+            self._replay_revision, (self.capacity, self.device), ref(parent_plan), getpid(), current_thread(), payload
+        )
+        return handle
+
+    def _native_replay_payload(self, data: object, *, parent_plan: object) -> object:
+        from townlet.population.vectorized import validate_native_population_data
+
+        self._check_custody()
+        if type(data) is not StagedReplayData or data not in self._replay_native_data:
+            raise ValueError("Native replay data is foreign, fabricated or consumed")
+        record = self._replay_native_data[data]
+        if record.pid != getpid() or record.thread is not current_thread():
+            raise ValueError("Native replay data belongs to another process or thread")
+        if record.parent() is not parent_plan:
+            raise ValueError("Native replay data belongs to another parent plan")
+        if record.revision != self._replay_revision or record.configuration != (self.capacity, self.device):
+            raise ValueError("Native replay receiving owner changed after staging")
+        validate_native_population_data(plan=parent_plan, owner=self)
+        return record.payload
+
+    def _publish_native_replay_data(self, data: StagedReplayData, publish: Callable[[], None]) -> None:
+        # Consumption precedes any assignment: partial publication is terminal,
+        # never an apparently reusable data record after a failed callback.
+        del self._replay_native_data[data]
+        try:
+            publish()
+        except BaseException:
+            self._quarantine_replay()
+            raise
+        self._replay_revision += 1
 
     def _prepared_payload(self, handle: object) -> object:
         if not isinstance(handle, PreparedReplay) or handle not in self._replay_prepared:

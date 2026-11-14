@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_world_restore_attempt.py::test_native_layout_rejects_unissued_parent_and_handle[install]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: 'VectorizedHamletEnv' object has no attribute 'install_native_layout'",
+  "candidate_tree": "34d6bace9a1ac608da2516cbf7a8475460e7b37f"
+}

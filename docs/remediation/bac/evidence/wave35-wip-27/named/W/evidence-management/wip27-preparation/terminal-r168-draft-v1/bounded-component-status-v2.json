@@ -1,0 +1,116 @@
+{
+  "accounting": "Selections retained separately, no sum as unique coverage; 28/38/66 unchanged",
+  "addendum_binding": "Root confirms authorized NR-1 future-work proposal append only, no source change; NR-1 remains OPEN. Rebound this one exact API before freeze.",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_manifest": {
+    "bytes": 225294,
+    "path": "wave35/r168-candidate.json",
+    "root": "W",
+    "sha256": "caf8081774a24cd9cd1865c8127ab6ca2d972eea612de8a93355c5af9c9a0160"
+  },
+  "candidate_tree": "8b51496639637ad5d80005ea99167fb2fa39093f",
+  "independent_component_reviews": [
+    {
+      "bytes": 12365,
+      "path": "pw04-restore-b-independent-review.md",
+      "root": "W",
+      "sha256": "6acebaafee22ea02b50f2b652b15348103004b6eb47d39895415db7b99460780"
+    },
+    {
+      "bytes": 15985,
+      "path": "pw04-restore-c-independent-review.md",
+      "root": "W",
+      "sha256": "60eccadcfbc29b651069f0b0dfc1b5db309fafc5dbbad45be7efac118cfa0ca6"
+    },
+    {
+      "bytes": 10146,
+      "path": "pw04-native-child-independent-review.md",
+      "root": "W",
+      "sha256": "a0ada94756b94bf055bf9f1d113d574a377379aa8a71e328faf1660d7cdbaf99"
+    },
+    {
+      "bytes": 14489,
+      "path": "pw04-native-aux-independent-review.md",
+      "root": "W",
+      "sha256": "8b6de2a65035e2148906a636e3340e7cab10ab11c2d690fa3612aa3109b20ee8"
+    },
+    {
+      "bytes": 9318,
+      "path": "pw04-native-runner-independent-review.md",
+      "root": "W",
+      "sha256": "9ab0b3906e56ca6100a047c9a727fa31ccf4b3029764cfe1377fdaeb2d3b3ec7"
+    },
+    {
+      "bytes": 14751,
+      "path": "pw04-native-refusal-preflight-design.md",
+      "root": "W",
+      "sha256": "9cc4e75e11ed0a77750a2b656eb7e112df78b2494f48630b5c0f953b1dfa5981"
+    }
+  ],
+  "interface_and_adoption_context": [
+    {
+      "bytes": 6567,
+      "path": "pw04-native-acceptance-current.md",
+      "root": "W",
+      "sha256": "6bd0548c9905d9196fd86685d9164d19150e86acc3b8b4d9ed81fec6c409d938"
+    },
+    {
+      "bytes": 21868,
+      "path": "pw04-native-pop-data-api.md",
+      "root": "W",
+      "sha256": "cfa85f848115c659bcb7cb094e9ee568c46ff56b3291ff0f6ebbf5f1c6d244aa"
+    },
+    {
+      "bytes": 19142,
+      "path": "pw04-native-integration-assessment.md",
+      "root": "W",
+      "sha256": "0f9024ef3e9aebeb010baae608c2651ecf06a119dc24c420924ae9bceb1c5d01"
+    },
+    {
+      "bytes": 8884,
+      "path": "pw04-native-aux-state.md",
+      "root": "W",
+      "sha256": "6f4f51c19252a9ff779ff690fcadd9f1d9c2b9002b527cf26d01639002a5b924"
+    },
+    {
+      "bytes": 7681,
+      "path": "pw04-native-rng.md",
+      "root": "W",
+      "sha256": "fbbdb4cd081be426527540581388e0090801585c139f0a2ba8736399e8bba8d6"
+    },
+    {
+      "bytes": 4623,
+      "path": "pw04-native-replay-flat.md",
+      "root": "W",
+      "sha256": "e16495bb6b17dfce5d159bc63dc0da41544a177de9eb8f354f96cb7dca4cc968"
+    },
+    {
+      "bytes": 7417,
+      "path": "pw04-restore-attempt-c-api.md",
+      "root": "W",
+      "sha256": "50f2e3b21659cee88a001b657ea58b6d7564bf59b4d32f6980aaed457e4e39c8"
+    },
+    {
+      "bytes": 8596,
+      "path": "pw04-restore-b-api.md",
+      "root": "W",
+      "sha256": "d2e5b00270ee09b51a363fb6dffcb4d62dff42e6cf351ab101be6fcc97821837"
+    }
+  ],
+  "required_next": [
+    "P2 NR-1 remains OPEN: real learner optimizer/scheduler history semantic validation and discriminating controls; bounded runtime success does not close it.",
+    "PER and sequential native stage/install APIs and selected profiles remain unsupported/unqualified.",
+    "Complete required native matrix, initialized-history service-position/ledger baseline correlation, predictor admitted/consumed/dropped ledger correlation, and original local pressure/order/drop/LR/loss-scale/clipping acceptance.",
+    "Original G3/G4, remaining repository/coverage >=70/slow work, applicable CUDA/hardware and final exact remote CI gates remain open.",
+    "R168 mypy18 errors/4files and defaults whitelist ratchet612>600 remain FAILED; Ruff PASS is separate.",
+    "Independent terminal evidence review and exact approved document/source publication bindings required before root seal/publication."
+  ],
+  "review_scope": "Historical bounded component/design/fixed-source reviews retain their own exact source hashes and findings; referencing them here does not assert they reviewed all R168 bytes. Separate terminal review is pending.",
+  "status": "BOUNDED COMPONENT STATUS; NOT PACKAGE CLOSURE",
+  "terminal_results": {
+    "isolated_restore_poison": "1 PASS, custody PASS; separate original poison case",
+    "native_green": "80 PASS, custody PASS; excludes poison",
+    "runner_acceptance": "2 PASS, custody PASS; actual original corruption/refusal and continuation tests",
+    "static": "Ruff PASS; mypy18 errors/4files FAIL; defaults ratchet612>600 FAIL"
+  }
+}

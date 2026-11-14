@@ -15,7 +15,166 @@ from townlet.exploration.rng_custody import RNGOperation, process_rng_domain
 _scopes: WeakKeyDictionary[Any, Any] = WeakKeyDictionary()
 _records: WeakKeyDictionary[_Custody, _Record] = WeakKeyDictionary()
 _PID = os.getpid()
-_COHORT = frozenset({"prepare_restore", "prepare_private_initialization", "install_restore"})
+_COHORT = frozenset({"prepare_restore", "prepare_private_initialization", "install_restore", "validate_restore_data"})
+
+
+@dataclass(frozen=True, slots=True)
+class RestoreInstallationResult:
+    """An observation of one actual install attempt, never installation authority."""
+
+    status: str
+    call_entered: bool
+    operation_entered: bool
+    handle_consumed: bool
+    bank_publication: str
+    runtime_publication: str
+    completion: str
+    returned_normally: bool
+    runtime_handle_consumed: bool
+
+
+_INSTALLATION_FIELDS = (
+    ("pending", "in_progress", "sealed"),
+    (False, True),
+    (False, True),
+    (False, True),
+    ("none", "complete", "uncertain"),
+    ("not_applicable", "none", "complete", "uncertain"),
+    ("not_entered", "succeeded", "failed", "uncertified"),
+    (False, True),
+    (False, True),
+)
+
+
+def _installation_results(depth: int, values: tuple[Any, ...]) -> Any:
+    if depth == len(_INSTALLATION_FIELDS):
+        return RestoreInstallationResult(*values)
+    return tuple(_installation_results(depth + 1, values + (value,)) for value in _INSTALLATION_FIELDS[depth])
+
+
+# Immutable variants are allocated before any native token exists. Recording a
+# publication/completion cut only selects an existing value; it calls no loader,
+# allocator, serializer, RNG operation, exporter or user callback.
+_INSTALLATION_RESULTS = _installation_results(0, ())
+
+
+class _InstallationCell:
+    def __init__(self, owner: Any, handle: Any, runtime: bool):
+        self.owner, self.handle_id = ref(owner), id(handle)
+        self.status = 0
+        self.call_entered = self.operation_entered = self.handle_consumed = False
+        self.bank_publication, self.runtime_publication = 0, 1 if runtime else 0
+        self.completion = 0
+        self.returned_normally = self.runtime_handle_consumed = False
+        self.current: RestoreInstallationResult
+        self.refresh()
+
+    def refresh(self) -> None:
+        self.current = _INSTALLATION_RESULTS[self.status][self.call_entered][self.operation_entered][self.handle_consumed][
+            self.bank_publication
+        ][self.runtime_publication][self.completion][self.returned_normally][self.runtime_handle_consumed]
+
+
+_installation_records: WeakKeyDictionary[RestoreInstallationOutcome, _InstallationCell] = WeakKeyDictionary()
+
+
+class RestoreInstallationOutcome:
+    """Producer-issued first-attempt observation, readable after consumption/poison.
+
+    A refused, unconsumed handle can still be retried through the standalone API.
+    Such a retry never rewrites this immutable first-attempt result.
+    """
+
+    __slots__ = ("_owner", "_handle", "_pid", "_thread", "__weakref__")
+    _owner: Any
+    _handle: Any
+    _pid: int
+    _thread: Any
+
+    def __new__(cls) -> Any:
+        raise TypeError("installation outcomes are producer-issued")
+
+    def __copy__(self) -> Any:
+        raise TypeError("installation outcomes cannot be copied")
+
+    def __deepcopy__(self, memo: Any) -> Any:
+        raise TypeError("installation outcomes cannot be copied")
+
+    def __reduce__(self) -> Any:
+        raise TypeError("installation outcomes cannot be serialized")
+
+    def read(self) -> RestoreInstallationResult:
+        if type(self) is not RestoreInstallationOutcome or self not in _installation_records:
+            raise ValueError("unissued installation observation")
+        cell = _installation_cell(self, self._owner)
+        if self._thread is not current_thread():
+            raise ValueError("foreign installation observation thread")
+        return cell.current
+
+
+def _new_installation_outcome(owner: Any, handle: Any, *, runtime: bool) -> RestoreInstallationOutcome:
+    outcome = object.__new__(RestoreInstallationOutcome)
+    outcome._owner, outcome._handle = owner, handle
+    outcome._pid, outcome._thread = os.getpid(), current_thread()
+    _installation_records[outcome] = _InstallationCell(owner, handle, runtime)
+    return outcome
+
+
+def _installation_cell(outcome: RestoreInstallationOutcome, owner: Any) -> _InstallationCell:
+    if type(outcome) is not RestoreInstallationOutcome:
+        raise ValueError("foreign installation observation")
+    cell = _installation_records.get(outcome)
+    if (
+        cell is None
+        or _PID != os.getpid()
+        or outcome._pid != _PID
+        or cell.owner() is not owner
+        or outcome._owner is not owner
+        or id(outcome._handle) != cell.handle_id
+    ):
+        raise ValueError("unissued or foreign installation observation")
+    return cell
+
+
+def _check_installation_lookup(owner: Any, *, busy: bool) -> None:
+    if _PID != os.getpid() or busy:
+        raise RuntimeError("installation observation unavailable during an incompatible call")
+    scope = _local(owner)
+    if scope is not None:
+        record = _record(scope)
+        if record.public is not None or record.permit is not None:
+            raise RuntimeError("installation observation cannot reenter a public call")
+
+
+def _validate_installation_outcome(outcome: RestoreInstallationOutcome, owner: Any) -> None:
+    _installation_cell(outcome, owner)
+    if outcome._thread is not current_thread():
+        raise ValueError("foreign installation observation thread")
+
+
+def _begin_installation(outcome: RestoreInstallationOutcome | None, owner: Any) -> _InstallationCell | None:
+    if outcome is None:
+        return None
+    cell = _installation_cell(outcome, owner)
+    if cell.status != 0:
+        return None  # Preserve standalone retries without changing the first result.
+    cell.status, cell.call_entered = 1, True
+    cell.refresh()
+    return cell
+
+
+def _finish_installation(cell: _InstallationCell | None) -> None:
+    if cell is not None:
+        cell.status = 2
+        cell.refresh()
+
+
+def _incorporate_bank_result(cell: _InstallationCell, outcome: RestoreInstallationOutcome, bank: Any) -> None:
+    result = _installation_cell(outcome, bank).current
+    cell.operation_entered, cell.handle_consumed = result.operation_entered, result.handle_consumed
+    cell.bank_publication = _INSTALLATION_FIELDS[4].index(result.bank_publication)
+    cell.completion = _INSTALLATION_FIELDS[6].index(result.completion)
+    cell.refresh()
 
 
 @dataclass

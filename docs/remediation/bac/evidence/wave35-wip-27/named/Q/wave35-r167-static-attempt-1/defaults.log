@@ -1,0 +1,17 @@
+Scanning 203 Python file(s)...
+Progress: 1/203 files scannedProgress: 10/203 files scannedProgress: 20/203 files scannedProgress: 30/203 files scannedProgress: 40/203 files scannedProgress: 50/203 files scannedProgress: 60/203 files scannedProgress: 70/203 files scannedProgress: 80/203 files scannedProgress: 90/203 files scannedProgress: 100/203 files scannedProgress: 110/203 files scannedProgress: 120/203 files scannedProgress: 130/203 files scannedProgress: 140/203 files scannedProgress: 150/203 files scannedProgress: 160/203 files scannedProgress: 170/203 files scannedProgress: 180/203 files scannedProgress: 190/203 files scannedProgress: 200/203 files scannedProgress: 203/203 files scanned
+Loaded 106 whitelist pattern(s) from .defaults-whitelist.txt
+  - 97 structural pattern(s)
+  - 9 line-based pattern(s)
+
+=== Non-Whitelisted Violations ===
+src/townlet/config/exploration_policy.py:779:24: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/config/exploration_policy.py:1341:18: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/config/exploration_policy.py:1436:18: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/environment/restore_attempt.py:125:23: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/environment/restore_attempt.py:141:15: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/environment/restore_attempt.py:142:12: ASG002: Ternary expression used as a default (x = a if cond else b)
+src/townlet/environment/restore_attempt.py:317:27: ASG002: Ternary expression used as a default (x = a if cond else b)
+
+7 violation(s) found.
+(612 violation(s) whitelisted)

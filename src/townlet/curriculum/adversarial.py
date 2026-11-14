@@ -1,7 +1,10 @@
 """Current completion-driven curriculum state, atomic handoffs and stage policy."""
 
 import math
+import os
 import re
+import threading
+import weakref
 from abc import abstractmethod
 from collections.abc import Sequence
 from copy import deepcopy
@@ -10,7 +13,7 @@ from typing import Any
 import torch
 from pydantic import BaseModel
 
-from townlet.curriculum.base import CurriculumManager, PreparedCurriculumOutcomes
+from townlet.curriculum.base import CurriculumManager, PreparedCurriculumOutcomes, PreparedNativeCurriculum
 from townlet.training.episode import (
     LaneOutcome,
     freeze_lane_outcome,
@@ -94,6 +97,8 @@ class CompletionCurriculum(CurriculumManager):
         self._owner_token = object()
         self.num_agents = 0
         self.transition_events: list[dict[str, Any]] = []
+        self._native_states: weakref.WeakKeyDictionary[PreparedNativeCurriculum, dict[str, Any]] = weakref.WeakKeyDictionary()
+        self._native_participant: Any = None
 
     @abstractmethod
     def _initial_lane(self) -> dict[str, Any]:
@@ -355,6 +360,116 @@ class CompletionCurriculum(CurriculumManager):
         owned = deepcopy(state)
         self.validate_checkpoint_state(owned)
         self._state, self._owner_token, self.transition_events = owned, object(), []
+
+    def prepare_native_state(self, state: dict[str, Any], *, parent_plan: Any) -> PreparedNativeCurriculum:
+        """Prepare data only; this never grants or performs live installation."""
+        from townlet.exploration.rng_custody import process_rng_domain
+        from townlet.population.vectorized import validate_native_population_data
+
+        validate_native_population_data(plan=parent_plan, owner=self)
+        baseline, token = self._state, self._owner_token
+        generation = self._body()["generation"]
+        tensors: list[torch.Tensor] = []
+
+        def inventory(value: Any) -> None:
+            if type(value) is torch.Tensor:
+                if value.__dict__ or value.layout != torch.strided or value.device.type not in ("cpu", "cuda"):
+                    raise ValueError("Native curriculum requires ordinary strided CPU/CUDA tensors without overrides")
+                tensors.append(value)
+                return
+            if type(value) is dict and all(type(key) is str for key in value):
+                for item in value.values():
+                    inventory(item)
+                return
+            if type(value) in (list, tuple):
+                for item in value:
+                    inventory(item)
+                return
+            if value is None or type(value) in (str, bool, int, float):
+                return
+            raise ValueError("Native curriculum requires ordinary portable state")
+
+        def own(value: Any) -> Any:
+            if type(value) is torch.Tensor:
+                if (
+                    value.__dict__
+                    or value.layout != torch.strided
+                    or value.device.type not in ("cpu", "cuda")
+                    or (value.device.type == "cuda" and value.device.index not in devices)
+                ):
+                    raise ValueError("Native curriculum tensor changed outside the admitted device inventory")
+                return torch.Tensor.clone(torch.Tensor.detach(value))
+            if type(value) is dict and all(type(key) is str for key in value):
+                return {key: own(item) for key, item in value.items()}
+            if type(value) is list:
+                return [own(item) for item in value]
+            if type(value) is tuple:
+                return tuple(own(item) for item in value)
+            if value is None or type(value) in (str, bool, int, float):
+                return value
+            raise ValueError("Native curriculum requires ordinary portable state")
+
+        inventory(state)
+        domain = process_rng_domain()
+        with domain.admission(lineage=None) as gate:
+            devices = tuple(sorted({gate.resolve_cuda(value.device) for value in tensors if value.device.type == "cuda"}))
+            if self._native_participant is None:
+                self._native_participant = domain.register(owner=self, cuda_devices=devices, entrypoints=frozenset({"prepare"}))
+            else:
+                gate.enroll(participant=self._native_participant, cuda_devices=devices)
+            with domain.device_invocation(
+                participant=self._native_participant, operation_kind="prepare", lineage=None, cuda_devices=devices
+            ):
+                validate_native_population_data(plan=parent_plan, owner=self)
+                owned = own(state)
+                self.validate_checkpoint_state(owned)
+                prepared = object.__new__(PreparedNativeCurriculum)
+                self._native_states[prepared] = {
+                    "plan": weakref.ref(parent_plan),
+                    "pid": os.getpid(),
+                    "thread": threading.current_thread(),
+                    "baseline": baseline,
+                    "token": token,
+                    "generation": generation,
+                    "config": deepcopy(self._config),
+                    "state": owned,
+                    "new_token": object(),
+                    "events": [],
+                    "consumed": False,
+                }
+                self._native_state_record(prepared, parent_plan)
+        return prepared
+
+    def _native_state_record(self, prepared: PreparedNativeCurriculum, parent_plan: Any) -> dict[str, Any]:
+        from townlet.population.vectorized import validate_native_population_data
+
+        record = self._native_states.get(prepared) if type(prepared) is PreparedNativeCurriculum else None
+        if (
+            record is None
+            or record["consumed"]
+            or record["plan"]() is not parent_plan
+            or record["pid"] != os.getpid()
+            or record["thread"] is not threading.current_thread()
+        ):
+            raise ValueError("Foreign, consumed or cross-execution native curriculum preparation")
+        validate_native_population_data(plan=parent_plan, owner=self)
+        if (
+            record["baseline"] is not self._state
+            or record["token"] is not self._owner_token
+            or record["generation"] != self._body()["generation"]
+            or record["config"] != self._config
+        ):
+            raise ValueError("Native curriculum preparation is stale")
+        return record
+
+    def install_native_state(self, *, prepared: PreparedNativeCurriculum, parent_plan: Any, attempt: Any, restored: Any) -> None:
+        """Assignment-publish owned data without replacing this registered owner."""
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+
+        record = self._native_state_record(prepared, parent_plan)
+        validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+        record["consumed"] = True
+        self._state, self._owner_token, self.transition_events = record["state"], record["new_token"], record["events"]
 
     def _stage_info(self, agent_idx: int) -> dict[str, Any]:
         body = self._body()

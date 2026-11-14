@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r162-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r162-new-red-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "new-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_concurrent_completed_calls_do_not_leave_an_active_observer",
+        "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r162-new-red-attempt-1"
+      ]
+    }
+  ]
+}

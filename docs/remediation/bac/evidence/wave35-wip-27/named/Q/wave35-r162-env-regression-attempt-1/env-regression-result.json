@@ -1,0 +1,33 @@
+{
+  "name": "env-regression",
+  "exit_code": 0,
+  "seconds": 20.05263453099178,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_prepared_world_currentness.py",
+    "tests/test_townlet/regressions/bac/test_prepared_world_currentness_independent.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "-rs",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r162-env-regression-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r162-env-regression-attempt-1/env-regression.log",
+  "sha256": "fbe4f26f5ee4a9c6a996eff0695227c1815f84cbd339079819c27c92be7ffeea",
+  "candidate_tree": "6cac386ec762206cf88eb4ceee836a5ed7ba14fc",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "manifest_sha256": "a1c17ad4960bc7bd526dcdbccb088543c22a56400891cbd750c401efd0fd57b4",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

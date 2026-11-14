@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_runtime_prepare_overlay_refusal_seals_first_install_attempt",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AssertionError: status\n    assert 'pending' == 'sealed'\n      \n      - sealed\n      + pending",
+  "candidate_tree": "9b82a469a1aa233a08666ca645a78296351cff7f"
+}

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_inconsistent_transport[kind]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AttributeError: module 'townlet.training.checkpoint_utils' has no attribute 'validate_demo_native_boundary'",
+  "candidate_tree": "6cac386ec762206cf88eb4ceee836a5ed7ba14fc"
+}

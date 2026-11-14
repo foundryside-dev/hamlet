@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_runtime_fields_accept_current_world_vfs_state",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   ValueError: Demo checkpoint vfs_random_state must be {'seed': int >= 0, 'episode': int >= 0}.",
+  "candidate_tree": "9b82a469a1aa233a08666ca645a78296351cff7f"
+}

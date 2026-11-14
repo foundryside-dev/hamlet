@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [56 items]
+
+................EEE....FF.......FFFFFE..................                 [100%]
+==================================== ERRORS ====================================
+______ ERROR at setup of test_native_data_refuses_another_receiving_owner ______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+E   RuntimeError: Unrelated same-thread RNG reentry is forbidden
+_____ ERROR at setup of test_native_data_refuses_changed_receiver_revision _____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+E   RuntimeError: Unrelated same-thread RNG reentry is forbidden
+_ ERROR at setup of test_native_data_refuses_another_thread_before_domain_work _
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+E   RuntimeError: Unrelated same-thread RNG reentry is forbidden
+_ ERROR at setup of test_native_data_requires_real_finalizer_even_with_genuine_parent _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+E   RuntimeError: Unrelated same-thread RNG reentry is forbidden
+=================================== FAILURES ===================================
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+/workspace/hamlet/src/townlet/exploration/rng_custody.py:716: RuntimeError: Unrelated same-thread RNG reentry is forbidden
+=================== 7 failed, 45 passed, 4 errors in 18.98s ====================

@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_concurrent_completed_calls_do_not_leave_an_active_observer",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   RuntimeError: installation observation unavailable during an incompatible call",
+  "candidate_tree": "6cac386ec762206cf88eb4ceee836a5ed7ba14fc"
+}

@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 3 items
+
+tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py F [ 33%]
+                                                                         [ 33%]
+tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py FF [100%]
+
+=================================== FAILURES ===================================
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py:152: AssertionError: status
+/workspace/hamlet/src/townlet/training/checkpoint_utils.py:212: ValueError: Demo checkpoint vfs_random_state must be {'seed': int >= 0, 'episode': int >= 0}.
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py:68: Failed: DID NOT RAISE <class 'ValueError'>
+============================== 3 failed in 8.40s ===============================

@@ -1,0 +1,38 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r168-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r168-static-attempt-1",
+  "workers": 3,
+  "jobs": [
+    {
+      "name": "mypy",
+      "args": [
+        "-m",
+        "mypy",
+        "src"
+      ]
+    },
+    {
+      "name": "ruff",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "src",
+        "tests",
+        "scripts"
+      ]
+    },
+    {
+      "name": "defaults",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ]
+    }
+  ]
+}

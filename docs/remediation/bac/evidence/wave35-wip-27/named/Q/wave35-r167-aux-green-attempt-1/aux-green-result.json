@@ -1,0 +1,32 @@
+{
+  "name": "aux-green",
+  "exit_code": 0,
+  "seconds": 27.22112467698753,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=long",
+    "-rs",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r167-aux-green-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r167-aux-green-attempt-1/aux-green.log",
+  "sha256": "2e2c9c26b5605364f584b87bb6669a1764b1f10fecef03381053ba8500a0b5df",
+  "candidate_tree": "58d551e4044e3822bf5f66c0f20c4244255ba57d",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "manifest_sha256": "59e542c6ddf384f1a69dff3fd26acfe32bb2d7048445ef4b085038ec3ea2ad63",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

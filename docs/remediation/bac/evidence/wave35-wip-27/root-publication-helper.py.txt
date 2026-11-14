@@ -1,0 +1,50 @@
+"""Root WIP27 publication metadata, following existing WIP26 format. No network/commit."""
+from pathlib import Path
+from datetime import datetime,timezone
+import json,hashlib,subprocess
+R=Path('/workspace/hamlet'); W=R/'.superpowers/sdd/2026-11-01-bac-remediation-upgrades'; E=Path(__file__).parent; A=R/'docs/remediation/bac/evidence/wave35-wip-27'
+def read(p): return json.loads(p.read_bytes())
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def ref(p): return dict(path=str(p.relative_to(R)),sha256=sha(p),bytes=p.stat().st_size)
+def write(p,v):
+ with p.open('x') as f: json.dump(v,f,indent=2);f.write('\n')
+def copy(p,q):
+ with q.open('xb') as f:f.write(p.read_bytes())
+ assert sha(p)==sha(q)
+def git(*a):return subprocess.check_output(['git',*a],cwd=R).decode().strip()
+m=read(W/'wave35/r168-candidate.json'); p=read(E/'root-selection-plan-v1.json'); a=read(E/'root-assembly-report-v1.json'); r=read(E/'root-terminal-receipt-v1.json'); d=read(W/'wave35/WIP27-PRE-REVIEW-RECEIPT-v1.json'); cp=R/'docs/remediation/bac/evidence/checkpoint-chain.json'; c=read(cp)
+assert p['status']=='READY FOR ROOT PUBLICATION CHECKS'
+assert a['selection_plan_sha256']==sha(E/'root-selection-plan-v1.json') and a['chain_prior_sha256']==sha(cp)
+assert git('rev-parse','HEAD')==m['base_commit']=='357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5'
+assert git('branch','--show-current')=='project-recovery-bac-2026-11-01'
+assert git('write-tree')==m['candidate_tree']
+assert {k:v for k,v in r.items() if k not in ('status','reviews')}=={k:v for k,v in d.items() if k not in ('status','reviews')}
+assert r['reviews'][0]['disposition']=='APPROVE BOUNDED PUBLICATION'
+assert all(row['root']=='R' for row in r['documents'])
+deltas={row['path']:row['sha256'] for row in r['documents']}
+for path,h in deltas.items():assert sha(R/path)==h,path
+for group in ('source_files','configs','artifacts'):
+ for path,h in m[group].items():assert sha(R/path)==deltas.get(path,h),path
+for name in ('selection-plan','assembly-report'):
+ copy(E/f'root-{name}-v1.json',A/f'{name}.json')
+final_review=read(E/'terminal-final-seal-comparison-v1.json')
+assert final_review['status']=='PASS; FINAL RECEIPT AGREES WITH FROZEN SUBJECT AND CONTRACT'
+assert final_review['final_receipt']['sha256']==sha(E/'root-terminal-receipt-v1.json')
+copy(E/'terminal-final-seal-comparison-v1.json',A/'independent-final-seal-comparison.json')
+copy(Path(__file__),A/'root-publication-helper.py.txt')
+write(A/'final-seal-comparison.json',dict(status='PASS',frozen_receipt_sha256=sha(W/'wave35/WIP27-PRE-REVIEW-RECEIPT-v1.json'),sealed_receipt_sha256=sha(E/'root-terminal-receipt-v1.json'),changes='Only status and actual independent terminal review added. Frozen subject and contract unchanged.'))
+write(A/'publication-source-guard.json',dict(status='PASS',candidate_tree=m['candidate_tree'],approved_document_postimages=r['documents'],scope='All source/config/protected hashes equal execution candidate except exact independently reviewed document postimages.'))
+keys=('checkpoint_id','series','interval','contract','catalog','required_components','review_subject','candidate_manifest','receipt','base_commit','candidate_tree','execution_subtrees','inputs','objects')
+v={k:p[k] for k in keys}
+v.update(schema='bac-checkpoint-publication-v1',round=168,previous_record=p['previous_checkpoint'],selection_plan=ref(A/'selection-plan.json'),prepared_at_utc=datetime.now(timezone.utc).isoformat(),status='ACTIVE WIP; partial checkpoint, PW04 and final gates open',package_accounting=r['package_accounting'],metrics=p['metrics'],assembly_report=ref(A/'assembly-report.json'),root_final_seal_comparison=ref(A/'final-seal-comparison.json'),publication_source_guard=ref(A/'publication-source-guard.json'),publication_helper=ref(A/'root-publication-helper.py.txt'),summary='R168 real runner checkpoint/restore/continued-learning and corruption refusal2PASS; native80PASS and isolatedpoison1PASS separately. NR-1 learnerhistory defect, nativePER/SEQ and remaining acceptance/final gates open. Mypy18FAIL and defaults612>600FAIL; RuffPASS. Originalaccounting28/38/66 unchanged.',publication=dict(existing_branch='project-recovery-bac-2026-11-01',prior_remote_sha_verified_before_publication=m['base_commit'],no_new_branch_or_worktree=True,no_PR_or_merge=True,method='Exact new remote SHA and CI verified separately after push.'),metadata_limitations=r['required_next'])
+v['independent_final_seal_comparison']=ref(A/'independent-final-seal-comparison.json')
+vp=R/'docs/remediation/bac/evidence/wave35-wip-27.json';write(vp,v)
+assert c['entries'][-1]['id']=='wave35-wip-26'
+entry=dict(id='wave35-wip-27',manifest=ref(vp),previous_record=v['previous_record'],previous_catalog_entry='wave35-wip-26',identity=dict(evidence_base_commit=m['base_commit'],evidence_candidate_tree=m['candidate_tree'],execution_subtrees=p['execution_subtrees']),status=v['status'],packet=v['summary'],round=168,receipt_pointer='#/receipt',package_accounting=r['package_accounting'],qualified_progress='28 qualified /38 remaining /66 original packages unchanged',selection_plan=v['selection_plan'],publication='WIP checkpoint; exact remote/CI verification separate')
+c['entries'].append(entry);c['current_checkpoint']={**ref(vp),'candidate_tree':m['candidate_tree'],'publication':entry['publication']};c['current_local_candidate']=m['candidate_tree'];c['latest_verified_remote_publication_at_assembly']='wave35-wip-26';c['latest_verified_remote_commit_at_assembly']=m['base_commit'];cp.write_text(json.dumps(c,indent=2)+'\n')
+subprocess.run(['git','add','-f','--',*m['changed_paths'],*deltas,str(vp.relative_to(R)),str(cp.relative_to(R)),str(A.relative_to(R))],cwd=R,check=True)
+tree=git('write-tree')
+for name,h in p['execution_subtrees'].items():assert git('rev-parse',f'{tree}:{name}')==h,name
+assert subprocess.run(['git','diff','--quiet'],cwd=R).returncode==0
+write(E/'root-publication-stage-v1.json',dict(status='STAGED; NOT YET COMMITTED/PUSHED',publication_tree=tree,execution_tree=m['candidate_tree'],source_equivalence='PASS',manifest=ref(vp)))
+print(tree)

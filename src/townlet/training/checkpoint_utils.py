@@ -14,6 +14,7 @@ from typing import Any
 import torch
 
 from townlet.universe.compiled import CompiledUniverse
+from townlet.vfs.random_draws import VFSRandomness, VFSWorldContext
 
 _DIGEST_SUFFIX = ".sha256"
 _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
@@ -28,7 +29,8 @@ _DIGEST_BUFFER_SIZE = 1024 * 1024  # 1 MiB chunks keep memory bounded
 #    compared (compiler re-review N5): effect dynamics and spawn rules were outside every gate.
 # 9: the counter-based VFS draw state (`vfs_random_state`: run seed and episode counter) is
 #    part of resume, so a resumed run draws exactly what the original drew.
-CHECKPOINT_FORMAT_VERSION = 9
+# 10: the actual ENV boundary and outer Torch RNG state accompany native children.
+CHECKPOINT_FORMAT_VERSION = 10
 
 # The complete DemoRunner artifact. Producers and both consumers share this one
 # closed schema: only artifacts emitted by the current code are accepted.
@@ -39,6 +41,7 @@ DEMO_CHECKPOINT_KEYS = frozenset(
         "timestamp",
         "substrate_metadata",
         "population_state",
+        "native_boundary",
         "curriculum_state",
         "affordance_layout",
         "vfs_persistent_state",
@@ -129,6 +132,54 @@ def validate_demo_checkpoint_payload(checkpoint: Mapping[str, Any]) -> None:
         )
 
 
+def validate_demo_native_boundary(checkpoint: Mapping[str, Any], *, cuda_devices: tuple[int, ...]) -> None:
+    """Check outer consistency without granting live restore authority.
+
+    ENV validates the full world snapshot, and the receiving RNG owner validates
+    generator compatibility before native child publication.
+    """
+    from townlet.training.native_rng import validate_native_rng_payload
+
+    boundary = checkpoint.get("native_boundary")
+    if type(boundary) is not dict or set(boundary) != {"kind", "world_state", "rng_state"}:
+        raise ValueError("Native boundary requires exact kind, world_state and rng_state fields")
+    if type(boundary["kind"]) is not str or boundary["kind"] not in {"INITIAL", "COMPLETED"}:
+        raise ValueError("Native boundary requires an explicit INITIAL or COMPLETED kind")
+    world = boundary["world_state"]
+    if type(world) is not dict or type(world.get("kind")) is not str or world["kind"] != boundary["kind"]:
+        raise ValueError("Native boundary kind disagrees with its world snapshot")
+    outer_vfs = checkpoint.get("vfs_random_state")
+    world_vfs = world.get("vfs_random_context")
+    _validate_current_vfs_random_state(outer_vfs)
+    _validate_current_vfs_random_state(world_vfs)
+    if outer_vfs != world_vfs:
+        raise ValueError("Native boundary VFS context disagrees with the outer checkpoint")
+    validate_native_rng_payload(boundary["rng_state"], cuda_devices=cuda_devices)
+
+
+def _validate_current_vfs_random_state(state: Any) -> None:
+    required = {"schema", "domain", "training_seed", "world_ids", "world_episode_seqs"}
+    if (
+        type(state) is not dict
+        or any(type(key) is not str for key in state)
+        or set(state) != required
+        or type(state["schema"]) is not str
+        or type(state["domain"]) is not str
+        or type(state["world_ids"]) is not list
+        or type(state["world_episode_seqs"]) is not list
+    ):
+        raise ValueError("Demo checkpoint vfs_random_state must be the exact current world RNG transport.")
+    try:
+        context = VFSWorldContext(
+            training_seed=state["training_seed"],
+            world_ids=tuple(state["world_ids"]),
+            world_episode_seqs=tuple(state["world_episode_seqs"]),
+        )
+        VFSRandomness.validate_state(state, expected=context)
+    except ValueError as error:
+        raise ValueError("Demo checkpoint vfs_random_state must be a valid current world RNG transport.") from error
+
+
 def validate_demo_checkpoint_runtime_fields(
     checkpoint: Mapping[str, Any],
     *,
@@ -182,13 +233,7 @@ def validate_demo_checkpoint_runtime_fields(
     ):
         raise ValueError("Demo checkpoint vfs_persistent_state must be a dictionary of variable id to tensor.")
 
-    random_state = checkpoint["vfs_random_state"]
-    if (
-        not isinstance(random_state, dict)
-        or set(random_state) != {"seed", "episode"}
-        or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in random_state.values())
-    ):
-        raise ValueError("Demo checkpoint vfs_random_state must be {'seed': int >= 0, 'episode': int >= 0}.")
+    _validate_current_vfs_random_state(checkpoint["vfs_random_state"])
 
 
 def attach_universe_metadata(checkpoint: dict[str, Any], universe: CompiledUniverse) -> None:

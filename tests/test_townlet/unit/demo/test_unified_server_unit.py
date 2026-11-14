@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from townlet.config.world_roster import WorldRosterDeclaration
 from townlet.demo.unified_server import UnifiedServer
 
 
@@ -82,6 +83,7 @@ def unified_server(minimal_config_dir: Path) -> UnifiedServer:
         config_dir=str(minimal_config_dir),
         total_episodes=10,
         checkpoint_dir=str(minimal_config_dir / "checkpoints"),
+        world_roster=WorldRosterDeclaration(("server-test-world",)),
     )
 
 

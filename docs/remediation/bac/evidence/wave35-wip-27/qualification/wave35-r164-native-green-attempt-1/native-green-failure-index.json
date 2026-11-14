@@ -1,0 +1,63 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "9b82a469a1aa233a08666ca645a78296351cff7f",
+  "unique_node_phase_failures": 11,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+    "tests/test_townlet/regressions/bac/test_native_replay_data.py",
+    "tests/test_townlet/regressions/bac/test_native_rng_state.py"
+  ],
+  "signatures": [
+    {
+      "error": "RuntimeError: Unrelated same-thread RNG reentry is forbidden",
+      "count": 11,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_data_refuses_another_thread_before_domain_work",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_refuses_malformed_transport_before_live_mutation",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_data_requires_real_finalizer_even_with_genuine_parent",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_real_curriculum_plan_stages_without_publication",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_owns_data_without_publishing_or_ordinary_token",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_real_parent_can_stage_without_rewinding_but_cannot_install_outside_finalizer",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_real_registry_plan_stages_without_publication",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_real_curriculum_plan_refuses_invalid_state_before_publication",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_data_refuses_changed_receiver_revision",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_data_refuses_another_receiving_owner",
+          "phase": "setup"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_native_rng_state.py::test_staged_data_cannot_be_reassociated_with_another_real_parent_plan",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

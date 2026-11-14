@@ -11,6 +11,7 @@ from pathlib import Path
 from threading import Thread
 from typing import Any
 
+import numpy as np
 import pytest
 import torch
 
@@ -28,6 +29,9 @@ def equal(left: Any, right: Any) -> None:
     if isinstance(left, torch.Tensor):
         assert isinstance(right, torch.Tensor) and left.dtype == right.dtype and left.device == right.device
         assert torch.equal(left, right)
+    elif isinstance(left, np.ndarray):
+        assert isinstance(right, np.ndarray) and left.dtype == right.dtype and left.shape == right.shape
+        assert np.array_equal(left, right)
     elif isinstance(left, dict):
         assert left.keys() == right.keys()
         for key in left:
@@ -77,6 +81,9 @@ class Component:
         )
         roles = {role: object() for role in ROLES}
         roles["curiosity"] = self.bank
+        self.native_owner = roles["population"]
+        self.active_attempt = None
+        self.foreign_env = None
         self.authority = self.env.bind_boundary_authority(owner=self, role_owners=roles)
         self.manual = self.env.bind_manual_execution(population_owner=roles["population"]) if manual else None
         self.bank_state = self.bank.checkpoint_state()
@@ -118,6 +125,13 @@ class Component:
         self.comparisons.append(prepared)
 
     def finalize(self, *, restored):
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+
+        validate_restore_finalizer(attempt=self.active_attempt, owner=self.native_owner, restored=restored)
+        validate_restore_finalizer(attempt=self.active_attempt, owner=self.native_owner, restored=restored)
+        validate_restore_finalizer(attempt=self.active_attempt, owner=self.env, restored=restored)
+        with pytest.raises(ValueError):
+            validate_restore_finalizer(attempt=self.active_attempt, owner=self.foreign_env, restored=restored)
         assert self.env.world_phase == "bootstrap-ready"
         assert restored.next_batch_episode == self.world_state["next_batch_episode"]
         assert dict(self.env.accepted_episode_seqs) == self.world_state["accepted_episode_seqs"]
@@ -146,19 +160,40 @@ class Component:
 
 @pytest.mark.parametrize("manual", (False, True))
 def test_real_bank_install_and_component_journal(compiled, manual):
+    from townlet.environment.restore_attempt import validate_restore_finalizer
+
     rig = Component(compiled, manual)
+    rig.foreign_env = Component(compiled, False).env
     with rig.attempt() as attempt:
+        rig.active_attempt = attempt
         attempt.prepare_child(state=rig.bank_state, mode="initial")
         assert len(rig.comparisons) == 3
         attempt.issue_release(boundary=rig.boundary())
         attempt.install_child()
         assert len(rig.comparisons) == 4
         attempt.install_world()
+        for owner in (rig.native_owner, rig.env):
+            with pytest.raises(ValueError):
+                validate_restore_finalizer(attempt=attempt, owner=owner, restored=rig.env._world_release)
         release = attempt.finish()
+        for owner in (rig.native_owner, rig.env):
+            with pytest.raises(ValueError):
+                validate_restore_finalizer(attempt=attempt, owner=owner, restored=release)
         attempt.abort()  # COMPLETE must not become revoked by later cleanup.
     assert rig.journal == [release]
     assert rig.env.world_phase == "bootstrap-ready"
     equal(rig.bank.checkpoint_state(), rig.bank_state)
+    assert rig.env.accepted_binding_batches() == ()
+    reservation = rig.env.prepare_episode(batch_episode=release.next_batch_episode, release=release)
+    rig.env.reset(reservation=reservation)
+    with pytest.raises(ValueError):
+        rig.env.accepted_binding_batches()
+
+
+def test_history_export_requires_an_installed_boundary(compiled):
+    rig = Component(compiled, True)
+    with pytest.raises(ValueError):
+        rig.env.accepted_binding_batches()
 
 
 def test_early_exit_revokes_only_selected_preparation(compiled):
@@ -221,7 +256,13 @@ def test_actual_child_publication_then_failure_fences_receiver(compiled, monkeyp
             attempt.finish()
     assert failure.value is marker
     assert rig.env._world_restore_terminal is True
-    for action in (rig.env.get_action_masks, rig.env.get_affordance_positions, rig.env.vfs_random_state, rig.prepare_world):
+    for action in (
+        rig.env.get_action_masks,
+        rig.env.get_affordance_positions,
+        rig.env.vfs_random_state,
+        rig.env.accepted_binding_batches,
+        rig.prepare_world,
+    ):
         with pytest.raises(ValueError):
             action()
     with pytest.raises(ValueError):
@@ -229,14 +270,30 @@ def test_actual_child_publication_then_failure_fences_receiver(compiled, monkeyp
     assert not rig.journal
 
 
-def test_caught_preparation_error_cannot_continue(compiled):
+@pytest.mark.parametrize("request_kind", ("damaged_state", "missing_private_initialization"))
+def test_caught_preparation_error_cannot_continue(compiled, request_kind):
     rig = Component(compiled, False)
     damaged = dict(rig.bank_state, schema="invalid-current-schema")
     with rig.attempt() as attempt:
         with pytest.raises((TypeError, ValueError)):
-            attempt.prepare_child(state=damaged, mode="initial")
+            if request_kind == "damaged_state":
+                attempt.prepare_child(state=damaged, mode="initial")
+            else:
+                attempt.prepare_private_initialization(state=rig.bank_state, initialization=None)
         with pytest.raises(ValueError):
             attempt.prepare_child(state=rig.bank_state, mode="initial")
         with pytest.raises(ValueError):
             attempt.issue_release(boundary=rig.boundary())
     assert not rig.journal
+
+
+@pytest.mark.parametrize("operation", ("prepare", "install"))
+def test_native_layout_rejects_unissued_parent_and_handle(compiled, operation):
+    rig = Component(compiled, False)
+    before = rig.env.get_affordance_positions()
+    with pytest.raises(ValueError):
+        if operation == "prepare":
+            rig.env.prepare_native_layout(before, parent_plan=object())
+        else:
+            rig.env.install_native_layout(prepared=object(), parent_plan=object(), attempt=object(), restored=object())
+    equal(rig.env.get_affordance_positions(), before)

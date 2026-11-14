@@ -1,0 +1,171 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_native_replay_data.py F          [100%]
+
+=================================== FAILURES ===================================
+_______ test_native_stage_owns_data_without_publishing_or_ordinary_token _______
+
+compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Model Config (Test)', schema_version='1.0', primary_level='L...level:L0_test:training', 'drive': 'level:L0_test:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_native_stage_owns_data_without_publishing_or_ordinary_token(compiled) -> None:
+        source, target = make_parent(compiled), make_parent(compiled)
+        saved = source.population.get_checkpoint_state()
+        target.bind()
+        pop = target.population
+        replay = pop.replay_buffer
+        participant = replay.rng_participant
+        before = replay.serialize()
+>       plan = pop.prepare_native_checkpoint_data(saved, mode="initial")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_native_replay_data.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f7b9d300910>
+checkpoint = {'clock_ledger': {'completed_batch_episodes': 0, 'eligible_transitions': 0, 'optimizer_updates': 0, 'predictor_admitte..., -0.0959, -0.0836]]), 'q_head.3.bias': tensor([ 0.0310,  0.0346,  0.0932, -0.0027,  0.0651,  0.0932,  0.0695])}), ...}
+
+    def prepare_native_checkpoint_data(self, checkpoint: Mapping[str, Any], *, mode: str) -> NativePopulationData:
+        """Materialize owned data under genuine device preparation custody."""
+        with self._native_device_scope(checkpoint) as inventory:
+>           plan = self._prepare_native_checkpoint_data(checkpoint, mode=mode)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/population/vectorized.py:3209: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7f7b9d300910>
+checkpoint = {'clock_ledger': {'completed_batch_episodes': 0, 'eligible_transitions': 0, 'optimizer_updates': 0, 'predictor_admitte..., -0.0959, -0.0836]]), 'q_head.3.bias': tensor([ 0.0310,  0.0346,  0.0932, -0.0027,  0.0651,  0.0932,  0.0695])}), ...}
+
+    def _prepare_native_checkpoint_data(self, checkpoint: Mapping[str, Any], *, mode: str) -> NativePopulationData:
+        """Stage native model data without replacing any bound owner or preparing BANK.
+    
+        Replay still needs its own data staging; C3 correlation, world authority,
+        runtime installation and the fixed finalizer are deliberately separate.
+        """
+        self._require_operation_idle()
+        if (
+>           self.env.world_phase != "fresh-bound"
+            ^^^^^^^^^^^^^^^^^^^^
+            or self._accepted is not None
+            or self._failed_step
+            or self._owned_reset_pending
+            or self._vector_steps
+            or self._pending_batch_commit is not None
+        ):
+
+src/townlet/population/vectorized.py:3227: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7b9d50e490>,)
+kwargs = {}
+self = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7b9d50e490>
+env = <townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f7b9d50e490>
+
+    @wraps(method)
+    def guarded(*args: P.args, **kwargs: P.kwargs) -> R:
+        self: Any
+        if args:
+            self = args[0]
+        else:
+            self = kwargs["self"]
+        if method.__qualname__.startswith("WorldBoundaryAuthority."):
+            env = self._env
+        else:
+            env = self
+>       with env._env_custody.call(method.__name__, kwargs):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/environment/parent_custody.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <contextlib._GeneratorContextManager object at 0x7f7b9d44eba0>
+
+    def __enter__(self):
+        # do not keep args and kwds alive unnecessarily
+        # they are only needed for recreation, which is not possible anymore
+        del self.args, self.kwds, self.func
+        try:
+>           return next(self.gen)
+                   ^^^^^^^^^^^^^^
+
+/usr/lib/python3.13/contextlib.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.parent_custody.EnvCustody object at 0x7f7b9d50e710>
+name = 'world_phase', arguments = {}
+
+    @contextmanager
+    def call(self, name: str, arguments: dict[str, Any]) -> Iterator[None]:
+        self.check_process()
+        if (
+            self.owner._world_restore_terminal
+            and name not in ("world_phase", "accepted_episode_seqs", "get_action_label_names")
+            and not (name == "abandon_episode" and arguments.get("reason") == "runtime_failure")
+        ):
+            raise ValueError("receiver is terminal after failed restore composition")
+        thread = current_thread()
+        if self.active is not None and self.active[1] is thread:
+            if name in ("world_phase", "accepted_episode_seqs"):
+                # Phase and copied cursor diagnostics reuse the original call's
+                # exclusion. Neither grants export, mutation or reverse-call rights.
+                yield
+                return
+            with self._reverse_entry(name, arguments):
+                yield
+            return
+        lineage = None
+        scope = self.scope
+        if scope is not None and scope._thread is thread:
+            scope._check()
+            lineage = scope._operation
+            if lineage is None:
+                raise ValueError("ENV retained custody requires explicit operation binding")
+            # Binding mutation cannot replace owners pinned by this lexical scope.
+            if name == "set_exploration_runtime" or (name == "bind_boundary_authority" and self.owner._world_authority is None):
+                raise ValueError("ENV binding must precede retained custody")
+>       with process_rng_domain().admission(lineage=lineage), self.lock:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/environment/parent_custody.py:328: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <contextlib._GeneratorContextManager object at 0x7f7b9d44ec10>
+
+    def __enter__(self):
+        # do not keep args and kwds alive unnecessarily
+        # they are only needed for recreation, which is not possible anymore
+        del self.args, self.kwds, self.func
+        try:
+>           return next(self.gen)
+                   ^^^^^^^^^^^^^^
+
+/usr/lib/python3.13/contextlib.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f7ba8e00830>
+
+    @contextmanager
+    def admission(self, *, lineage: RNGOperation | None) -> Iterator[RNGAdmission]:
+        self._check_pid()
+        self._not_busy()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            if self._has_local_gate():
+                raise RuntimeError("Local CUDA scope cannot admit unrelated RNG work")
+            active = self._active()
+            if active is None:
+                if lineage is not None:
+                    raise ValueError("RNG operation lineage is foreign or expired")
+            elif lineage is None:
+>               raise RuntimeError("Unrelated same-thread RNG reentry is forbidden")
+E               RuntimeError: Unrelated same-thread RNG reentry is forbidden
+
+src/townlet/exploration/rng_custody.py:716: RuntimeError
+============================== 1 failed in 3.86s ===============================

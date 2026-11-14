@@ -18,7 +18,18 @@ import torch
 
 from townlet.config.exploration_policy import IntrinsicTransitionContext, ResolvedExplorationPolicy
 from townlet.config.world_roster import WorldAcceptedEpisode, WorldOwnerReceipt
-from townlet.exploration.parent_custody import BankParentCustody, _bank_call, _lineage, _retain_bank
+from townlet.exploration.parent_custody import (
+    BankParentCustody,
+    RestoreInstallationOutcome,
+    _bank_call,
+    _begin_installation,
+    _check_installation_lookup,
+    _finish_installation,
+    _lineage,
+    _new_installation_outcome,
+    _retain_bank,
+    _validate_installation_outcome,
+)
 from townlet.exploration.provider_factory import make_backend
 from townlet.exploration.rng_custody import RNGOperation, process_rng_domain
 from townlet.exploration.world_curiosity_state import (
@@ -143,8 +154,27 @@ def _serialized(method: Callable[..., Any]) -> Callable[..., Any]:
         kind = "call"
         if method.__name__ == "install_restore":
             kind = "install"
-        with _bank_call(self, method.__name__), self._admission(kind):
-            return method(self, *args, **kwargs)
+        cell = None
+        if kind == "install":
+            with self._lock:
+                cell = _begin_installation(self._restore_observation(kwargs.get("prepared")), self)
+        try:
+            with _bank_call(self, method.__name__):
+                previous = self._installation_active
+                if cell is not None:
+                    self._installation_active = cell
+                try:
+                    with self._admission(kind):
+                        result = method(self, *args, **kwargs)
+                finally:
+                    if cell is not None:
+                        self._installation_active = previous
+            if cell is not None:
+                cell.returned_normally = True
+            return result
+        finally:
+            if cell is not None:
+                _finish_installation(cell)
 
     return invoke
 
@@ -265,7 +295,7 @@ def _same_outcome(left: LaneOutcome, right: LaneOutcome) -> bool:
 
 class CuriosityBank:
     # Restore staging copies __dict__; these execution/lifetime facts cannot be staged.
-    __slots__ = ("_entered", "_lineage", "_completion_uncertain", "__dict__", "__weakref__")
+    __slots__ = ("_entered", "_lineage", "_completion_uncertain", "_installation_active", "__dict__", "__weakref__")
 
     def __init__(
         self,
@@ -316,6 +346,7 @@ class CuriosityBank:
         self._completion_values: dict[str, tuple[list[float], float]] = {}
         self._failed = False
         self._completion_uncertain = False
+        self._installation_active: Any = None
         self._quarantine: tuple[WorldAcceptedEpisode, str] | None = None
         self._accepted: WorldAcceptedEpisode | None = None
         self._activation: WorldOwnerReceipt | None = None
@@ -361,6 +392,29 @@ class CuriosityBank:
         """Retain this BANK for a direct controller, outside runtime delegation."""
         return _retain_bank(self)
 
+    def _restore_observation(self, prepared: Any) -> RestoreInstallationOutcome | None:
+        from townlet.exploration.curiosity_checkpoint import PreparedCuriosityRestore
+
+        if type(prepared) is not PreparedCuriosityRestore:
+            return None
+        record = self._restore_tokens.get(prepared)
+        return None if record is None else record[6]
+
+    def restore_installation_outcome(self, *, prepared: Any) -> RestoreInstallationOutcome:
+        """Read the preallocated first-attempt observation without a native operation.
+
+        Lookup requires an unconsumed genuine handle. Retain the returned object
+        to read its immutable result after consumption, failure or domain poison.
+        An unconsumed standalone retry does not rewrite the first attempt.
+        """
+        with self._lock:
+            _check_installation_lookup(self, busy=self._entered or self._installation_active is not None)
+            outcome = self._restore_observation(prepared)
+            _require(outcome is not None, "foreign or consumed restore observation handle")
+            assert outcome is not None
+            _validate_installation_outcome(outcome, self)
+            return outcome
+
     @contextmanager
     def _admission(self, kind: str) -> Iterator[RNGOperation]:
         domain = process_rng_domain()
@@ -372,16 +426,28 @@ class CuriosityBank:
                 participant=self._rng_participant, operation_kind=kind, lineage=_lineage(self), cuda_devices=self._devices
             )
             entered = False
+            observation = self._installation_active if kind == "install" else None
             try:
                 try:
                     with invocation as lineage:
                         entered = True
+                        if observation is not None:
+                            observation.operation_entered = True
+                            observation.refresh()
                         self._entered, self._lineage = True, lineage
                         yield lineage
                 finally:
                     try:
-                        if entered and invocation.completion_failed():
-                            object.__setattr__(self, "_completion_uncertain", True)
+                        if entered:
+                            if observation is not None:
+                                observation.completion = 3  # Uncertified until the actual invocation reports.
+                                observation.refresh()
+                            failed_completion = invocation.completion_failed()
+                            if observation is not None:
+                                observation.completion = 2 if failed_completion else 1
+                                observation.refresh()
+                            if failed_completion:
+                                object.__setattr__(self, "_completion_uncertain", True)
                     finally:
                         self._entered, self._lineage = False, None
             except BaseException:
@@ -1189,7 +1255,7 @@ class CuriosityBank:
             self.world_ids,
         )
 
-    def _replacement_cohort(self, archived: bool) -> _RestoreCohort:
+    def _replacement_cohort(self, archived: bool, *, disposable: list[Any] | None) -> _RestoreCohort:
         """Registration/constructor work occurs only after examination releases custody."""
         inputs: list[WorldRNGState] = []
         owners: dict[str, OwnedWorldBackend] = {}
@@ -1198,14 +1264,44 @@ class CuriosityBank:
             validation_rng = WorldRNGState.create(
                 descriptor=self.descriptor, world_id=sorted(self.world_ids)[0], cuda_devices=self._devices
             )
+            if disposable is not None:
+                disposable.append(validation_rng)
         if self.scope == "per_world":
             for world in sorted(self.world_ids):
                 rng = WorldRNGState.create(descriptor=self.descriptor, world_id=world, cuda_devices=self._devices)
                 inputs.append(rng)
+                if disposable is not None:
+                    disposable.append(rng)
                 owners[world] = OwnedWorldBackend.construct(rng=rng, factory=partial(self._factory, world))
+                if disposable is not None:
+                    disposable.append(owners[world])
         else:
             shared = SharedWorldBackend.reserve(cuda_devices=self._devices)
+            if disposable is not None:
+                disposable.append(shared)
         return _RestoreCohort(self, inputs, owners, shared, validation_rng)
+
+    @contextmanager
+    def _disposable_cohort(self, archived: bool) -> Iterator[_RestoreCohort]:
+        registrations: list[Any] = []
+
+        def retire() -> None:
+            # Construction retains input RNG registration and adopts its fork
+            # into a separately registered backend owner. Retire both identities.
+            participants = {item.rng_participant for item in registrations}
+            for participant in participants:
+                process_rng_domain().unregister(participant=participant)
+
+        try:
+            yield self._replacement_cohort(archived, disposable=registrations)
+        except BaseException as failure:
+            try:
+                retire()
+            except BaseException as cleanup:
+                raise BaseExceptionGroup("restore validation failed and disposable retirement failed", [failure, cleanup]) from None
+            raise
+        else:
+            retire()
 
     def _configured_factory(self, world: str | None, native: Any, rng: WorldRNGState | None) -> Any:
         provider = self._factory(world, rng)
@@ -1231,6 +1327,70 @@ class CuriosityBank:
         _require(checkpoint.same(restored, envelope), "restoration changed target native/RNG payload")
         _require(checkpoint.same(captured, gradients), "restoration changed final named gradients")
 
+    def _populate_restore_cohort(self, saved: dict[str, Any], cohort: _RestoreCohort, mode: str, lineage: RNGOperation) -> None:
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        if saved["initialization_origin"] is not None:
+            assert cohort.validation_rng is not None
+            checkpoint.validate_archived_native(
+                saved["initialization_origin"]["source_checkpoint"],
+                descriptor=self.descriptor,
+                device=self.device,
+                validation_rng=cohort.validation_rng,
+                lineage=lineage,
+            )
+        records = {item["world_id"]: item for item in saved["worlds"]}
+        if self.scope == "per_world":
+            for world, owner in cohort.owners.items():
+                if saved["initialization_origin"] is not None and mode in ("initial", "private_initialized"):
+                    owner.call(
+                        lambda provider, sources: checkpoint.validate_boundary_template(
+                            provider, records[world], origin=saved["initialization_origin"], policy=self.policy
+                        ),
+                        lineage=lineage,
+                    )
+                self._attach_private(owner, records[world])
+        else:
+            shared, payload = cohort.shared, saved["shared_backend"]
+            assert shared is not None
+            with shared.bootstrap(lineage=lineage) as lease:
+                native = shared.prepare_restore(
+                    dict(schema="shared-world-backend-v1", healthy=True, backend=payload["native"]),
+                    factory=partial(self._configured_factory, None, payload["native"], None),
+                    validate_backend=partial(checkpoint.validate_native, policy=self.policy, descriptor=self.descriptor),
+                    lineage=lease,
+                )
+                shared.install(native, lineage=lease)
+                shared.call(
+                    lambda provider: checkpoint.attach_gradients(provider, payload["gradients"], self.policy.strategy), lineage=lease
+                )
+                captured = shared.call(
+                    lambda provider: dict(
+                        native=provider.checkpoint_state(), gradients=checkpoint.capture_gradients(provider, self.policy.strategy)
+                    ),
+                    lineage=lease,
+                )
+                _require(checkpoint.same(captured, payload), "shared restoration changed native/gradients")
+
+    @_preparation
+    def validate_restore_data(self, *, state: Any, mode: str) -> None:
+        """Reconstruct disposable native owners; grant no installation authority."""
+        from townlet.exploration import curiosity_checkpoint as checkpoint
+
+        with self._admission("prepare"):
+            _require(self._prepared is None, "completion transaction pending")
+            identity = self._preparation_identity()
+            checkpoint.preflight(state, policy=self.policy, descriptor=self.descriptor, device=self.device, mode=mode)
+            self._report_transport(state, "restore", None)
+            saved = checkpoint.owned(state)
+            checkpoint.validate_origin(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
+            checkpoint.validate_records(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
+        with self._disposable_cohort(saved["initialization_origin"] is not None) as cohort:
+            with self._admission("prepare") as lineage:
+                _require(self._preparation_identity() == identity, "destination changed during idle registration")
+                self._populate_restore_cohort(saved, cohort, mode, lineage)
+                _require(self._preparation_identity() == identity, "destination changed during data validation")
+
     def _seal_restore(
         self, saved: dict[str, Any], cohort: _RestoreCohort, accepted: Any, identity: tuple[Any, ...], correlate: Callable[[], None]
     ) -> Any:
@@ -1239,7 +1399,8 @@ class CuriosityBank:
         _require(self._preparation_identity() == identity, "destination changed during restore preparation")
         # Allocate every registry/retention record before issuing final currency.
         assert self._lineage is not None
-        record = [identity, runtime, accepted, None, correlate, cohort]
+        observation = _new_installation_outcome(self, token, runtime=False)
+        record = [identity, runtime, accepted, None, correlate, cohort, observation]
         self._restore_tokens[token] = record
         try:
             record[3] = process_rng_domain().current_token(participant=self._rng_participant, operation=self._lineage)
@@ -1286,7 +1447,7 @@ class CuriosityBank:
                 parent_view = checkpoint.owned(source)
             self._correlate_parent(source, parent_restore, validate_parent_restore, parent_view)
             checkpoint.validate_records(source, policy=source_policy, descriptor=source_descriptor, device=self.device)
-        cohort = self._replacement_cohort(True)
+        cohort = self._replacement_cohort(True, disposable=None)
         with self._admission("prepare") as lineage:
             _require(self._preparation_identity() == identity, "destination changed during idle registration")
             correlate = partial(self._correlate_parent, source, parent_restore, validate_parent_restore, parent_view)
@@ -1388,51 +1549,11 @@ class CuriosityBank:
 
             correlate()
             checkpoint.validate_records(saved, policy=self.policy, descriptor=self.descriptor, device=self.device)
-        cohort = self._replacement_cohort(saved["initialization_origin"] is not None)
+        cohort = self._replacement_cohort(saved["initialization_origin"] is not None, disposable=None)
         with self._admission("prepare") as lineage:
             _require(self._preparation_identity() == identity, "destination changed during idle registration")
             correlate()
-            if saved["initialization_origin"] is not None:
-                assert cohort.validation_rng is not None
-                checkpoint.validate_archived_native(
-                    saved["initialization_origin"]["source_checkpoint"],
-                    descriptor=self.descriptor,
-                    device=self.device,
-                    validation_rng=cohort.validation_rng,
-                    lineage=lineage,
-                )
-            records = {item["world_id"]: item for item in saved["worlds"]}
-            if self.scope == "per_world":
-                for world, owner in cohort.owners.items():
-                    if saved["initialization_origin"] is not None and mode in ("initial", "private_initialized"):
-                        owner.call(
-                            lambda provider, sources: checkpoint.validate_boundary_template(
-                                provider, records[world], origin=saved["initialization_origin"], policy=self.policy
-                            ),
-                            lineage=lineage,
-                        )
-                    self._attach_private(owner, records[world])
-            else:
-                shared, payload = cohort.shared, saved["shared_backend"]
-                assert shared is not None
-                with shared.bootstrap(lineage=lineage) as lease:
-                    native = shared.prepare_restore(
-                        dict(schema="shared-world-backend-v1", healthy=True, backend=payload["native"]),
-                        factory=partial(self._configured_factory, None, payload["native"], None),
-                        validate_backend=partial(checkpoint.validate_native, policy=self.policy, descriptor=self.descriptor),
-                        lineage=lease,
-                    )
-                    shared.install(native, lineage=lease)
-                    shared.call(
-                        lambda provider: checkpoint.attach_gradients(provider, payload["gradients"], self.policy.strategy), lineage=lease
-                    )
-                    captured = shared.call(
-                        lambda provider: dict(
-                            native=provider.checkpoint_state(), gradients=checkpoint.capture_gradients(provider, self.policy.strategy)
-                        ),
-                        lineage=lease,
-                    )
-                    _require(checkpoint.same(captured, payload), "shared restoration changed native/gradients")
+            self._populate_restore_cohort(saved, cohort, mode, lineage)
             return self._seal_restore(saved, cohort, accepted, identity, correlate)
 
     def _restore_publication(
@@ -1477,7 +1598,11 @@ class CuriosityBank:
         from townlet.exploration.curiosity_checkpoint import PreparedCuriosityRestore
 
         _require(type(prepared) is PreparedCuriosityRestore and prepared in self._restore_tokens, "foreign or consumed restore token")
-        identity, runtime, accepted, currency, correlate, cohort = self._restore_tokens.pop(prepared)
+        identity, runtime, accepted, currency, correlate, cohort, observation = self._restore_tokens.pop(prepared)
+        active = self._installation_active
+        if active is not None:
+            active.handle_consumed = True
+            active.refresh()
         _require(identity == self._preparation_identity() and self._prepared is None, "stale restore token")
         if accepted is not None:
             self._validate(accepted=accepted)
@@ -1485,8 +1610,14 @@ class CuriosityBank:
         _require(identity == self._preparation_identity(), "destination changed during final authentication")
         assert self._lineage is not None
         process_rng_domain().validate_current(token=currency, operation=self._lineage)
+        if active is not None:
+            active.bank_publication = 2
+            active.refresh()
         try:
             self.__dict__ = runtime
         except BaseException:
             self._failed = True
             raise
+        if active is not None:
+            active.bank_publication = 1
+            active.refresh()

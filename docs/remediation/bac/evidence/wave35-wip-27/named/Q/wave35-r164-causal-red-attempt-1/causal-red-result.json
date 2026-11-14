@@ -1,0 +1,30 @@
+{
+  "name": "causal-red",
+  "exit_code": 1,
+  "seconds": 13.6076995950134,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_runtime_prepare_overlay_refusal_seals_first_install_attempt",
+    "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_runtime_fields_accept_current_world_vfs_state",
+    "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py::test_native_boundary_refuses_conflicting_outer_vfs_state",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "-rs",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r164-causal-red-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r164-causal-red-attempt-1/causal-red.log",
+  "sha256": "5f65863a1d8db32361042c13fb863409873e7c8bdb62d65758f743ef8b66f48b",
+  "candidate_tree": "9b82a469a1aa233a08666ca645a78296351cff7f",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "manifest_sha256": "59a542086d8c1e32fc354edab8b734773e443923b08d09d567dcf449011ec8d9",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

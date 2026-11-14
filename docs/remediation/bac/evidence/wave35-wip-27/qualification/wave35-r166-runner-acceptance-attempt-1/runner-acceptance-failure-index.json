@@ -1,0 +1,32 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_tree": "fec2af3859f5ec26472ae5af8c618319ee6a6477",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: Native curriculum requires ordinary portable state",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Input: 'Native curriculum requires ordinary portable state'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

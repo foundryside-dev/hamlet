@@ -23,6 +23,7 @@ from types import MappingProxyType
 
 from townlet.config.resolved_launch import ResolvedLaunch, resolve_launch
 from townlet.config.training_v2_config import TrainingV2Config, load_training_v2_config
+from townlet.config.world_roster import WorldRosterDeclaration
 
 # Import DemoRunner at module level to avoid Python 3.13 atexit threading issues
 # (importing TensorBoard/TensorFlow in background threads triggers atexit registration errors)
@@ -54,6 +55,8 @@ class UnifiedServer:
         inference_port: int = 8766,
         level_name: str = "L1_full_observability",
         force_new_vfs: bool = False,
+        *,
+        world_roster: WorldRosterDeclaration,
     ):
         """
         Initialize unified server.
@@ -64,7 +67,11 @@ class UnifiedServer:
             checkpoint_dir: Directory for checkpoints (auto-generated if None)
             inference_port: Port for inference WebSocket server
             force_new_vfs: Start a fresh run branch instead of resuming an incompatible VFS checkpoint.
+            world_roster: Explicit authored world identities in requested lane order.
         """
+        if not isinstance(world_roster, WorldRosterDeclaration):
+            raise TypeError("UnifiedServer requires an explicit WorldRosterDeclaration")
+        self.world_roster = world_roster
         entry = Path(config_dir).resolve()
         if entry.parent.name == "levels":
             if level_name != entry.name:
@@ -422,6 +429,7 @@ class UnifiedServer:
                 checkpoint_dir=str(self.checkpoint_dir),
                 max_episodes=self.total_episodes,
                 force_new_vfs=self.force_new_vfs,
+                world_roster=self.world_roster,
             )
 
             logger.info("[Training] Starting training loop...")

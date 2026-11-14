@@ -1,0 +1,1404 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+          "candidate_manifest": {
+            "bytes": 224612,
+            "path": "wave35/r165-candidate.json",
+            "root": "W",
+            "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+          },
+          "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_refuses_sparse_before_publication",
+            "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_rejects_key_overrides_without_callbacks",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=long",
+            "-rs",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-aux-red-attempt-1"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 2,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r165-aux-red-attempt-1/aux-red",
+              "type": "directory"
+            },
+            {
+              "bytes": 5281,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red/failure-controller-e4cc20a3ae9fa509.json",
+              "sha256": "0184fb66cbc5aff8b9131bc4b8c8555a88b13f1836e779ce851cfe35424bae24",
+              "type": "file"
+            },
+            {
+              "bytes": 1227,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red/failure-controller-fb6b78d441678f03.json",
+              "sha256": "efe8d8d5f317b72d54918b97bbed9273b523b6bbf8b2d988035a086d04f7dde2",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red/identity-controller.json",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+              "type": "file"
+            },
+            {
+              "bytes": 969,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red-failure-index.json",
+              "sha256": "299dbac4892ae35b435259611709599300a4a610a1382a53eebe41b8f6b3fdec",
+              "type": "file"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red-negative-custody.json",
+              "sha256": "cd7c20414fbc63145c00fd2c0ee8444584f4f409355a4067ef37d357968707e7",
+              "type": "file"
+            },
+            {
+              "bytes": 1168,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red-result.json",
+              "sha256": "4fee6070cc2755820c10b3439c014f68a996e98a6c9cd6c550a84096e7147ddb",
+              "type": "file"
+            },
+            {
+              "bytes": 6595,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red.log",
+              "sha256": "cd6184a47b83f071dc0ce48a5408cc475544bcf670eb59cebe75cca88addb3b3",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 14.07046220600023,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5876,
+            "path": "wave35/r165-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+            "src": "b0e6e5a82489c575e3363c93251e78c82f0e4d7e",
+            "tests": "fcd5f62ffd01c6f73d29723bc1c749c7d406aa7a"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r165-aux-red-attempt-1--aux-red",
+          "log_paths": [
+            {
+              "bytes": 6595,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red.log",
+              "root": "Q",
+              "sha256": "cd6184a47b83f071dc0ce48a5408cc475544bcf670eb59cebe75cca88addb3b3"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 897,
+            "path": "evidence-management/pop-standalone-step/wave35-r165-aux-red-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "0919777a17a4c8eb7a1c45e985ebb74cdf9511457467f6c868c0c7a632a3a953"
+          },
+          "path": "wave35-r165-aux-red-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-aux-red-attempt-1/aux-red/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1168,
+            "path": "wave35-r165-aux-red-attempt-1/aux-red-result.json",
+            "root": "Q",
+            "sha256": "4fee6070cc2755820c10b3439c014f68a996e98a6c9cd6c550a84096e7147ddb"
+          },
+          "record_id": "aux-red",
+          "result": {
+            "bytes": 1168,
+            "path": "wave35-r165-aux-red-attempt-1/aux-red-result.json",
+            "root": "Q",
+            "sha256": "4fee6070cc2755820c10b3439c014f68a996e98a6c9cd6c550a84096e7147ddb"
+          },
+          "round": 165,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 958,
+            "path": "wave35-r165-aux-red-attempt-1/aux-red-negative-custody.json",
+            "root": "Q",
+            "sha256": "cd7c20414fbc63145c00fd2c0ee8444584f4f409355a4067ef37d357968707e7"
+          }
+        }
+      ],
+      "check": "wave35-r165-aux-red--aux-red",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Own-source historical check; immutable attempts retained, no checkpoint terminal or package claim.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r165-aux-red-attempt-1--aux-red"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+          "candidate_manifest": {
+            "bytes": 224612,
+            "path": "wave35/r165-candidate.json",
+            "root": "W",
+            "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+          },
+          "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r165-collection-spec.json",
+              "sha256": "b1479bee130a787fc16c86e46069badadf258e792c38cae103618b1f37b61a32",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5876,
+            "path": "wave35/r165-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+            "src": "b0e6e5a82489c575e3363c93251e78c82f0e4d7e",
+            "tests": "fcd5f62ffd01c6f73d29723bc1c749c7d406aa7a"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r165-collection-spec.json--unrun",
+          "path": "wave35-r165-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 165,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r165-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Own-source historical check; immutable attempts retained, no checkpoint terminal or package claim.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r165-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+          "candidate_manifest": {
+            "bytes": 224612,
+            "path": "wave35/r165-candidate.json",
+            "root": "W",
+            "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+          },
+          "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+          "collected_count": 72,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+            "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_refuses_sparse_before_publication",
+            "tests/test_townlet/regressions/bac/test_native_aux_state.py::test_native_persistent_stage_rejects_key_overrides_without_callbacks",
+            "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+            "tests/test_townlet/regressions/bac/test_native_replay_data.py",
+            "tests/test_townlet/regressions/bac/test_native_rng_state.py",
+            "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+            "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py",
+            "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+            "tests/test_townlet/regressions/bac/test_world_restore_attempt.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=long",
+            "-rs",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-focused-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r165-focused-collection-attempt-1/focused-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-focused-collection-attempt-1/focused-collection/identity-controller.json",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+              "type": "file"
+            },
+            {
+              "bytes": 1910,
+              "path": "wave35-r165-focused-collection-attempt-1/focused-collection-result.json",
+              "sha256": "c95198e5a9e727c8515f4ffdc72cbd896fc43ab7fc9baa4e55c6752817cb063b",
+              "type": "file"
+            },
+            {
+              "bytes": 7525,
+              "path": "wave35-r165-focused-collection-attempt-1/focused-collection.log",
+              "sha256": "d77e60f8eaddab64d0435668f804f9a32e1fa41bcb54ce914d92aeb93973322f",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.951805554999737,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5876,
+            "path": "wave35/r165-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+            "src": "b0e6e5a82489c575e3363c93251e78c82f0e4d7e",
+            "tests": "fcd5f62ffd01c6f73d29723bc1c749c7d406aa7a"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r165-focused-collection-attempt-1--focused-collection",
+          "log_paths": [
+            {
+              "bytes": 7525,
+              "path": "wave35-r165-focused-collection-attempt-1/focused-collection.log",
+              "root": "Q",
+              "sha256": "d77e60f8eaddab64d0435668f804f9a32e1fa41bcb54ce914d92aeb93973322f"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 919,
+            "path": "evidence-management/pop-standalone-step/wave35-r165-focused-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "afecb7ba6379732c5eb4a762e5e6a6a9f0edac4140c875db28bc8b39b27cc484"
+          },
+          "path": "wave35-r165-focused-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r165-focused-collection-attempt-1/focused-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-focused-collection-attempt-1/focused-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1910,
+            "path": "wave35-r165-focused-collection-attempt-1/focused-collection-result.json",
+            "root": "Q",
+            "sha256": "c95198e5a9e727c8515f4ffdc72cbd896fc43ab7fc9baa4e55c6752817cb063b"
+          },
+          "record_id": "focused-collection",
+          "result": {
+            "bytes": 1910,
+            "path": "wave35-r165-focused-collection-attempt-1/focused-collection-result.json",
+            "root": "Q",
+            "sha256": "c95198e5a9e727c8515f4ffdc72cbd896fc43ab7fc9baa4e55c6752817cb063b"
+          },
+          "round": 165,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier_unavailable_reason": "No distinct collection postflight report was originally run. Successful collection has result/log, launcher exact-source pre/post checks and controller import metadata; not qualifying runtime; no retrospective verifier PASS."
+        }
+      ],
+      "check": "wave35-r165-focused-collection--focused-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        }
+      ],
+      "scope": "Own-source historical check; immutable attempts retained, no checkpoint terminal or package claim.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r165-focused-collection-attempt-1--focused-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+          "candidate_manifest": {
+            "bytes": 224612,
+            "path": "wave35/r165-candidate.json",
+            "root": "W",
+            "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+          },
+          "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_native_replay_data.py::test_native_stage_owns_data_without_publishing_or_ordinary_token",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=long",
+            "-rs",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-native-admission-diagnostic-attempt-1"
+          ],
+          "counts": {
+            "passed": 1,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic/identity-controller.json",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+              "type": "file"
+            },
+            {
+              "bytes": 659,
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic-custody.json",
+              "sha256": "84ce057595295392d62d178d5ae516adab0e77b2eb600ebee62443a548e28da1",
+              "type": "file"
+            },
+            {
+              "bytes": 1116,
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic-result.json",
+              "sha256": "4f0af11205b88f4bdf6fb1b4cf0f2e016bbd2fa0080bbe52b94d6dfd72a1fc26",
+              "type": "file"
+            },
+            {
+              "bytes": 578,
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic.log",
+              "sha256": "560c94f4f45ba745dc877e35675df80751b573a1d1d9649e51de647b16b06ced",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 10.463967312010936,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5876,
+            "path": "wave35/r165-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+            "src": "b0e6e5a82489c575e3363c93251e78c82f0e4d7e",
+            "tests": "fcd5f62ffd01c6f73d29723bc1c749c7d406aa7a"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r165-native-admission-diagnostic-attempt-1--native-admission-diagnostic",
+          "log_paths": [
+            {
+              "bytes": 578,
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic.log",
+              "root": "Q",
+              "sha256": "560c94f4f45ba745dc877e35675df80751b573a1d1d9649e51de647b16b06ced"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 938,
+            "path": "evidence-management/pop-standalone-step/wave35-r165-native-admission-diagnostic-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "20d3faadba8002fa7a2ad90a8172def7ba389033176ce88d4dce3cc387b5bf08"
+          },
+          "path": "wave35-r165-native-admission-diagnostic-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1116,
+            "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic-result.json",
+            "root": "Q",
+            "sha256": "4f0af11205b88f4bdf6fb1b4cf0f2e016bbd2fa0080bbe52b94d6dfd72a1fc26"
+          },
+          "record_id": "native-admission-diagnostic",
+          "result": {
+            "bytes": 1116,
+            "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic-result.json",
+            "root": "Q",
+            "sha256": "4f0af11205b88f4bdf6fb1b4cf0f2e016bbd2fa0080bbe52b94d6dfd72a1fc26"
+          },
+          "round": 165,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 659,
+            "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic-custody.json",
+            "root": "Q",
+            "sha256": "84ce057595295392d62d178d5ae516adab0e77b2eb600ebee62443a548e28da1"
+          }
+        }
+      ],
+      "check": "wave35-r165-native-admission-diagnostic--native-admission-diagnostic",
+      "check_kind": "diagnostic",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Own-source historical check; immutable attempts retained, no checkpoint terminal or package claim.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r165-native-admission-diagnostic-attempt-1--native-admission-diagnostic"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+          "candidate_manifest": {
+            "bytes": 224612,
+            "path": "wave35/r165-candidate.json",
+            "root": "W",
+            "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+          },
+          "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_native_rng_state.py",
+            "tests/test_townlet/regressions/bac/test_native_replay_data.py",
+            "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+            "tests/test_townlet/regressions/bac/test_world_restore_attempt.py",
+            "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+            "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=long",
+            "-rs",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-native-green-attempt-1",
+            "-k",
+            "not poison and not refuses_sparse and not rejects_key_overrides",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "passed": 74,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r165-native-green-attempt-1/native-green",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-native-green-attempt-1/native-green/identity-controller.json",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r165-native-green-attempt-1/native-green/identity-gw0.json",
+              "sha256": "b481f45ef4cec6ab3d129c54b10ec870a442af4f3c418ca2b6e0eb20653a67c9",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r165-native-green-attempt-1/native-green/identity-gw1.json",
+              "sha256": "130bab83614e09cddbbe8b59567b5ab24f2120506cb0afd7cbb0b107421b407d",
+              "type": "file"
+            },
+            {
+              "bytes": 645,
+              "path": "wave35-r165-native-green-attempt-1/native-green-custody.json",
+              "sha256": "50236cf8bfd1adf0cc45d84a9d0260655b9d4c8b68cc212eac6a9075093803f9",
+              "type": "file"
+            },
+            {
+              "bytes": 1484,
+              "path": "wave35-r165-native-green-attempt-1/native-green-result.json",
+              "sha256": "229724d44cb0693f3bdbc9d813bf03288883fe02d2e59b1991bcbd4e34d0ccd0",
+              "type": "file"
+            },
+            {
+              "bytes": 682,
+              "path": "wave35-r165-native-green-attempt-1/native-green.log",
+              "sha256": "1a46367688178b5a1794778fd06fc225be90d7ef05bea0ef59cb9a2a52eb5d5c",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 33.443712445994606,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5876,
+            "path": "wave35/r165-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+            "src": "b0e6e5a82489c575e3363c93251e78c82f0e4d7e",
+            "tests": "fcd5f62ffd01c6f73d29723bc1c749c7d406aa7a"
+          },
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r165-native-green-attempt-1--native-green",
+          "log_paths": [
+            {
+              "bytes": 682,
+              "path": "wave35-r165-native-green-attempt-1/native-green.log",
+              "root": "Q",
+              "sha256": "1a46367688178b5a1794778fd06fc225be90d7ef05bea0ef59cb9a2a52eb5d5c"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 908,
+            "path": "evidence-management/pop-standalone-step/wave35-r165-native-green-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "cbf2e2db21faeeaaa05e91ef1bd724e5caa051e3573ecc0f6e81d8a99ef623aa"
+          },
+          "path": "wave35-r165-native-green-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r165-native-green-attempt-1/native-green/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-native-green-attempt-1/native-green/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r165-native-green-attempt-1/native-green/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "b481f45ef4cec6ab3d129c54b10ec870a442af4f3c418ca2b6e0eb20653a67c9"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r165-native-green-attempt-1/native-green/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "130bab83614e09cddbbe8b59567b5ab24f2120506cb0afd7cbb0b107421b407d"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1484,
+            "path": "wave35-r165-native-green-attempt-1/native-green-result.json",
+            "root": "Q",
+            "sha256": "229724d44cb0693f3bdbc9d813bf03288883fe02d2e59b1991bcbd4e34d0ccd0"
+          },
+          "record_id": "native-green",
+          "result": {
+            "bytes": 1484,
+            "path": "wave35-r165-native-green-attempt-1/native-green-result.json",
+            "root": "Q",
+            "sha256": "229724d44cb0693f3bdbc9d813bf03288883fe02d2e59b1991bcbd4e34d0ccd0"
+          },
+          "round": 165,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier": {
+            "bytes": 645,
+            "path": "wave35-r165-native-green-attempt-1/native-green-custody.json",
+            "root": "Q",
+            "sha256": "50236cf8bfd1adf0cc45d84a9d0260655b9d4c8b68cc212eac6a9075093803f9"
+          }
+        }
+      ],
+      "check": "wave35-r165-native-green--native-green",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "scope": "Own-source historical check; immutable attempts retained, no checkpoint terminal or package claim.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r165-native-green-attempt-1--native-green"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+          "candidate_manifest": {
+            "bytes": 224612,
+            "path": "wave35/r165-candidate.json",
+            "root": "W",
+            "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+          },
+          "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r165-owned-spec.json",
+              "sha256": "78841600969284fa043b5833511ab4fc4b949102dc8c3219f151a9b748d68046",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5876,
+            "path": "wave35/r165-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+            "src": "b0e6e5a82489c575e3363c93251e78c82f0e4d7e",
+            "tests": "fcd5f62ffd01c6f73d29723bc1c749c7d406aa7a"
+          },
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r165-owned-spec.json--unrun",
+          "path": "wave35-r165-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 165,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r165-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Own-source historical check; immutable attempts retained, no checkpoint terminal or package claim.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r165-owned-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+          "candidate_manifest": {
+            "bytes": 224612,
+            "path": "wave35/r165-candidate.json",
+            "root": "W",
+            "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+          },
+          "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+            "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=long",
+            "-rs",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r165-runner-acceptance-attempt-1"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 2,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance",
+              "type": "directory"
+            },
+            {
+              "bytes": 5721,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/failure-controller-1aedd23029b6beac.json",
+              "sha256": "7587e234e2e5ef676983a93fda1593d238b6b1f58558c4bfe74df7b2c1098374",
+              "type": "file"
+            },
+            {
+              "bytes": 5522,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/failure-controller-1cd6809988e530a3.json",
+              "sha256": "25720ff184ffe21156761ac661358a563ceb6e26cb48f6934654aad017eb96f7",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/identity-controller.json",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+              "type": "file"
+            },
+            {
+              "bytes": 1382,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-failure-index.json",
+              "sha256": "eec407fbb8db8f3fced370d69a14199f560e8b747d518c11c352cd6a42423134",
+              "type": "file"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-negative-custody.json",
+              "sha256": "68d8129dcd65354145fdb4bc1edb4dc6705e9230e2f7e6ec0471446f1f231e7a",
+              "type": "file"
+            },
+            {
+              "bytes": 1184,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-result.json",
+              "sha256": "92d48d47d8a44a732523f6cc6b0704868736b8744fe8325429d6d570534847a2",
+              "type": "file"
+            },
+            {
+              "bytes": 11205,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance.log",
+              "sha256": "f5a06f404940f2d9f7b725cb74f4225684944388f10705e1b17a323292ee27c4",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 22.88888231202145,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5876,
+            "path": "wave35/r165-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+          },
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+            "src": "b0e6e5a82489c575e3363c93251e78c82f0e4d7e",
+            "tests": "fcd5f62ffd01c6f73d29723bc1c749c7d406aa7a"
+          },
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r165-runner-acceptance-attempt-1--runner-acceptance",
+          "log_paths": [
+            {
+              "bytes": 11205,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance.log",
+              "root": "Q",
+              "sha256": "f5a06f404940f2d9f7b725cb74f4225684944388f10705e1b17a323292ee27c4"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 918,
+            "path": "evidence-management/pop-standalone-step/wave35-r165-runner-acceptance-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "888454bc39039b6a1f1b5f3633a647cf797b33f4bf903042c7c94f32b835e81b"
+          },
+          "path": "wave35-r165-runner-acceptance-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1184,
+            "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-result.json",
+            "root": "Q",
+            "sha256": "92d48d47d8a44a732523f6cc6b0704868736b8744fe8325429d6d570534847a2"
+          },
+          "record_id": "runner-acceptance",
+          "result": {
+            "bytes": 1184,
+            "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-result.json",
+            "root": "Q",
+            "sha256": "92d48d47d8a44a732523f6cc6b0704868736b8744fe8325429d6d570534847a2"
+          },
+          "round": 165,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 958,
+            "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-negative-custody.json",
+            "root": "Q",
+            "sha256": "68d8129dcd65354145fdb4bc1edb4dc6705e9230e2f7e6ec0471446f1f231e7a"
+          }
+        }
+      ],
+      "check": "wave35-r165-runner-acceptance--runner-acceptance",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Own-source historical check; immutable attempts retained, no checkpoint terminal or package claim.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r165-runner-acceptance-attempt-1--runner-acceptance"
+    }
+  ],
+  "base_commit": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5",
+  "candidate_manifest": {
+    "bytes": 224612,
+    "path": "wave35/r165-candidate.json",
+    "root": "W",
+    "sha256": "afb1efa0c0566b1b2f952263ce47435f6aff666411cffc10df5cae991c660f37"
+  },
+  "candidate_tree": "b98f9d72485851a58cfb9f406e7c3ae658c835f7",
+  "fixture_preflight": {
+    "bytes": 5876,
+    "path": "wave35/r165-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "4d614a28730931b19c70a3945a8107c0e09f3b3752d74ce804f65267fee7c2ae"
+  },
+  "historical_subtree_attestation": {
+    "bytes": 5603,
+    "path": "evidence-management/wip27-preparation/ROOT-HISTORICAL-SUBTREES-R161-R168-v1.json",
+    "root": "W",
+    "sha256": "3e99f65f34edb903d7df2b8ae011746e5db01514ced6683f35aee1c89ac7069d"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r165-aux-red-attempt-1",
+      "round": 165,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r165-aux-red-attempt-1-spec.json",
+      "round": 165,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r165-collection-spec.json",
+      "round": 165,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r165-focused-collection-attempt-1",
+      "round": 165,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r165-focused-collection-attempt-1-spec.json",
+      "round": 165,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r165-native-admission-diagnostic-attempt-1",
+      "round": 165,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r165-native-admission-diagnostic-attempt-1-spec.json",
+      "round": 165,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r165-native-green-attempt-1",
+      "round": 165,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r165-native-green-attempt-1-spec.json",
+      "round": 165,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r165-owned-spec.json",
+      "round": 165,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r165-runner-acceptance-attempt-1",
+      "round": 165,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r165-runner-acceptance-attempt-1-spec.json",
+      "round": 165,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r165-aux-red-attempt-1": [
+      {
+        "path": "wave35-r165-aux-red-attempt-1/aux-red",
+        "type": "directory"
+      },
+      {
+        "bytes": 5281,
+        "path": "wave35-r165-aux-red-attempt-1/aux-red/failure-controller-e4cc20a3ae9fa509.json",
+        "sha256": "0184fb66cbc5aff8b9131bc4b8c8555a88b13f1836e779ce851cfe35424bae24",
+        "type": "file"
+      },
+      {
+        "bytes": 1227,
+        "path": "wave35-r165-aux-red-attempt-1/aux-red/failure-controller-fb6b78d441678f03.json",
+        "sha256": "efe8d8d5f317b72d54918b97bbed9273b523b6bbf8b2d988035a086d04f7dde2",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r165-aux-red-attempt-1/aux-red/identity-controller.json",
+        "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+        "type": "file"
+      },
+      {
+        "bytes": 969,
+        "path": "wave35-r165-aux-red-attempt-1/aux-red-failure-index.json",
+        "sha256": "299dbac4892ae35b435259611709599300a4a610a1382a53eebe41b8f6b3fdec",
+        "type": "file"
+      },
+      {
+        "bytes": 958,
+        "path": "wave35-r165-aux-red-attempt-1/aux-red-negative-custody.json",
+        "sha256": "cd7c20414fbc63145c00fd2c0ee8444584f4f409355a4067ef37d357968707e7",
+        "type": "file"
+      },
+      {
+        "bytes": 1168,
+        "path": "wave35-r165-aux-red-attempt-1/aux-red-result.json",
+        "sha256": "4fee6070cc2755820c10b3439c014f68a996e98a6c9cd6c550a84096e7147ddb",
+        "type": "file"
+      },
+      {
+        "bytes": 6595,
+        "path": "wave35-r165-aux-red-attempt-1/aux-red.log",
+        "sha256": "cd6184a47b83f071dc0ce48a5408cc475544bcf670eb59cebe75cca88addb3b3",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-aux-red-attempt-1-spec.json": [
+      {
+        "bytes": 944,
+        "path": "wave35-r165-aux-red-attempt-1-spec.json",
+        "sha256": "c7868088ad8b22ca7ac7f69fa1462c3d160cee9d541a9fd0e59c5e35a417a03a",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r165-collection-spec.json",
+        "sha256": "b1479bee130a787fc16c86e46069badadf258e792c38cae103618b1f37b61a32",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-focused-collection-attempt-1": [
+      {
+        "path": "wave35-r165-focused-collection-attempt-1/focused-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r165-focused-collection-attempt-1/focused-collection/identity-controller.json",
+        "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+        "type": "file"
+      },
+      {
+        "bytes": 1910,
+        "path": "wave35-r165-focused-collection-attempt-1/focused-collection-result.json",
+        "sha256": "c95198e5a9e727c8515f4ffdc72cbd896fc43ab7fc9baa4e55c6752817cb063b",
+        "type": "file"
+      },
+      {
+        "bytes": 7525,
+        "path": "wave35-r165-focused-collection-attempt-1/focused-collection.log",
+        "sha256": "d77e60f8eaddab64d0435668f804f9a32e1fa41bcb54ce914d92aeb93973322f",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-focused-collection-attempt-1-spec.json": [
+      {
+        "bytes": 1711,
+        "path": "wave35-r165-focused-collection-attempt-1-spec.json",
+        "sha256": "2442ed88420081a6f91976c651b926b910c3b49d62f77a52ff5285c5af9a3d11",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-native-admission-diagnostic-attempt-1": [
+      {
+        "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic/identity-controller.json",
+        "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+        "type": "file"
+      },
+      {
+        "bytes": 659,
+        "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic-custody.json",
+        "sha256": "84ce057595295392d62d178d5ae516adab0e77b2eb600ebee62443a548e28da1",
+        "type": "file"
+      },
+      {
+        "bytes": 1116,
+        "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic-result.json",
+        "sha256": "4f0af11205b88f4bdf6fb1b4cf0f2e016bbd2fa0080bbe52b94d6dfd72a1fc26",
+        "type": "file"
+      },
+      {
+        "bytes": 578,
+        "path": "wave35-r165-native-admission-diagnostic-attempt-1/native-admission-diagnostic.log",
+        "sha256": "560c94f4f45ba745dc877e35675df80751b573a1d1d9649e51de647b16b06ced",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-native-admission-diagnostic-attempt-1-spec.json": [
+      {
+        "bytes": 867,
+        "path": "wave35-r165-native-admission-diagnostic-attempt-1-spec.json",
+        "sha256": "2ccab8fac333bb5d5a452cd48ecb8f29df2f77546d6fc961ba1a270ed1c5a923",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-native-green-attempt-1": [
+      {
+        "path": "wave35-r165-native-green-attempt-1/native-green",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r165-native-green-attempt-1/native-green/identity-controller.json",
+        "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r165-native-green-attempt-1/native-green/identity-gw0.json",
+        "sha256": "b481f45ef4cec6ab3d129c54b10ec870a442af4f3c418ca2b6e0eb20653a67c9",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r165-native-green-attempt-1/native-green/identity-gw1.json",
+        "sha256": "130bab83614e09cddbbe8b59567b5ab24f2120506cb0afd7cbb0b107421b407d",
+        "type": "file"
+      },
+      {
+        "bytes": 645,
+        "path": "wave35-r165-native-green-attempt-1/native-green-custody.json",
+        "sha256": "50236cf8bfd1adf0cc45d84a9d0260655b9d4c8b68cc212eac6a9075093803f9",
+        "type": "file"
+      },
+      {
+        "bytes": 1484,
+        "path": "wave35-r165-native-green-attempt-1/native-green-result.json",
+        "sha256": "229724d44cb0693f3bdbc9d813bf03288883fe02d2e59b1991bcbd4e34d0ccd0",
+        "type": "file"
+      },
+      {
+        "bytes": 682,
+        "path": "wave35-r165-native-green-attempt-1/native-green.log",
+        "sha256": "1a46367688178b5a1794778fd06fc225be90d7ef05bea0ef59cb9a2a52eb5d5c",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-native-green-attempt-1-spec.json": [
+      {
+        "bytes": 1294,
+        "path": "wave35-r165-native-green-attempt-1-spec.json",
+        "sha256": "bd5e97d379ed15c251cbc65eb1a3f88205d4fd08d204d3c0e5773357e887ea6f",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r165-owned-spec.json",
+        "sha256": "78841600969284fa043b5833511ab4fc4b949102dc8c3219f151a9b748d68046",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-runner-acceptance-attempt-1": [
+      {
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance",
+        "type": "directory"
+      },
+      {
+        "bytes": 5721,
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/failure-controller-1aedd23029b6beac.json",
+        "sha256": "7587e234e2e5ef676983a93fda1593d238b6b1f58558c4bfe74df7b2c1098374",
+        "type": "file"
+      },
+      {
+        "bytes": 5522,
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/failure-controller-1cd6809988e530a3.json",
+        "sha256": "25720ff184ffe21156761ac661358a563ceb6e26cb48f6934654aad017eb96f7",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance/identity-controller.json",
+        "sha256": "5e5fd2cd136e8e2fecc0692c60d7226914660d2786516e0b42ef482ff9f53f6f",
+        "type": "file"
+      },
+      {
+        "bytes": 1382,
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-failure-index.json",
+        "sha256": "eec407fbb8db8f3fced370d69a14199f560e8b747d518c11c352cd6a42423134",
+        "type": "file"
+      },
+      {
+        "bytes": 958,
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-negative-custody.json",
+        "sha256": "68d8129dcd65354145fdb4bc1edb4dc6705e9230e2f7e6ec0471446f1f231e7a",
+        "type": "file"
+      },
+      {
+        "bytes": 1184,
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance-result.json",
+        "sha256": "92d48d47d8a44a732523f6cc6b0704868736b8744fe8325429d6d570534847a2",
+        "type": "file"
+      },
+      {
+        "bytes": 11205,
+        "path": "wave35-r165-runner-acceptance-attempt-1/runner-acceptance.log",
+        "sha256": "f5a06f404940f2d9f7b725cb74f4225684944388f10705e1b17a323292ee27c4",
+        "type": "file"
+      }
+    ],
+    "wave35-r165-runner-acceptance-attempt-1-spec.json": [
+      {
+        "bytes": 950,
+        "path": "wave35-r165-runner-acceptance-attempt-1-spec.json",
+        "sha256": "266c0667666b0288b6a4d6d06d0e9cefd7eab736442f851bcec04bd72a271501",
+        "type": "file"
+      }
+    ]
+  },
+  "preparation_notes": [
+    "Generic inventory preserved unchanged in closed-r* directories; this additive metadata groups same-check retries and classifies static/diagnostic/preexecution work.",
+    "All exact observed bytes and null/unavailable facts preserved. Historical source subtree attestation remains root supplied."
+  ],
+  "round": 165,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OWN-SOURCE HISTORY FOR ROOT-CHOSEN R168 CHECKPOINT"
+}

@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6486,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv0/output/attempt/a/command.json",
+    "sha256": "cceb5efece6f7bcad0ab606a1b99918ab34bfcdad975d175e6914c42e243bcb3"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv0/support/identity-policy.json",
+    "sha256": "e35eb8cf84c434bc7fd693817697b027db4d9521d7160d5f26948c0a22645cfe"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244242,
+    "ppid": 244241,
+    "start_identity": "14145642"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv0/output/attempt/source-0002.json",
+    "sha256": "c1745e7c05025b5794283c0c41723c34dd84c918c93381f63791b33d7f7d975e"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13788,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv0/metadata/spec.json",
+    "sha256": "0cf47f239f2a17a2f0a19c7c50da35f9c6f388b032232e138bcd08499e8ae47f"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv0/support/grant.json",
+    "sha256": "aa0449ff7776e648896434cb1378cf0028bf753b36787c99e5c74f3aa518c4af"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "manual-causal",
+  "exit_code": 0,
+  "seconds": 14.982189985981677,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_retirement_cancels_real_pending_b_work_once_and_preserves_a_work",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_real_temporal_dac_and_nonempty_delayed_command_survive_b_retirement",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_session_pid_mismatch_refuses_before_env_guard_and_preserves_original_owner",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r148-manual-causal-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-causal-attempt-1/manual-causal.log",
+  "sha256": "c0af15076ab2cd31392d025aeeef88f8e2e92a7975ce3de85c383382c809587e",
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "manifest_sha256": "ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

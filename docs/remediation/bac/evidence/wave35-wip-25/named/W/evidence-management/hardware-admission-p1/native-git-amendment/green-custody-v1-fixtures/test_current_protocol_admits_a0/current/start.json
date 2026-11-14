@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-14T12:18:52.451747Z",
+  "candidate": {
+    "bytes": 4929,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/candidate.json",
+    "sha256": "72f1c9fd4e013ee22a8477712088bbe4c2b689b1c78e4f1d7fa91b444b9d9266"
+  },
+  "dependencies": {
+    "bytes": 2238,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/environment.json",
+    "sha256": "5c376b1f5e9255d5cafd82dc8108f4c642fbc6306979c9c2cc0fea2952ab360b"
+  },
+  "request": {
+    "bytes": 8728,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/request.json",
+    "sha256": "b688bb94ae1e316083a252bcd503cb279e64830ad52e4789a73ceba210f894ee"
+  },
+  "tools": [
+    {
+      "name": "protocol",
+      "reference": {
+        "bytes": 34654,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "name": "capture",
+      "reference": {
+        "bytes": 64451,
+        "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+        "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+      }
+    },
+    {
+      "name": "runner",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    },
+    {
+      "name": "identity",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    },
+    {
+      "name": "verifier",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    },
+    {
+      "name": "children-verifier",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    }
+  ]
+}

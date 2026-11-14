@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-14T13:14:27.067938Z",
+  "error_type": "ValueError",
+  "reason": "actual affinity differs from authorized allocation",
+  "schema": "bac-hardware-runner-failure-v1",
+  "spec": {
+    "bytes": 8944,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_actual_spawned_affinity_i0/metadata/spec.json",
+    "sha256": "720aa9e52ac2dc89c72842fe079f60e01308817fb37aca7150bbe67c7c91b021"
+  }
+}

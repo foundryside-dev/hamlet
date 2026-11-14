@@ -1,0 +1,20 @@
+{
+  "schema": "bac-p4-independent-astra-review-v1",
+  "verdict": "CHANGES REQUIRED: two unresolved P2 findings in bounded current-capture consumer slice",
+  "source_sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe",
+  "source_prepost_record": "probe-result.json",
+  "sources_stable": true,
+  "read_scope": {"whole_implementation_bodies": 3, "implementation_lines": 4252, "own_probe_lines": 61, "total_lines": 4313, "total_bodies": 4},
+  "findings": [
+    {"id": "P4-ASTRA-V4-01", "priority": "P2", "title": "Retained capture scratch footprint not checked against overhead", "witness": "unmodified CPU-common fixture: ten mandatory files + directory, zero authorized scratch overhead, public verify satisfied"},
+    {"id": "P4-ASTRA-V4-02", "priority": "P2", "title": "Native kernel birth-token isdigit accepts impossible Unicode superscript", "witness": "Git source-before token superscript2: full verify satisfied; mandatory driver token superscript2: initial accepted"}
+  ],
+  "runtime": {"pid": 243872, "start": "2026-11-14T13:12:24.402461+00:00", "end": "2026-11-14T13:12:26.058185+00:00", "exit_code": 0, "affinity": [0], "rlimit_as_bytes": 4294967296},
+  "artifacts": [
+    {"path": "REVIEW.md", "sha256": "09d94fbb9967ec29a9f0c70436f4c4c4e4cbb3983a30a950a4b36d837ad51520"},
+    {"path": "probe.py", "sha256": "f129b083ffcb92d0cbb46d3c9ee1b1e3150d1ddce77ff9ade15774338be3ff43"},
+    {"path": "probe-result.json", "sha256": "7f9f4b992289d07ee0b9d4eefab456131986717ced822592077de0d3e9b06987"},
+    {"path": "probe.log", "sha256": "4330670cb16f247cc85f4def160731f7621c9d7a0708e8daf711933cab7639bd"}
+  ],
+  "limits": "Synthetic fixture imports only. No test/P2/P3/P5 source inspected, no actual capture/Git/APP/hardware. Full live strict chain, CUDA, phase/guard custody and future P2 manifest/wait/lease integration remain required and unrun."
+}

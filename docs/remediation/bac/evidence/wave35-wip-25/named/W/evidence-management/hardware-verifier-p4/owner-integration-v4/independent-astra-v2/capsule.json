@@ -1,0 +1,18 @@
+{
+ "schema":"bac-p4-independent-astra-repair-verification-v1",
+ "verdict":"APPROVED BOUNDED CURRENT-CAPTURE REPAIRS ONLY; NOT FULL P4 QUALIFICATION",
+ "source_sha256":"041f3b5bcd6ee8226744535938e9a27bd982db6077b10cb43fab42427533c360",
+ "fixture_sha256":"015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816",
+ "p1_unchanged_sha256":"d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+ "findings":{"P4-ASTRA-V4-01":"remediated for actual retained allocation footprint; unobserved producer prepublication remains explicitly unavailable","P4-ASTRA-V4-02":"remediated: ASCII predicate consistently enforced"},
+ "unresolved_bounded_P1_P2_findings":[],
+ "probe":{"passed":7,"failed":0,"exit_code":0,"pid":246137,"affinity":[0],"rlimit_as":4294967296,"start":"2026-11-14T13:32:06.658125+00:00","end":"2026-11-14T13:32:15.443600+00:00","sources_stable":true},
+ "scope":{"implementation_lines":4383,"preserved_v1_probe_lines":61,"v2_probe_lines":85,"total_lines":4529,"physical_bodies":5},
+ "artifacts":[
+  {"path":"REVIEW.md","sha256":"c8e9dd643bc8ec02c74e1a731c9a70ae85cb4008de7afadf423fbfb488d87e2e"},
+  {"path":"probe.py","sha256":"632f41de3e2b38a354444b3436204cee51d4e3a1f211bc9d520ed34164528a28"},
+  {"path":"probe-result.json","sha256":"d9db8ac45ab58cb97a1fdd2d2659e5619104809a9a069d50792eadd1ab99fe1d"},
+  {"path":"probe.log","sha256":"e541fe57a04dd9944dc254c437de4bc9f06a6742f369317a74f0f8ecb6975c6c"}
+ ],
+ "remaining":"New P2 manifest/wait/lease integration; actual full P3/P2/P4/P5 chain, live strict/phase/guard custody, abrupt-death cleanup, APP assertions and real CUDA remain required and unrun."
+}

@@ -1,0 +1,9 @@
+{
+  "admission": null,
+  "disposition": "refused",
+  "reasons": [
+    "ValueError: registry differs from candidate"
+  ],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": null
+}

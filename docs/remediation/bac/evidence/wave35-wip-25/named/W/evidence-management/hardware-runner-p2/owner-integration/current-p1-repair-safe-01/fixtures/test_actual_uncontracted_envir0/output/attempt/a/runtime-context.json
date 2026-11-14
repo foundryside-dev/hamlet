@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6439,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_actual_uncontracted_envir0/output/attempt/a/command.json",
+    "sha256": "9f0a3baa46dc21b75c818b20065018f3c0e7d8fbbf0f300ea2b0748b15acbe84"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_actual_uncontracted_envir0/support/identity-policy.json",
+    "sha256": "162093f31d20e17581dca2e42c81fd2c9daa9a4cf6ca25f98fb6bafe15d1de8e"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244070,
+    "ppid": 244069,
+    "start_identity": "14134966"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_actual_uncontracted_envir0/output/attempt/source-0002.json",
+    "sha256": "421501e7dd5b6651c17dfccbb02d49a6dde648b2d528da7399935164c3434e57"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13741,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_actual_uncontracted_envir0/metadata/spec.json",
+    "sha256": "30d561ab6346fd72261df9adffcb2f18536984d588a223957cade16e2ad07c88"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_actual_uncontracted_envir0/support/grant.json",
+    "sha256": "e5dd318e93c2099f57430929573036195892f1f815778192df776a42b4b833e2"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "argv": [
+    "/usr/bin/python3.13",
+    "-c",
+    "import time; time.sleep(1)",
+    "--bac-identity-policy",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_actual_spawned_affinity_i0/support/identity-policy.json",
+    "--bac-identity-policy-sha256",
+    "986b05420a4da7da8e30816194edaa0cf62e5de92b592e464782d112f63065c7"
+  ],
+  "at": "2026-11-14T13:16:10.728493Z",
+  "attempt_id": "attempt",
+  "cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_actual_spawned_affinity_i0/source",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "",
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "17"
+  },
+  "job_id": "a",
+  "kind": "command",
+  "runner": {
+    "bytes": 146230,
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+  },
+  "schema": "bac-hardware-v1",
+  "seed": {
+    "cuda": [],
+    "numpy": 18,
+    "policy": "explicit",
+    "python": 17,
+    "torch": 19
+  },
+  "spec": {
+    "bytes": 8944,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_actual_spawned_affinity_i0/metadata/spec.json",
+    "sha256": "79d9caf901fe873470eb8f7ba67f7a4a433648a6485c189b3b545a5a8cfbe9ff"
+  }
+}

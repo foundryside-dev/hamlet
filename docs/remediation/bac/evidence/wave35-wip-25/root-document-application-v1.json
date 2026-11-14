@@ -1,0 +1,58 @@
+{
+  "approved_source_deltas": {
+    "docs/remediation/bac/STATUS.md": "c4bf8475caa9c215e80048eb4b94aa2bf46e61aaf0c16b1392b80336c2ad1a63"
+  },
+  "at": "2026-11-14T14:04:01.586651+00:00",
+  "document_approval": {
+    "bytes": 2858,
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/ROOT-DOCUMENT-REVIEW-v1.json",
+    "sha256": "bb0ab3476833de0934e1bd6508ff521a4231dad965674e8fe371408dffc87a58"
+  },
+  "documents": [
+    {
+      "before_sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb",
+      "bytes": 123213,
+      "destination": "docs/remediation/bac/STATUS.md",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/STATUS.diff",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/STATUS.md",
+      "sha256": "c4bf8475caa9c215e80048eb4b94aa2bf46e61aaf0c16b1392b80336c2ad1a63"
+    },
+    {
+      "before_sha256": "6c8bd92c3d12727328775ca0875049358e403fbe177438de0e3d03c7f860dbc6",
+      "bytes": 34236,
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/EVIDENCE-INDEX.diff",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/EVIDENCE-INDEX.md",
+      "sha256": "37e3c73038211e75e533dc74ec9be18d723b4f70075dd5180fa43c103f999cb8"
+    },
+    {
+      "before_sha256": "643bbcd6b1668cd734f4ca67ab71c91a70c649e7f39c062c1a6715823218e8ad",
+      "bytes": 33618,
+      "destination": "README.md",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/README.diff",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/README.md",
+      "sha256": "65de2527f5de9ebe9c56ce09f4ef0356a6b06406c8d24e35d1356a2c4fe9e658"
+    },
+    {
+      "before_sha256": "dcb18bef329b2161fb5b3a5a0aed3791b685bd1d0fa4d8dc54a7a6a0d54e73f0",
+      "bytes": 15045,
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.diff",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "sha256": "26a8d4f882a0d73f027919138f9a2e9708ec1ab5e91590a6023eeb6ded812915"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 7433,
+      "destination": "docs/remediation/bac/PAUSE-HANDOFF-WIP25.md",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/PAUSE-HANDOFF-WIP25.diff",
+      "new_document": true,
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/PAUSE-HANDOFF-WIP25.md",
+      "sha256": "8c3bfff8017e0d497bc7a7f2d4e19c5ce4392f4ecb037278fa5ebcd88a547789"
+    }
+  ],
+  "execution_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "scope": "Only five reviewed documentation postimages applied; runtime sources remain exact R148.",
+  "source_config_artifact_before_after": "PASS with exact approved STATUS documentation delta only",
+  "status": "PASS"
+}

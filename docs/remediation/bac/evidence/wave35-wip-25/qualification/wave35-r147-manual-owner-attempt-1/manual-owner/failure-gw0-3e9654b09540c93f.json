@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_retirement_cancels_real_pending_b_work_once_and_preserves_a_work",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "E   AssertionError: assert 1 == 2\n     +  where 1 = len({104: [ScheduledItem(due_tick=104, commands=(), scope='agent', entity_id=0, context_overrides={}, effect_instance=None), ScheduledItem(due_tick=104, commands=(), scope='agent', entity_id=1, context_overrides={}, effect_instance=None)]})\n     +    where {104: [ScheduledItem(due_tick=104, commands=(), scope='agent', entity_id=0, context_overrides={}, effect_instance=None), ScheduledItem(due_tick=104, commands=(), scope='agent', entity_id=1, context_overrides={}, effect_instance=None)]} = <townlet.effects.scheduler.Scheduler object at 0x7eff1ce46fc0>.pending",
+  "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "manual-integrated-collection",
+  "exit_code": 0,
+  "seconds": 6.4675627179967705,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+    "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+    "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+    "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r148-manual-integrated-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-integrated-collection-attempt-1/manual-integrated-collection.log",
+  "sha256": "78fb251b7c93f0cef794aa6bf2efedf59e7463de6a18241ebb7445c796de5c13",
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "manifest_sha256": "ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

@@ -1,0 +1,107 @@
+"""Synthetic consumer review; never calls run/source/Git/discovery."""
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import resource
+import sys
+import time
+
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+OUT = Path(__file__).parent
+SOURCES = [Q / name for name in ('run_bac_hardware_v1.py', 'bac_hardware_protocol_v1.py',
+                               'capture_bac_hardware_v1.py', 'test_run_bac_hardware_v1.py')]
+
+def pins():
+    return [{'path': str(p), 'bytes': p.stat().st_size, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in SOURCES]
+
+def load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+def outcome(call):
+    try:
+        call()
+        return {'accepted': True}
+    except Exception as exc:
+        return {'accepted': False, 'exception': type(exc).__name__, 'message': str(exc)}
+
+resource.setrlimit(resource.RLIMIT_AS, (4 * 1024**3, 4 * 1024**3))
+before = pins()
+sys.path.insert(0, str(Q))
+f = load('astra_fixture_data', SOURCES[3])
+r = f.implementation()
+p1 = load('astra_capture_source', SOURCES[2])
+rows = []
+started = time.time()
+
+def fixture(name):
+    root = OUT / name
+    root.mkdir()
+    path, spec, _ = f.sealed_fixture(root)
+    return path, spec
+
+def consume(path):
+    return r.Custody(path, capture_custody_ref=f.fixture_custody_ref(path))
+
+path, spec = fixture('baseline')
+c = consume(path)
+d = path.parent
+allocated = d.stat().st_blocks * 512 + sum(p.stat().st_blocks * 512 for p in d.iterdir())
+rows.append({'case': 'baseline_and_capture_footprint', 'accepted': True,
+             'observed_retained_bytes': allocated, 'observed_retained_inodes': 1 + len(list(d.iterdir())),
+             'declared_overhead': c.allocation['overhead'],
+             'intended_assertion': 'reject retained capture footprint exceeding declared overhead'})
+
+arabic = str.maketrans('0123456789', '٠١٢٣٤٥٦٧٨٩')
+for field in ('cpu_max', 'cpuset', 'memory_max', 'memory_current', 'meminfo'):
+    path, spec = fixture('unicode_' + field)
+    def mutate(admission, wrapper, raw, field=field):
+        if field == 'meminfo':
+            raw[field] = raw[field].translate(arabic)
+        else:
+            for group in raw['cgroups']:
+                group[field] = group[field].translate(arabic)
+    f.reseal_admission(path, spec, mutate)
+    observed = outcome(lambda: consume(path))
+    admission = f.fixture_read(Path(spec['admission']['path']))
+    raw_ref = admission['affinity']['provenance']
+    raw = f.fixture_read(Path(raw_ref['path']))
+    request = f.fixture_read(Path(admission['request']['path']))
+    producer = p1.assess_resources(request, raw, raw_ref)
+    rows.append({'case': 'unicode_' + field, **observed,
+                 'producer_reasons': producer['reasons'],
+                 'intended_assertion': 'reject non-ASCII actual Linux proc/cgroup numeric tokens'})
+
+path, spec = fixture('available_above_total')
+def invalid_memory(admission, wrapper, raw):
+    raw['meminfo'] = 'MemTotal: 1 kB\nMemAvailable: 10000 kB\n'
+    admission['host_ram_bytes']['value'] = 1024
+    admission['limited_ram_bytes']['value'] = 1024
+f.reseal_admission(path, spec, invalid_memory)
+observed = outcome(lambda: consume(path))
+admission = f.fixture_read(Path(spec['admission']['path']))
+raw_ref = admission['affinity']['provenance']
+producer = p1.assess_resources(f.fixture_read(Path(admission['request']['path'])),
+                             f.fixture_read(Path(raw_ref['path'])), raw_ref)
+rows.append({'case': 'available_above_total', **observed, 'producer_reasons': producer['reasons'],
+             'intended_assertion': 'reject MemAvailable above MemTotal as P1 does'})
+
+path, spec = fixture('external_pin_control')
+pin = f.fixture_custody_ref(path)
+manifest_path = Path(pin['path'])
+manifest_path.write_text(manifest_path.read_text() + ' ')
+rows.append({'case': 'external_pin_control', **outcome(lambda: r.Custody(path, capture_custody_ref=pin)),
+             'intended_assertion': 'reject changed manifest under original external pin'})
+
+after = pins()
+report = {'scope': 'Synthetic pure consumers only; no actual capture/Git/APP/CUDA/job execution',
+          'before': before, 'after': after, 'unchanged': before == after,
+          'affinity': sorted(os.sched_getaffinity(0)), 'ram_limit': resource.getrlimit(resource.RLIMIT_AS),
+          'elapsed_seconds': time.time() - started, 'rows': rows}
+(OUT / 'probe-results.json').write_text(json.dumps(report, indent=2, sort_keys=True) + '\n')
+print(json.dumps(report, sort_keys=True))

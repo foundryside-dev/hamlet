@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_retirement_cancels_real_pending_b_work_once_and_preserves_a_work",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AssertionError: ENV must issue an authentic manual physical session\n    assert False\n     +  where False = callable(None)",
+  "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492"
+}

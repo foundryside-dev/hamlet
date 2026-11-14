@@ -1,0 +1,7 @@
+{
+  "at": "2026-11-14T14:04:01.467090+00:00",
+  "changes": "Only actual terminal review, its verification dependency, final status and seal UTC added; frozen subject and qualification unchanged.",
+  "draft_sha256": "e5cba5308599e01f73046d0e65811d83d9159808814a4ea703de501104462d4e",
+  "final_sha256": "db43b450eddab3f17b5e7241f2523f582b9abea002f0f9d5e933bfb3ce8e0a79",
+  "status": "PASS"
+}

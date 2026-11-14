@@ -1,0 +1,22 @@
+{
+  "command": {
+    "bytes": 810,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_timeout_preserves_actual_0/out/attempt/timeout/command.json",
+    "sha256": "0f5c34e47bb20d2bf4547174fd28e033e5323eaca24b2c6397b9e584d09c23aa"
+  },
+  "disposition": "interrupted",
+  "end": "2026-11-14T13:17:32.003323Z",
+  "exit_code": -9,
+  "job_id": "timeout",
+  "log": {
+    "bytes": 15,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_timeout_preserves_actual_0/out/attempt/timeout/stdout.log",
+    "sha256": "0957fc7a1e324ec14badfc9e4a9b499d9399541067a9976a2082a5d86d4ad908"
+  },
+  "monotonic_end_ns": 141562343775418,
+  "monotonic_start_ns": 141562088816722,
+  "process_records": [],
+  "reason": "job timeout",
+  "signal": 9,
+  "start": "2026-11-14T13:17:31.748333Z"
+}

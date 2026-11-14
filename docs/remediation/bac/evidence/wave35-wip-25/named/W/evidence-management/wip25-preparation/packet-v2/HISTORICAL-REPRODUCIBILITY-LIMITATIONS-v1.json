@@ -1,0 +1,455 @@
+{
+  "authority": "Evidence preservation limitation only; no qualification waiver or invented historical bytes.",
+  "current_snapshots": {
+    "bytes": 2739,
+    "path": "evidence-management/wip25-preparation/root-tool-snapshot-v1/index.json",
+    "root": "W",
+    "sha256": "7191eabcffb75f23397551d48593d5b1734db4bf292bbfde7f91b9ed48af1399"
+  },
+  "original_claims": [
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 191612,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "f40f63b3ec7c2a4cf5b7b2e97876d283451a66401b5382380fcb402a11698eca"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 191612,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "f40f63b3ec7c2a4cf5b7b2e97876d283451a66401b5382380fcb402a11698eca"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 168515,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "57cf13024bd64ce17201fb79841fbad71888a46bc6b50f28c6b067abcd835edd"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 168515,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "57cf13024bd64ce17201fb79841fbad71888a46bc6b50f28c6b067abcd835edd"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146029,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "e944e221017b4f0ebe49e4b8f2c88c6cd227a3fb5bffbc21a0f1fcb0ecb026d0"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146029,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "e944e221017b4f0ebe49e4b8f2c88c6cd227a3fb5bffbc21a0f1fcb0ecb026d0"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 97507,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "7a598b46752b66d2af0be98f127de3246d414aeaaabd66345c32da3c529942bc"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 97507,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "7a598b46752b66d2af0be98f127de3246d414aeaaabd66345c32da3c529942bc"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 97507,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "7a598b46752b66d2af0be98f127de3246d414aeaaabd66345c32da3c529942bc"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 97507,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "7a598b46752b66d2af0be98f127de3246d414aeaaabd66345c32da3c529942bc"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 111150,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "d746517b05e16cdc2e15ec8e2ef4e4f226390fa948c4f73d8fd236d1306aec0b"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 111150,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "d746517b05e16cdc2e15ec8e2ef4e4f226390fa948c4f73d8fd236d1306aec0b"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 111150,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "d746517b05e16cdc2e15ec8e2ef4e4f226390fa948c4f73d8fd236d1306aec0b"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 111150,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+        "sha256": "d746517b05e16cdc2e15ec8e2ef4e4f226390fa948c4f73d8fd236d1306aec0b"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 168515,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "57cf13024bd64ce17201fb79841fbad71888a46bc6b50f28c6b067abcd835edd"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 168515,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "57cf13024bd64ce17201fb79841fbad71888a46bc6b50f28c6b067abcd835edd"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146029,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "e944e221017b4f0ebe49e4b8f2c88c6cd227a3fb5bffbc21a0f1fcb0ecb026d0"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146029,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "e944e221017b4f0ebe49e4b8f2c88c6cd227a3fb5bffbc21a0f1fcb0ecb026d0"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 191612,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "f40f63b3ec7c2a4cf5b7b2e97876d283451a66401b5382380fcb402a11698eca"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 191612,
+        "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+        "sha256": "f40f63b3ec7c2a4cf5b7b2e97876d283451a66401b5382380fcb402a11698eca"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146029,
+        "lines": 2854,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "e944e221017b4f0ebe49e4b8f2c88c6cd227a3fb5bffbc21a0f1fcb0ecb026d0"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    },
+    {
+      "reason": "Missing or changed named source; exact alias required.",
+      "reference": {
+        "bytes": 146230,
+        "lines": 2856,
+        "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+        "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+      },
+      "resolved_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+    }
+  ],
+  "source_lookup_provenance": "P2 source author /root/bac_p2_source_completion and test author /root/bac_p2_test_completion confirmed their two source/two test bodies were not retained in finite owned locations; metadata cannot substitute. Two P4 historical test bodies unresolved in bounded existing snapshot lookup. Root explicitly directs final publication with all six conspicuous limitations, no further search or reconstruction.",
+  "status": "SIX EXACT HISTORICAL BODIES UNAVAILABLE; 44 ORIGINAL REFERENCES RETAINED",
+  "versions": [
+    {
+      "disposition": "Exact historical bytes unavailable in bounded retained locations; original recorded source hash/results preserved. No reconstruction, no alias to different bytes, no current-source execution claim.",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "recorded_bytes": 146230,
+      "references": 23,
+      "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+    },
+    {
+      "disposition": "Exact historical bytes unavailable in bounded retained locations; original recorded source hash/results preserved. No reconstruction, no alias to different bytes, no current-source execution claim.",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "recorded_bytes": 191612,
+      "references": 4,
+      "sha256": "f40f63b3ec7c2a4cf5b7b2e97876d283451a66401b5382380fcb402a11698eca"
+    },
+    {
+      "disposition": "Exact historical bytes unavailable in bounded retained locations; original recorded source hash/results preserved. No reconstruction, no alias to different bytes, no current-source execution claim.",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "recorded_bytes": 168515,
+      "references": 4,
+      "sha256": "57cf13024bd64ce17201fb79841fbad71888a46bc6b50f28c6b067abcd835edd"
+    },
+    {
+      "disposition": "Exact historical bytes unavailable in bounded retained locations; original recorded source hash/results preserved. No reconstruction, no alias to different bytes, no current-source execution claim.",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "recorded_bytes": 146029,
+      "references": 5,
+      "sha256": "e944e221017b4f0ebe49e4b8f2c88c6cd227a3fb5bffbc21a0f1fcb0ecb026d0"
+    },
+    {
+      "disposition": "Exact historical bytes unavailable in bounded retained locations; original recorded source hash/results preserved. No reconstruction, no alias to different bytes, no current-source execution claim.",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "recorded_bytes": 97507,
+      "references": 4,
+      "sha256": "7a598b46752b66d2af0be98f127de3246d414aeaaabd66345c32da3c529942bc"
+    },
+    {
+      "disposition": "Exact historical bytes unavailable in bounded retained locations; original recorded source hash/results preserved. No reconstruction, no alias to different bytes, no current-source execution claim.",
+      "original_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "recorded_bytes": 111150,
+      "references": 4,
+      "sha256": "d746517b05e16cdc2e15ec8e2ef4e4f226390fa948c4f73d8fd236d1306aec0b"
+    }
+  ]
+}

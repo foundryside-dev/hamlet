@@ -1,0 +1,9 @@
+{
+  "admission": null,
+  "disposition": "refused",
+  "reasons": [
+    "ValueError: stub source Git failure"
+  ],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": null
+}

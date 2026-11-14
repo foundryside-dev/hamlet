@@ -1,0 +1,225 @@
+{
+  "schema": "bac-p4-bounded-review-repair-test-completion-v1",
+  "at": "2026-11-14T13:31:06.742691+00:00",
+  "status": "280 INERT TESTS PASS; INDEPENDENT RE-REVIEW AND ROOT ADOPTION REQUIRED; NO HARDWARE QUALIFICATION",
+  "supersedes_current_subject_not_history": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/HANDOFF-v1.json",
+    "sha256": "013a1f8f51eee3659cee585f64ffcb50ae16ec2cf4837c2a06d53e23b59431ba",
+    "bytes": 13799
+  },
+  "review_findings": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v1/REVIEW.md",
+    "sha256": "09d94fbb9967ec29a9f0c70436f4c4c4e4cbb3983a30a950a4b36d837ad51520",
+    "bytes": 5297
+  },
+  "independent_original_probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v1/probe-result.json",
+    "sha256": "7f9f4b992289d07ee0b9d4eefab456131986717ced822592077de0d3e9b06987",
+    "bytes": 4669
+  },
+  "source_frozen": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "sha256": "041f3b5bcd6ee8226744535938e9a27bd982db6077b10cb43fab42427533c360",
+      "bytes": 146323,
+      "lines": 2865
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "sha256": "015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816",
+      "bytes": 127616,
+      "lines": 2959
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c",
+      "bytes": 79319,
+      "lines": 1518
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+      "bytes": 64451,
+      "lines": 992
+    }
+  ],
+  "test_snapshot": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-final-test.py.txt",
+    "sha256": "015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816",
+    "bytes": 127616
+  },
+  "red_test_snapshot": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-red-test.py.txt",
+    "sha256": "a5a6ce3695c7c9f05f51ae5c5f8aec6b6dd74ed3cf539fb7d7759c4bab88f976",
+    "bytes": 125814
+  },
+  "preservation": {
+    "prior_case_count": 266,
+    "terminal_case_count": 280,
+    "prior_functions": 80,
+    "current_functions": 85,
+    "missing_prior_functions": [],
+    "changed_prior_parametrizations": [],
+    "original172_also_retained": true
+  },
+  "source_scope": {
+    "owned_test_lines": 2959,
+    "permitted_P0_lines": 526,
+    "combined_lines": 3485,
+    "implementation_body_inspection": "Only assigned P4 test body; no P4/P1/P2/P3/P5 implementation bodies inspected. Metadata interfaces and independent review prose consumed."
+  },
+  "attempts": [
+    {
+      "id": "review-repair-attempt-01",
+      "result": {
+        "passed": 2,
+        "failed": 11,
+        "deselected": 266
+      },
+      "interpretation": "Meaningful RED on oldbcba4418: four zero/undersized footprint, six Unicode birth tokens, destination inside capture namespace wrongly accepted.",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-01/execution.json",
+        "sha256": "2ff7bce707917d78cea607e30d7692065a0b3cdf8b627c243dfd43865e989730",
+        "bytes": 2969
+      },
+      "child": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-01/child.json",
+        "sha256": "2eff4e92d09a9840dee3fa8b85005f91b802316f17ce4d6725f4b59af4834c4d",
+        "bytes": 417
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-01/pytest.log",
+        "sha256": "188c56db71dc525c6021203cf2f3281a436ea24c1d8efbc800ea31a4e59db8b4",
+        "bytes": 2948
+      }
+    },
+    {
+      "id": "review-repair-attempt-02",
+      "result": {
+        "passed": 280,
+        "failed": 0,
+        "deselected": 0
+      },
+      "interpretation": "Terminal overlapping full-suite GREEN; includes prior266 and14new cases.",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/execution.json",
+        "sha256": "86546be478bdfa315767db07df2b4c1f33593b8abb6f154881cb676cb1dd7af3",
+        "bytes": 2887
+      },
+      "child": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/child.json",
+        "sha256": "a8ad726f8f31c8c15d36d02389cdeb1207a90f17240ba3634fe9beb0eeb78d82",
+        "bytes": 417
+      },
+      "runtime_observation": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/runtime-observation.json",
+        "sha256": "3634f11d9349323871bf26e9cdaf22792a48a977d3bf1201d1f16cab0db24159",
+        "bytes": 776
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/pytest.log",
+        "sha256": "11c9572290027bd79a30778921d602cc0352f0220245e021b102666565887379",
+        "bytes": 352
+      }
+    }
+  ],
+  "static_attempts": [
+    {
+      "id": "review-repair-static-01",
+      "black": "PASS",
+      "ruff": "FAIL B023 local fixture closure; explicitly bound loop variable before final run",
+      "black_record": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-static-01/black.json",
+        "sha256": "c81e55d5cc4b02d68677a3d83f5c2781aadf78ead42a3ee66fae4093d16ccd38",
+        "bytes": 651
+      },
+      "ruff_record": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-static-01/ruff.json",
+        "sha256": "aa3a6a66e8d0382bcbcfbe4566b7267f2a80a737e5ce83c4bd2fffe4c3e40d32",
+        "bytes": 615
+      }
+    },
+    {
+      "id": "review-repair-static-02",
+      "black": "PASS",
+      "ruff": "PASS",
+      "black_record": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-static-02/black.json",
+        "sha256": "b5675dd2f57a1eca59ccdf9c8b4e6fafe7cc26fee2ee9d46bbfe14820032ff39",
+        "bytes": 651
+      },
+      "ruff_record": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-static-02/ruff.json",
+        "sha256": "24de4a90127118924450f337e1062d0cc61bd20398ab04e56bc524dff4cc898b",
+        "bytes": 615
+      },
+      "black_log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-static-02/black.log",
+        "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+        "bytes": 55
+      },
+      "ruff_log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-static-02/ruff.log",
+        "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+        "bytes": 19
+      }
+    }
+  ],
+  "retained_footprint_examples": [
+    {
+      "reference": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a0/receipt.json.components/.capture-footprint.json",
+        "sha256": "60f3d98999de946d6c4b4b3ae448bd1c8fd7fb1cd209f598f1333c3c8135e4ff",
+        "bytes": 15137
+      },
+      "initial_allocated_bytes": 77824,
+      "final_allocated_bytes": 77824,
+      "inodes": 11,
+      "producer_prepublication": {
+        "reason": "P1 does not record its prepublication allocation/projection; these are retained verification cuts only",
+        "state": "unavailable",
+        "value": null
+      }
+    },
+    {
+      "reference": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/receipt.json.components/.capture-footprint.json",
+        "sha256": "f455013fa6fbd1a8b3dca1926afa08620c15164a92540ebcdb36bde13dc64644",
+        "bytes": 15149
+      },
+      "initial_allocated_bytes": 90112,
+      "final_allocated_bytes": 90112,
+      "inodes": 11,
+      "producer_prepublication": {
+        "reason": "P1 does not record its prepublication allocation/projection; these are retained verification cuts only",
+        "state": "unavailable",
+        "value": null
+      }
+    }
+  ],
+  "changes": [
+    "Baseline fixture reserves1MiB allocated scratch bytes and11inodes; capacity equals overhead plus jobbudget, rawavailable2MiB/100inodes, preserving independent budget recomputation.",
+    "Two positive controls converge to exact currently observed allocated footprint, includingD plus tenfiles; four negatives preserve capacity-minus-overhead demand while making overhead zero or one below actual footprint.",
+    "Superscript2 and ArabicIndic2 rejected for nativeGit,driver andordinary process birth tokens; existingASCII positives retained.",
+    "Receipt destination insideD refuses without creating extra capture entries.",
+    "New external .capture-footprint.json artifact binds spec/allocation/verifier identity/UTC/initial andfinalcuts; assertions validate receipt membership, arithmetic, tenfiles/11inodes and unavailable prepublication fact.",
+    "Valid obligation ID capture-footprint remains supported; validator capture-footprint.json coexists with internal .capture-footprint.json."
+  ],
+  "runtime_limitations": [
+    "Actual final/proc cmdline,CPU0 affinity and4GiB address-space limit observed. Selected exec environment retained; independent environ read refused with PermissionError errno13, observed environment explicitlynull.",
+    "No APP,Git,capture,recorder,native driver/hardware execution, branch/worktree/checkout or executable source copies; P5 fixed public runtime import allowed."
+  ],
+  "remaining_gates": [
+    "Independent Astra re-review and probe rerun of exact frozen repair subject remain root-owned. Shared valid fixture now has sufficient overhead; independent zero-overhead witness must account for this changed fixture fact while preserving original probe evidence.",
+    "This checks actual retained verification cuts; P1 unrecorded prepublication allocation/projection remains unavailable and is not reconstructed.",
+    "External capture namespace/no-writer authority and separately owed externally pinned P2capture-manifest/wait/lease integration remain mandatory.",
+    "Live full strict core/replay/fork/producer/phase common graphs, actualP3->P2->P4->P5, abrupt-death cleanup, APP source assertions and actualCUDA remain separate unrun gates."
+  ],
+  "accounting": "280 is the terminal full-suite count, overlapping all previous attempts. Do not sum counts or call this package/hardware qualification."
+}

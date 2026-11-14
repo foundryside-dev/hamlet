@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/black",
+    "--line-length",
+    "140",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py"
+  ],
+  "exit_code": 0,
+  "before_sha256": "8621163ac41502500125698ba191aef09381db3fa2debed8ca48935719e2b460",
+  "after_sha256": "37bd2265b7eaab8605f496a5ed4348ecbefda23e2720c77d2953fd4b51cdc5c9",
+  "before_lines": 1900,
+  "after_lines": 2261
+}

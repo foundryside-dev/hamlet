@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py"
+  ],
+  "pid": 244975,
+  "start": "2026-11-14T13:21:25.574489+00:00",
+  "end": "2026-11-14T13:21:25.635075+00:00",
+  "elapsed_ns": 60594139,
+  "exit_code": 1,
+  "source_sha_before": "a5a6ce3695c7c9f05f51ae5c5f8aec6b6dd74ed3cf539fb7d7759c4bab88f976",
+  "source_sha_after": "a5a6ce3695c7c9f05f51ae5c5f8aec6b6dd74ed3cf539fb7d7759c4bab88f976",
+  "inherited_affinity": [
+    0
+  ],
+  "inherited_rlimit_as": [
+    4294967296,
+    4294967296
+  ]
+}

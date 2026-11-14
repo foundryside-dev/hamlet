@@ -1,0 +1,70 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF                                        [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:169: KeyError: 'capture_custody_ref'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:214: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:214: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:216: AttributeError: module 'p2_runner' has no attribute '_native_git_command'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:235: TypeError: _git() got an unexpected keyword argument 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:237: TypeError: _git() got an unexpected keyword argument 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:237: TypeError: _git() got an unexpected keyword argument 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:237: TypeError: _git() got an unexpected keyword argument 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:244: TypeError: Custody.__init__() got an unexpected keyword argument 'capture_custody_ref'
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_required_custody_api
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[valid]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[stderr]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[exit-bool]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[exit-float]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[exit-null]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[exit-failure]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[errors]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[truncated-extra]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[missing-schema]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[wrong-schema]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[after-null]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[after-mismatch]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[bytes-float]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[bytes-bool]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[argv]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[env]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[cwd]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[pid-bool]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[same-pid]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[ppid]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[host]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[boot]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[empty-birth]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[rollback]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[before-lower]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[after-upper]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_native_record_independent[stdout-null]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_source_git_binding[valid]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_source_git_binding[pre-mutation]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_source_git_binding[post-mutation]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_source_git_binding[failed-query]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_positive_bundle
+33 failed, 244 deselected in 1.50s

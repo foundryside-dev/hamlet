@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "identity_scope": "Checkpoint inclusion anchor only; tooling/design original source identities and status remain in actual records. Not R148 APP execution.",
+  "input": {
+    "bytes": 3369,
+    "path": "evidence-management/hardware-admission-p1/native-git-amendment/root-v2-adoption-v1.json",
+    "root": "W",
+    "sha256": "9b3489237f82591804daad0f3c305a01b705542013ca986e6721b69e9ad4f39f"
+  },
+  "status": "BOUNDED P1 d91d native-Git tooling adoption"
+}

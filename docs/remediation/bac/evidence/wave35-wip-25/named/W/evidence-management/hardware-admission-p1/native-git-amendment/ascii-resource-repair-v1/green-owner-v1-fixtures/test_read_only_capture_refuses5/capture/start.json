@@ -1,0 +1,68 @@
+{
+  "at": "2026-11-14T13:36:20.894974Z",
+  "candidate": {
+    "bytes": 5320,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_read_only_capture_refuses5/candidate.json",
+    "sha256": "1493c2ac569d19ccb60d63476fe0861c062152e9021a41a288fb6e938d35dcfe"
+  },
+  "dependencies": {
+    "bytes": 2353,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_read_only_capture_refuses5/environment.json",
+    "sha256": "efecf0438639e20d3314deb9948cdeb8bde7f0711b12ed3cda4143d9da873a23"
+  },
+  "request": {
+    "bytes": 9257,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_read_only_capture_refuses5/request.json",
+    "sha256": "91b20d1293a92eacb344468a1d3dce05b2007d7dc94920a7fdba365e5b06295f"
+  },
+  "tools": [
+    {
+      "name": "protocol",
+      "reference": {
+        "bytes": 34654,
+        "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+        "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+      }
+    },
+    {
+      "name": "capture",
+      "reference": {
+        "bytes": 64708,
+        "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+        "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7"
+      }
+    },
+    {
+      "name": "runner",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_read_only_capture_refuses5/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    },
+    {
+      "name": "identity",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_read_only_capture_refuses5/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    },
+    {
+      "name": "verifier",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_read_only_capture_refuses5/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    },
+    {
+      "name": "children-verifier",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_read_only_capture_refuses5/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      }
+    }
+  ]
+}

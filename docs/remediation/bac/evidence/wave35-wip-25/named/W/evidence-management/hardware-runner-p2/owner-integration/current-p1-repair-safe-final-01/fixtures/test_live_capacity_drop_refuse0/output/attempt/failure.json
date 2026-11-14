@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-14T13:17:40.365397Z",
+  "error_type": "ValueError",
+  "reason": "current capacity below remaining reservation: cpu_slots",
+  "schema": "bac-hardware-runner-failure-v1",
+  "spec": {
+    "bytes": 9084,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_live_capacity_drop_refuse0/metadata/spec.json",
+    "sha256": "a6c290933d4efdba1596e42b190d181420c27748a8abf099dfb869605f55e8f5"
+  }
+}

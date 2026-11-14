@@ -1,0 +1,76 @@
+C408 Unnecessary `dict()` call (rewrite as a literal)
+   --> bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:265:50
+    |
+263 | …     platform="synthetic",
+264 | …     **{
+265 | …         k: self.fact(v) if cuda else dict(state="unsupported", value=None, reason=k + " not observed", provenance=self.inert)
+    |                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+266 | …         for k, v in (("torch_build", "2.5+cu124"), ("cuda_runtime", "12.4"), ("driver", "550.1"))
+267 | …     },
+    |
+help: Rewrite as a literal
+
+C408 Unnecessary `dict()` call (rewrite as a literal)
+   --> bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:419:26
+    |
+417 |                     self.capture_fact("inert topology")
+418 |                     if cuda
+419 |                     else dict(state="unsupported", value=None, reason="gpu_topology not observed", provenance=self.discovery_ref)
+    |                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+420 |                 ),
+421 |                 environment=self.dependencies,
+    |
+help: Rewrite as a literal
+
+C408 Unnecessary `dict()` call (rewrite as a literal)
+   --> bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:982:16
+    |
+981 |     def capture_fact(self, value):
+982 |         return dict(state="measured", value=value, reason="", provenance=self.discovery_ref)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+983 |
+984 |     def fact(self, value):
+    |
+help: Rewrite as a literal
+
+C408 Unnecessary `dict()` call (rewrite as a literal)
+    --> bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2589:35
+     |
+2587 |                   row["commands"][3]["stdout"] = "GPU-other, 900, allowed-unselected-workload\n"
+2588 |           if path.name == "admission.json" and variant == "optional-topology-failure":
+2589 |               row["gpu_topology"] = dict(
+     |  ___________________________________^
+2590 | |                 state="unsupported", value=None, reason="gpu_topology not observed", provenance=evidence.discovery_ref
+2591 | |             )
+     | |_____________^
+2592 |
+2593 |       capture_change(evidence, mutate)
+     |
+help: Rewrite as a literal
+
+C408 Unnecessary `dict()` call (rewrite as a literal)
+    --> bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2644:46
+     |
+2642 |             if variant == "unlimited-ancestor":
+2643 |                 for key, reason in (("cpu_quota_us", "cpu.max is max"), ("memory_limit_bytes", "memory.max is max")):
+2644 |                     row["cgroups"][0][key] = dict(state="unlimited", value=None, reason=reason, provenance=evidence.discovery_ref)
+     |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2645 |             if variant == "fractional-quota":
+2646 |                 row["cgroups"][1]["cpu_quota_us"]["value"] = 250000
+     |
+help: Rewrite as a literal
+
+C408 Unnecessary `dict()` call (rewrite as a literal)
+    --> bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2650:32
+     |
+2648 |             if variant == "missing-topology":
+2649 |                 for key in ("cpu_topology", "numa_topology"):
+2650 |                     row[key] = dict(state="unsupported", value=None, reason=key + " not observed", provenance=evidence.discovery_ref)
+     |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2651 |         if path.name == "discovery-command.json" and variant == "inherited-cpu-mask":
+2652 |             row["argv"][-1] = json.dumps("GPU-external")
+     |
+help: Rewrite as a literal
+
+Found 6 errors.
+No fixes available (6 hidden fixes can be enabled with the `--unsafe-fixes` option).

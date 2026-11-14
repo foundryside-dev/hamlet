@@ -1,0 +1,63 @@
+{
+  "status": "FINITE P2 SOURCE REPAIR IMPLEMENTED; PURE VALIDATION GREEN; INDEPENDENT REVIEW/ROOT ADOPTION PENDING",
+  "at": "2026-11-14T13:19:16.570973+00:00",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63",
+    "bytes": 146230
+  },
+  "lines": 2856,
+  "test_owner_validation": [
+    {
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/execution.json",
+        "sha256": "2f92aa7dcdf43836bfc0ab4baf2ca571bf7d766101d5af96acf93936f55bc534",
+        "bytes": 3953
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/output.log",
+        "sha256": "e061ce7ca28218447ca9cc66aee4236e7edadeab6448fe127153b26e5de56495",
+        "bytes": 516
+      },
+      "summary": "383 passed, 11 deselected in 56.27s",
+      "scope": "Pure authored-data/inert-process P2 tooling only; no APP/source/Git/hardware qualification",
+      "affinity": [
+        1,
+        2
+      ],
+      "ram_limit_bytes": 4294967296,
+      "source_unchanged": true
+    },
+    {
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-owner-final-01/execution.json",
+        "sha256": "0d4a504a29eebadb9e0fb94ff6c3e1504700797cddb8dd34482c0ce57f51be25",
+        "bytes": 3822
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-owner-final-01/output.log",
+        "sha256": "30f97462d97334f918f28056b49937a096e8f0c421102165cc3a319f11286b82",
+        "bytes": 114
+      },
+      "summary": "9 passed, 385 deselected in 1.86s",
+      "scope": "Pure authored-data/inert-process P2 tooling only; no APP/source/Git/hardware qualification",
+      "affinity": [
+        1,
+        2,
+        3
+      ],
+      "ram_limit_bytes": 4294967296,
+      "source_unchanged": true
+    }
+  ],
+  "counts": "383 safe + 9 separately scheduled owner cases = 392 disjoint pure tests; 2 actual Task4 cases UNRUN",
+  "static": "fresh AST, Ruff, Black140 check passed",
+  "interfaces": "run and Custody require keyword capture_custody_ref; CLI exactly SPEC CUSTODY_PATH CUSTODY_SHA256 CUSTODY_BYTES; _git requires keyword git_ref; native helper closed current wire; capture_sources and capture_boundary present",
+  "limits": "No runtime by source owner. No P0/P1/P3/P4/P5 source body reads or edits. No Git, worktree, branch or executable source copy. Root approved custody model is cooperating-writer orchestration, not kernel exclusion. Actual capture/wait/namespace/Task4/server/full-chain/CUDA remain UNRUN. P4 repin and requalification required on adopted P2 bytes.",
+  "rulings": [
+    "Followed root scope over generic skill Git/worktree/runtime/deletion workflow.",
+    "Root invocation v2 named-reference selector correction adopted; bootstrap literal unchanged.",
+    "Source body formatted Black140 within root revised cap3000, preserving original inert backup.",
+    "Retain failure.json on catchable execution exception when output namespace is safe, using existing cleanup and preserving actual failures."
+  ]
+}

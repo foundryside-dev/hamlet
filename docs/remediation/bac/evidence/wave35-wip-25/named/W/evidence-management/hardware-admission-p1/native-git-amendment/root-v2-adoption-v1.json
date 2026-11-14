@@ -1,0 +1,58 @@
+{
+  "schema": "bac-root-tool-adoption-v1",
+  "at": "2026-11-14T12:22:50.457791+00:00",
+  "root": "/root",
+  "status": "ADOPTED EXACT P1 CURRENT-P0/NATIVE-GIT V2 TOOLING; CONSUMER AND REAL-HARDWARE QUALIFICATION OPEN",
+  "reviewer": "/root/bac_astra_p1_git_review",
+  "author": "/root/bac_hardware_admission_p1",
+  "references": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/freeze-v2.json",
+      "bytes": 4103,
+      "sha256": "2221090ada6a9cea98ab02b7822ffb9d03f8d1525c71deb247a61f44659f2353"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/output-interface-v2.json",
+      "bytes": 6440,
+      "sha256": "0554e5f0422ff7ce1488dae4c404a25fb8966def7ffd61cd57ac457da91dd3c0"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/review.md",
+      "bytes": 4107,
+      "sha256": "4b6d7c510a224d1662d68c3fd616a4298836b17dc402d922de8c741803eaf552"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/attempt.json",
+      "bytes": 4111,
+      "sha256": "0e32a48a981cd40f5e196081aa720f2cdacf75555aaadbe00a64089f6f4ea359"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/attempt.log",
+      "bytes": 180,
+      "sha256": "8491beb92e1d9559a10dc5d3c080d858bb61b731e6d63d7139e14aac60df53ef"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 64451,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 62025,
+      "sha256": "c9a7d973bfa6bcc83f2b6dec8363cc20c3fc0fc5481f73ae23d72e70ef47b2eb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "root_review": "Read complete independent v1 finding and v2 source/design/repair review; exact actual final implementation and direct evidence hashes rechecked. Independently executed124author+7priorindependent+3newindependent cases in one134PASS run; historical failed v1 unchanged. Caller terminal refusal and primary/partial diagnostic custody verified in inert integration. No actual Git/capture/runtime authority inferred.",
+  "consumer_action": "P4 may update literal capture pin to d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb; P2/P4 must join exact new native-command metadata before real use.",
+  "limitations": [
+    "No interpreter-context or cgroup weakening",
+    "Current platform ancestry unsupported; actual Task4/hardware UNRUN",
+    "No APP/package closure",
+    "This later work is outside frozen WIP24 and will be included in the next checkpoint"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "identity_scope": "Checkpoint inclusion anchor only; tooling/design original source identities and status remain in actual records. Not R148 APP execution.",
+  "input": {
+    "bytes": 3826,
+    "path": "evidence-management/manual-driver-design/r148-root-component-adoption-v1.json",
+    "root": "W",
+    "sha256": "0d7edf13c031b798c8618454dc065357155043fa7c9fbec774bbb3b165f5bd54"
+  },
+  "status": "BOUNDED CPU M ADOPTED; integrated check retains 3 FAIL"
+}

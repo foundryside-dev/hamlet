@@ -1,0 +1,9 @@
+{
+  "admission": null,
+  "disposition": "refused",
+  "reasons": [
+    "ValueError: Git query failed: Git query interrupted: TimeoutExpired; Git cleanup incomplete; reap/EOF not established: TimeoutExpired: Command 'stub Git' timed out after 30 seconds"
+  ],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": null
+}

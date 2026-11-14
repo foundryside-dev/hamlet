@@ -1,0 +1,12 @@
+{
+  "schema": "bac-p4-review-repair-test-retention-v1",
+  "prior266_functions": 80,
+  "current_functions": 84,
+  "missing_prior_functions": [],
+  "changed_prior_parametrizations": [],
+  "prior_case_count": 266,
+  "new_expected_case_total": 279,
+  "current_source_sha256": "2b4cddf55798ea8a9a14cfdb6b907221278acea3deb893a976d345e178882258",
+  "current_test_lines": 2928,
+  "counted_lines_with_P0": 3454
+}

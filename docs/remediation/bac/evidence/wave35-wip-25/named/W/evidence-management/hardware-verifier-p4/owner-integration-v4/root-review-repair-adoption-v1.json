@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-14T13:34:54.541581+00:00",
+  "status": "ADOPTED BOUNDED CURRENT-CAPTURE REPAIRS; FULL P4 NOT QUALIFIED",
+  "independent_capsule": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/capsule.json",
+    "sha256": "6dbb725d1955ecacaf8671c8596d0ab41c1f8d1bd1ee64f26d9666275972899e",
+    "bytes": 1633
+  },
+  "source_sha256": "041f3b5bcd6ee8226744535938e9a27bd982db6077b10cb43fab42427533c360",
+  "fixture_sha256": "015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816",
+  "p1_sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+  "root_postflight": "PASS exact current source/fixture/P1 and all linked independent artifacts;7independent controls pass, earlier280authorsuite separate",
+  "remaining": "New P2 manifest/wait/lease integration; actual full P3/P2/P4/P5 chain, live strict/phase/guard custody, abrupt-death cleanup, APP assertions and real CUDA remain required and unrun.",
+  "source_change_policy": "Any later P1/source/input change requires coherent repin and applicable consumer requalification; this adoption binds exact old P1d91d only."
+}

@@ -1,0 +1,83 @@
+{
+  "schema": "bac-p1-native-git-freeze-v1",
+  "at": "2026-11-14T12:11:25.858345+00:00",
+  "status": "FROZEN; AUTHOR119 SYNTHETIC PASS; INDEPENDENT REVIEW AND ROOT ADOPTION PENDING",
+  "body_packet": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277,
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "96267d05038c755ee358861ffef3157b9a03d1088c778d9278eb30a213fe37b7",
+      "bytes": 63310,
+      "lines": 974
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "c4d5d3969f9fada6ba1f3d65718ca396cad9ff0355f32658840f77056abeb4be",
+      "bytes": 58378,
+      "lines": 890
+    }
+  ],
+  "body_count": 4,
+  "body_lines": 2493,
+  "body_limit": 2800,
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/output-interface-v1.json",
+    "sha256": "459470cddf05d5f2098bb12a5d00168d4abd16b71ba6ca5421787772087db7ff",
+    "bytes": 5445
+  },
+  "author_attempt": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2.json",
+    "sha256": "70fff4ae5dd9b759fee9ce98d52721d8a48c46a7f398a6be3eb68caf49d723e9",
+    "bytes": 3125
+  },
+  "author_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2.log",
+    "sha256": "5b95eeb6f39895fe2f84aaefb7d5c78ca227f4682ddbfe8aa45738670440754b",
+    "bytes": 180
+  },
+  "attempts": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1.json",
+      "sha256": "607c22270bd9bbb3480ca6c84a5213133e56b035a3e3a50058833703b95bf789",
+      "bytes": 3169
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v2.json",
+      "sha256": "dfb0b85ce0ae3c54434c54540dbf99928a59ba1a590764b541290701f0cd2420",
+      "bytes": 3164
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v1.json",
+      "sha256": "aeabf1e103a638a7571ae7a40d2c00d9549d74408aa178e22c14443b32b1e76b",
+      "bytes": 3125
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v3.json",
+      "sha256": "b160ed6f2e6c4392a2cbba61abeed9bdac3faea2435f47303c2b236e9794409b",
+      "bytes": 3205
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2.json",
+      "sha256": "70fff4ae5dd9b759fee9ce98d52721d8a48c46a7f398a6be3eb68caf49d723e9",
+      "bytes": 3125
+    }
+  ],
+  "prior_owned_bytes": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/before-tests-v1.json",
+    "sha256": "04561122c58299aa76f942a8fd450e2af662a64f0048f6e70d7bb7b16a8210df",
+    "bytes": 898
+  },
+  "source_snapshots": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-source",
+  "scope": "Only capture/test changed. All commands stubbed; no actual Git/CPU/CUDA/APP qualification. Root source/runtime grants remain required; local platform ancestry prerequisites insufficient. Existing interpreter rules unchanged."
+}

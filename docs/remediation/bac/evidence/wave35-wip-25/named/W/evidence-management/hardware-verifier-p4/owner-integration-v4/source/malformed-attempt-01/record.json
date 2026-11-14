@@ -1,0 +1,6 @@
+{
+  "sha256": "b4d591659ad3649359f09f7c287b20ba138cb764e82f25f2640fea851f848595",
+  "lines": 2280,
+  "bytes": 116469,
+  "red_witness": "../tests/attempt-01/execution.json"
+}

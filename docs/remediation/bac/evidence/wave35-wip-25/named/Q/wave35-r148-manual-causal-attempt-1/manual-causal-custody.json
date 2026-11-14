@@ -1,0 +1,22 @@
+{
+  "job": "manual-causal",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "exit_code": 0,
+  "counts": {
+    "passed": 3,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 14.982189985981677,
+  "source_guards": 826,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

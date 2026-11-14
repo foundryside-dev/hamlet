@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 1762,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/command.json",
+    "sha256": "6ad35fec316aa2e06a5ca733644ed0bdda160badef9bc90746d93739535f618d"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/support/identity-policy.json",
+    "sha256": "e61bd3076fcef1c4eab662febfa42a5f4ef6c320d2c3fe96e5301ea96af4ad40"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244308,
+    "ppid": 244242,
+    "start_identity": "14148127"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/source-0002.json",
+    "sha256": "4a55f3a62b7c51f7746b9ee720162a2792105d90b07a4849444d0abf83488b80"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 9065,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/metadata/spec.json",
+    "sha256": "75f7fc5ba4c2ecf8648be91cd7903ada33996439050bbce8e8f3c164f00dc02f"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/support/grant.json",
+    "sha256": "e65c35594acf8b15ae3ee7afe4673a1e1f53cf91bb56de229ec5b4f46afa180b"
+  }
+}

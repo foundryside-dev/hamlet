@@ -1,0 +1,43 @@
+{
+  "at": "2026-11-14T13:43:45.233881+00:00",
+  "status": "ROOT EXACT INERT SNAPSHOT FOR FINITE WIP25 CUT; NOT EXECUTION OR QUALIFICATION",
+  "files": [
+    {
+      "logical_path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-tool-snapshot-v1/capture_bac_hardware_v1.py.txt",
+      "bytes": 64708,
+      "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7"
+    },
+    {
+      "logical_path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-tool-snapshot-v1/test_capture_bac_hardware_v1.py.txt",
+      "bytes": 64111,
+      "sha256": "bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907"
+    },
+    {
+      "logical_path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-tool-snapshot-v1/run_bac_hardware_v1.py.txt",
+      "bytes": 148489,
+      "sha256": "8397ffcfd75454280ce7a4ea0ea6ea901a3889159a36f51a431027b4e32110ae"
+    },
+    {
+      "logical_path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-tool-snapshot-v1/test_run_bac_hardware_v1.py.txt",
+      "bytes": 199403,
+      "sha256": "a4d3495a56894c1ef3e6962bfbee1563ab765de48b2c0e94c765c6034a306fdd"
+    },
+    {
+      "logical_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-tool-snapshot-v1/verify_bac_hardware_v1.py.txt",
+      "bytes": 146323,
+      "sha256": "041f3b5bcd6ee8226744535938e9a27bd982db6077b10cb43fab42427533c360"
+    },
+    {
+      "logical_path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "snapshot": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-tool-snapshot-v1/test_verify_bac_hardware_v1.py.txt",
+      "bytes": 127616,
+      "sha256": "015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816"
+    }
+  ],
+  "scope": "P1ASCII08 and P2repair8397/testa4; P4repaired041/test015. Qualification by exact source-bound component records only, never inferred from this snapshot."
+}

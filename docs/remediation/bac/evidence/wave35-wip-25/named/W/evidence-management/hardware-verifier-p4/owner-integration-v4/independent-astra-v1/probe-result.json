@@ -1,0 +1,141 @@
+{
+  "affinity": [
+    0
+  ],
+  "cases": [
+    {
+      "capture_allocated_bytes_including_directory": 77824,
+      "capture_file_bytes": 47788,
+      "capture_inodes_including_directory": 11,
+      "declared_capture_overhead": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 0,
+        "scratch_inodes": 0
+      },
+      "initial": "ACCEPTED",
+      "label": "unmodified baseline with zero capture scratch overhead",
+      "retained_capture_files": [
+        "admission.json",
+        "discovery-command.json",
+        "discovery.json",
+        "result.json",
+        "source-after-git.json",
+        "source-after.json",
+        "source-before-git.json",
+        "source-before.json",
+        "spec.json",
+        "start.json"
+      ],
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v1/astra-p4-dsnkz2ta",
+      "test_outcome": "successful",
+      "verify_custody": "satisfied"
+    },
+    {
+      "capture_allocated_bytes_including_directory": 77824,
+      "capture_file_bytes": 47790,
+      "capture_inodes_including_directory": 11,
+      "declared_capture_overhead": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 0,
+        "scratch_inodes": 0
+      },
+      "initial": "ACCEPTED",
+      "label": "impossible native Git kernel birth token",
+      "retained_capture_files": [
+        "admission.json",
+        "discovery-command.json",
+        "discovery.json",
+        "result.json",
+        "source-after-git.json",
+        "source-after.json",
+        "source-before-git.json",
+        "source-before.json",
+        "spec.json",
+        "start.json"
+      ],
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v1/astra-p4-si9xfu_u",
+      "test_outcome": "successful",
+      "verify_custody": "satisfied"
+    },
+    {
+      "capture_allocated_bytes_including_directory": 86016,
+      "capture_file_bytes": 58267,
+      "capture_inodes_including_directory": 11,
+      "declared_capture_overhead": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 0,
+        "scratch_inodes": 0
+      },
+      "initial": "ACCEPTED",
+      "label": "impossible mandatory CUDA driver kernel birth token",
+      "retained_capture_files": [
+        "admission.json",
+        "discovery-command.json",
+        "discovery.json",
+        "result.json",
+        "source-after-git.json",
+        "source-after.json",
+        "source-before-git.json",
+        "source-before.json",
+        "spec.json",
+        "start.json"
+      ],
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v1/astra-p4-6w7vbjt_"
+    }
+  ],
+  "end": "2026-11-14T13:12:26.058185+00:00",
+  "pid": 243872,
+  "rlimit_as": [
+    4294967296,
+    4294967296
+  ],
+  "source_after": {
+    "bac_hardware_protocol_v1.py": {
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    "capture_bac_hardware_v1.py": {
+      "bytes": 64451,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+    },
+    "test_verify_bac_hardware_v1.py": {
+      "bytes": 121186,
+      "sha256": "1fc7b174829c05b579224f5796d8e42e44bbef3b43dc955627ffc2ae24611a39"
+    },
+    "verify_bac_hardware_children_v1.py": {
+      "bytes": 79319,
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+    },
+    "verify_bac_hardware_v1.py": {
+      "bytes": 140681,
+      "sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe"
+    }
+  },
+  "source_before": {
+    "bac_hardware_protocol_v1.py": {
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    "capture_bac_hardware_v1.py": {
+      "bytes": 64451,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+    },
+    "test_verify_bac_hardware_v1.py": {
+      "bytes": 121186,
+      "sha256": "1fc7b174829c05b579224f5796d8e42e44bbef3b43dc955627ffc2ae24611a39"
+    },
+    "verify_bac_hardware_children_v1.py": {
+      "bytes": 79319,
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+    },
+    "verify_bac_hardware_v1.py": {
+      "bytes": 140681,
+      "sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe"
+    }
+  },
+  "sources_stable": true,
+  "start": "2026-11-14T13:12:24.402461+00:00"
+}

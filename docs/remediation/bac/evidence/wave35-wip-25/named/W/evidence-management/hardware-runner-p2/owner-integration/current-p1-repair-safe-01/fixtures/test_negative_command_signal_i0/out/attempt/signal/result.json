@@ -1,0 +1,22 @@
+{
+  "command": {
+    "bytes": 660,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_negative_command_signal_i0/out/attempt/signal/command.json",
+    "sha256": "deb9ef98d69fd3a828d823dd764fdb61317e9bf6bdc8593bff349f78856153ce"
+  },
+  "disposition": "interrupted",
+  "end": "2026-11-14T13:14:18.274886Z",
+  "exit_code": -15,
+  "job_id": "signal",
+  "log": {
+    "bytes": 0,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_negative_command_signal_i0/out/attempt/signal/stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "monotonic_end_ns": 141368615343934,
+  "monotonic_start_ns": 141368544481958,
+  "process_records": [],
+  "reason": "command terminated by signal",
+  "signal": 15,
+  "start": "2026-11-14T13:14:18.203998Z"
+}

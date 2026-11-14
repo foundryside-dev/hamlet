@@ -1,0 +1,9 @@
+{
+  "admission": null,
+  "disposition": "refused",
+  "reasons": [
+    "ValueError: capture actual host/boot differs from allocation"
+  ],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": null
+}

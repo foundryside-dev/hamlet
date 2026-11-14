@@ -1,0 +1,85 @@
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import resource
+import sys
+import tempfile
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+OUT = Path(__file__).parent
+NAMES = ['verify_bac_hardware_v1.py','bac_hardware_protocol_v1.py','capture_bac_hardware_v1.py','test_verify_bac_hardware_v1.py','verify_bac_hardware_children_v1.py']
+def stamps():
+    return {n: {'sha256':hashlib.sha256((Q/n).read_bytes()).hexdigest(),'bytes':(Q/n).stat().st_size} for n in NAMES}
+record = {'start':datetime.datetime.now(datetime.UTC).isoformat(),'pid':os.getpid(),'affinity':sorted(os.sched_getaffinity(0)),'rlimit_as':resource.getrlimit(resource.RLIMIT_AS),'source_before':stamps(),'cases':[]}
+assert record['source_before']['verify_bac_hardware_v1.py']['sha256'] == '041f3b5bcd6ee8226744535938e9a27bd982db6077b10cb43fab42427533c360'
+assert record['source_before']['capture_bac_hardware_v1.py']['sha256'] == 'd91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb'
+assert record['source_before']['test_verify_bac_hardware_v1.py']['sha256'] == '015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816'
+sys.path.insert(0,str(Q))
+import test_verify_bac_hardware_v1 as fixtures
+import verify_bac_hardware_v1 as verifier
+
+def footprint(e):
+    entries=list(e.capture.iterdir())
+    return {'scratch_bytes':sum(p.stat().st_blocks*512 for p in [e.capture,*entries]),'scratch_inodes':len(entries)+1}
+
+def run(label, dimension=None, reduction=None, unicode=None, cuda=False):
+    root=Path(tempfile.mkdtemp(prefix='astra-v2-',dir=OUT))
+    e=fixtures.Evidence(root,common=True,cuda=cuda)
+    # Recompute boundary independently of the author's new measurement helper.
+    for attempt in range(12):
+        measured=footprint(e)
+        def exact(path,value):
+            if path.name=='allocation.json':
+                for d,v in measured.items():
+                    value['overhead'][d]=v
+                    value['capacity'][d]=v+10
+        fixtures.capture_change(e,exact)
+        if footprint(e)==measured:
+            break
+    else:
+        raise AssertionError('footprint failed to stabilize')
+    def mutate(path,value):
+        if dimension and path.name=='allocation.json':
+            budget=0 if reduction=='zero' else measured[dimension]-1
+            value['overhead'][dimension]=budget
+            value['capacity'][dimension]=budget+10
+        if unicode=='git' and path.name=='source-before-git.json':
+            value[0]['identity']['start_identity']='²'
+        if unicode=='driver' and path.name=='discovery.json':
+            value['commands'][1]['identity']['start_identity']='²'
+    if dimension or unicode:
+        fixtures.capture_change(e,mutate)
+    row={'label':label,'root':str(root),'observed_footprint':footprint(e),'allocation':json.loads((root/'allocation.json').read_text())['overhead']}
+    try:
+        if cuda:
+            verifier.initial(str(e.spec_path),'job')
+            row['accepted']=True
+        else:
+            receipt=e.verify()
+            row.update(accepted=True,custody=receipt['custody'],test_outcome=receipt['test_outcome'])
+            artifact=json.loads((root/'receipt.json.components'/'.capture-footprint.json').read_text())
+            row['retained_footprint']=artifact
+            assert artifact['producer_prepublication']['state']=='unavailable'
+            assert artifact['initial']['allocated_bytes']==row['observed_footprint']['scratch_bytes']
+            assert any(r['path'].endswith('/.capture-footprint.json') for r in receipt['inventory'])
+    except ValueError as exc:
+        row.update(accepted=False,error=str(exc))
+    expected=not(dimension or unicode)
+    row['expected_acceptance']=expected
+    row['passed']=row['accepted']==expected and (not expected or row.get('custody')=='satisfied')
+    record['cases'].append(row)
+    print(json.dumps({k:v for k,v in row.items() if k!='retained_footprint'}),flush=True)
+
+run('valid independently measured exact allocated bytes and inode boundary')
+for dimension in ('scratch_bytes','scratch_inodes'):
+    for reduction in ('zero','undersized'):
+        run(dimension+' '+reduction,dimension=dimension,reduction=reduction)
+run('native Git superscript kernel token',unicode='git')
+run('mandatory CUDA driver superscript kernel token',unicode='driver',cuda=True)
+record.update(source_after=stamps(),end=datetime.datetime.now(datetime.UTC).isoformat())
+record['sources_stable']=record['source_before']==record['source_after']
+record['passed']=record['sources_stable'] and all(r['passed'] for r in record['cases'])
+(OUT/'probe-result.json').write_text(json.dumps(record,sort_keys=True,indent=2)+'\n')
+print(json.dumps({'passed':record['passed'],'sources_stable':record['sources_stable']}),flush=True)
+assert record['passed']

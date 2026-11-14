@@ -1,0 +1,204 @@
+FFFFFFFFFF..                                                             [100%]
+=================================== FAILURES ===================================
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpu_max-assessment] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re0')
+boundary = 'assessment', field = 'cpu_max'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+>           assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+E           AssertionError: Non-ASCII digit spellings cannot be actual Linux resource tokens
+E           assert []
+
+test_capture_bac_hardware_v1.py:963: AssertionError
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpu_max-preflight] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re1')
+boundary = 'preflight', field = 'cpu_max'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+            assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+        else:
+>           with pytest.raises(ValueError): module().discovery_preflight(obs, request(), ascii_resource_allocation())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:965: Failed
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpuset-assessment] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re2')
+boundary = 'assessment', field = 'cpuset'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+>           assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+E           AssertionError: Non-ASCII digit spellings cannot be actual Linux resource tokens
+E           assert []
+
+test_capture_bac_hardware_v1.py:963: AssertionError
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpuset-preflight] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re3')
+boundary = 'preflight', field = 'cpuset'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+            assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+        else:
+>           with pytest.raises(ValueError): module().discovery_preflight(obs, request(), ascii_resource_allocation())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:965: Failed
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_max-assessment] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re4')
+boundary = 'assessment', field = 'memory_max'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+>           assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+E           AssertionError: Non-ASCII digit spellings cannot be actual Linux resource tokens
+E           assert []
+
+test_capture_bac_hardware_v1.py:963: AssertionError
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_max-preflight] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re5')
+boundary = 'preflight', field = 'memory_max'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+            assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+        else:
+>           with pytest.raises(ValueError): module().discovery_preflight(obs, request(), ascii_resource_allocation())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:965: Failed
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_current-assessment] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re6')
+boundary = 'assessment', field = 'memory_current'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+>           assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+E           AssertionError: Non-ASCII digit spellings cannot be actual Linux resource tokens
+E           assert []
+
+test_capture_bac_hardware_v1.py:963: AssertionError
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_current-preflight] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re7')
+boundary = 'preflight', field = 'memory_current'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+            assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+        else:
+>           with pytest.raises(ValueError): module().discovery_preflight(obs, request(), ascii_resource_allocation())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:965: Failed
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[meminfo-assessment] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re8')
+boundary = 'assessment', field = 'meminfo'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+>           assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+E           AssertionError: Non-ASCII digit spellings cannot be actual Linux resource tokens
+E           assert []
+
+test_capture_bac_hardware_v1.py:963: AssertionError
+_ test_ascii_resource_grammar_refuses_non_linux_digit_tokens[meminfo-preflight] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-fixtures/test_ascii_resource_grammar_re9')
+boundary = 'preflight', field = 'meminfo'
+
+    @pytest.mark.parametrize("boundary", ["assessment", "preflight"])
+    @pytest.mark.parametrize("field", ["cpu_max", "cpuset", "memory_max", "memory_current", "meminfo"])
+    def test_ascii_resource_grammar_refuses_non_linux_digit_tokens(tmp_path, boundary, field):
+        obs = observation()
+        arabic = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+        if field == "meminfo": obs[field] = obs[field].translate(arabic)
+        else: obs["cgroups"][1][field] = obs["cgroups"][1][field].translate(arabic)
+        if boundary == "assessment":
+            assert assess(tmp_path, obs)["reasons"], "Non-ASCII digit spellings cannot be actual Linux resource tokens"
+        else:
+>           with pytest.raises(ValueError): module().discovery_preflight(obs, request(), ascii_resource_allocation())
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+test_capture_bac_hardware_v1.py:965: Failed
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpu_max-assessment]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpu_max-preflight]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpuset-assessment]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[cpuset-preflight]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_max-assessment]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_max-preflight]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_current-assessment]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[memory_current-preflight]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[meminfo-assessment]
+FAILED test_capture_bac_hardware_v1.py::test_ascii_resource_grammar_refuses_non_linux_digit_tokens[meminfo-preflight]
+10 failed, 2 passed, 124 deselected in 0.95s

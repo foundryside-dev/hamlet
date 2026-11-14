@@ -1,0 +1,8 @@
+........................................................................ [ 48%]
+.......................................................................F [ 96%]
+......                                                                   [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:533: Failed: DID NOT RAISE <class 'ValueError'>
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_cuda_native_discovery[mandatory-driver-failure]
+1 failed, 149 passed, 244 deselected in 15.21s

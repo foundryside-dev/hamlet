@@ -1,0 +1,72 @@
+{
+  "schema": "bac-p1-native-git-freeze-v1",
+  "at": "2026-11-14T12:19:26.556685+00:00",
+  "status": "REPAIR FROZEN; AUTHOR124 SYNTHETIC PASS; INDEPENDENT REPAIR REVIEW AND ROOT ADOPTION PENDING",
+  "supersedes_failed_freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/freeze-v1.json",
+    "sha256": "86b5921ab660ad861e8a9933f14ee90b15dd306c1c3d163aedb1bcb3cad95740",
+    "bytes": 4195
+  },
+  "body_packet": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277,
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+      "bytes": 64451,
+      "lines": 992
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "c9a7d973bfa6bcc83f2b6dec8363cc20c3fc0fc5481f73ae23d72e70ef47b2eb",
+      "bytes": 62025,
+      "lines": 946
+    }
+  ],
+  "body_count": 4,
+  "body_lines": 2567,
+  "body_limit": 2800,
+  "interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/output-interface-v2.json",
+    "sha256": "0554e5f0422ff7ce1488dae4c404a25fb8966def7ffd61cd57ac457da91dd3c0",
+    "bytes": 6440
+  },
+  "review_repaired": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v1/review.md",
+    "sha256": "082a03cbe84661967a5c4b6e7615f7de69610453aee30ce97b28b183bf98b178",
+    "bytes": 5417
+  },
+  "author_attempt": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1.json",
+    "sha256": "409406f101b3593eacc8f60c3c45a69daf1a04d23ad5412099833300e7eba964",
+    "bytes": 3141
+  },
+  "author_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1.log",
+    "sha256": "45db4fb4d2e4cc24c0ceb80155e526a1c61f8ea06b1760a696d81a6a0728dc78",
+    "bytes": 180
+  },
+  "repair_red": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-custody-v1.json",
+    "sha256": "2d8d6174f4c3ab92f0de3ac081513e73f3fa1e66c959f984200f8b414b5e1f8d",
+    "bytes": 3212
+  },
+  "repair_red_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-custody-v1.log",
+    "sha256": "147bdfb515b71efd4f9ab38f25368a54fe9e7368fec03061a63fdb21c3d57268",
+    "bytes": 13534
+  },
+  "source_snapshots": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-source",
+  "causal_validation": "Five new author cases: independent timeout/kill-lookup scenarios, cumulative-prefix preservation, and two inert end-to-end source-query caller cases retaining command diagnostics and terminal refusal. Injected kill ProcessLookupError is robustness control, not a separate demonstrated production defect. No false admission asserted.",
+  "scope": "Only capture/test changed; no actual Git/CPU/CUDA/APP qualification. Existing interpreter/cgroup/driver wire and resource rules unchanged. Exact command schema unchanged; refusal diagnostics clarified. Failed v1 freeze and independent probes retained."
+}

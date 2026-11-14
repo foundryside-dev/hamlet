@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_real_manual_step_uses_actual_roster_and_returns_owned_physical_state[ids0-membership0-701]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "E   AssertionError: ENV must issue an authentic manual physical session\n    assert False\n     +  where False = callable(None)",
+  "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492"
+}

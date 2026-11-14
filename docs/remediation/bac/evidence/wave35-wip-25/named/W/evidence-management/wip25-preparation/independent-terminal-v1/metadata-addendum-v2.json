@@ -1,0 +1,50 @@
+{
+  "schema": "bac-terminal-metadata-correction-v2",
+  "at": "2026-11-14T14:00:24.447508+00:00",
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_manual_source_review",
+  "disposition": "APPROVE BOUNDED PUBLICATION",
+  "previous_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/independent-terminal-v1/review.md",
+    "bytes": 6902,
+    "sha256": "cab9119b0f00a45ebdec2ac7bf6af74c3d0abf64e754411aff56d82676033b52"
+  },
+  "v1_draft": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-reviewed-receipt-draft-v1.json",
+    "bytes": 35239963,
+    "sha256": "6690aa2e825f0ab6d1ef64753625e051ab289440b3fe80f07430a56972fee976"
+  },
+  "v2_draft": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-reviewed-receipt-draft-v2.json",
+    "bytes": 35240902,
+    "sha256": "e5cba5308599e01f73046d0e65811d83d9159808814a4ea703de501104462d4e"
+  },
+  "preserved_failure": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/root-plan-failure-v1.json",
+    "bytes": 552,
+    "sha256": "f81ee84a9faf564c81bbc2b922fec4a535336533cefbff915f1cb1ad477f4d7e"
+  },
+  "exact_delta_path": "/dependencies/57608/required_by",
+  "before": [],
+  "after": [
+    "wave35-r146-collection-spec.json--unrun",
+    "wave35-r146-manual-collection-attempt-1--manual-collection",
+    "wave35-r146-manual-red-attempt-1--manual-red",
+    "wave35-r146-owned-spec.json--unrun",
+    "wave35-r147-collection-spec.json--unrun",
+    "wave35-r147-manual-first-positive-attempt-1--manual-first-positive",
+    "wave35-r147-manual-owner-attempt-1--manual-owner",
+    "wave35-r147-owned-spec.json--unrun",
+    "wave35-r148-collection-spec.json--unrun",
+    "wave35-r148-manual-causal-attempt-1--manual-causal",
+    "wave35-r148-manual-collection-attempt-1--manual-collection",
+    "wave35-r148-manual-independent-attempt-1--manual-independent",
+    "wave35-r148-manual-integrated-collection-attempt-1--manual-integrated-collection",
+    "wave35-r148-manual-integrated-owner-attempt-1--manual-integrated-owner",
+    "wave35-r148-owned-spec.json--unrun"
+  ],
+  "all_other_parsed_content_unchanged": true,
+  "application_execution": false,
+  "git_operations": false,
+  "final_v2_selection_not_yet_observed": true
+}

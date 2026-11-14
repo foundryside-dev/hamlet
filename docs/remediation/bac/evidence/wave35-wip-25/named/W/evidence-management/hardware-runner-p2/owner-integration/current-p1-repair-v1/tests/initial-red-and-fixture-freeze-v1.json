@@ -1,0 +1,32 @@
+{
+  "status": "initial RED witnessed; final GREEN pending",
+  "at": "2026-11-14T13:10:33.070608+00:00",
+  "test": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "sha256": "94ef750cada7827393834ed907ca3c2b9a753d262f63d2d69ed77e083ae3a080",
+    "bytes": 191397
+  },
+  "initial_red": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-red-01/execution.json",
+    "sha256": "4fb2762007ffb2f25fe3e30dc069c0ae462d1748a0a21ce3dd460ceb27567b68",
+    "bytes": 4139
+  },
+  "initial_red_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-red-01/output.log",
+    "sha256": "8e17aa00e711a8cdfb3ade8886d46bdc047f0543f8eeac8c3db28a9c744df8db",
+    "bytes": 9343
+  },
+  "allowed_bodies": [
+    "test_run_bac_hardware_v1.py",
+    "bac_hardware_protocol_v1.py",
+    "run-inert-v1.py"
+  ],
+  "body_count": 3,
+  "line_total": 3344,
+  "actual_hardware": "UNRUN",
+  "actual_Task4": "UNRUN",
+  "source_body_not_inspected": true,
+  "initial_red_summary": "33failed244deselected1.50s; missing current APIs/helper and required Git pin; source stable",
+  "fixture_label": "synthetic success-only wait/namespace records; never actual authority",
+  "ruling": "Root authorized existing checkout and bounded pure test resource windows; no Git/worktree/sourcecopy or broad tests."
+}

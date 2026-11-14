@@ -1,0 +1,37 @@
+{
+  "at": "2026-11-14T13:45:40.981644+00:00",
+  "status": "ROOT ADOPTS FINITE P1 ASCII RESOURCE AMENDMENT; ACTUAL CAPTURE/HARDWARE UNRUN",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+    "bytes": 64708,
+    "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7"
+  },
+  "tests": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+    "bytes": 64111,
+    "sha256": "bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907"
+  },
+  "freeze": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/freeze-v1.json",
+    "bytes": 4728,
+    "sha256": "7d711c52a724cb6a8693f8c3870bc54e374110980a292054e9357b36b3af60e9"
+  },
+  "independent_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/independent-astra-v1/review.md",
+    "bytes": 5981,
+    "sha256": "f8454e0c8dad8d78e442a4c7d6fc5de395843c68ec2e9d6b079b4a4279234592"
+  },
+  "independent_results": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/independent-astra-v1/probe-results.json",
+    "bytes": 25963,
+    "sha256": "0852b47e2e8862cd642340125abb70764ac0fae042eda5d5a929dd8a2ca58fed"
+  },
+  "grammar_delta": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/consumer-grammar-delta-v1.json",
+    "bytes": 2293,
+    "sha256": "c3944b7daf9c1a8c7c2296cedec71887226963ceaff9836472b5d0f41b1fab4c"
+  },
+  "qualification": "136ownerPASS,78independentboundary/controlrowsPASS;fresh12regressionPASS overlaps136. Exact11changedlines inthreeparsingfunctions;source/test/P0/probe prepoststable asobservedrecord. No actualcapture/Git/APP/hardware qualification.",
+  "required_next": "USER REQUESTED PAUSE. DO NOT REPIN NOW. On resumption update exact P2/P4/bootstrap/sourcealiases to08c89f after explicitcoherentcandidate planning, then GREEN and independentfixed-sourceverification. ExistingP2repair8397/testa4d349 UNRUN againstnewP1. ExistingP4adoption041qualifiesd91d only. Captureinvocationcontractv2 stilld91d andmustnotbeusedwithnewP1.",
+  "publication": "Include this completed metadata adoption in finalWIP25; no new implementation begun."
+}

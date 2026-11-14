@@ -1,0 +1,35 @@
+{
+  "collection_postflight": "Original R146manual/R148manual/R148integrated collections lack separate postflight; nonqualifying only.",
+  "independent_probe_v1": {
+    "reason": "Original v1 was preserved but not executed; corrected v2 supplied actual five-case/fork execution.",
+    "source": {
+      "bytes": 7609,
+      "path": "evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v1.py.txt",
+      "root": "W",
+      "sha256": "34ddf7c044a8d9112001e1cc49f0b5796c538c5214cb362427c95b35d943cc09"
+    },
+    "status": "UNRUN"
+  },
+  "p2_current_green": {
+    "reason": "Paused before GREEN and P1 consumer repin; RED belongs to preceding22b27 source.",
+    "source_sha256": "8397ffcfd75454280ce7a4ea0ea6ea901a3889159a36f51a431027b4e32110ae",
+    "status": "UNRUN"
+  },
+  "p2_red": {
+    "counts": {
+      "failed": 15,
+      "passed": 6
+    },
+    "execution_source": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63",
+    "source": {
+      "bytes": 1419,
+      "path": "evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/tests/review-repair-red-01.json",
+      "root": "W",
+      "sha256": "637bc739337e532d10d4c1fc567a9b7921af5d19f94c1e59948cd7dc1ff4bc14"
+    },
+    "status": "FAILED",
+    "test_sha256": "a4d3495a56894c1ef3e6962bfbee1563ab765de48b2c0e94c765c6034a306fdd"
+  },
+  "p4_pin": "Bounded041 qualification against P1d91d only; P1ASCII08 adoption is not implicit consumer requalification.",
+  "static": "R147mypy40/default1 retained; R148mypy12FAIL/RuffBlackdefaultsPASS; original W static files bound as publication support, not Qruntime attempts."
+}

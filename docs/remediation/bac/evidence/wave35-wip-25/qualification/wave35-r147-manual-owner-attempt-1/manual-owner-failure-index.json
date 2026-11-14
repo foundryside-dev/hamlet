@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py"
+  ],
+  "signatures": [
+    {
+      "error": "AssertionError: assert 1 == 2",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_retirement_cancels_real_pending_b_work_once_and_preserves_a_work",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

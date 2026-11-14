@@ -1,0 +1,36 @@
+{
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_manual_source_review",
+  "independent": true,
+  "disposition": "APPROVE BOUNDED PUBLICATION",
+  "scope": "Exact administrative v1-to-v2 receipt correction only; original full terminal review and its limitations remain binding",
+  "review_subject": {
+    "bytes": 8653,
+    "path": "evidence-management/wip25-preparation/root-qualification-subject-v1.json",
+    "root": "W",
+    "sha256": "5a9117c9bb7325343760f5edb8872a6ecd2d979d0db6bc01b449e6d121699a1e"
+  },
+  "candidate_manifest": {
+    "bytes": 210830,
+    "path": "wave35/r148-candidate.json",
+    "root": "W",
+    "sha256": "ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514"
+  },
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/independent-terminal-v1/review-addendum-v2.md",
+    "bytes": 1503,
+    "sha256": "5ff4c463a332fe039d6e6655f5b3be9b6531c621835aeb6f592fcdcb75f5e900"
+  },
+  "metadata_checks": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/independent-terminal-v1/metadata-addendum-v2.json",
+    "bytes": 2474,
+    "sha256": "7f7cf80c8cecdfb3d2e3d4708ff295aa9f9f7232e5e8d189d03b4efd7a94a9f2"
+  },
+  "prior_independence": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/independent-terminal-v1/independence.json",
+    "bytes": 2788,
+    "sha256": "f6bd916d9848437d9d1e56849b6292f6d1f257e69bd9405d524e2e864be72dbf"
+  },
+  "reviewer_prepared_or_sealed_receipt": false
+}

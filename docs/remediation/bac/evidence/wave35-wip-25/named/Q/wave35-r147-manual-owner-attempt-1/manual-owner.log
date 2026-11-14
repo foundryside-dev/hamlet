@@ -1,0 +1,15 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [32 items]
+
+.............................F..                                         [100%]
+=================================== FAILURES ===================================
+/workspace/hamlet/tests/test_townlet/regressions/bac/test_manual_physical_session.py:584: AssertionError: assert 1 == 2
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_retirement_cancels_real_pending_b_work_once_and_preserves_a_work
+======================== 1 failed, 31 passed in 10.31s =========================

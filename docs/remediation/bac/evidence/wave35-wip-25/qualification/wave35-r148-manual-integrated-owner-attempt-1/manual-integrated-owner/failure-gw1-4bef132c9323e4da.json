@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py::test_initial_install_refuses_roles_bound_after_preparation",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw1",
+  "longrepr": "E   TypeError: Missing required keyword-only argument: 'lineage'",
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e"
+}

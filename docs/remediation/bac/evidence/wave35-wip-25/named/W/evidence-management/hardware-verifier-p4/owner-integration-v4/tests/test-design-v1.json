@@ -1,0 +1,37 @@
+{
+  "schema": "bac-p4-inert-test-design-v1",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "sha256": "ba23fefcb3e13ac2715632962d8468493b6b4d7451c11a8f63aecf8a06501c2e",
+    "bytes": 117043,
+    "lines": 2742
+  },
+  "source_scope": [
+    "P4 test body only",
+    "P0 fixed runtime dependency; source body not needed"
+  ],
+  "unchanged_cases": 172,
+  "new_cases_expected": 82,
+  "case_totals_not_qualification": 254,
+  "checks": [
+    "Typed malformed private collector/phase/fork refusal",
+    "Raw resource provenance and complete ancestry",
+    "Capacity/reserve/overhead/headroom and allocation authority",
+    "Native CUDA driver order/status/identity, UUID/model/VRAM/build/workload joins",
+    "Supported CPU/CUDA observations and optional topology behavior",
+    "Fixed sibling and newly consumed authority read-to-final-check mutation refusal"
+  ],
+  "retained_attempts": [
+    "attempt-01",
+    "attempt-02",
+    "static-01"
+  ],
+  "source_constraints": "No P4/P1/P2/P3/P5 source bodies inspected; P5 fixed approved runtime import allowed; --tb=line only. No Git, APP, recorder, capture, actual hardware, branch/worktree/checkout or executable source copies.",
+  "remaining_gates": [
+    "Independent P4 source review and root adoption",
+    "Full live positive strict core/replay/fork/producer/phase common chain remains separate owner work",
+    "Actual P3->P2->P4->P5 and hardware/CUDA remain unrun",
+    "Virtual graph reader substitutes transport and P0 validation; proves shape traversal only, never live common custody",
+    "Capture namespace external no-writer custody remains external prerequisite; sibling hashes do not establish history"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "records": [
+    {
+      "name": "ruff",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "ruff",
+        "check",
+        "."
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T13:09:27.062244+00:00",
+      "parent_pid": 243348,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r147-candidate.json",
+      "manifest_sha256": "06fb55ad80205625f85d16a36eef1a923cd9fd63814139039966b13cae56c244",
+      "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 243408,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T13:09:27.666260+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r147-static-attempt-1/ruff.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "name": "mypy",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "mypy",
+        "src/townlet",
+        "--show-error-codes",
+        "--no-incremental"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T13:09:27.666638+00:00",
+      "parent_pid": 243348,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r147-candidate.json",
+      "manifest_sha256": "06fb55ad80205625f85d16a36eef1a923cd9fd63814139039966b13cae56c244",
+      "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 243418,
+      "exit_code": 1,
+      "end_utc": "2026-11-14T13:10:00.555133+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r147-static-attempt-1/mypy.log",
+      "log_sha256": "2680062f4ffa4e9523c30b91d26ce35c19bf8d13136672d52edf46bda9097bdb"
+    },
+    {
+      "name": "no-defaults",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T13:10:00.556443+00:00",
+      "parent_pid": 243348,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r147-candidate.json",
+      "manifest_sha256": "06fb55ad80205625f85d16a36eef1a923cd9fd63814139039966b13cae56c244",
+      "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 243481,
+      "exit_code": 1,
+      "end_utc": "2026-11-14T13:10:01.405432+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r147-static-attempt-1/no-defaults.log",
+      "log_sha256": "b4781cc3dde6d872aee2d75f533db808ee50184cb3ceafde6431bcab70a28038"
+    },
+    {
+      "name": "black-changed",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/python",
+        "-m",
+        "black",
+        "--check",
+        "src/townlet/environment/manual_physical.py",
+        "src/townlet/environment/reward_calculator.py",
+        "src/townlet/environment/vectorized_env.py",
+        "tests/test_townlet/regressions/bac/test_manual_physical_session.py"
+      ],
+      "cwd": "/workspace/hamlet",
+      "start_utc": "2026-11-14T13:10:01.405921+00:00",
+      "parent_pid": 243348,
+      "affinity": [
+        4
+      ],
+      "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r147-candidate.json",
+      "manifest_sha256": "06fb55ad80205625f85d16a36eef1a923cd9fd63814139039966b13cae56c244",
+      "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+      "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+      "pid": 243482,
+      "exit_code": 0,
+      "end_utc": "2026-11-14T13:10:02.308118+00:00",
+      "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r147-static-attempt-1/black-changed.log",
+      "log_sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086"
+    }
+  ],
+  "source_before_after": "PASS",
+  "scope": "Static gates only; failures retained; no whole-BAC acceptance"
+}

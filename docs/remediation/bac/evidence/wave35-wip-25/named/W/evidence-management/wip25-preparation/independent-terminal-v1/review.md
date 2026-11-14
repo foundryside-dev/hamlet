@@ -1,0 +1,34 @@
+# WIP25 independent terminal publication review
+
+Disposition: **APPROVE BOUNDED PUBLICATION** of the frozen R146–R148 graceful-pause evidence subject, subject to the remaining root materialization, exact output-size, final receipt/selection, byte recheck and authorized publication checks. This is evidence publication approval, not application, global, hardware or full-BAC acceptance. No new implementation/runtime is authorized; resume requires a new user instruction.
+
+Producer/sealer: /root. Reviewer: /root/bac_astra_manual_source_review. Root’s preparation agent supplied proposal material; this reviewer neither prepared nor sealed the publication packet. Earlier Packet M component review/probe authorship is explicitly disclosed: that component review was not reused as this terminal publication review. This fresh task independently checks the complete finite publication subject and limitations at metadata level. No application/tool source bodies, application imports/runtime, Git operations, branch/worktree, execution copies or publication edits were performed in this task. Only new review artifacts were written.
+
+## Exact frozen subject
+
+- Contract root-checkpoint-contract-v1.json: SHA256 6c20aeeffae6df7691e6ceb352a14ec6ff13db88b93816172b01828c622faf18, 10769 bytes.
+- Subject root-qualification-subject-v1.json: SHA256 5a9117c9bb7325343760f5edb8872a6ecd2d979d0db6bc01b449e6d121699a1e, 8653 bytes.
+- Reviewed receipt draft root-reviewed-receipt-draft-v1.json: SHA256 6690aa2e825f0ab6d1ef64753625e051ab289440b3fe80f07430a56972fee976, 35239963 bytes. Final receipt must add this review and its metadata dependency without silently changing reviewed facts; substantive changes require a linked review.
+- R148 candidate manifest wave35/r148-candidate.json: SHA256 ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514; executed tree f462ece6fc9b61ad1b68d9e5ccc933b5b825791e; base 6477ff4efdadaf33955c0096cb1cf27a0d348d65.
+
+## Independent checks and result
+
+Read EVIDENCE-PROCESS.md and reassessed frozen contract, subject, receipt, component/supplemental limits, root document approval and v3 document changes. Independent metadata checks verified 57,702 distinct rooted references by size/SHA256, with zero mismatches. This includes inert helper bytes as hashes only, not helper source inspection or execution. Verified the catalog is the exact existing chain suffix, contiguous through R145, and R146 starts the next interval. All nine required component refs agree between contract, subject and receipt; candidate/contract/subject/doc identities agree.
+
+The observed Q top-level set for R146–R148 equals all 24 interval entries. Every declared attempt descendant file/hash/size and directory (including empty directories) matches the retained actual subtree. All 15 check terminal pointers identify declared attempts. UNRUN observations retain null execution fields; PASSED attempts have exit zero. The checks retain own-source candidate identities rather than promoting the R148 tree over earlier attempts. Historical source attestation is retained as root-observed source identity; it is not new execution qualification. Raw absolute-time limitations and collection-without-separate-postflight limitations remain explicit.
+
+Root approval binds the exact five v3 postimages and their destinations. Their preimage hashes match current destination bytes (new pause handoff does not yet exist). The substantive changes preserve failures, unrun gates, overlap and pause instructions. STATUS is explicitly a publication-only documentation delta from the executed broad source inventory; this review does not equate the final publication tree with the R148 execution tree.
+
+Independent-run qualifying=false is explicitly limited to this pause publication's absence of full-BAC terminal qualification; it does not erase the five passing cases or accepted bounded M component. The single_process field is explicitly pytest topology: one controller, zero xdist workers, one actual fork child, not one OS process. Actual child source/code/PID/PPID/start/wait linkage and zero ENV entry remain preserved. No extra unique coverage is inferred from the child witness or overlapping causal selection.
+
+## Required limitations retained
+
+R146 32 missing-API failures, R147 31 PASS/1 fixture failure, R147 new mypy40/default1, and R148 **212 PASS/3 FAIL** remain distinct historical evidence. R148 Ruff/Black/no-defaults pass but **global mypy12 FAIL** remains open. The three parent replay-lineage failures overlap earlier G3/G4 obligations; no full integrated owner pass or inflated defect count is claimed. M is bounded CPU acceptance only; F, C3 implementation, complete RNG/device/child inventory, explicit operation binding and outer-completion health remain required.
+
+P1 ASCII08 adoption is bounded tooling evidence; P4 041 qualification remains against old P1 d91 only. P2's 392 pure passes belong to historical22b27. Its 15 expected RED failures/6 passing controls also belong to prior22b27 with new a4d349 tests; current8397 GREEN, coherent repin/bootstrap and actual Task4 remain UNRUN. Current inert snapshots do not turn historical results into newer-source executions. Actual hardware/CUDA/full-chain qualification remains UNRUN or unqualified. Original package accounting stays **28 qualified /38 remaining /66 total**. Full/default suites, coverage≥70%, slow/learning, B6, final design/implementation review and exact final remote CI remain required. WIP24 CI retains its own exact commit; no WIP25 remote/CI result is asserted.
+
+Six historical tooling bodies are unavailable, with 44 preserved original references: P2 source22b27/e944, P2 testsf40f/57cf, and P4 tests7a598/d746 (full hashes are in the bound HISTORICAL-REPRODUCIBILITY-LIMITATIONS-v1.json). Root's disposition and v3 documents disclose this conspicuously. This is an unresolved historical reproducibility limitation, not successful exact-byte recovery or a qualification waiver. No reconstruction or substitution of current bytes is accepted. Bounded publication honestly preserves the available records, original hashes, failures and this absence; it does not certify those missing bodies as reproducible or qualify current8397.
+
+## Root-only final steps
+
+No blocking metadata defect was found in the frozen subject. The 35.24 MB receipt and large named fixture closure still require the actual finite output-size gate before copying; checking input hashes does not establish safe final output size. Root must seal final receipt with this independent review, run the approved selector/assembly checks, rehash selected/reused objects and document postimages, verify exact output sizes and publication source equivalence, and own any authorized Git/remote verification. This review neither performs nor preclaims those results. Preserve this review and prior seals if a substantive input changes.

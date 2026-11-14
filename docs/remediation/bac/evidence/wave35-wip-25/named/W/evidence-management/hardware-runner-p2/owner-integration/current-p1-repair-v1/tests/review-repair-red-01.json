@@ -1,0 +1,25 @@
+{
+  "status": "RED expected15failures6passingcontrols394deselected",
+  "at": "2026-11-14T13:33:37.408918+00:00",
+  "execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-review-repair-red-01/execution.json",
+    "sha256": "59d167b675398b396eafdb10639a6a459de16dc9bce04329282bedca12f3609b",
+    "bytes": 3815
+  },
+  "log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-review-repair-red-01/output.log",
+    "sha256": "dbcf52599949e5a9c47140107b908c816598b2397b180744fe3b0e63b640e875",
+    "bytes": 4143
+  },
+  "test": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "sha256": "a4d3495a56894c1ef3e6962bfbee1563ab765de48b2c0e94c765c6034a306fdd",
+    "bytes": 199403
+  },
+  "capture_postflight": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+    "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+    "bytes": 64451
+  },
+  "limits": "Pure synthetic constructor/resource records; no source/resource stubs for new witnesses; no native capture/Git/hardware. OriginalAstraattempt immutable; new baseline has explicit sufficient overhead, negatives explicitly reseal reduced overhead."
+}

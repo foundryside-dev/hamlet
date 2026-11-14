@@ -1,0 +1,43 @@
+{
+  "schema": "p4-footprint-artifact-interface-v1",
+  "path": "destination + .components/capture-footprint.json",
+  "receipt_binding": "Exact reference appears in P0 receipt.inventory",
+  "record": {
+    "schema": "bac-hardware-capture-footprint-v1",
+    "spec": "exact input spec reference",
+    "allocation": "grant.allocation_grant exact reference",
+    "validation_process": "actual verifier P0 identity",
+    "start": "UTC immediately before retained initial observation",
+    "end": "UTC immediately after retained final observation",
+    "initial": "snapshot below",
+    "final": "snapshot below",
+    "producer_prepublication": {
+      "state": "unavailable",
+      "value": null,
+      "reason": "P1 does not record its prepublication allocation/projection; these are retained verification cuts only"
+    }
+  },
+  "snapshot": {
+    "directory": {
+      "path": "D",
+      "device": "stat.st_dev int",
+      "inode": "stat.st_ino int",
+      "mode": "stat.st_mode int",
+      "links": "stat.st_nlink int",
+      "size": "stat.st_size int (not allocation charge)",
+      "mtime_ns": "stat.st_mtime_ns int",
+      "ctime_ns": "stat.st_ctime_ns int",
+      "allocated_bytes": "actual stat.st_blocks * 512"
+    },
+    "files": "sorted filename order, exactly10 dicts with reference (exact P0 reference) plus same stat fields (no path separate from reference.path)",
+    "allocated_bytes": "sum(directory.allocated_bytes + files[].allocated_bytes)",
+    "inodes": 11
+  },
+  "checks": [
+    "Every retained entry regular/no-follow; exact ten fixed files, unique actual inode identities; directory and names rechecked during observation.",
+    "Each cut <= allocation.overhead.scratch_bytes/scratch_inodes.",
+    "Initial/final directory/file namespace and content stats unchanged, excluding allocated_bytes because both observed allocations independently budgeted.",
+    "atime excluded because reads can change it.",
+    "No prepublication projected bytes inferred and no actual producer capture/command execution."
+  ]
+}

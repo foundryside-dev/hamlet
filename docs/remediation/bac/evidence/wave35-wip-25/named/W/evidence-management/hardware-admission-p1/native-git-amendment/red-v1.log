@@ -1,0 +1,248 @@
+FFFFFFFFFFFFFFF..                                                        [100%]
+=================================== FAILURES ===================================
+____ test_native_git_dependency_observes_actual_version_and_pinned_process _____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_obs0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec564c30>
+
+    def test_native_git_dependency_observes_actual_version_and_pinned_process(tmp_path, monkeypatch):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch)
+        records = []; token = tool.LEASE_FDS.set((101, 102))
+>       try: observed = tool.dependency_observations({"dependencies": [dependency]}, records)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:790: TypeError
+____ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[exit] ____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec564640>
+change = 'exit'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+____ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[pid] _____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec2eec30>
+change = 'pid'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+_ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[executable] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec34e470>
+change = 'executable'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+__ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[mutated] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec34e690>
+change = 'mutated'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+_ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[multiline] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref4')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58eb897450>
+change = 'multiline'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+___ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[empty] ____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58eb897650>
+change = 'empty'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+__ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[not_git] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref6')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec36ff20>
+change = 'not_git'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+__ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[mismatch] __
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref7')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec36ed50>
+change = 'mismatch'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+____ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[crlf] ____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref8')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec28b310>
+change = 'crlf'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+__ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[timeout] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref9')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec28a510>
+change = 'timeout'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+___ test_native_git_dependency_refuses_unobserved_or_mismatched_fact[cancel] ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_ref10')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec58e9c0>
+change = 'cancel'
+
+    @pytest.mark.parametrize("change", ["exit", "pid", "executable", "mutated", "multiline", "empty", "not_git", "mismatch", "crlf", "timeout", "cancel"])
+    def test_native_git_dependency_refuses_unobserved_or_mismatched_fact(tmp_path, monkeypatch, change):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch, change)
+        records = []
+        with pytest.raises((ValueError, OSError)):
+>           tool.dependency_observations({"dependencies": [dependency]}, records)
+E           TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:812: TypeError
+______ test_native_git_dependency_missing_reference_refuses_before_launch ______
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_dependency_mis0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec563290>
+
+    def test_native_git_dependency_missing_reference_refuses_before_launch(tmp_path, monkeypatch):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch)
+        dependency["reference"]["sha256"] = "0" * 64
+>       with pytest.raises(ValueError): tool.dependency_observations({"dependencies": [dependency]}, [])
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: dependency_observations() takes 1 positional argument but 2 were given
+
+test_capture_bac_hardware_v1.py:820: TypeError
+_ test_native_git_source_queries_bind_declared_executable_and_retained_context _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_native_git_source_queries0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec561490>
+
+    def test_native_git_source_queries_bind_declared_executable_and_retained_context(tmp_path, monkeypatch):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch)
+        records = []
+>       result = tool.git_read(str(tmp_path), ["rev-parse", "HEAD"], dependency["reference"], records)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: git_read() takes 2 positional arguments but 4 were given
+
+test_capture_bac_hardware_v1.py:827: TypeError
+__________ test_current_protocol_admits_and_old_protocol_pin_refuses ___________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v1-fixtures/test_current_protocol_admits_a0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f58ec4b4cb0>
+
+    def test_current_protocol_admits_and_old_protocol_pin_refuses(tmp_path, monkeypatch):
+        tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+        stub_capture_observations(monkeypatch, tool, req, env, registry)
+>       assert tool.capture(candidate, request_path, tmp_path / "current")["disposition"] == "admitted"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:837: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:777: in capture
+    require(pins["protocol"] == protocol.file_reference(Path(protocol.__file__)) and pins["protocol"]["sha256"] == PROTOCOL_SHA256, "protocol exact frozen pin mismatch")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+condition = False, reason = 'protocol exact frozen pin mismatch'
+
+    def require(condition, reason):
+        if not condition:
+>           raise ValueError(reason)
+E           ValueError: protocol exact frozen pin mismatch
+
+capture_bac_hardware_v1.py:47: ValueError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_observes_actual_version_and_pinned_process
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[exit]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[pid]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[executable]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[mutated]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[multiline]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[empty]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[not_git]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[mismatch]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[crlf]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[timeout]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_refuses_unobserved_or_mismatched_fact[cancel]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_missing_reference_refuses_before_launch
+FAILED test_capture_bac_hardware_v1.py::test_native_git_source_queries_bind_declared_executable_and_retained_context
+FAILED test_capture_bac_hardware_v1.py::test_current_protocol_admits_and_old_protocol_pin_refuses
+15 failed, 2 passed, 99 deselected in 1.06s

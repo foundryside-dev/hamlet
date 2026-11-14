@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6380,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_review_completed_own_scra0/output/attempt/a/command.json",
+    "sha256": "f40c1a5f93d1a18889b38ad182d7029797645c59be815af1c5c5f568e43e44d7"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_review_completed_own_scra0/support/identity-policy.json",
+    "sha256": "e7d74df7c2e8c1585fff26b98ba326ce23b849c0f4e274fc00ed98dcd2463938"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244070,
+    "ppid": 244069,
+    "start_identity": "14134966"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_review_completed_own_scra0/output/attempt/source-0002.json",
+    "sha256": "f847f618d099247a5f9dc3d8f3d1fd5c19d5cba3e30c8a334af345aced5f57c7"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13682,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_review_completed_own_scra0/metadata/spec.json",
+    "sha256": "c53698ce8928be905edcc711c36a23471a7649597e077d6c5878d4c95d233ed4"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_review_completed_own_scra0/support/grant.json",
+    "sha256": "4e825c2222715192231b7c0c333f64accf0d35e04c7cd704a228718123e98c28"
+  }
+}

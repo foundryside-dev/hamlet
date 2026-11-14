@@ -1,0 +1,66 @@
+{
+  "schema": "bac-packet-m-conversion-rig-callable-facts-v1",
+  "supplier": "/root/bac_c2_owner_failure_reconciliation",
+  "source_path": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+  "source_lines": 1511,
+  "source_sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f",
+  "same_packet_source_total_lines": 2975,
+  "same_packet_source_body_count": 4,
+  "import_module": "tests.test_townlet.regressions.bac.test_pw_scope_conversion",
+  "compiler_import": "from townlet.universe.compiler import UniverseCompiler",
+  "source_locations": {
+    "compiled": 75,
+    "policy": 79,
+    "Rig.__init__": 113,
+    "Rig.begin": 150,
+    "Rig.close": 172,
+    "Rig.world_state": 237,
+    "Rig.prepare_parent": 245,
+    "Rig.install_parent": 268,
+    "service": 272
+  },
+  "signatures": {
+    "Rig": "Rig(compiled, selected, ids=IDS, *, width=3, seed=701, membership=IDS)",
+    "policy": "policy(compiled, family, scope, mode)",
+    "begin": "rig.begin(batch)",
+    "close": "rig.close()",
+    "world_state": "rig.world_state()",
+    "service": "service(bank, accepted, tick, active)"
+  },
+  "return_values": {
+    "begin": null,
+    "close": null,
+    "install_parent": null,
+    "world_state": "COMPLETED ENV checkpoint dictionary",
+    "service": [
+      "context",
+      "stamp",
+      "reward",
+      "receipts"
+    ]
+  },
+  "members": [
+    "roster",
+    "env",
+    "reports",
+    "bank",
+    "issuer",
+    "authority",
+    "release",
+    "accepted",
+    "batches"
+  ],
+  "constraints": [
+    "No Rig.step, private flags, fake vector steps or fabricated BANK participation.",
+    "Rig.begin is all-active/no-decision and discards reset observation.",
+    "service is explicit width3/action2 synthetic BANK work, no physical step.",
+    "Positive close needs genuine BANK participants matching actual physical counts.",
+    "Rig.close and install_parent return None; install_parent updates release only, fresh Rig.accepted remains None.",
+    "ENV-only restore is separate from BANK restore; do not reuse unresolved correlation callback.",
+    "None/foreign accepted refusal alone does not prove refusal based on genuine completed-history phase."
+  ],
+  "report_sha256": "314ef828c229509a179797d0acb1db7a135b9c7a26d45d89a0299c00af4f6918",
+  "application_execution": false,
+  "application_edits": false,
+  "git_operations": false
+}

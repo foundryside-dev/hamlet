@@ -1,0 +1,478 @@
+{
+  "schema": "genuine-width3-driver-requirements-v1",
+  "date": "2026-11-14",
+  "author": "/root/bac_native_replay_fixture_implementation",
+  "status": "REQUIREMENTS_AND_SUPPLIER_QUESTIONS_ONLY_NO_DRIVER_API_ASSERTED",
+  "root_evidence": {
+    "candidate_tree": "d2158ce72efc4693f1bd8056db91f076ce52d0fa",
+    "R135": "Root reports positive12PASS, progression5PASS/6FAIL all missing ENV.vector_step, collection22PASS and independent static approval. This capsule did not execute or independently qualify those runs."
+  },
+  "inspection": {
+    "whole_test_bodies": [
+      {
+        "path": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+        "lines": 1511,
+        "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"
+      },
+      {
+        "path": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+        "lines": 1515,
+        "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9"
+      }
+    ],
+    "total_whole_lines": 3026,
+    "producer_bodies_read": 0,
+    "additional_implementation_or_test_bodies_read": 0,
+    "metadata": [
+      {
+        "path": "wave35-preparation/T18e-R0-NATIVE-REPLAY-FIXTURE-REPAIR-PLAN-v2.md",
+        "sha256": "6fd634250e3ae50e7924775a0e3209c34a0554c89a0194482446d7be34124bf3"
+      },
+      {
+        "path": "wave35-preparation/R121-OWNER-RECONCILIATION-v1.md",
+        "sha256": "91bda13dd0760a64c13322c4f3f5a5fdb47edd3baf3523f7e4463988b597284e"
+      },
+      {
+        "path": "wave35-preparation/T18e-R0-PARENT-C1-FIXTURE-SUPPLIER.md",
+        "sha256": "659332295bd538fae06d264026985dbbaf525d40423abf9b0f60f56aa889776d"
+      },
+      {
+        "path": "wave35-preparation/T18e-R0-POP-FIXTURE-CURRENT-API.md",
+        "sha256": "41c31db60be7c2d0f7f65d581bbb3587ca5809a593d58ab967639e46c51cb5b8"
+      },
+      {
+        "path": "wave35-preparation/T18e-R0-PARENT-ENV-RUNTIME-CURRENT-SUPPLIER.md",
+        "sha256": "02ac16732bb18dd6613c09cf90f2b20850da402c355cd11604f000f3f91b5b33"
+      },
+      {
+        "path": "wave35-preparation/T18e-R0-PARENT-C2-CLAIM-PREDECESSOR-FACTS-v1.md",
+        "sha256": "95f05b4e9f3ca90ff2c5f7433a51b94b1864e5e3f8f71fbc8605343c31e5f7ec"
+      },
+      {
+        "path": "wave35-preparation/T18e-R0-PARENT-ENV-C2-ROOT-HANDOFF-v1.md",
+        "sha256": "35c26c443dd77fba00e157190b9f3910391ad94e23756fb0768953fa701afb1f"
+      },
+      {
+        "path": "wave35-preparation/T18e-R0-POP-STANDALONE-STEP-CLEANUP-IMPLEMENTATION-HANDOFF-v1.md",
+        "sha256": "2102102034f2df397ff87e5efccdc3e8ecd4a4e2e47e46259b6ad55449df2b51"
+      }
+    ],
+    "source_changes": false,
+    "app_imports_runtime_tests": false,
+    "git_index_branch_worktree_checkout": false,
+    "sole_new_write": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/native-replay-fixture-implementation/genuine-driver-requirements-v1.json"
+  },
+  "metadata_currency": "Supplier capsules describe their sealed historical source. ENV/runtime C1/C2 and POP have evolved; their old absence/presence claims are question inputs, not independently verified current API facts. Exact current supplier refresh is required. Existing initial-participation/public POP facts expressly disallow fabricated claims and direct-ENV-to-POP-completion inference.",
+  "fixture_contract": {
+    "common": {
+      "compile": "configs/test/token_set_smoke, L0_test, CPU",
+      "families": [
+        "none",
+        "count_based",
+        "rnd",
+        "adaptive_rnd",
+        "icm"
+      ],
+      "bank_observation_dim": 3,
+      "bank_action_dim": 2,
+      "rnd_batch_size": 2,
+      "rnd_max_updates_per_tick": 1,
+      "rnd_max_pending_rows": 4,
+      "icm_training_batch_size": 2,
+      "icm_max_pending_transitions": 4,
+      "ownership": "Real BANK/native providers and ENV identity; other roles currently explicitly local fixture receipt owners. No claim of ordinary POP/Q/replay sampler integration follows."
+    },
+    "conversion": {
+      "roster": "A,B normally; A,B,C,D,E for dropped source; destination may reverse IDs; incompatible fixtures additionally vary membership/width/seed without stepping. Seed701, mismatch702.",
+      "context": "rows=len(accepted.world_ids); predecessor=arange(rows*3,float32).reshape(rows,3)*0.07+tick*0.2; successor=predecessor+0.11; actions=[lane_index%2]; active_on_entry=explicit bool tuple; vector_tick=explicit caller tick.",
+      "physical_action": "First legal real ENV action mask per lane, independent of synthetic provider actions.",
+      "current_step_order": "Private env.dones assignment for false activity (obsolete and prohibited as repair), ENV.step missing vector_step, then separate BANK prepare_stamp -> reward(update_stats=True) -> admit_and_service. Replace with genuine authority while preserving the synthetic effects exactly once.",
+      "source_schedule": "Shared source each episode ticks1..5: both A/B for first4, onlyA for5 =>9 admitted rows with one pending row after >=2 updates; adaptive_rnd repeats5 completed episodes at batch*10+step, preserves survival_history length10 and intrinsic-weight decay.",
+      "drops_schedule": "Five rows per tick for ticks1..3 =>15 admitted rows; actual dropped_rows>0 and multirow pending tail>=2. Receiving private target admits onlyA at71/72; no archived tail enters training hook.",
+      "signed_offset": "After real ticks1/2 capture actual Adam state; after ticks3/4/5-with-onlyA, positive real residual-gradient optimizer.step gives +1 offset; negative real load_state_dict(earlier) gives -2. Close/checkpoint after the effect; clone and next actual two-row update preserve moments/model and offset.",
+      "private_schedule": "New episode A-only101/102; restored continuation201/202; archive exclusion301/302; count401; RNG uses real owner independent same-ID continuation and unchangedB/ambient. Genuine initial retirement must replace forced inactive flags without adding B admissions.",
+      "completion": "BANK participated cursor chooses outcomes; real ENV step_counts/meters are used; final observation is explicitly zeros3; planned_horizon20, reason cap and fixed test rewards; canonical freeze -> BANK prepare_completion -> ENV prepare/freeze -> BANK commit -> ENV close -> local role effect receipts -> boundary release. Preserve exact completed correlation and next accepted sequences; supplier must decide valid current manual route."
+    },
+    "restore": {
+      "roster": "PW06/A,PW06/B; same/reversed receiving order; seed10291",
+      "context": "World-ID-based predecessor: offset1 forA,8 forB; [offset+tick/10,offset*0.2-tick/20,-offset-tick/7]; successor adds[0.2,-0.1,0.3]; provider actions0 forA,1 forB; active is explicit world-ID membership; vector_tick explicit.",
+      "physical_vs_synthetic": "actual_step performs one first-legal-action physical ENV step and asserts all physical step_counts>0. train is five separate synthetic BANK events; many tests call train without actual_step. These are intentionally separate streams, not five already-authorized physical decisions.",
+      "train": "Private train ticks1..5 both IDs =>5 admissions/world, >=2 real optimizer updates and pending tail; shared train onlyA on tick5 =>9 rows. Exact snapshots, gradients/Adam/RNG and following tick6/7 updates remain required.",
+      "phases": "resume reserved/rewarded/settled/inactive/stale_private; inactive has no active synthetic lanes, otherwise event6 onlyA; stale_private adds event7 onlyB. Preserve identical stamp/context/accepted dedup and no changed-cursor reexecution.",
+      "completion": "Actual step then synthetic train; outcomes for both IDs use physical counts, retained reset observation, current meters, reason checkpoint, planned_horizon100 and fixed per-lane rewards; real BANK prepared/committed dispositions, ENV close, local role effects, next boundary. Source history must not authorize receiving live close.",
+      "restore_and_custody": "Strict ID reorder; initial/live/completed modes; batch0 accepted with per-world sequence1; genuine parent WorldRecord; copied/foreign/consumed/stale handles; caller and retained-view mutations; allocation failures and complete residual gradients; bank quarantine restore. No observational call may be inserted between prepare and positive install."
+    }
+  },
+  "dependency_inventory": {
+    "conversion_physical_or_completed_source_dependency": [
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_shared_learning_and_completed_parent",
+        "line": 531,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_icm_rejects_erased_updates_with_inherited_adam",
+        "line": 569,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fresh_private_and_clone_learned_origins",
+        "line": 588,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_shared_pending_is_archived_not_falsely_attributed",
+        "line": 704,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_current_captured_replay_is_preserved",
+        "line": 835,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history",
+        "line": 870,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_source_shared_and_live_same_scope_restore_remain_real",
+        "line": 896,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_invalid_conversion_refuses_without_live_effects",
+        "line": 933,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_allocation_refusal_is_before_publication_and_retryable",
+        "line": 982,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_prepared_initialization_custody",
+        "line": 1046,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_origin_and_callback_corruption_cannot_publish",
+        "line": 1083,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_explicit_choice_profile_and_parent_custody",
+        "line": 1181,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_and_live_private_continuation",
+        "line": 1217,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_private_rng_is_owned_and_starts_at_same_id_factory_continuation",
+        "line": 1263,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_real_signed_rnd_offset",
+        "line": 1332,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_genuine_drops_and_multirow_tail",
+        "line": 1338,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_signed_rnd_offset_survives_clone_and_next_real_update",
+        "line": 1344,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_nonzero_drop_baseline_and_multirow_archive_exclusion",
+        "line": 1383,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_actual_private_callback_witnesses",
+        "line": 1407,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_unstarted_count_origin_requires_selected_template",
+        "line": 1454,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      }
+    ],
+    "conversion_no_physical_driver_dependency": [
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_current_hc_and_active_replay_roundtrip",
+        "line": 808,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_fixture_coherent_incompatible_targets",
+        "line": 1147,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_coherent_incompatible_target_refuses",
+        "line": 1156,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      }
+    ],
+    "restore_explicit_physical_step_dependency": [
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_real_bank_env_producer_control",
+        "line": 565,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_completed_env_preinstall_parent_control",
+        "line": 708,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_private_restore_matches_by_world_id",
+        "line": 733,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_allocation_refusal_is_atomic",
+        "line": 1146,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pending_completion_export_refuses_purely",
+        "line": 1230,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_historical_completion_cannot_authorize_receiving_live_close",
+        "line": 1253,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_completed_parent_correlation_refuses_before_install",
+        "line": 1281,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_batch_zero_current_bank_resume",
+        "line": 1425,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_parent_retained_callback_view_cannot_mutate_prepared_history",
+        "line": 1470,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      }
+    ],
+    "restore_dependency_conditions": {
+      "test_restore_allocation_refusal_is_atomic": "Only outcome allocation branch invokes actual_step/complete; other branches remain standalone BANK operations.",
+      "test_batch_zero_current_bank_resume": "Both mode cases invoke actual_step before branch, including live_episode; completed_boundary additionally closes and restores ENV."
+    },
+    "restore_without_explicit_physical_step": [
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_owned_provider_gradient_pairing_control",
+        "line": 597,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_historical_current_captured_replay_control",
+        "line": 684,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_invalid_last_world_leaves_all_runtime_state_unchanged",
+        "line": 904,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_initial_and_live_scope_roundtrip",
+        "line": 919,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_live_phase_dedup_resume",
+        "line": 952,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_native_gradients_are_owned_before_next_update",
+        "line": 1025,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_installed_actual_parameters_gradients_adam_and_source_isolation",
+        "line": 1060,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_restore_token_and_input_custody",
+        "line": 1113,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_quarantine_requires_healthy_restore_not_native_export",
+        "line": 1324,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_count_scope_coupling_positive",
+        "line": 1341,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_zero_width_selected_family_control",
+        "line": 1363,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_bank_entry_terminal_once_then_inactive",
+        "line": 1387,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      },
+      {
+        "node": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_current_hc_preserves_captured_rows_and_private_counters",
+        "line": 1400,
+        "matrix": "All existing parametrized cases; names/decorators/assertions unchanged."
+      }
+    ],
+    "interpretation": "Nine restore function bodies and twenty conversion functions have direct/transitive physical dependency; these are function counts, not parametrized case counts or predicted failure counts. Remaining restore manual BANK controls are preserved requirements, not newly declared failed or necessarily dependent on driver. Standalone native/replay positives cannot substitute for physical-dependent controls."
+  },
+  "supplier_questions": [
+    {
+      "id": "G1",
+      "owners": "ENV and POP owners",
+      "question": "Which exact current public route can earn a physical vector step for these local BANK fixture owners, and finish the corresponding POP decision, without requiring replacement of the synthetic BANK input geometry?",
+      "required_answer": "Supply hash-bound signature, registration/binding prerequisites, exact issuer/claim/finish sequence and positive lifecycle outcome. If absent, identify the smallest finite producer-owned capability gap, not an invented fixture callable.",
+      "affected_seams": [
+        "conversion Rig.begin/step/close",
+        "restore Rig.begin/actual_step/complete"
+      ]
+    },
+    {
+      "id": "G2",
+      "owners": "ENV/runtime and POP owners",
+      "question": "Can physical claim predecessor/actions/masks remain actual compiled ENV data while the single designated curiosity reward/service uses the exact explicit width3/action_dim2 context below?",
+      "required_answer": "Name who validates and owns each context and how it crosses the current public boundary. State whether a supported explicit synthetic-context mode or separate manual BANK route exists. A transform, runtime substitution, new bank or geometry override is not assumed authorized.",
+      "affected_seams": [
+        "Synthetic values and actual claim equality must both hold",
+        "No compiled-geometry replacement or second service"
+      ]
+    },
+    {
+      "id": "G3",
+      "owners": "ENV/runtime and POP owners",
+      "question": "What exact effect inventory does the manual physical route perform: stamp, curiosity reward/stat update, curiosity service, replay insertion, Q/optimizer, outcome bookkeeping?",
+      "required_answer": "Give the once-only owner of each effect and its returned evidence. In restore, one actual_step followed by train must still mean exactly five synthetic admissions/private world or nine shared rows, not six/eleven. A real integrated step followed by another service is not an answer.",
+      "affected_seams": [
+        "Conversion service() sequence",
+        "Restore actual_step then train() sequence"
+      ]
+    },
+    {
+      "id": "G4",
+      "owners": "ENV and POP participation owners",
+      "question": "How are A-only-from-entry and B-inactive-on-step5-after-four-participations produced by genuine public decisions?",
+      "required_answer": "Supply exact reset-retirement and mid-episode terminal/cap/retirement APIs with seals, lane/world ordering, step-count effects and eligible-on-entry semantics. State if mid-episode cessation without an extra B training row is unsupported. No env.dones writes, fake latches, claim patch or terminal-mask substitution.",
+      "affected_seams": [
+        "Conversion active=(True,False)",
+        "Shared source ticks1..4 both, tick5 onlyA",
+        "Five-world target onlyA"
+      ]
+    },
+    {
+      "id": "G5",
+      "owners": "POP tick and BANK owner suppliers",
+      "question": "How can the fixture preserve explicit synthetic vector_tick values and real claim currency simultaneously?",
+      "required_answer": "Give actual physical lifetime-tick rules versus allowed standalone BANK synthetic-event clock rules. Preserve sparse ticks 101/102,201/202,301/302,401,51/52,71/72 and adaptive batch*10+step, and private ServiceClock world_eligible_admission positions1,2,...; do not renumber them or manufacture claim state.",
+      "affected_seams": [
+        "Conversion step(tick,active)",
+        "Restore event tick6/7 and stale-private phase"
+      ]
+    },
+    {
+      "id": "G6",
+      "owners": "ENV/POP construction owners",
+      "question": "What public construction route supports two or five actual lane owners, exact given IDs/order and training seeds while keeping BANK width3/action_dim2?",
+      "required_answer": "Provide required constructor configuration and role-owner bindings. Existing make_parent is fixed eight lanes/compiled dimensions; importing its whole helper or mutating its live geometry is not a solution. List required additional read bodies and whole-file budgets separately.",
+      "affected_seams": [
+        "IDS A/B and PW06/A/PW06/B",
+        "A/B/C/D/E drop source",
+        "Reversed destination order"
+      ]
+    },
+    {
+      "id": "G7",
+      "owners": "ENV completion and POP owners",
+      "question": "How does a successful manual step become eligible for genuine completion and next-episode release without leaving a pending POP vector decision?",
+      "required_answer": "Supply public post-physics finalization if any; real completed outcome owner; flush/cap rules; exact participants from positive ENV counts; prepared BANK dispositions, freeze, commit, ENV close and release order. Direct prepare/claim plus ENV.step is insufficient if pending POP prevents flush. Distinguish local fixture role receipts from a claim of actual POP effects.",
+      "affected_seams": [
+        "Conversion close/world_state",
+        "Restore completion_arguments/complete",
+        "Adaptive five completed episodes"
+      ]
+    },
+    {
+      "id": "G8",
+      "owners": "ENV and BANK parent/restore suppliers",
+      "question": "Which current public parent correlation and install route preserves completed history across fresh receiving ENV and reversed world IDs, including batch0 and private initialization?",
+      "required_answer": "Supply exact prepare_world_restore/authority.restored/install_world_restore requirements, owned retained-callback view semantics, reset next-batch sequence and allowed local role ownership. Do not convert history transport into unproved physical live continuation or copy parent handles.",
+      "affected_seams": [
+        "Conversion prepare_parent/install_parent",
+        "Restore Correlation",
+        "Completed/live/initial/private_initialized modes"
+      ]
+    },
+    {
+      "id": "G9",
+      "owners": "ENV/BANK/runtime owners",
+      "question": "Which restore cases may continue as standalone manual BANK events after genuine accepted activation, with no physical step per event?",
+      "required_answer": "Explicitly classify Rig.context/reserve/event/train and dedup reserved/rewarded/settled/inactive/stale_private phases. Preserve zero/all-false synthetic event and B-only event7 semantics even if physical episode activity differs; if no public separation exists, identify the exact capability gap before changing tests. Do not classify these currently separate controls as ENV-blocked solely because other nodes fail.",
+      "affected_seams": [
+        "Restore bank-only learning/custody matrices",
+        "Entry-terminal-once then inactive control"
+      ]
+    },
+    {
+      "id": "G10",
+      "owners": "ENV/runtime/POP custody owners",
+      "question": "What exact current lock/lineage and reverse-callback context is required for the genuine manual route after C1/C2 changes?",
+      "required_answer": "Refresh historical metadata against current source seals; give admitted parent operation binding, claim-to-participation validation continuation, immutable inventories and actual completion owner. No None nested in active parent, private lock/latch writes, arbitrary invocation authority or late new registration.",
+      "affected_seams": [
+        "Current accepted identity checks",
+        "Before-first-write claim failure",
+        "Completion/failure cleanup"
+      ]
+    },
+    {
+      "id": "G11",
+      "owners": "ENV/runtime/POP failure owners",
+      "question": "How must a failure in physics, synthetic reward/service or completion preserve the original exception and fail closed without replaying an earned phase?",
+      "required_answer": "State authentic cleanup entrypoints and supported runtime_failure/empty_participation distinction, exact entered/reached-stage evidence and whether hook removal remains callable on the owner. No blanket swallowing or fake successful outcome; new driver must retain original negative assertions.",
+      "affected_seams": [
+        "Managed hook cleanup",
+        "Invalid/copy/foreign/consumed/stale and allocation controls"
+      ]
+    },
+    {
+      "id": "G12",
+      "owners": "ENV and POP suppliers jointly",
+      "question": "If no current route satisfies G1-G11, exactly which producer boundary must be added before fixture implementation can proceed?",
+      "required_answer": "Return a finite missing-interface table: missing public operation, authentic issuing owner, required inputs/outputs, single effect boundary, refusal and completion rules, affected source body/cap, and concrete proving test node. Do not answer with a general plan or silently substitute ordinary eight-lane integration.",
+      "affected_seams": [
+        "Keep all original assertions and parameter counts",
+        "Fresh bounded design/review before producer changes"
+      ]
+    }
+  ],
+  "first_physical_proving_nodes": [
+    "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py::test_initial_conversion_has_no_episode_or_closing_history[fresh_private-rnd]",
+    "tests/test_townlet/regressions/bac/test_pw_scope_restore.py::test_pristine_real_bank_env_producer_control[per_world-rnd]"
+  ],
+  "acceptance_boundary": "These two representatives are entry points only. Every original function, parametrized case, source-learning/offset/drop/gradient/identity/parent/custody assertion and unchanged broad owner gate remains required. No fake vector_step, private decision/latch write, forced-dones substitute, compiled-geometry switch, double curiosity service, omitted effect, compatibility fallback, acceptance waiver or new source read is authorized."
+}

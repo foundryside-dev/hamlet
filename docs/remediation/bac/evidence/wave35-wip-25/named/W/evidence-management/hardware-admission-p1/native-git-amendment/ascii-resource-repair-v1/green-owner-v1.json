@@ -1,0 +1,90 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--noconftest",
+    "--rootdir=/workspace/bac-review-2026-11-01/qualification",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "start": "2026-11-14T13:36:19.928646+00:00",
+  "end": "2026-11-14T13:36:21.447862+00:00",
+  "exit_code": 0,
+  "before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277,
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7",
+      "bytes": 64708,
+      "lines": 992
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907",
+      "bytes": 64111,
+      "lines": 979
+    }
+  ],
+  "after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277,
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7",
+      "bytes": 64708,
+      "lines": 992
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907",
+      "bytes": 64111,
+      "lines": 979
+    }
+  ],
+  "source_snapshots": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-source",
+  "limits": {
+    "cpu_ids": [
+      3
+    ],
+    "rlimit_as": 4294967296
+  },
+  "environment": {
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification",
+    "OMP_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "scope": "Full P1 owner inert/stubbed suite; no actual capture/Git/CUDA/APP execution. CPU3/4GiB.",
+  "ast_validation": "PASS capture and test parse; no source execution by parser"
+}

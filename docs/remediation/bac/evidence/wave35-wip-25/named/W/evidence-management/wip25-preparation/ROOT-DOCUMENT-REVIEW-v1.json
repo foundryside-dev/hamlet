@@ -1,0 +1,49 @@
+{
+  "status": "ROOT APPROVED EXACT DOCUMENT POSTIMAGES FOR PAUSE PUBLICATION",
+  "files": [
+    {
+      "destination": "docs/remediation/bac/STATUS.md",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/STATUS.md",
+      "bytes": 123213,
+      "sha256": "c4bf8475caa9c215e80048eb4b94aa2bf46e61aaf0c16b1392b80336c2ad1a63",
+      "before_sha256": "7737b87f5036a89716f8a4997fb788a4509bd438f8eed6c53301720bb28a74cb",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/STATUS.diff"
+    },
+    {
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/EVIDENCE-INDEX.md",
+      "bytes": 34236,
+      "sha256": "37e3c73038211e75e533dc74ec9be18d723b4f70075dd5180fa43c103f999cb8",
+      "before_sha256": "6c8bd92c3d12727328775ca0875049358e403fbe177438de0e3d03c7f860dbc6",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/EVIDENCE-INDEX.diff"
+    },
+    {
+      "destination": "README.md",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/README.md",
+      "bytes": 33618,
+      "sha256": "65de2527f5de9ebe9c56ce09f4ef0356a6b06406c8d24e35d1356a2c4fe9e658",
+      "before_sha256": "643bbcd6b1668cd734f4ca67ab71c91a70c649e7f39c062c1a6715823218e8ad",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/README.diff"
+    },
+    {
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "bytes": 15045,
+      "sha256": "26a8d4f882a0d73f027919138f9a2e9708ec1ab5e91590a6023eeb6ded812915",
+      "before_sha256": "dcb18bef329b2161fb5b3a5a0aed3791b685bd1d0fa4d8dc54a7a6a0d54e73f0",
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.diff"
+    },
+    {
+      "destination": "docs/remediation/bac/PAUSE-HANDOFF-WIP25.md",
+      "postimage": "evidence-management/wip25-preparation/document-postimages-v3/PAUSE-HANDOFF-WIP25.md",
+      "bytes": 7433,
+      "sha256": "8c3bfff8017e0d497bc7a7f2d4e19c5ce4392f4ecb037278fa5ebcd88a547789",
+      "before_sha256": null,
+      "new_document": true,
+      "diff": "evidence-management/wip25-preparation/document-postimages-v3/PAUSE-HANDOFF-WIP25.diff"
+    }
+  ],
+  "reviewer": "/root",
+  "at": "2026-11-14T13:53:32.583083+00:00",
+  "scope": "Reviewed v2 complete diffs and handoff, then exact v2-to-v3 changes. Current vs historical P2 RED source corrected; six unavailable historical bodies disclosed. No package/full BAC acceptance. Exact STATUS postimage is approved publication-only source-inventory delta; all runtime/config/protected artifacts remain execution exact."
+}

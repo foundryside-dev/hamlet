@@ -1,0 +1,22 @@
+{
+  "job": "manual-first-positive",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+  "exit_code": 0,
+  "counts": {
+    "passed": 3,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 15.06255610199878,
+  "source_guards": 826,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

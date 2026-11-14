@@ -1,0 +1,73 @@
+{
+  "attempt_id": "attempt",
+  "collected_ids": [],
+  "command": {
+    "bytes": 1762,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/command.json",
+    "sha256": "6ad35fec316aa2e06a5ca733644ed0bdda160badef9bc90746d93739535f618d"
+  },
+  "disposition": "interrupted",
+  "elapsed_ns": {
+    "reason": "",
+    "state": "measured",
+    "value": 93005229
+  },
+  "end": {
+    "reason": "",
+    "state": "measured",
+    "value": "2026-11-14T13:16:11.270941Z"
+  },
+  "exit_code": -15,
+  "inventory": [
+    {
+      "bytes": 6,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/actual-pid.txt",
+      "sha256": "570a377e270d2f6e75b872ac8ee9a1f2be23a297024e154aafed7cbf06a03658"
+    },
+    {
+      "bytes": 1762,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/command.json",
+      "sha256": "6ad35fec316aa2e06a5ca733644ed0bdda160badef9bc90746d93739535f618d"
+    },
+    {
+      "bytes": 1756,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/launch.json",
+      "sha256": "1b76d868f7de62858a05dc2d0208a4eb1c6b051e07e19e1d8656c4ca3099bd34"
+    },
+    {
+      "bytes": 2026,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/runtime-context.json",
+      "sha256": "51b76f3196ad9185b61bed54d323e388b278f781029d45341554d1f5cb0769a4"
+    },
+    {
+      "bytes": 0,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1576,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/wait.json",
+      "sha256": "291dda13814c4dfe42a94d4d849378ce656f1e9fab2422bfe35c86f87819505d"
+    }
+  ],
+  "job_id": "a",
+  "kind": "job-result",
+  "log": {
+    "bytes": 0,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/stdout.log",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "obligation_records": [],
+  "outcomes": [],
+  "process_records": [],
+  "reason": "runner interruption; evidence incomplete: unreadable/unsafe reference: /workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/output/attempt/a/completion.json",
+  "schema": "bac-hardware-v1",
+  "signal": 15,
+  "source_witnesses": [],
+  "spec": {
+    "bytes": 9065,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_public_signal_reaps_job_b0/metadata/spec.json",
+    "sha256": "75f7fc5ba4c2ecf8648be91cd7903ada33996439050bbce8e8f3c164f00dc02f"
+  },
+  "start": "2026-11-14T13:16:11.177921Z"
+}

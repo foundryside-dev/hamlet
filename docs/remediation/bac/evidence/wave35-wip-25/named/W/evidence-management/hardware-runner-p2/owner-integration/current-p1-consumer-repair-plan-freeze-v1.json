@@ -1,0 +1,26 @@
+{
+  "schema": "bac-p2-current-p1-consumer-repair-plan-freeze-v1",
+  "status": "DESIGN ONLY; implementation/runtime not granted",
+  "plan": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-CURRENT-P1-CONSUMER-REPAIR-PLAN-v1.md",
+    "sha256": "f2e6cb835ac86853cef35e63ffda5b8c1104805aa12232972bebcf05c77cc507",
+    "bytes": 16442
+  },
+  "source_unchanged": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97",
+    "bytes": 110631
+  },
+  "spec": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/p1-native-git-consumer-gaps-v1.json",
+    "sha256": "dcc5441374e936c996b6859c099398d20f9277677f27acc868e5e7306f559804",
+    "bytes": 13904
+  },
+  "at": "2026-11-14T12:46:45.094066+00:00",
+  "authority_decisions": [
+    "root manifest/API and concrete publication/namespace evidence schemas",
+    "separate bounded author contexts if combined projection exceeds5000",
+    "shared runner release after current P4 verification"
+  ],
+  "actual_task4": "UNRUN: local namespace/full ancestry unsupported; server access pending"
+}

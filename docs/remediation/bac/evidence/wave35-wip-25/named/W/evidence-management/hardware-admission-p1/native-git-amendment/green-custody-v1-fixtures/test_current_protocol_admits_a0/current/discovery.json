@@ -1,0 +1,79 @@
+{
+  "affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "ancestry_complete": true,
+  "argv": [
+    "/inert/python",
+    "--discover"
+  ],
+  "at": "2026-11-14T12:18:52.457260Z",
+  "cgroup_leaf": "/inert/cgroup/parent/leaf",
+  "cgroup_root": "/inert/cgroup",
+  "cgroups": [
+    {
+      "cpu_max": "max 100000",
+      "cpuset": "0-7",
+      "memory_current": "900",
+      "memory_max": "max",
+      "path": "/inert/cgroup"
+    },
+    {
+      "cpu_max": "350000 100000",
+      "cpuset": "0-5",
+      "memory_current": "1300",
+      "memory_max": "2000",
+      "path": "/inert/cgroup/parent"
+    },
+    {
+      "cpu_max": "max 100000",
+      "cpuset": "0-4",
+      "memory_current": "200",
+      "memory_max": "1000",
+      "path": "/inert/cgroup/parent/leaf"
+    }
+  ],
+  "commands": [],
+  "competing_workloads": [],
+  "cpu_topology": "synthetic",
+  "cuda_runtime": null,
+  "cwd": "/inert",
+  "dependencies": [
+    {
+      "name": "git",
+      "reference": {
+        "bytes": 14,
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/inert-evidence",
+        "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+      },
+      "version": "git version 2.50.0"
+    }
+  ],
+  "devices": [],
+  "driver": null,
+  "effective_visibility": "",
+  "gpu_topology": null,
+  "identity": {
+    "boot_id": "inert-boot",
+    "host": "synthetic",
+    "pid": 4321,
+    "ppid": 1234,
+    "start_identity": "55"
+  },
+  "inherited_visibility": null,
+  "interpreter": "/inert/python",
+  "meminfo": "MemTotal: 4 kB\nMemAvailable: 2 kB\n",
+  "numa_topology": "synthetic",
+  "probe_errors": [],
+  "profile": "cpu",
+  "python_version": "3.13.5",
+  "schema": "bac-hardware-discovery-v1",
+  "scratch_free_bytes": 1000000,
+  "scratch_free_inodes": 100,
+  "tmpdir": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_current_protocol_admits_a0/scratch",
+  "torch_build": null,
+  "torch_origin": null
+}

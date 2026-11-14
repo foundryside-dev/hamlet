@@ -1,0 +1,117 @@
+"""Independent finite ASCII resource probes; actual frozen modules, inert facts only."""
+import ast
+import contextlib
+import datetime
+import difflib
+import hashlib
+import json
+import os
+from pathlib import Path
+import resource
+import sys
+
+HERE = Path(__file__).resolve().parent
+A = HERE.parent
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+os.sched_setaffinity(0, {3})
+resource.setrlimit(resource.RLIMIT_AS, (4294967296, 4294967296))
+for key in ('OMP_NUM_THREADS', 'MKL_NUM_THREADS', 'OPENBLAS_NUM_THREADS'):
+    os.environ[key] = '1'
+os.environ['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Q))
+
+def now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+def ref(path):
+    data = path.read_bytes()
+    return {'path': str(path), 'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data), 'lines': len(data.splitlines())}
+
+paths = [Q / n for n in ('capture_bac_hardware_v1.py', 'test_capture_bac_hardware_v1.py', 'bac_hardware_protocol_v1.py')] + [Path(__file__).resolve()]
+before = [ref(p) for p in paths]
+expected = ['08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7', 'bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907', 'e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860']
+assert [r['sha256'] for r in before[:3]] == expected
+assert ref(A / 'freeze-v1.json')['sha256'] == '7d711c52a724cb6a8693f8c3870bc54e374110980a292054e9357b36b3af60e9'
+assert ref(A / 'consumer-grammar-delta-v1.json')['sha256'] == 'c3944b7daf9c1a8c7c2296cedec71887226963ceaff9836472b5d0f41b1fab4c'
+for p in paths:
+    ast.parse(p.read_text())
+old = A / 'red-v1-source/capture_bac_hardware_v1.py.txt'
+assert ref(old)['sha256'] == 'd91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb'
+oldtree, newtree = ast.parse(old.read_text()), ast.parse(paths[0].read_text())
+assert len(oldtree.body) == len(newtree.body)
+changed = [getattr(a, 'name', type(a).__name__) for a,b in zip(oldtree.body,newtree.body) if ast.dump(a) != ast.dump(b)]
+assert changed == ['cpuset', 'assess_resources', 'discovery_preflight']
+diff = list(difflib.unified_diff(old.read_text().splitlines(), paths[0].read_text().splitlines(), fromfile=str(old), tofile=str(paths[0]), n=2))
+assert sum(x.startswith('+') and not x.startswith('+++') for x in diff) == 11
+(HERE / 'source-delta.diff.txt').write_text('\n'.join(diff)+'\n')
+meta = {'start': now(), 'pid': os.getpid(), 'ppid': os.getppid(), 'argv': sys.argv, 'actual_cmdline': Path('/proc/self/cmdline').read_bytes().decode().split('\0')[:-1], 'cwd': os.getcwd(), 'affinity': sorted(os.sched_getaffinity(0)), 'rlimit_as': list(resource.getrlimit(resource.RLIMIT_AS)), 'before': before, 'changed_ast_nodes': changed, 'old_snapshot': ref(old), 'rows': [], 'scope': 'Pure resource assessment/preflight, no actual capture/Git/APP/hardware. Old snapshot parsed only, never executed.'}
+import capture_bac_hardware_v1 as m
+import test_capture_bac_hardware_v1 as fixtures
+assert Path(m.__file__).resolve() == paths[0]
+fixture_dir = HERE / 'fixtures'
+fixture_dir.mkdir()
+
+def check(name, obs, reject, boundaries=('assessment', 'preflight')):
+    for boundary in boundaries:
+        reasons = []
+        if boundary == 'assessment':
+            result = fixtures.assess(fixture_dir, obs)
+            reasons = result['reasons']
+            accepted = not reasons
+            if accepted:
+                assert result['effective_cpu_capacity']['value'] == 3.5
+                assert result['admitted_budget'] == {'cpu_slots':3, 'ram_bytes':600, 'scratch_bytes':950, 'scratch_inodes':18}
+        else:
+            try:
+                m.discovery_preflight(obs, fixtures.request(), fixtures.ascii_resource_allocation())
+                accepted = True
+            except ValueError as exc:
+                accepted = False
+                reasons = [str(exc)]
+        meta['rows'].append({'case':name, 'boundary':boundary, 'accepted':accepted, 'expected_rejection':reject, 'reasons':reasons, 'pass':accepted != reject})
+
+check('ASCII baseline with finite and unlimited values', fixtures.observation(), False)
+for alphabet in ('٠١٢٣٤٥٦٧٨٩', '０１２３４５６７８９', '०१२३४५६७८९'):
+    for field in ('cpu_max','cpuset','memory_max','memory_current','meminfo'):
+        obs = fixtures.observation()
+        if field == 'meminfo': obs[field] = obs[field].translate(str.maketrans('0123456789', alphabet))
+        else: obs['cgroups'][1][field] = obs['cgroups'][1][field].translate(str.maketrans('0123456789', alphabet))
+        check('digits '+alphabet+' '+field, obs, True)
+for field in ('cpu_max','cpuset','memory_max','memory_current'):
+    for space in ('\u00a0', '\u2003'):
+        obs = fixtures.observation()
+        obs['cgroups'][1][field] = space + obs['cgroups'][1][field]
+        check('Unicode outer whitespace '+repr(space)+' '+field, obs, True)
+for space in ('\u00a0', '\u2003'):
+    obs = fixtures.observation()
+    obs['cgroups'][1]['cpu_max'] = '350000'+space+'100000'
+    check('Unicode quota separator '+repr(space), obs, True)
+    obs = fixtures.observation()
+    obs['meminfo'] = obs['meminfo'].replace(': ', ':'+space)
+    check('Unicode meminfo separator '+repr(space), obs, True)
+for token in ('350000 ١00000', '٣50000 100000', 'max ١00000'):
+    obs = fixtures.observation(); obs['cgroups'][1]['cpu_max'] = token
+    check('mixed quota/period '+token, obs, True)
+obs = fixtures.observation()
+obs['tmpdir'] = '/inert/资源/scratch'
+for key in ('cgroup_root','cgroup_leaf'): obs[key] = obs[key].replace('/inert', '/inert/资源')
+for group in obs['cgroups']: group['path'] = group['path'].replace('/inert', '/inert/资源')
+check('Unicode paths retain ASCII arithmetic', obs, False)
+obs = fixtures.observation(); obs['meminfo'] = obs['meminfo'].replace(': ', ':\t ')
+check('ASCII meminfo spacing', obs, False)
+for token in ('0-1,1-2', '2-1', '0,,1', '0-1048576', '-1', '1.0'):
+    obs = fixtures.observation(); obs['cgroups'][1]['cpuset'] = token
+    check('existing invalid cpuset '+token, obs, True)
+meta['independent_pass'] = all(r['pass'] for r in meta['rows'])
+import pytest
+args = ['-q', '-o', 'addopts=', '-p', 'no:cacheprovider', '--noconftest', '--tb=line', '--rootdir='+str(Q), '--basetemp='+str(HERE/'pytest-fixtures'), str(paths[1]), '-k', 'ascii_resource_grammar']
+meta['pytest_argv'] = args
+with (HERE/'focused.log').open('w') as log, contextlib.redirect_stdout(log), contextlib.redirect_stderr(log):
+    code = int(pytest.main(args))
+meta.update(pytest_exit_code=code, end=now(), after=[ref(p) for p in paths])
+meta['unchanged'] = meta['before'] == meta['after']
+meta['exit_code'] = 0 if code == 0 and meta['independent_pass'] and meta['unchanged'] else 1
+(HERE/'probe-results.json').write_text(json.dumps(meta, indent=2, ensure_ascii=False)+'\n')
+print(json.dumps({'independent_rows':len(meta['rows']), 'independent_pass':meta['independent_pass'], 'pytest_exit_code':code, 'unchanged':meta['unchanged'], 'exit_code':meta['exit_code']}))
+sys.exit(meta['exit_code'])

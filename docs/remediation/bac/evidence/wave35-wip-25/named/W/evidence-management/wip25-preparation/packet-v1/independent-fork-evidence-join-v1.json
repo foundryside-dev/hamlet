@@ -1,0 +1,32 @@
+{
+  "attempt_id": "wave35-r148-manual-independent-attempt-1--manual-independent",
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "independent_review": {
+    "bytes": 6513,
+    "path": "evidence-management/manual-driver-design/independent-astra-v1/terminal-bounded-review-v1.md",
+    "root": "W",
+    "sha256": "d42e2d195d2377ec070081e8a95b977adb1db50250cb1b384caee09cf8cf3aea"
+  },
+  "limitation": "Original extracted fork JSON lacks literal candidate_tree/attempt_id; this additive join binds the original log/root pre-post/terminal review, without altering or recreating witness.",
+  "original_fork_witness": {
+    "bytes": 958,
+    "path": "evidence-management/manual-driver-design/r148-independent-actual-fork-witness-v1.json",
+    "root": "W",
+    "sha256": "6caa56fe57855f2c2211390a0790383800c0614541333c6b66b4b35e63c11aee"
+  },
+  "root_adoption": {
+    "bytes": 3826,
+    "path": "evidence-management/manual-driver-design/r148-root-component-adoption-v1.json",
+    "root": "W",
+    "sha256": "0d7edf13c031b798c8618454dc065357155043fa7c9fbec774bbb3b165f5bd54"
+  },
+  "source_log": [
+    {
+      "bytes": 1227,
+      "path": "wave35-r148-manual-independent-attempt-1/manual-independent.log",
+      "root": "Q",
+      "sha256": "f749bcfe60449abad89f81a4f617ed51a08889432af8421cab7ed076e7965992"
+    }
+  ],
+  "status": "Recorded source/process join; no new execution"
+}

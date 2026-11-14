@@ -1,0 +1,31 @@
+{
+  "name": "manual-first-positive",
+  "exit_code": 0,
+  "seconds": 15.06255610199878,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_real_manual_step_uses_actual_roster_and_returns_owned_physical_state",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r147-manual-first-positive-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r147-manual-first-positive-attempt-1/manual-first-positive.log",
+  "sha256": "80c609c4bd32689271d94984245549d026d0f4e7e4e2663a2f8f9939d94e0116",
+  "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "manifest_sha256": "06fb55ad80205625f85d16a36eef1a923cd9fd63814139039966b13cae56c244",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

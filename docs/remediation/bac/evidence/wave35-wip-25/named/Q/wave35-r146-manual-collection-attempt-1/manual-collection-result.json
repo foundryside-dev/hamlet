@@ -1,0 +1,28 @@
+{
+  "name": "manual-collection",
+  "exit_code": 0,
+  "seconds": 5.130359563976526,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r146-manual-collection-attempt-1",
+    "--collect-only"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r146-manual-collection-attempt-1/manual-collection.log",
+  "sha256": "2c0e1a9d2cc7f542d9e35dd9dadb9b86683500cf5306941f00f6768f9f97afbd",
+  "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "manifest_sha256": "a01ee4a036bb9b8f57ed2f40015a193d4f9c5b39cb29bb320511c0dec3ce050a",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

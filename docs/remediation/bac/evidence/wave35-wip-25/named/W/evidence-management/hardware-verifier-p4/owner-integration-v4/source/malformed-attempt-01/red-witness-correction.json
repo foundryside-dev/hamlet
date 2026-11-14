@@ -1,0 +1,8 @@
+{
+  "note": "Explicit absolute locator supersedes the shorthand relative red_witness string in record.json; prior record preserved.",
+  "reference": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-01/execution.json",
+    "bytes": 2945,
+    "sha256": "56651527891738249bacafc1e5017dcdcd94da22818dfa01c8680894b6b9b152"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6473,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_envelope_mutation_preserv2/output/attempt/a/command.json",
+    "sha256": "5faed3e159568038927993ed3f7dfb20440dad36b8f155ebe02f45220f52e4b8"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_envelope_mutation_preserv2/support/identity-policy.json",
+    "sha256": "dbca71df724c2f1b3679b088fa5850f469db6ba0d7260ad5ed88d158fb1957dd"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244070,
+    "ppid": 244069,
+    "start_identity": "14134966"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_envelope_mutation_preserv2/output/attempt/source-0002.json",
+    "sha256": "f495971683941ccf4120007caf9c59927a277918abf0b5b2231518d41fd9949c"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13775,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_envelope_mutation_preserv2/metadata/spec.json",
+    "sha256": "75aae03a5269cb5b3015e4f96716ca5b16cf92cabe63b209a277d9e0c3d34ec1"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_envelope_mutation_preserv2/support/grant.json",
+    "sha256": "46bcd02fa46acdffc6becf2d6eeba3ea1673c86633eb23298462630ed5c668fe"
+  }
+}

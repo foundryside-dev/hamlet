@@ -1,0 +1,15 @@
+{
+  "admission": {
+    "bytes": 13292,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_read_only_capture_emits_b0/capture/admission.json",
+    "sha256": "a3c41121ebad444b13310c3f7d4a1330a1eb55a8ad1185cb3e13cbc54e47e62f"
+  },
+  "disposition": "admitted",
+  "reasons": [],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": {
+    "bytes": 10539,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-custody-v1-fixtures/test_read_only_capture_emits_b0/capture/spec.json",
+    "sha256": "02ecba990f6e42182db4cd912958338ea3382a995193b696272dd84047b9c265"
+  }
+}

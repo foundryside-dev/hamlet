@@ -1,0 +1,25 @@
+{
+  "schema": "bac-p4-test-retention-v1",
+  "original_functions": 66,
+  "current_functions": 80,
+  "missing_original_functions": [],
+  "changed_original_parametrizations": [],
+  "original_case_count_from_handoff": 172,
+  "new_expected_case_total": 266,
+  "current_source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "sha256": "1fc7b174829c05b579224f5796d8e42e44bbef3b43dc955627ffc2ae24611a39",
+    "bytes": 121186,
+    "lines": 2831
+  },
+  "counted_author_source_lines_with_permitted_P0": 3357,
+  "scope_limit": {
+    "test": 3500,
+    "P0": 526
+  },
+  "notes": [
+    "Original live fixture enriched to exact producer shapes without executing producer.",
+    "Original virtual positive test logic moved to shared virtual_subject helper; exact-set and public P5 assertions retained.",
+    "Original Torch anomaly-positive mutation now keeps newly mandatory CPU-bound observer/policy consistent with its role."
+  ]
+}

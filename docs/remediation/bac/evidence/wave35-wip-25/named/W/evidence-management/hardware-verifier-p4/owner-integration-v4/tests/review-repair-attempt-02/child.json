@@ -1,0 +1,19 @@
+{
+  "pid": 245782,
+  "at": "2026-11-14T13:27:16.788977+00:00",
+  "affinity": [
+    0
+  ],
+  "rlimit_as": [
+    4294967296,
+    4294967296
+  ],
+  "selected_exec_environment": {
+    "PYTHONPATH": "/workspace/bac-review-2026-11-01/qualification",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  }
+}

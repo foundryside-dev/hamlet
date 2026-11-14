@@ -1,0 +1,13 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 5 items
+
+.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v2.py ACTUAL_FORK_WITNESS={"check_code_sha256": "2de0dad2c0e1011ea5e0280f511be996e6f8a48a669932202fc6b1c15cf1402c", "entered": [], "error": "manual session requires its issuing process and thread", "issuer_pid": 246026, "module_origin": "/workspace/hamlet/src/townlet/environment/manual_physical.py", "module_sha256": "56f63aa121f18cb64493d84e01c709475ac4167b7db9a676560aa295ff40a77a", "pid": 246051, "ppid": 246026, "refused": true, "start_token": "14238674"}
+ACTUAL_FORK_WAIT={"child_pid": 246051, "exit_code": 0, "parent_pid": 246026, "raw_status": 0, "waited_pid": 246051}
+.....
+
+============================== 5 passed in 4.32s ===============================

@@ -1,0 +1,47 @@
+{
+  "schema": "manual-effect-temporal-static-supplier-v1",
+  "date": "2026-11-14",
+  "supplier": "/root/bac_manual_effect_fixture_supplier",
+  "checkout": "/workspace/hamlet",
+  "status": "static_recipe_runtime_unverified",
+  "application_edits": false,
+  "application_execution": false,
+  "implementation_body_count": 5,
+  "implementation_total_lines": 3499,
+  "implementation_sources": [
+    {"path":"tests/test_townlet/regressions/bac/test_pw_scope_conversion.py","lines":1511,"sha256":"9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"},
+    {"path":"src/townlet/universe/compiler.py","lines":976,"sha256":"521a72dd6d0a155c89a216fa038828cc8054520714a58cc0e0420c2da9d09e92"},
+    {"path":"src/townlet/effects/manager.py","lines":856,"sha256":"887ff837fdc7cbd5f7519a7a72456de6f288940819dc2159ccda6f59633fed07"},
+    {"path":"src/townlet/effects/scheduler.py","lines":103,"sha256":"adadc5718c9638cf33d87a5c5305b26cb42c7db1417a00debcf586679c71dd4b"},
+    {"path":"tests/test_townlet/_fixtures/command_namespace.py","lines":53,"sha256":"a08bb40477b044d54cf0b7dc4951d89bc6f18eba2d23fce3cf4a7502be40f456"}
+  ],
+  "metadata_inputs": [
+    {"path":"manual-physical-driver-design-v1.md","sha256":"5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2"},
+    {"path":"env-custody-fixture-api-facts-v1.md","sha256":"ee09ca9d2c4f7c96df6e21a54506b4a387afd24a5c140dd45a41c10c7ab1a915"},
+    {"path":"conversion-rig-callable-facts-v1.md","sha256":"314ef828c229509a179797d0acb1db7a135b9c7a26d45d89a0299c00af4f6918"},
+    {"path":"root-temporal-scheduler-facts-v1.json","sha256":"ea2731f3533cb380f4135c2b139bd52ed131226bdf5e83332155745c04b6e5ff"}
+  ],
+  "selected_config_sources": [
+    {"path":"configs/test/action_masking/stratum.yaml","sha256":"6651321675a90b013b9de83bac3b4860621246a035665e2baf3ca56cff8d9907"},
+    {"path":"configs/test/action_masking/effects.yaml","sha256":"dba0d3dec16ffe31f7e4ecbef0de7f0297d06aa5f4afd05fe4e2f9d1c555c688"},
+    {"path":"configs/test/action_masking/levels/L0_masking/curriculum.yaml","sha256":"63881d3e4edca5b121d56736cf110a4bb7200082a4500ff11c631cbb9b72e0f5"},
+    {"path":"configs/reference/model_pack/stratum.yaml","sha256":"9dff7e8d8b38fd5b460276ed3a2119cae5ccdb4778c650fa235b8c2c849c5b63"},
+    {"path":"configs/reference/model_pack/effects.yaml","sha256":"f19494eeb772eafe1d83f99a7c606840f4de79925eb8f7c24c17f1aca7774e08"},
+    {"path":"configs/reference/model_pack/levels/L0_demo/curriculum.yaml","sha256":"ca5c83be8116d439137cc03ad29b112e6c7f7ad0a024ab46e18354b017081586"},
+    {"path":"configs/reference/model_pack/levels/L0_demo/bars.yaml","sha256":"491fb2891dfbdc66c48555bccf35cc0aea57519c5c1fdb9ae4fe1baf115f7726"},
+    {"path":"configs/reference/model_pack/variables.yaml","sha256":"80ba82fea3b6205fe6b606925481930d89cc620017e1a550b083473ae7782fd6"},
+    {"path":"configs/reference/model_pack/actions.yaml","sha256":"11cf7da67f3e824f45a743794a9bf4f6d3eaa2229b2b6603ab6e623b8a1f6c45"}
+  ],
+  "rejected_config": {"pack":"configs/test/effects_smoke","reason":"temporal_support disabled: genuine scheduler rejects schedule","stratum_sha256":"3d7d7c38f5879e30042d39af802e4844e935bd48f521903421199a60079ed97c"},
+  "required_fixture_change": "Packet F: required keyword level_name on Rig and policy; every owned caller selects its actual authored level; no default compatibility adapter",
+  "admitted_body_rig_call_lines": [425,441,682,872,874,899,1143,1158,1173,1220,1222,1230,1267,1285,1317,1387,1409,1471,1474],
+  "admitted_body_policy_call_lines": [425,441,872,874,1123,1125,1158,1173,1219,1222,1285,1317,1387,1409],
+  "tests": [
+    {"purpose":"positive actual temporal mechanics","pack":"configs/test/action_masking","primary_level":"L0_masking","compile_use_cache":false,"status":"unexecuted"},
+    {"purpose":"nonempty own-catalog delayed A VFS command and B retirement cancellation","pack":"configs/reference/model_pack","primary_level":"L0_demo","compile_use_cache":false,"catalog_effect":"ate_food","pipeline":"on_spawn","commands":"modify is_digesting to literal true","delay_ticks":1,"effect_instance":null,"context_overrides":{},"base_tick":"actual scheduler.current_tick","external_spawn":false,"status":"unexecuted"}
+  ],
+  "root_env_api_followup": {"source_commit":"6477ff4e","source_sha256":"aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22","supplier_read_env":false,"bars":"env.bars live meter views","registry":"env.vfs_registry","clock_fields":["global_tick","time_of_day","day_length","enable_temporal_mechanics"],"effect_tick_step":"env.global_tick","candidate_handoff_confirmation_required":true},
+  "direct_constructor_alternative": "ROOT APPROVED: New Packet M tests <=900 total lines may construct real selected-level ENV, actual policy/descriptor/BANK and genuine local nine-role authority using admitted Rig contracts; no fixture code authored by supplier",
+  "manual_owner_constraint": "External spawn mutates retained physical/VFS witness, so preferred recipe schedules same-universe literal-valued on_spawn commands with no ActiveEffect instead",
+  "outstanding": ["ENV actual compiled WAIT accessor and public registry read", "candidate ENV physical effect tick alignment", "actual original-pack compilation and compatible policy construction", "real temporal dynamics and reward argument observation", "actual nonempty VFS command effect, B cancellation once, frozen retired lane and zero BANK events"]
+}

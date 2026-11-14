@@ -1,0 +1,94 @@
+"""Independent inert native-Git review; no real subprocess query is launched."""
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import resource
+import sys
+
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+HERE = Path(__file__).parent
+sys.path.insert(0, str(Q))
+import pytest
+import capture_bac_hardware_v1 as c
+import test_capture_bac_hardware_v1 as fixtures
+
+
+@pytest.mark.parametrize('output', [b'git version 2.50.0', b'git version 2.50.0\n'])
+def test_exact_version_forms(tmp_path, monkeypatch, output):
+    tool, dep, calls, events = fixtures.native_git_stub(tmp_path, monkeypatch)
+    original = tool.subprocess.Popen
+    def launch(*args, **kwargs):
+        child = original(*args, **kwargs)
+        child.communicate = lambda timeout: (output, b'\xff\r\n')
+        return child
+    monkeypatch.setattr(tool.subprocess, 'Popen', launch)
+    records = []
+    assert tool.dependency_observations({'dependencies': [dep]}, records) == [dep]
+    assert records[0]['stderr'].encode('utf-8', 'surrogateescape') == b'\xff\r\n'
+
+
+@pytest.mark.parametrize('stage', ['spawn', 'postref', 'ppid'])
+def test_additional_refusals(tmp_path, monkeypatch, stage):
+    tool, dep, calls, events = fixtures.native_git_stub(tmp_path, monkeypatch)
+    if stage == 'spawn':
+        def fail(*args, **kwargs): raise PermissionError('inert nonexecutable')
+        monkeypatch.setattr(tool.subprocess, 'Popen', fail)
+    elif stage == 'postref':
+        original = tool.subprocess.Popen
+        def launch(*args, **kwargs):
+            child = original(*args, **kwargs)
+            def communicate(timeout):
+                Path(dep['reference']['path']).write_text('mutated independent fixture')
+                return b'git version 2.50.0\n', b''
+            child.communicate = communicate
+            return child
+        monkeypatch.setattr(tool.subprocess, 'Popen', launch)
+    else:
+        monkeypatch.setattr(tool, 'process_identity', lambda pid: dict(fixtures.observation()['identity'], pid=pid, ppid=0))
+    records = []
+    with pytest.raises(ValueError): tool.dependency_observations({'dependencies': [dep]}, records)
+    assert len(records) == 1 and records[0]['errors']
+
+
+@pytest.mark.parametrize('secondary', ['timeout', 'kill_error'])
+def test_cleanup_failure_retains_native_command(tmp_path, monkeypatch, secondary):
+    tool, dep, calls, events = fixtures.native_git_stub(tmp_path, monkeypatch)
+    class Child:
+        pid = 4321
+        returncode = None
+        def communicate(self, timeout):
+            raise tool.subprocess.TimeoutExpired('inert stuck pipe', timeout, output=b'partial', stderr=b'partial-error')
+        def kill(self):
+            if secondary == 'kill_error': raise ProcessLookupError('inert exit race')
+            self.returncode = -9
+    monkeypatch.setattr(tool.subprocess, 'Popen', lambda *args, **kwargs: Child())
+    records = []
+    try: tool.dependency_observations({'dependencies': [dep]}, records)
+    except (ValueError, OSError, tool.subprocess.SubprocessError): pass
+    assert len(records) == 1, 'cleanup failure lost the launched native command and all diagnostic bytes'
+    assert records[0]['errors']
+
+
+def manifest():
+    return [{'path': str(p), 'bytes': p.stat().st_size, 'lines': len(p.read_bytes().splitlines()),
+             'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in
+            [Q/'capture_bac_hardware_v1.py', Q/'test_capture_bac_hardware_v1.py', Q/'bac_hardware_protocol_v1.py', Path(__file__)]]
+
+
+if __name__ == '__main__':
+    cpu = min(os.sched_getaffinity(0))
+    os.sched_setaffinity(0, {cpu})
+    resource.setrlimit(resource.RLIMIT_AS, (4*1024**3, 4*1024**3))
+    os.environ.update(PYTEST_DISABLE_PLUGIN_AUTOLOAD='1', PYTHONDONTWRITEBYTECODE='1', OMP_NUM_THREADS='1', MKL_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1')
+    argv = ['-q', '-o', 'addopts=', '-p', 'no:cacheprovider', '--noconftest', '--rootdir='+str(Q),
+            '--basetemp='+str(HERE/'fixtures-v1'), str(Q/'test_capture_bac_hardware_v1.py'), str(Path(__file__))]
+    data = {'pid': os.getpid(), 'argv': [sys.executable, *sys.argv], 'pytest_argv': argv, 'cwd': str(Path.cwd()),
+            'start': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'before': manifest(),
+            'limits': {'cpu_ids': [cpu], 'rlimit_as': 4*1024**3}, 'scope': 'Synthetic inert only; actual Git/APP/CUDA/hardware unrun'}
+    (HERE/'attempt-start.json').write_text(json.dumps(data, indent=2)+'\n')
+    code = pytest.main(argv)
+    data.update(exit_code=int(code), after=manifest(), end=datetime.datetime.now(datetime.timezone.utc).isoformat())
+    (HERE/'attempt.json').write_text(json.dumps(data, indent=2)+'\n')
+    raise SystemExit(code)

@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r148-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-independent-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "manual-independent",
+      "args": [
+        "-m",
+        "pytest",
+        "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v2.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "-s",
+        "--tb=line",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r148-manual-independent-attempt-1"
+      ]
+    }
+  ]
+}

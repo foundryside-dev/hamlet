@@ -1,0 +1,287 @@
+{
+  "scope": "Independent metadata only, no application or imported tooling execution",
+  "subject": {
+    "bytes": 8653,
+    "path": "evidence-management/wip25-preparation/root-qualification-subject-v1.json",
+    "root": "W",
+    "sha256": "5a9117c9bb7325343760f5edb8872a6ecd2d979d0db6bc01b449e6d121699a1e"
+  },
+  "contract": {
+    "bytes": 10769,
+    "path": "evidence-management/wip25-preparation/root-checkpoint-contract-v1.json",
+    "root": "W",
+    "sha256": "6c20aeeffae6df7691e6ceb352a14ec6ff13db88b93816172b01828c622faf18"
+  },
+  "receipt_draft": {
+    "bytes": 35239963,
+    "path": "evidence-management/wip25-preparation/root-reviewed-receipt-draft-v1.json",
+    "root": "W",
+    "sha256": "6690aa2e825f0ab6d1ef64753625e051ab289440b3fe80f07430a56972fee976"
+  },
+  "rooted_references_verified": 57702,
+  "interval_entries_exact": 24,
+  "components_exact": 9,
+  "errors": [],
+  "checks": [
+    {
+      "check": "wave35-r146-collection-spec.json--unrun",
+      "kind": "collection",
+      "status": "UNRUN",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r146-collection-spec.json--unrun",
+      "attempts": [
+        {
+          "id": "wave35-r146-collection-spec.json--unrun",
+          "status": "UNRUN",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r146-manual-collection-attempt-1--manual-collection",
+      "kind": "collection",
+      "status": "PASSED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r146-manual-collection-attempt-1--manual-collection",
+      "attempts": [
+        {
+          "id": "wave35-r146-manual-collection-attempt-1--manual-collection",
+          "status": "PASSED",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r146-manual-red-attempt-1--manual-red",
+      "kind": "runtime",
+      "status": "FAILED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r146-manual-red-attempt-1--manual-red",
+      "attempts": [
+        {
+          "id": "wave35-r146-manual-red-attempt-1--manual-red",
+          "status": "FAILED",
+          "counts": {
+            "errors": 0,
+            "failed": 32,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          }
+        }
+      ]
+    },
+    {
+      "check": "wave35-r146-owned-spec.json--unrun",
+      "kind": "runtime",
+      "status": "UNRUN",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r146-owned-spec.json--unrun",
+      "attempts": [
+        {
+          "id": "wave35-r146-owned-spec.json--unrun",
+          "status": "UNRUN",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r147-collection-spec.json--unrun",
+      "kind": "collection",
+      "status": "UNRUN",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r147-collection-spec.json--unrun",
+      "attempts": [
+        {
+          "id": "wave35-r147-collection-spec.json--unrun",
+          "status": "UNRUN",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r147-manual-first-positive-attempt-1--manual-first-positive",
+      "kind": "runtime",
+      "status": "PASSED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r147-manual-first-positive-attempt-1--manual-first-positive",
+      "attempts": [
+        {
+          "id": "wave35-r147-manual-first-positive-attempt-1--manual-first-positive",
+          "status": "PASSED",
+          "counts": {
+            "passed": 3,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          }
+        }
+      ]
+    },
+    {
+      "check": "wave35-r147-manual-owner-attempt-1--manual-owner",
+      "kind": "runtime",
+      "status": "FAILED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r147-manual-owner-attempt-1--manual-owner",
+      "attempts": [
+        {
+          "id": "wave35-r147-manual-owner-attempt-1--manual-owner",
+          "status": "FAILED",
+          "counts": {
+            "errors": 0,
+            "failed": 1,
+            "passed": 31,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          }
+        }
+      ]
+    },
+    {
+      "check": "wave35-r147-owned-spec.json--unrun",
+      "kind": "runtime",
+      "status": "UNRUN",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r147-owned-spec.json--unrun",
+      "attempts": [
+        {
+          "id": "wave35-r147-owned-spec.json--unrun",
+          "status": "UNRUN",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r148-collection-spec.json--unrun",
+      "kind": "collection",
+      "status": "UNRUN",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r148-collection-spec.json--unrun",
+      "attempts": [
+        {
+          "id": "wave35-r148-collection-spec.json--unrun",
+          "status": "UNRUN",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r148-manual-causal-attempt-1--manual-causal",
+      "kind": "runtime",
+      "status": "PASSED",
+      "qualifying": true,
+      "terminal_attempt": "wave35-r148-manual-causal-attempt-1--manual-causal",
+      "attempts": [
+        {
+          "id": "wave35-r148-manual-causal-attempt-1--manual-causal",
+          "status": "PASSED",
+          "counts": {
+            "passed": 3,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          }
+        }
+      ]
+    },
+    {
+      "check": "wave35-r148-manual-collection-attempt-1--manual-collection",
+      "kind": "collection",
+      "status": "PASSED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r148-manual-collection-attempt-1--manual-collection",
+      "attempts": [
+        {
+          "id": "wave35-r148-manual-collection-attempt-1--manual-collection",
+          "status": "PASSED",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r148-manual-independent-attempt-1--manual-independent",
+      "kind": "runtime",
+      "status": "PASSED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r148-manual-independent-attempt-1--manual-independent",
+      "attempts": [
+        {
+          "id": "wave35-r148-manual-independent-attempt-1--manual-independent",
+          "status": "PASSED",
+          "counts": {
+            "passed": 5,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          }
+        }
+      ]
+    },
+    {
+      "check": "wave35-r148-manual-integrated-collection-attempt-1--manual-integrated-collection",
+      "kind": "collection",
+      "status": "PASSED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r148-manual-integrated-collection-attempt-1--manual-integrated-collection",
+      "attempts": [
+        {
+          "id": "wave35-r148-manual-integrated-collection-attempt-1--manual-integrated-collection",
+          "status": "PASSED",
+          "counts": null
+        }
+      ]
+    },
+    {
+      "check": "wave35-r148-manual-integrated-owner-attempt-1--manual-integrated-owner",
+      "kind": "runtime",
+      "status": "FAILED",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r148-manual-integrated-owner-attempt-1--manual-integrated-owner",
+      "attempts": [
+        {
+          "id": "wave35-r148-manual-integrated-owner-attempt-1--manual-integrated-owner",
+          "status": "FAILED",
+          "counts": {
+            "errors": 0,
+            "failed": 3,
+            "passed": 212,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          }
+        }
+      ]
+    },
+    {
+      "check": "wave35-r148-owned-spec.json--unrun",
+      "kind": "runtime",
+      "status": "UNRUN",
+      "qualifying": false,
+      "terminal_attempt": "wave35-r148-owned-spec.json--unrun",
+      "attempts": [
+        {
+          "id": "wave35-r148-owned-spec.json--unrun",
+          "status": "UNRUN",
+          "counts": null
+        }
+      ]
+    }
+  ],
+  "catalog_exact_chain_suffix": true,
+  "catalog_contiguous": true,
+  "root_document_approval_and_preimages_match": true,
+  "historical_unavailable_unique_versions": 6,
+  "historical_unavailable_references": 44,
+  "application_runtime": false,
+  "git_operations": false,
+  "publication_materialized_by_reviewer": false
+}

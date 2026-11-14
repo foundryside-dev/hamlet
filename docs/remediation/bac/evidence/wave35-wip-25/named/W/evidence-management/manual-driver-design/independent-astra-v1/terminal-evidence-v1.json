@@ -1,0 +1,115 @@
+{
+  "at": "2026-11-14T13:37:41.222059+00:00",
+  "reviewer": "/root/bac_astra_manual_source_review",
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "sources_unchanged": [
+    {
+      "path": "src/townlet/environment/vectorized_env.py",
+      "sha256": "a517aa49c0bd76ae17c3d6bb3ae7b81e3f48e73a59cdd0cdb4d433424dd8be5a",
+      "bytes": 155117,
+      "lines": 3035
+    },
+    {
+      "path": "src/townlet/environment/manual_physical.py",
+      "sha256": "56f63aa121f18cb64493d84e01c709475ac4167b7db9a676560aa295ff40a77a",
+      "bytes": 13198,
+      "lines": 292
+    },
+    {
+      "path": "src/townlet/environment/reward_calculator.py",
+      "sha256": "1df0de89e29d9ce984847ce506fe551a919c27c68c1d473ac9b1e64a438718e6",
+      "bytes": 3037,
+      "lines": 76
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+      "sha256": "7810ef42e5768998e8addd36998a9728cad58c879738f2b3e4b37f81b46a1942",
+      "bytes": 35834,
+      "lines": 801
+    }
+  ],
+  "actual_fork_log_reconciled": true,
+  "evidence": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/static-review-v1.md",
+      "bytes": 8077,
+      "sha256": "6affa82a7565b9fdf7aa7c9532f03166a23615119e0babd7b2056128774e0ece"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/static-review-v2-supplement.md",
+      "bytes": 896,
+      "sha256": "cc815e3cfd79c7bd6dd42143f9105106a97afcaee822197263c925313c4e9128"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/probe-freeze-v2.json",
+      "bytes": 801,
+      "sha256": "543abbc395f8b20b84932a584e73e940df380d2af01e7c76b4c051c8ceb15578"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v2.py",
+      "bytes": 9035,
+      "sha256": "9d970655cf171c4f7c88c23352ab0170764cdb8fb5e2fa08b7389a16c54c1837"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/manual-physical-driver-design-v1.md",
+      "bytes": 27262,
+      "sha256": "5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r148-independent-auxiliary-preflight-v1.json",
+      "bytes": 991,
+      "sha256": "6fc32054110cf285ddb852cd9e3a7ce65536d4fa12f2154ed0268f99d5d1f37d"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r148-independent-auxiliary-postflight-v1.json",
+      "bytes": 854,
+      "sha256": "c27ab2d9a0347a1761d199d6432ea2b4694c91925e21f06f5ccb856684ffdeb6"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r148-independent-actual-fork-witness-v1.json",
+      "bytes": 958,
+      "sha256": "6caa56fe57855f2c2211390a0790383800c0614541333c6b66b4b35e63c11aee"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-independent-attempt-1-spec.json",
+      "bytes": 880,
+      "sha256": "90348d9b235704b016f8e01130a0bf14887d316f578c899f9f074857981fb135"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-independent-attempt-1/manual-independent-result.json",
+      "bytes": 1119,
+      "sha256": "b769efda8f8b08ffd763898b8095fb54e68dea678d241eea7be30d34111d3c09"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-independent-attempt-1/manual-independent-custody.json",
+      "bytes": 649,
+      "sha256": "f41986099f4458ed8d363644a01cac33290f0d0d4ecba4b9daef852dedc9f5fc"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-independent-attempt-1/manual-independent.log",
+      "bytes": 1227,
+      "sha256": "f749bcfe60449abad89f81a4f617ed51a08889432af8421cab7ed076e7965992"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-causal-attempt-1/manual-causal-custody.json",
+      "bytes": 645,
+      "sha256": "60fc891c11d1fd8bc1d947a44860147719a16cad8c9314e200603e63b320f741"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-integrated-owner-attempt-1/manual-integrated-owner-result.json",
+      "bytes": 1305,
+      "sha256": "c1bc4c2bdfc2fffffa1194cfc3b6878d4a48c3d71647e10e15d1c2f1e537ae33"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-integrated-owner-attempt-1/manual-integrated-owner-negative-custody.json",
+      "bytes": 960,
+      "sha256": "1a9eda326ae62c91dc7f6fa0289c708da34b29531d81379c830706510f2686ec"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-integrated-owner-attempt-1/manual-integrated-owner-failure-index.json",
+      "bytes": 1078,
+      "sha256": "d6714ac2385d8b3502c92e6240c7ea7979f10d568c4dd601b5910f464c5ba2e7"
+    }
+  ],
+  "application_execution_by_reviewer": false
+}

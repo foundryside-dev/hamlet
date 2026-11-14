@@ -1,0 +1,38 @@
+{
+  "schema": "manual-driver-fixture-binding-facts-v1",
+  "date": "2026-11-14",
+  "supplier": "/root/bac_native_replay_fixture_implementation",
+  "scope": "Only the same two previously charged fixture bodies, 3026 whole lines. Static AST inspection and source-seal verification only. No producer body, application import/execution, APP edit, Git/index action or worker. Sole new write is this additive capsule.",
+  "sources": [
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "lines": 1511,
+      "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_scope_restore.py",
+      "lines": 1515,
+      "sha256": "ce022560aa12961c38b51d5e9c4b2f0bf1f5290bc0054af22218a397cfad66c9"
+    }
+  ],
+  "decisive_fact": "Neither fixture explicitly imports or constructs ExplorationRuntime/build_exploration, calls ENV.set_exploration_runtime, binds a claim_vector_step callback, constructs VectorizedPopulation, or prepares/commits an initial-participation decision. Their BANK is separately constructed and called directly. There is no fixture-defined zero-intrinsic physical runtime or width3 physical-runtime binding.",
+  "conversion": {
+    "construction": "Rig.__init__113\u2013148: ids defaults A,B; membership defaults A,B; width3; seed701. ENV gets universe=compiled,level_name=L0_test,num_agents=len(ids),device=cpu,world_roster,training_seed=seed,lane_world_ids=ids. Five-world dropped_source explicitly supplies ids=membership=(A,B,C,D,E). BANK descriptor independently uses observation_dim=width,action_dim=2,training_seed=seed and selected policy.",
+    "bank_callbacks": "CuriosityBank receives validate_accepted_episode=env.validate_accepted_episode, issuer_factory=lambda owner: WorldReceiptIssuer(owner=owner), report_allocation=self.reports.append. No exploration runtime is inserted here.",
+    "role_binding": "self.issuer=WorldReceiptIssuer(owner=self); role_owners maps population,curriculum,exploration,network,optimizer,scheduler,replay,selection to this Rig itself, curiosity to this BANK. env.bind_boundary_authority(owner=self,role_owners=roles). These are expressly local receipt interfaces, not actual POP/Q/optimizer effects.",
+    "begin": "Rig.begin150\u2013161: if no release, authority.bootstrap(first_batch_episode=batch) then ENV.install_boundary_release; ENV.prepare_episode(batch_episode=batch,release=release); validate_episode_reservation; ENV.reset(reservation=reservation).accepted; ENV.activate_episode(accepted, population_receipt=self.issuer.issue(kind=activation,payload={accepted:accepted}), curiosity_receipt=bank.begin_episode(accepted=accepted)); append batch. No prepare/commit participation or POP-owned reset occurs.",
+    "step": "Rig.step163\u2013170: false entries write env.dones directly (obsolete setup, prohibited as repaired authority); physical actions=first legal actual ENV masks; env.step(actions,depletion_multiplier=1.0) lacks vector_step; only after its return does service(bank,accepted,tick,active) create synthetic3D context and do direct BANK stamp/reward/service. ENV.step result is discarded.",
+    "completion": "Rig.close172\u2013235: participants derive from BANK cursor participated; local LaneOutcome values use real ENV step_counts and meters, deliberately zeros3 final_observation, reason cap, planned_horizon20 and fixed reward totals. Freeze values; BANK prepare_completion; ENV prepare/freeze; BANK commit; ENV close. Rig issuer supplies curriculum/exploration/epsilon_install/population_commit/selection_sync child receipts and boundary_effects; authority.completed and ENV.install_boundary_release. There is no POP.flush_episode, POP.completed_outcomes, POP.commit_episode_outcomes, real curriculum commit or real Q/optimizer boundary effect in this helper. This is the existing honest local component scope, not production POP attestation."
+  },
+  "restore": {
+    "construction": "Rig.__init__237\u2013268: family/scope/order explicit; fixed roster PW06/A,PW06/B; ENV gets universe=compiled_universe,level_name=L0_test,num_agents=2,device=cpu,world_roster,training_seed=10291,lane_world_ids=order. BANK descriptor independently fixes observation_dim3/action_dim2 and same seed/order.",
+    "local_issuers": "LocalRole206\u2013210 owns WorldReceiptIssuer(owner=self) and receipt(receipt_kind,**payload) directly delegates issuer.issue. RecordedIssuer214 onward transparently records BANK issue kinds while delegating actual WorldReceiptIssuer. Neither is production POP or runtime.",
+    "role_binding": "self.other,self.population=LocalRole(),LocalRole(); role_owners curriculum,exploration,network,optimizer,scheduler,replay,selection all self.other; population=self.population; curiosity=self.bank. env.bind_boundary_authority(owner=self.other,role_owners=roles).",
+    "begin": "Rig.begin275\u2013288: bootstrap/install release if needed; ENV.prepare_episode and validate; ENV.reset(reservation=reservation); store accepted and reset.observation; bank.begin_episode; ENV.activate_episode with self.population.receipt(activation,accepted=accepted) and BANK receipt. No explicit participation preparation/commit or POP decision.",
+    "physical_and_synthetic": "Rig.actual_step290\u2013294 uses first legal ENV masks, calls env.step(actions,depletion_multiplier=1.0) missing vector_step, asserts positive real step_counts, returns actual result. Rig.event/train separately create and admit synthetic3D BANK events. Physical result is not used to create their contexts or a production POP outcome.",
+    "completion": "Rig.completion_arguments338\u2013367 produces local LaneOutcome for each order ID using ENV physical step_counts, retained reset.observation, ENV meters, reason checkpoint, planned_horizon100, fixed per-lane rewards and world episode identity. Rig.complete369\u2013406 performs BANK prepare, ENV prepare/freeze, BANK commit (including exact repeat identity check), ENV.close; issues local child receipts with population_commit_receipt owned by self.population and other effects owned by self.other; installs authority.completed release. No real production POP completion or outcome subsystem is present."
+  },
+  "negative_scope": "No fixture-defined claim or receipt issuer makes an authentic production POP PreparedVectorStep. Genuine local role receipts are authentic only for their named local issuer and do not attest production POP accounting. Do not infer actual current ENV runtime defaults, zero intrinsic reward, no physics reward work, accepted receipt semantics, or the exact error after fixing the missing vector_step keyword: those require the ENV/runtime producer suppliers.",
+  "design_implication": "A separately specified genuine ENV-issued physical session plus these existing local cooperative completion owners may preserve the declared component scope, if the producer contract authenticates its own step/retirement/finish and supports the required behavior. These fixture facts neither establish that API nor justify an unnecessary production POP outcome subsystem, duplicated curiosity work, private flag writes or fabricated callback authority.",
+  "related_requirements": "genuine-driver-requirements-v1.json SHA256 04400b3a1bfad466640fc1df6f70c20ee1200f2c6d41f52f2837c7c4b8920f01"
+}

@@ -1,0 +1,225 @@
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+__ test_native_git_secondary_cleanup_preserves_refused_record[second_timeout] __
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bde3c0>
+timeout = 30
+
+    def communicate(self, timeout):
+        events.append("wait")
+        if events == ["wait"]:
+>           raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial", stderr=b"partial-error")
+E           subprocess.TimeoutExpired: Command 'stub Git' timed out after 30 seconds
+
+test_capture_bac_hardware_v1.py:901: TimeoutExpired
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-custody-v1-fixtures/test_native_git_secondary_clea0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f01a6bd0fc0>
+failure = 'second_timeout'
+
+    @pytest.mark.parametrize("failure", ["second_timeout", "kill_lookup", "partial_growth"])
+    def test_native_git_secondary_cleanup_preserves_refused_record(tmp_path, monkeypatch, failure):
+        tool, dependency, calls, ignored = native_git_stub(tmp_path, monkeypatch)
+        events = git_cleanup_failure_stub(tool, monkeypatch, dependency["reference"], failure)
+        records = []
+        with pytest.raises(ValueError, match="Git query failed"):
+>           tool.run_git(dependency["reference"], ["--version"], str(tmp_path), records)
+
+test_capture_bac_hardware_v1.py:920: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:705: in run_git
+    child.kill(); stdout, stderr = child.communicate(timeout=30)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bde3c0>
+timeout = 30
+
+    def communicate(self, timeout):
+        events.append("wait")
+        if events == ["wait"]:
+            raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial", stderr=b"partial-error")
+>       raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial extended" if failure == "partial_growth" else b"partial",
+                                             stderr=None if failure == "partial_growth" else b"partial-error")
+E       subprocess.TimeoutExpired: Command 'stub Git' timed out after 30 seconds
+
+test_capture_bac_hardware_v1.py:902: TimeoutExpired
+___ test_native_git_secondary_cleanup_preserves_refused_record[kill_lookup] ____
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bdd7f0>
+timeout = 30
+
+    def communicate(self, timeout):
+        events.append("wait")
+        if events == ["wait"]:
+>           raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial", stderr=b"partial-error")
+E           subprocess.TimeoutExpired: Command 'stub Git' timed out after 30 seconds
+
+test_capture_bac_hardware_v1.py:901: TimeoutExpired
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-custody-v1-fixtures/test_native_git_secondary_clea1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f01a6bd0c30>
+failure = 'kill_lookup'
+
+    @pytest.mark.parametrize("failure", ["second_timeout", "kill_lookup", "partial_growth"])
+    def test_native_git_secondary_cleanup_preserves_refused_record(tmp_path, monkeypatch, failure):
+        tool, dependency, calls, ignored = native_git_stub(tmp_path, monkeypatch)
+        events = git_cleanup_failure_stub(tool, monkeypatch, dependency["reference"], failure)
+        records = []
+        with pytest.raises(ValueError, match="Git query failed"):
+>           tool.run_git(dependency["reference"], ["--version"], str(tmp_path), records)
+
+test_capture_bac_hardware_v1.py:920: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:705: in run_git
+    child.kill(); stdout, stderr = child.communicate(timeout=30)
+    ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bdd7f0>
+
+    def kill(self):
+        events.append("kill")
+>       if failure == "kill_lookup": raise ProcessLookupError("injected robustness control")
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ProcessLookupError: injected robustness control
+
+test_capture_bac_hardware_v1.py:906: ProcessLookupError
+__ test_native_git_secondary_cleanup_preserves_refused_record[partial_growth] __
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bdeba0>
+timeout = 30
+
+    def communicate(self, timeout):
+        events.append("wait")
+        if events == ["wait"]:
+>           raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial", stderr=b"partial-error")
+E           subprocess.TimeoutExpired: Command 'stub Git' timed out after 30 seconds
+
+test_capture_bac_hardware_v1.py:901: TimeoutExpired
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-custody-v1-fixtures/test_native_git_secondary_clea2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f01a6973ad0>
+failure = 'partial_growth'
+
+    @pytest.mark.parametrize("failure", ["second_timeout", "kill_lookup", "partial_growth"])
+    def test_native_git_secondary_cleanup_preserves_refused_record(tmp_path, monkeypatch, failure):
+        tool, dependency, calls, ignored = native_git_stub(tmp_path, monkeypatch)
+        events = git_cleanup_failure_stub(tool, monkeypatch, dependency["reference"], failure)
+        records = []
+        with pytest.raises(ValueError, match="Git query failed"):
+>           tool.run_git(dependency["reference"], ["--version"], str(tmp_path), records)
+
+test_capture_bac_hardware_v1.py:920: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:705: in run_git
+    child.kill(); stdout, stderr = child.communicate(timeout=30)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bdeba0>
+timeout = 30
+
+    def communicate(self, timeout):
+        events.append("wait")
+        if events == ["wait"]:
+            raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial", stderr=b"partial-error")
+>       raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial extended" if failure == "partial_growth" else b"partial",
+                                             stderr=None if failure == "partial_growth" else b"partial-error")
+E       subprocess.TimeoutExpired: Command 'stub Git' timed out after 30 seconds
+
+test_capture_bac_hardware_v1.py:902: TimeoutExpired
+_ test_native_git_source_cleanup_retains_command_and_terminal_refusal[second_timeout] _
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bdf8c0>
+timeout = 30
+
+    def communicate(self, timeout):
+        events.append("wait")
+        if events == ["wait"]:
+>           raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial", stderr=b"partial-error")
+E           subprocess.TimeoutExpired: Command 'stub Git' timed out after 30 seconds
+
+test_capture_bac_hardware_v1.py:901: TimeoutExpired
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-custody-v1-fixtures/test_native_git_source_cleanup0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f01a5e7a690>
+failure = 'second_timeout'
+
+    @pytest.mark.parametrize("failure", ["second_timeout", "kill_lookup"])
+    def test_native_git_source_cleanup_retains_command_and_terminal_refusal(tmp_path, monkeypatch, failure):
+        tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+        monkeypatch.setattr(tool.os, "sched_getaffinity", lambda pid: {0, 1, 2, 3})
+        executable = env["dependencies"][0]["reference"]
+        git_cleanup_failure_stub(tool, monkeypatch, executable, failure)
+        monkeypatch.setattr(tool, "launch_discovery", lambda *args: pytest.fail("failed source query launched discovery"))
+>       result = tool.capture(candidate, request_path, tmp_path / "capture")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:938: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:859: in capture
+    sample("source-before")
+capture_bac_hardware_v1.py:848: in sample
+    try: value = source_sample(source, freeze, git_executable, commands)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:731: in source_sample
+    require(git_read(candidate["authorized_root"], ["rev-parse", "HEAD"], executable, commands).strip() == candidate["head"], "HEAD differs from candidate")
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:721: in git_read
+    return run_git(executable, ["--no-optional-locks", "-c", "core.fsmonitor=false", "-c", "core.pager=cat", "-C", root, *args], root, commands)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:705: in run_git
+    child.kill(); stdout, stderr = child.communicate(timeout=30)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_capture_bac_hardware_v1.git_cleanup_failure_stub.<locals>.Child object at 0x7f01a6bdf8c0>
+timeout = 30
+
+    def communicate(self, timeout):
+        events.append("wait")
+        if events == ["wait"]:
+            raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial", stderr=b"partial-error")
+>       raise tool.subprocess.TimeoutExpired("stub Git", timeout, output=b"partial extended" if failure == "partial_growth" else b"partial",
+                                             stderr=None if failure == "partial_growth" else b"partial-error")
+E       subprocess.TimeoutExpired: Command 'stub Git' timed out after 30 seconds
+
+test_capture_bac_hardware_v1.py:902: TimeoutExpired
+_ test_native_git_source_cleanup_retains_command_and_terminal_refusal[kill_lookup] _
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-custody-v1-fixtures/test_native_git_source_cleanup1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f01a6684050>
+failure = 'kill_lookup'
+
+    @pytest.mark.parametrize("failure", ["second_timeout", "kill_lookup"])
+    def test_native_git_source_cleanup_retains_command_and_terminal_refusal(tmp_path, monkeypatch, failure):
+        tool = module(); candidate, request_path, source, req, env, registry = capture_fixture(tmp_path)
+        monkeypatch.setattr(tool.os, "sched_getaffinity", lambda pid: {0, 1, 2, 3})
+        executable = env["dependencies"][0]["reference"]
+        git_cleanup_failure_stub(tool, monkeypatch, executable, failure)
+        monkeypatch.setattr(tool, "launch_discovery", lambda *args: pytest.fail("failed source query launched discovery"))
+        result = tool.capture(candidate, request_path, tmp_path / "capture")
+        assert result["disposition"] == "refused" and result["spec"] is None and result["admission"] is None
+        assert json.loads((tmp_path / "capture/result.json").read_text()) == result
+        records = json.loads((tmp_path / "capture/source-before-git.json").read_text())
+>       assert len(records) == 1 and records[0]["argv"][-2:] == ["rev-parse", "HEAD"]
+E       assert (0 == 1)
+E        +  where 0 = len([])
+
+test_capture_bac_hardware_v1.py:942: AssertionError
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_native_git_secondary_cleanup_preserves_refused_record[second_timeout]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_secondary_cleanup_preserves_refused_record[kill_lookup]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_secondary_cleanup_preserves_refused_record[partial_growth]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_source_cleanup_retains_command_and_terminal_refusal[second_timeout]
+FAILED test_capture_bac_hardware_v1.py::test_native_git_source_cleanup_retains_command_and_terminal_refusal[kill_lookup]
+5 failed, 119 deselected in 0.92s

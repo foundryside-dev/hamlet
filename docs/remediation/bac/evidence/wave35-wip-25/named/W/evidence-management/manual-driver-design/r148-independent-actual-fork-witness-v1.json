@@ -1,0 +1,26 @@
+{
+  "source_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-independent-attempt-1/manual-independent.log",
+  "log_sha256": "f749bcfe60449abad89f81a4f617ed51a08889432af8421cab7ed076e7965992",
+  "records": {
+    "ACTUAL_FORK_WITNESS": {
+      "check_code_sha256": "2de0dad2c0e1011ea5e0280f511be996e6f8a48a669932202fc6b1c15cf1402c",
+      "entered": [],
+      "error": "manual session requires its issuing process and thread",
+      "issuer_pid": 246026,
+      "module_origin": "/workspace/hamlet/src/townlet/environment/manual_physical.py",
+      "module_sha256": "56f63aa121f18cb64493d84e01c709475ac4167b7db9a676560aa295ff40a77a",
+      "pid": 246051,
+      "ppid": 246026,
+      "refused": true,
+      "start_token": "14238674"
+    },
+    "ACTUAL_FORK_WAIT": {
+      "child_pid": 246051,
+      "exit_code": 0,
+      "parent_pid": 246026,
+      "raw_status": 0,
+      "waited_pid": 246051
+    }
+  },
+  "root_identity_joins": "PASS"
+}

@@ -1,0 +1,13 @@
+{
+  "admission": {
+    "bytes": 13076,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v1-fixtures/test_late_capture_failure_reta0/capture/admission.json",
+    "sha256": "608ae32b60782888f70eceacb64106bad42d397d5f3d538c4a6d159c97f17fd7"
+  },
+  "disposition": "refused",
+  "reasons": [
+    "ValueError: synthetic late lease custody failure"
+  ],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": null
+}

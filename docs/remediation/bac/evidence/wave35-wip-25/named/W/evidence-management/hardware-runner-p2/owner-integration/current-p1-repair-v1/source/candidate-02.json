@@ -1,0 +1,14 @@
+{
+  "status": "FROZEN CANDIDATE02; mandatory driver failure fix awaiting GREEN",
+  "at": "2026-11-14T13:13:38.127612+00:00",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "bytes": 146230,
+    "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63",
+    "lines": 2856
+  },
+  "cause": "Driver result types were checked but mandatory nonzero/errors were not refused. Exact optional topo -m remains permitted.",
+  "red": "test_current_p1_cuda_native_discovery[mandatory-driver-failure]: DID NOT RAISE; focused01 149pass1fail",
+  "static": "AST/Ruff pass; Black140 formatted",
+  "runtime_by_source_owner": "none"
+}

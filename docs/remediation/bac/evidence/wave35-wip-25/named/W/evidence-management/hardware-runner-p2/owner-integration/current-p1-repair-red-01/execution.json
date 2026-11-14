@@ -1,0 +1,102 @@
+{
+  "affinity": [
+    1,
+    2
+  ],
+  "after": [
+    {
+      "bytes": 110631,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+    },
+    {
+      "bytes": 168515,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "57cf13024bd64ce17201fb79841fbad71888a46bc6b50f28c6b067abcd835edd"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "argv": [
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "current-p1-repair-red-01",
+    "--tb=line",
+    "-k",
+    "current_p1_required_custody_api or current_p1_native_record_independent or current_p1_source_git_binding or current_p1_positive_bundle"
+  ],
+  "before": [
+    {
+      "bytes": 110631,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+    },
+    {
+      "bytes": 168515,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "57cf13024bd64ce17201fb79841fbad71888a46bc6b50f28c6b067abcd835edd"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "elapsed_seconds": 1.7474366020178422,
+  "exit_code": 1,
+  "final_affinity": [
+    1,
+    2
+  ],
+  "imported_project_modules": {
+    "bac_hardware_protocol_v1": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+    "test_run_bac_hardware_v1": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+  },
+  "kernel_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "current-p1-repair-red-01",
+    "--tb=line",
+    "-k",
+    "current_p1_required_custody_api or current_p1_native_record_independent or current_p1_source_git_binding or current_p1_positive_bundle"
+  ],
+  "log": {
+    "bytes": 9343,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-red-01/output.log",
+    "sha256": "8e17aa00e711a8cdfb3ade8886d46bdc047f0543f8eeac8c3db28a9c744df8db"
+  },
+  "pid": 242814,
+  "ppid": 242813,
+  "proc_stat_start_identity": "14089375",
+  "pytest_args": [
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-red-01/fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "--tb=line",
+    "-k",
+    "current_p1_required_custody_api or current_p1_native_record_independent or current_p1_source_git_binding or current_p1_positive_bundle"
+  ],
+  "pytest_version": "8.4.2",
+  "ram_limit_bytes": 4294967296,
+  "runner": {
+    "bytes": 5571,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+  },
+  "scope": "Pure authored-data/inert-process P2 tooling only; no APP/source/Git/hardware qualification",
+  "source_unchanged": true,
+  "status": "FAILED",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "utc_end": "2026-11-14T13:06:25.213357+00:00",
+  "utc_start": "2026-11-14T13:06:23.463985+00:00",
+  "xdist_workers": 0
+}

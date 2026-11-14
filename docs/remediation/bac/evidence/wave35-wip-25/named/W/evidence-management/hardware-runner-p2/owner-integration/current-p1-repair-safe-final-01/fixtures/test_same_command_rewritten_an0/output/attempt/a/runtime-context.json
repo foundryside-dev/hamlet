@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6606,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_same_command_rewritten_an0/output/attempt/a/command.json",
+    "sha256": "ed84156c8578fbe753c508a54628a560283e5495c8ee6f1a6c729eef90235a7c"
+  },
+  "policy": {
+    "bytes": 945,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_same_command_rewritten_an0/support/identity-policy.json",
+    "sha256": "1c2c1b75f6320b037405d6e600a0e8d4d875266abce6968177377220de3d243d"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244462,
+    "ppid": 244461,
+    "start_identity": "14154686"
+  },
+  "runner_source_start": {
+    "bytes": 3248,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_same_command_rewritten_an0/output/attempt/source-0002.json",
+    "sha256": "7cb1516f9eb58d8c0b2fcf8f057ba8c563bac368d2f52dd846751089094bcf17"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 14022,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_same_command_rewritten_an0/metadata/spec.json",
+    "sha256": "58122b413bd8618765cc77f65997f9cb0cfe5d6d7448f0daa7ee172eec16bff2"
+  },
+  "trusted_grant": {
+    "bytes": 3416,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_same_command_rewritten_an0/support/grant.json",
+    "sha256": "46da41fea78e68287601a83030f627fc800f47646e8948390ab2b7508f36cd1e"
+  }
+}

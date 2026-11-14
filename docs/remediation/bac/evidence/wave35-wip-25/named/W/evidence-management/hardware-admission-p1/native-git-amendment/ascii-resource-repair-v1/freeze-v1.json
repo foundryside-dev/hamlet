@@ -1,0 +1,86 @@
+{
+  "schema": "bac-p1-ascii-resource-freeze-v1",
+  "at": "2026-11-14T13:37:03.642847+00:00",
+  "status": "FROZEN; OWNER136 SYNTHETIC PASS; INDEPENDENT SOURCE/PROBE REVIEW AND ROOT ADOPTION PENDING",
+  "body_packet": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_wave14_round.py",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02",
+      "bytes": 6277,
+      "lines": 103
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7",
+      "bytes": 64708,
+      "lines": 992
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907",
+      "bytes": 64111,
+      "lines": 979
+    }
+  ],
+  "body_count": 4,
+  "body_lines": 2600,
+  "maximum_files": 5,
+  "maximum_lines": 5000,
+  "prior_capture_sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+  "review_finding": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/independent-astra-v1/review.md",
+    "sha256": "d8e66cf1f8fb70d101f89c47bc8e0af693f49f313cf27e91074928b5bb882662",
+    "bytes": 7108
+  },
+  "grammar_delta": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/consumer-grammar-delta-v1.json",
+    "sha256": "c3944b7daf9c1a8c7c2296cedec71887226963ceaff9836472b5d0f41b1fab4c",
+    "bytes": 2293
+  },
+  "red_attempt": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1.json",
+    "sha256": "7f460fed8ae7d92f7df7b379814a073b2dbc86810e17fc9db7ec9704e62c2532",
+    "bytes": 3302
+  },
+  "red_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1.log",
+    "sha256": "dd28cf4c22ee178828fb554fa0d6307c97f81895554603c0d49a6997641516fe",
+    "bytes": 14121
+  },
+  "focused_attempt": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-focused-v1.json",
+    "sha256": "cb3ebbf439723a6b011d8588460fb649950b9f66e3d246164e1563751ffe0754",
+    "bytes": 3308
+  },
+  "focused_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-focused-v1.log",
+    "sha256": "1464f203f81ed520c0e5c65d001b8b43dea537c0cd581db68753e0a049050cac",
+    "bytes": 115
+  },
+  "owner_attempt": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1.json",
+    "sha256": "10de49dc9ef0ff5b39807c7c3a7f50c1092afcda95c5d91485f4922873ee9df2",
+    "bytes": 3304
+  },
+  "owner_log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1.log",
+    "sha256": "d4c6a92cb019b80e4fe414680b5315d5fc2fa982f21c3851b371b4084c5dd04f",
+    "bytes": 180
+  },
+  "runtime_limit": {
+    "cpu_ids": [
+      3
+    ],
+    "rlimit_as": 4294967296
+  },
+  "source_snapshots": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-source",
+  "static_checks": "PASS capture and test parse; no source execution by parser",
+  "result_scope": "10 expected-refusal cases RED to GREEN;2 ASCII/unlimited/Unicode-path controls PASS. Full owner136 includes124 previous regressions plus12 new cases; counts not added across overlapping runs. All execution inert/stubbed under CPU3/4GiB, no actual hardware/capture/Git/APP. Source hash equal before/after every attempt; old attempts/snapshots retained.",
+  "consumer_status": "Root coordinates new P1 adoption and P2/P4/bootstrap pin updates. No consumer edits made."
+}

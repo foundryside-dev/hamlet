@@ -1,0 +1,61 @@
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import resource
+import sys
+import tempfile
+
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+OUT = Path(__file__).parent
+NAMES = ['verify_bac_hardware_v1.py', 'bac_hardware_protocol_v1.py', 'capture_bac_hardware_v1.py', 'test_verify_bac_hardware_v1.py', 'verify_bac_hardware_children_v1.py']
+def stamps():
+    return {n: {'sha256': hashlib.sha256((Q/n).read_bytes()).hexdigest(), 'bytes': (Q/n).stat().st_size} for n in NAMES}
+record = {'start': datetime.datetime.now(datetime.UTC).isoformat(), 'pid': os.getpid(), 'affinity': sorted(os.sched_getaffinity(0)), 'rlimit_as': resource.getrlimit(resource.RLIMIT_AS), 'source_before': stamps(), 'cases': []}
+sys.path.insert(0, str(Q))
+import test_verify_bac_hardware_v1 as fixtures
+import verify_bac_hardware_v1 as verifier
+
+def run(label, cuda=False, mutate=None):
+    directory = Path(tempfile.mkdtemp(prefix='astra-p4-', dir=OUT))
+    evidence = fixtures.Evidence(directory, common=True, cuda=cuda)
+    if mutate:
+        fixtures.capture_change(evidence, mutate)
+    result = {'label': label, 'root': str(directory)}
+    try:
+        rows = verifier.initial(str(evidence.spec_path), 'job')
+        result['initial'] = 'ACCEPTED'
+        if not cuda:
+            receipt = evidence.verify()
+            result['verify_custody'] = receipt['custody']
+            result['test_outcome'] = receipt['test_outcome']
+        allocation = json.loads((directory/'allocation.json').read_text())
+        capture_files = sorted((directory/'capture').iterdir())
+        result['declared_capture_overhead'] = allocation['overhead']
+        result['retained_capture_files'] = [p.name for p in capture_files]
+        result['capture_file_bytes'] = sum(p.stat().st_size for p in capture_files)
+        result['capture_allocated_bytes_including_directory'] = (directory/'capture').stat().st_blocks*512 + sum(p.stat().st_blocks*512 for p in capture_files)
+        result['capture_inodes_including_directory'] = len(capture_files)+1
+    except Exception as exc:
+        result['error_type'] = type(exc).__name__
+        result['error'] = str(exc)
+    record['cases'].append(result)
+    print(json.dumps(result), flush=True)
+
+def native_superscript(path, value):
+    if path.name == 'source-before-git.json':
+        value[0]['identity']['start_identity'] = '\u00b2'
+
+def driver_superscript(path, value):
+    if path.name == 'discovery.json':
+        value['commands'][1]['identity']['start_identity'] = '\u00b2'
+
+run('unmodified baseline with zero capture scratch overhead')
+run('impossible native Git kernel birth token', mutate=native_superscript)
+run('impossible mandatory CUDA driver kernel birth token', cuda=True, mutate=driver_superscript)
+record['source_after'] = stamps()
+record['sources_stable'] = record['source_before'] == record['source_after']
+record['end'] = datetime.datetime.now(datetime.UTC).isoformat()
+(OUT/'probe-result.json').write_text(json.dumps(record, sort_keys=True, indent=2)+'\n')
+print(json.dumps({'sources_stable': record['sources_stable']}), flush=True)

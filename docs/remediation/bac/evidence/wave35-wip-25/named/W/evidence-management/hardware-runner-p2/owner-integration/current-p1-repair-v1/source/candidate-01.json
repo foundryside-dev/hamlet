@@ -1,0 +1,28 @@
+{
+  "status": "SOURCE FROZEN FOR TEST OWNER; NOT YET GREEN OR QUALIFIED",
+  "at": "2026-11-14T13:12:09.148886+00:00",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "bytes": 146029,
+    "sha256": "e944e221017b4f0ebe49e4b8f2c88c6cd227a3fb5bffbc21a0f1fcb0ecb026d0",
+    "lines": 2854
+  },
+  "static_checks": {
+    "ast": "passed",
+    "ruff": "passed",
+    "black_140": "formatted"
+  },
+  "runtime_by_source_owner": "none",
+  "required_api": {
+    "run": "run(spec_path: Path, *, capture_custody_ref: dict) -> int",
+    "Custody": "Custody(path, *, capture_custody_ref: dict)",
+    "native": "_native_git_command(row, *, git_ref, argv, cwd, parent_identity, lower, upper)",
+    "git": "_git(root, args, *, git_ref)",
+    "source_boundary": "Custody.capture_boundary(); time hook _utc()",
+    "retention": "Custody.capture_refs list of unique exact references"
+  },
+  "limits": "Actual Task4/capture/APP/CUDA/full chain UNRUN; root orchestration sole-writer assurance, not arbitrary same-UID exclusion",
+  "red_execution": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-red-01/execution.json",
+  "invocation_contract": "root-p1-capture-invocation-contract-v2.json; exact bootstrap unchanged from v1",
+  "failure_retention": "existing execute_jobs cleanup now preserves failure.json if output namespace remains valid, without inventing process outcomes"
+}

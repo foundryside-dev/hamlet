@@ -1,0 +1,14 @@
+FFFFF.......                                                             [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2775: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2775: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2775: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2775: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2775: Failed: DID NOT RAISE <class 'ValueError'>
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_capture_context_and_version_primitives_refuse[inherited-nul]
+FAILED test_verify_bac_hardware_v1.py::test_capture_context_and_version_primitives_refuse[identity-alias]
+FAILED test_verify_bac_hardware_v1.py::test_capture_context_and_version_primitives_refuse[capture-birth]
+FAILED test_verify_bac_hardware_v1.py::test_capture_context_and_version_primitives_refuse[discovery-birth]
+FAILED test_verify_bac_hardware_v1.py::test_capture_context_and_version_primitives_refuse[git-version-shape]
+5 failed, 7 passed, 254 deselected in 9.82s

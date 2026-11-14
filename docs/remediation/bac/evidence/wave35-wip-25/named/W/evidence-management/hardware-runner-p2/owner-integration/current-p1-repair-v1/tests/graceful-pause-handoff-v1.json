@@ -1,0 +1,119 @@
+{
+  "active_processes": [],
+  "adoption_gap": "Current repaired actual P1 bytes are not yet adopted by P2. P2/source fixture pins remain d91d64451B and invocationv2. Do not run or repin until root adopts exact new producer plus matching invocation contract.",
+  "at": "2026-11-14T13:45:19.745826+00:00",
+  "current_files": {
+    "bac_hardware_protocol_v1.py": {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    "capture_bac_hardware_v1.py": {
+      "bytes": 64708,
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7"
+    },
+    "run_bac_hardware_v1.py": {
+      "bytes": 148489,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "8397ffcfd75454280ce7a4ea0ea6ea901a3889159a36f51a431027b4e32110ae"
+    },
+    "test_run_bac_hardware_v1.py": {
+      "bytes": 199403,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "a4d3495a56894c1ef3e6962bfbee1563ab765de48b2c0e94c765c6034a306fdd"
+    }
+  },
+  "current_review_regressions": {
+    "deselected": 394,
+    "execution": {
+      "bytes": 3815,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-review-repair-red-01/execution.json",
+      "sha256": "59d167b675398b396eafdb10639a6a459de16dc9bce04329282bedca12f3609b"
+    },
+    "raw_log": {
+      "bytes": 4143,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-review-repair-red-01/output.log",
+      "sha256": "dbcf52599949e5a9c47140107b908c816598b2397b180744fe3b0e63b640e875"
+    },
+    "red_failed": 15,
+    "red_passed": 6,
+    "runner_under_red": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63",
+    "seconds": 3.87,
+    "selection": "current_p1_review",
+    "summary": {
+      "bytes": 1419,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/tests/review-repair-red-01.json",
+      "sha256": "637bc739337e532d10d4c1fc567a9b7921af5d19f94c1e59948cd7dc1ff4bc14"
+    },
+    "test_under_red": {
+      "bytes": 199403,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "a4d3495a56894c1ef3e6962bfbee1563ab765de48b2c0e94c765c6034a306fdd"
+    },
+    "total": 21
+  },
+  "earlier_green": {
+    "safe_execution": {
+      "bytes": 3953,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/execution.json",
+      "sha256": "2f92aa7dcdf43836bfc0ab4baf2ca571bf7d766101d5af96acf93936f55bc534"
+    },
+    "special_owner_execution": {
+      "bytes": 3822,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-owner-final-01/execution.json",
+      "sha256": "0d4a504a29eebadb9e0fb94ff6c3e1504700797cddb8dd34482c0ce57f51be25"
+    },
+    "status": "392 disjoint pure tests passed on earlier22b27runner/bfba370test; not currentrepair qualification",
+    "summary": {
+      "bytes": 24641,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/tests/final-test-completion-v1.json",
+      "sha256": "2f9a90d22ddcf7abfd757a9e05d67d8192abe073b12bed5f8fd7960e3f32a968"
+    }
+  },
+  "fixture_changes": "Default capture overhead1MiB/32inodes with coherent rawfree=budget+overhead; explicitly resealed zero/undersized/exact-footprint cases include directory. Memory consistency, ASCII Linux numeric grammar and Unicode path positive. Later extra/replaced/symlink capture entries checked. No resource stubs in new full-constructor witnesses. Original cases preserved.",
+  "independent_review": {
+    "bytes": 7108,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/independent-astra-v1/review.md",
+    "sha256": "d8e66cf1f8fb70d101f89c47bc8e0af693f49f313cf27e91074928b5bb882662"
+  },
+  "inert_current_test_text": {
+    "bytes": 199403,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/tests/review-repair-red-01-tests.py.txt",
+    "sha256": "a4d3495a56894c1ef3e6962bfbee1563ab765de48b2c0e94c765c6034a306fdd"
+  },
+  "owned_scope": {
+    "P0_lines": 526,
+    "bodies": 3,
+    "budget_lines": 5000,
+    "test_lines": 2837,
+    "total_lines": 3463,
+    "wrapper_lines": 100
+  },
+  "prohibitions_preserved": [
+    "No additional runtime after user halt",
+    "No source/test edits or repins after freeze",
+    "No Git/branches/worktrees/sourceexecutioncopy",
+    "No P1capture/nativeGit/APP/hardware execution",
+    "No deletion of historical evidence"
+  ],
+  "resume_steps": [
+    "Root reviews/adopts current P1 producer, exact capture reference and matching invocation bootstrap; preserve oldAstra probes unchanged.",
+    "On explicit resume, coordinate P2 source/test exactpin changes and immutable source/test/helper/P1 freeze.",
+    "Schedule root authorized2CPU/4GiB focused21caseGREEN on currentrepair, then complete safe404case selection excluding owner_public_run_observes and actualTask4.",
+    "Request root3CPU/4GiB window for9knownowner cases; retain every failed/unrun attempt and actual source pre/post refs.",
+    "Only after disjoint413pureGREEN on finalbytes publish new qualification; keep2actualTask4 gatedUNRUN and coordinate P4 wire integration."
+  ],
+  "reviewed_probe_results": {
+    "bytes": 3866,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/independent-astra-v1/probe-results.json",
+    "sha256": "cf58419aef947c471ef91c1135d873c87314fb0dad7a86d58d7042cee1fd974d"
+  },
+  "schema": "bac-p2-test-graceful-pause-v1",
+  "status": "PAUSED AT USER REQUEST; CURRENT REPAIR GREEN UNRUN",
+  "wrapper": {
+    "bytes": 5571,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+  }
+}

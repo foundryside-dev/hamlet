@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "identity_scope": "Checkpoint inclusion anchor only; tooling/design original source identities and status remain in actual records. Not R148 APP execution.",
+  "input": {
+    "bytes": 6824,
+    "path": "evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/tests/graceful-pause-handoff-v1.json",
+    "root": "W",
+    "sha256": "eb9d86219d7868c0d1c64d2b515a4caa252a9d7572023b1db34294c0bcf3ae29"
+  },
+  "status": "P2 PAUSED; 8397 repair GREEN and repin UNRUN; historical392 and RED15/6 retained"
+}

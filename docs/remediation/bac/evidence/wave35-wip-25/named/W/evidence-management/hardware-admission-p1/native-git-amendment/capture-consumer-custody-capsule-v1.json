@@ -1,0 +1,436 @@
+{
+  "schema": "bac-p1-current-capture-custody-capsule-v1",
+  "at": "2026-11-14T12:29:50.999057+00:00",
+  "status": "FACTS ONLY FOR CONSUMER IMPLEMENTATION; NO NEW API, SOURCE CHANGE, CONSUMER PASS OR HARDWARE QUALIFICATION",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+    "bytes": 64451,
+    "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+  },
+  "protocol": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+    "bytes": 34654,
+    "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+  },
+  "root_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/root-v2-adoption-v1.json",
+    "bytes": 3369,
+    "sha256": "9b3489237f82591804daad0f3c305a01b705542013ca986e6721b69e9ad4f39f"
+  },
+  "base_output_interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+    "bytes": 5867,
+    "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08"
+  },
+  "native_output_interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/output-interface-v2.json",
+    "bytes": 6440,
+    "sha256": "0554e5f0422ff7ce1488dae4c404a25fb8966def7ffd61cd57ac457da91dd3c0"
+  },
+  "source_anchors": {
+    "validate_discovery": 60,
+    "assess_resources": 132,
+    "process_identity": 324,
+    "dependency_observations": 332,
+    "collect_discovery": 352,
+    "run_query": 422,
+    "collect_gpu": 457,
+    "validate_authority": 564,
+    "run_git": 687,
+    "source_sample": 742,
+    "launch_discovery": 773,
+    "discovery_main": 816,
+    "capture": 833
+  },
+  "notation": "Each field map below is closed: every named field required, no extras. JSON duplicate keys/nonfinite constants refuse. P0 types use current adopted P0. uint means exact int>=0, never bool. Accepted observations require successful complete facts; null/partial diagnostics do not qualify. UTC strings use six fractional digits and Z.",
+  "closed_records": {
+    "P0 reference": {
+      "path": "path",
+      "bytes": "uint",
+      "sha256": "sha256"
+    },
+    "P0 identity": {
+      "pid": "positive-int",
+      "ppid": "uint",
+      "start_identity": "text",
+      "host": "text",
+      "boot_id": "text"
+    },
+    "P0 dependency": {
+      "name": "text",
+      "version": "text",
+      "reference": "reference"
+    },
+    "start.json": {
+      "at": "UTC before capture identity/affinity checks and before leases/source-before",
+      "candidate": "exact P0 candidate file reference",
+      "request": "exact admission-request file reference",
+      "tools": "exact request.tools list",
+      "dependencies": "exact request.dependencies environment file reference"
+    },
+    "source-before.json AND source-after.json": {
+      "at": "UTC sampled after all three source Git queries and inventory/import-root/availability validation",
+      "head": "candidate.head after actual rev-parse HEAD equality",
+      "tree": "candidate.tree after actual diff-index --cached --quiet equality; NOT HEAD tree",
+      "inventory": "flattened ordered candidate input P0 reference list",
+      "registry": "exact actual worktree --porcelain stdout string",
+      "availability": "ordered list of availability-row"
+    },
+    "availability-row": {
+      "path": "absolute canonical porcelain worktree path",
+      "directory_exists": "exact bool from actual Path.is_dir"
+    },
+    "discovery-command.json": {
+      "schema": "literal bac-hardware-discovery-command-v1",
+      "request": "exact request P0 reference",
+      "capture": "actual capture implementation P0 reference",
+      "executable": "request.interpreter P0 reference",
+      "capture_identity": "actual capture P0 identity sampled after discovery wait; no separate timestamp field",
+      "argv": "exact spawned discovery argv list",
+      "cwd": "request.authorized_root",
+      "environment": "exact selected discovery environment map",
+      "start": "UTC immediately before discovery spawn",
+      "end": "UTC after discovery wait/owned-group cleanup",
+      "identity": "actual spawned child P0 identity|null on failure",
+      "exit_code": "observed int|null on failure",
+      "stdout": "actual discovery JSON stdout string",
+      "stderr": "actual stderr string",
+      "errors": "string list, empty required for accepted discovery"
+    },
+    "discovery.json": {
+      "schema": "literal bac-hardware-discovery-v1",
+      "profile": "cpu|cuda",
+      "identity": "P0 identity; actual discovery process",
+      "at": "UTC YYYY-MM-DDTHH:MM:SS.ffffffZ sampled at collection entry, before dependency commands",
+      "argv": "nonempty text list; actual /proc/self/cmdline, NOT Python sys.argv",
+      "interpreter": "absolute canonical resolved sys.executable",
+      "cwd": "absolute canonical actual cwd",
+      "inherited_visibility": "string|null; capture parent inherited CUDA_VISIBLE_DEVICES",
+      "effective_visibility": "string; actual discovery CUDA_VISIBLE_DEVICES",
+      "tmpdir": "absolute canonical resolved TMPDIR",
+      "cgroup_root": "absolute canonical cgroup mount point",
+      "cgroup_leaf": "absolute canonical membership leaf",
+      "ancestry_complete": "bool",
+      "cgroups": "nonempty root-to-leaf list of raw-cgroup records",
+      "affinity": "nonempty unique uint list|null",
+      "meminfo": "string|null",
+      "scratch_free_bytes": "uint|null",
+      "scratch_free_inodes": "uint|null",
+      "cpu_topology": "string|null",
+      "numa_topology": "string|null",
+      "gpu_topology": "string|null",
+      "competing_workloads": "list of nonempty strings|null",
+      "torch_build": "string|null",
+      "cuda_runtime": "string|null",
+      "driver": "string|null",
+      "devices": "list of raw-device records",
+      "probe_errors": "list of nonempty strings",
+      "commands": "ordered list of closed native-Git or driver command records",
+      "python_version": "nonempty actual platform.python_version string",
+      "dependencies": "list of P0 dependency records",
+      "torch_origin": "P0 reference|null"
+    },
+    "raw-cgroup": {
+      "path": "absolute canonical ancestor path",
+      "cpu_max": "raw stripped cpu.max string|null",
+      "cpuset": "raw stripped cpuset.cpus.effective string|null",
+      "memory_max": "raw stripped memory.max string|null",
+      "memory_current": "raw stripped memory.current string|null"
+    },
+    "raw-device": {
+      "logical_index": "uint",
+      "gpu_uuid": "nonempty string",
+      "mig_uuid": "nonempty string|null",
+      "physical_parent_uuid": "nonempty string",
+      "model": "nonempty string",
+      "vram_bytes": "positive int",
+      "isolation": "nonempty string; accepted current implementation physical-exclusive"
+    },
+    "driver command": {
+      "argv": "nonempty text list",
+      "executable": "pinned nvidia-smi P0 reference",
+      "identity": "observed driver child P0 identity|null diagnostic",
+      "start": "UTC before spawn",
+      "end": "UTC after wait",
+      "exit_code": "observed int",
+      "stdout": "string",
+      "stderr": "string",
+      "errors": "list of strings"
+    },
+    "native Git command": {
+      "schema": "literal bac-hardware-git-command-v1",
+      "argv": "nonempty text list",
+      "executable": "sealed native Git P0 reference validated before spawn",
+      "executable_after": "observed post-wait P0 reference; accepted must equal executable; null/changed possible in refused diagnostics",
+      "cwd": "exact canonical selected cwd",
+      "environment": "exact fixed Git environment map",
+      "identity": "actual Git child P0 identity|null diagnostic",
+      "start": "UTC before spawn",
+      "end": "UTC after bounded wait/cleanup and post-reference observation",
+      "exit_code": "observed int|null; known status does not prove pipe EOF",
+      "stdout": "available bytes decoded UTF-8/surrogateescape; partial on failure",
+      "stderr": "same reversible byte-prefix semantics",
+      "errors": "primary then cleanup/reference errors; empty required for successful mandatory command"
+    },
+    "result.json": {
+      "schema": "literal bac-hardware-capture-result-v1",
+      "disposition": "admitted|refused",
+      "reasons": "string list",
+      "admission": "P0 reference|null",
+      "spec": "P0 reference|null"
+    },
+    "admission.json": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "admission"
+      ],
+      "request": "reference",
+      "discovery_process": "reference",
+      "at": "utc",
+      "profile": [
+        "enum",
+        "cpu",
+        "cuda"
+      ],
+      "disposition": [
+        "enum",
+        "admitted",
+        "refused"
+      ],
+      "reasons": [
+        "list",
+        "text",
+        0
+      ],
+      "cgroups": [
+        "list",
+        "cgroup",
+        1
+      ],
+      "affinity": [
+        "fact",
+        [
+          "list",
+          "uint",
+          1
+        ]
+      ],
+      "effective_cpu_capacity": [
+        "fact",
+        "number"
+      ],
+      "host_ram_bytes": [
+        "fact",
+        "uint"
+      ],
+      "limited_ram_bytes": [
+        "fact",
+        "uint"
+      ],
+      "ram_current_bytes": [
+        "fact",
+        "uint"
+      ],
+      "scratch_free_bytes": [
+        "fact",
+        "uint"
+      ],
+      "scratch_free_inodes": [
+        "fact",
+        "uint"
+      ],
+      "tmpdir": "path",
+      "cpu_topology": [
+        "fact",
+        "text"
+      ],
+      "numa_topology": [
+        "fact",
+        "text"
+      ],
+      "gpu_topology": [
+        "fact",
+        "text"
+      ],
+      "environment": "reference",
+      "requested_visibility": "string",
+      "effective_visibility": "string",
+      "devices": [
+        "list",
+        "device",
+        0
+      ],
+      "competing_workloads": [
+        "fact",
+        [
+          "list",
+          "text",
+          0
+        ]
+      ],
+      "probe_errors": [
+        "list",
+        "text",
+        0
+      ],
+      "minimum": "budget",
+      "reserve": "budget",
+      "admitted_budget": "budget"
+    },
+    "spec.json": {
+      "schema": [
+        "enum",
+        "bac-hardware-v1"
+      ],
+      "kind": [
+        "enum",
+        "spec"
+      ],
+      "attempt_id": "id",
+      "candidate": "reference",
+      "tools": [
+        "list",
+        "named-reference",
+        6
+      ],
+      "dependencies": "reference",
+      "admission": "reference",
+      "profile": [
+        "enum",
+        "cpu",
+        "cuda"
+      ],
+      "authorized_root": "path",
+      "output_root": "path",
+      "scratch_root": "path",
+      "lease_root": "path",
+      "job_concurrency": "positive-int",
+      "budget": "budget",
+      "jobs": [
+        "list",
+        "job",
+        1
+      ],
+      "source_freeze": "reference"
+    }
+  },
+  "additional_files": {
+    "source-before-git.json": "JSON list of native Git command records, execution order. Exactly three successful records for admitted capture. No wrapper object/schema/parent identity field.",
+    "source-after-git.json": "Same list shape/order. A failed source sample retains its list in finally, potentially partial, and no successful source observation.",
+    "accepted_file_set": [
+      "start.json",
+      "source-before-git.json",
+      "source-before.json",
+      "discovery-command.json",
+      "discovery.json",
+      "source-after-git.json",
+      "source-after.json",
+      "admission.json",
+      "spec.json",
+      "result.json"
+    ]
+  },
+  "argv_and_environment": {
+    "discovery_argv_positions": [
+      "request.interpreter.path",
+      "-I",
+      "-B",
+      "-c",
+      "exact bootstrap below",
+      "actual request reference path",
+      "JSON serialization of inherited_visibility"
+    ],
+    "bootstrap_literal": "import sys;sys.path.insert(0,'/workspace/bac-review-2026-11-01/qualification');from capture_bac_hardware_v1 import discovery_main;discovery_main()",
+    "bootstrap_derivation": "The path literal is repr(str(Path(actual pinned capture.__file__).parent)); currently Q as recorded above. This bootstrap string is argv data, not a new helper/API. The complete actual /proc/self/cmdline must equal this argv. No --discover CLI exists.",
+    "discovery_environment": "Copy sealed environment.environment exactly, then overwrite CUDA_VISIBLE_DEVICES=request.requested_visibility and TMPDIR=request.scratch_root; add capture-only BAC_CAPTURE_LEASE_FDS. No implicit PATH or PYTHONPATH insertion into the map. -I ignores Python environment path variables. Reserved key must not be caller-supplied.",
+    "lease_fds": "BAC_CAPTURE_LEASE_FDS exactly json.dumps(list(actual pass_fds)) with default separators/order. Nonempty unique exact ints>2; child checks actual open regular descriptors. Consumer can check declared canonical representation and matching observed environment, but cannot retrospectively prove fstat/pass_fds from JSON alone.",
+    "inherited_visibility": "Raw discovery value equals parse(argv[-1]); argv[-1] is json.dumps(value) with defaults. Value may be null; CPU admission permits an inherited nonempty mask while enforcing effective empty mask.",
+    "git_environment": {
+      "PATH": "/usr/bin:/bin",
+      "LC_ALL": "C",
+      "GIT_CONFIG_NOSYSTEM": "1",
+      "GIT_CONFIG_GLOBAL": "/dev/null"
+    },
+    "git_version_argv": [
+      "environment.git.reference.path",
+      "--version"
+    ],
+    "git_source_prefix": [
+      "environment.git.reference.path",
+      "--no-optional-locks",
+      "-c",
+      "core.fsmonitor=false",
+      "-c",
+      "core.pager=cat",
+      "-C",
+      "candidate.authorized_root"
+    ],
+    "git_source_tails_in_order": [
+      [
+        "rev-parse",
+        "HEAD"
+      ],
+      [
+        "diff-index",
+        "--cached",
+        "--quiet",
+        "candidate.tree",
+        "--"
+      ],
+      [
+        "worktree",
+        "list",
+        "--porcelain"
+      ]
+    ],
+    "git_cwd": "Version query actual discovery cwd=authorized_root; source queries explicit authorized_root.",
+    "driver_environment": "Fixed PATH=/usr/bin:/bin and LC_ALL=C, inherits discovery cwd; these are construction facts, not explicit fields in old driver command wire. Driver wire remains unchanged."
+  },
+  "identity_and_time_correspondence": [
+    "P0 identity is {pid,ppid,start_identity,host,boot_id}. start_identity comes from /proc/PID/stat field22; PPID from field4; host from socket.gethostname and boot_id from /proc/sys/kernel/random/boot_id. It is a process birth token, not a timestamp.",
+    "Discovery wrapper.identity equals raw.identity; PID is the actual spawned child PID; PPID equals wrapper.capture_identity.pid. Host/boot equal capture identity and allocation host/boot. Raw argv/interpreter/cwd/profile/TMPDIR/visibility reconcile exactly with wrapper/request. raw.interpreter is resolved sys.executable, no distinct venv invocation/prefix context.",
+    "Native Git children in discovery.commands have PPID=raw.identity.pid. Source-before/after Git children have PPID=the capture process PID; join to wrapper.capture_identity.pid. Command host/boot should equal that parent/allocation. Current producer checks actual PID/PPID and /proc/PID/exe; the emitted source JSON does not carry its own capture_identity.",
+    "No source observation has identity/start/end fields. Its at is sampled after its three Git commands and source checks. No start.json identity field. wrapper.capture_identity is sampled after discovery finishes, not independently at each source query.",
+    "Under non-regressing UTC the emission sequence is: start.at <= before-command0.start <= before-command0.end <= before-command1.start <= before-command1.end <= before-command2.start <= before-command2.end <= source-before.at <= wrapper.start <= raw.at <= each discovery query.start/end <= wrapper.end <= after-command0.start/end <= after-command1.start/end <= after-command2.start/end <= source-after.at <= admission.at. All intervals inclusive; raw.at is collection entry, not completion. Current producer explicitly checks wrapper.start<=raw.at<=wrapper.end and each command end>=start; it does not itself assert the whole cross-file sequence. Consumers can reject clock regression rather than invent timestamps.",
+    "All source native query exit codes must be0 and errors empty for admitted capture. Version query must likewise succeed and exactly reproduce dependency.version. CUDA mandatory driver version/inventory/workload queries must succeed; optional topo -m failure may be retained with gpu_topology null and must not be misclassified as a mandatory successful query."
+  ],
+  "reference_graph_and_terminal_gate": [
+    "Let D be parent of the exact admitted spec reference. Native capture writes spec.json, admission.json, result.json and the other named files under its new exclusive D. Verify actual referenced bytes/path/size/hash; do not infer hashes from object equality or reconstruct JSON formatting.",
+    "Terminal result requires admitted, reasons[], nonnull exact spec/admission refs. result.spec must equal the consumer-supplied exact spec reference; result.admission must equal spec.admission. admission.disposition must be admitted, reasons[] and probe_errors[]. A provisional spec plus missing/refused terminal result cannot qualify.",
+    "spec.candidate is exact candidate ref; spec.tools and dependencies equal request.tools/dependencies. spec.admission hashes admission; admission.request hashes request; admission.discovery_process hashes discovery-command; admission.environment equals request.dependencies. Candidate/source-freeze and request/source-freeze refs equal spec.source_freeze. Root/path/profile/concurrency/minimum/reserve are copied/bound as described below.",
+    "Every admission fact.provenance and each emitted CUDA device.mapping_provenance refers to exact D/discovery.json. Parsing wrapper.stdout must yield the same raw discovery object; stdout JSON formatting differs from the indented discovery file bytes, so compare parsed values after validating both records/references.",
+    "start.candidate/request/tools/dependencies equal the corresponding exact spec/request values. Source inventory contains input refs that must equal candidate flattening; source registry/availability values must reconcile candidate registry/availability files and native source-query stdout.",
+    "IMPORTANT UNHASHED SIBLINGS: No current result/spec/admission reference hashes start.json, source-before.json, source-after.json, source-before-git.json or source-after-git.json. Source records do not hash their command siblings. Their location is by fixed sibling filename only. No current immutable aggregate capture artifact seals these five files. Referenced executable/input hashes inside them do not seal the surrounding records.",
+    "result.json itself is also located by fixed sibling filename; it references spec/admission, which do not refer back to it. Root/consumer must supply custody or external sealed evidence when trusting these unreferenced files. This capsule creates no new hash edge and does not claim those files are authenticated solely by spec."
+  ],
+  "source_and_authority_derivation": [
+    "Flatten candidate.inventory categories source,tests,configs,scripts,ratchet,artifacts in that fixed order, retaining array order; unique paths required. source-before.inventory=source-after.inventory=grant.inputs=every CPU-bound.inputs=that exact list. source-before/after head/tree equal candidate; actual HEAD query stdout.strip equals head; index equality query exit0 proves staged candidate tree without requiring HEAD tree equal candidate.",
+    "Each source registry string equals actual third Git query stdout and exact candidate.registry file bytes decoded/encoded as used by producer. Parse ordered worktree lines only; canonical unquoted/unescaped paths required. availability equals ordered {path,directory_exists} observations and candidate.availability.worktrees; actual import-root directory opens and all input refs are checked. These observations do not substitute for root authorization.",
+    "Candidate/request/source-freeze authorized roots match. Source-freeze grant refers to root-approved closed source grant; grant root/head/tree/import_roots match candidate; no_writer_barrier and includes_untracked true. Active intervals and grant.start<=freeze.start checked before capture and again before source-after. CPU bound evidence exactly matches each job argv/env/cases/role/source values and accepted evidence set equals used set.",
+    "Allocation grant matches host/boot/lease_root and authorized CPU mask; actual capture/discovery affinity must equal its CPU IDs. Root authority string is not proof. Allocation overhead reserves at least one coordinator and root bounds phase peaks. Device authorization is subset of allocation devices; partition proof validates disjoint masks/devices/budgets where applicable. Fixed host-wide pool/allocation/host-timing/device leases and root no-writer namespace custody remain required.",
+    "All current capture paths source/output/scratch/lease/D are pairwise disjoint. Capture/output/scratch share filesystem capacity. Exclusive/no-follow creation, directory and held-lock inode checks guard cooperative writes; they do not seal later arbitrary mutation. Current capture code does not continuously supervise source or command files after return."
+  ],
+  "raw_to_admission_and_spec": {
+    "facts": "Every fact is closed {state,value,reason,provenance}; measured when raw/derived value nonnull with reason empty, provenance exact discovery ref. Required missing facts refuse. Optional absent cpu/numa/gpu topology becomes unsupported with reason. Unlimited cgroup quota/memory uses state unlimited,value null and actual max reason.",
+    "direct_fields": "admission.affinity,scratch_free_bytes,scratch_free_inodes,competing_workloads and cpu/numa/gpu topology derive same raw values with fact wrapper. tmpdir=raw.tmpdir=request.scratch_root. requested_visibility=request; effective_visibility=raw (empty for accepted CPU).",
+    "cgroups": "Raw path list equals complete contiguous cgroup_root-to-cgroup_leaf ancestry. Parse cpu.max into period>0 and quota>0 or max; cpuset into sorted unique CPU IDs; memory.max into uint or max; memory.current into uint. Admission cgroups closed per P0: path,cpu_quota_us,cpu_period_us,cpuset,memory_limit_bytes. Raw memory.current remains in discovery; admission ram_current_bytes is leaf current.",
+    "cpu": "CPU effective visibility empty and devices empty. CPU never imports Torch or queries NVIDIA; optional raw CUDA fields remain null. Inherited visibility may differ because effective visibility is explicitly hidden.",
+    "ram": "MemTotal and MemAvailable unique kB lines converted by1024, with 0<total and available<=total. host_ram_bytes=total; limited_ram_bytes=min(total,every finite memory.max); ram_current_bytes=leaf memory.current. Available headroom=min(MemAvailable, max(0,memory.max-memory.current) for every finite ancestor). limited-current is NOT available headroom.",
+    "budget": "For admitted complete observations, dimensionwise max(0,min(measured_available,allocation.capacity)-request.reserve-allocation.overhead). CPU/RAM demand is sum of top requested_job_concurrency job budgets. Retained scratch/inodes demand sums all job budgets. Also require minimum and role count+replacement overlap times peak_cpu_slots within each job budget. Missing facts cannot be replaced by allocation declarations.",
+    "dependencies": "Actual python_version equals sealed environment.python_version. Sorted-by-name actual dependency inventory equals sealed inventory exactly. Exactly one git dependency: observed full --version line removing only one LF equals version; reference equals native executable. Other dependencies use actual metadata version/origin; torch origin is __init__.py, others unique dist-info/METADATA. CPU does not attest unseen venv distributions or full module closure.",
+    "cuda": "Require actual CUDA-capable build/runtime and driver; actual Torch logical UUIDs join driver inventory UUIDs, model and VRAM bounds. Contiguous logical indices, unique authorized physical GPU UUIDs, physical_parent_uuid=gpu_uuid, no MIG, physical-exclusive. Numeric visibility tokens are not driver indices. Full UUID masks preserve exact UUID order. Current driver inventory rejects enabled/unsupported MIG; selected physical GPU competing workloads must be empty.",
+    "spec_copies": "spec profile/authorized_root/output_root/scratch_root/lease_root/source_freeze/attempt_id/tools/dependencies equal request; job_concurrency=request.requested_job_concurrency; budget=admission.admitted_budget. Jobs equal request.jobs except CUDA devices replaced by fresh admitted devices only after every non-provenance device field matches. CPU jobs unchanged; job interpreter equals request.interpreter.path and cwd/env/timeout/grace/seed/roles/obligations remain exact.",
+    "cpu_capacity": "effective_cpu_capacity=min(cardinality(affinity intersect every ancestry cpuset), every finite quota/period); available cpu_slots=floor(capacity)."
+  },
+  "external_limits": [
+    "Root out-of-band source/allocation grants and active no-writer scope are required; hashes prove bytes, not authority or actual observation. JSON process declarations alone are not cryptographic process proof.",
+    "No new capture execution, source mutation, tests or APP/CUDA/Git probe performed to create this capsule. Frozen source pin remains unchanged.",
+    "Local full-cgroup-ancestry prerequisite remains unsatisfied per root platform record; this capsule cannot authorize actual local capture.",
+    "Native cleanup may retain partial stdout/stderr and known status with explicit incomplete cleanup; never interpret that as EOF, successful reap or admission. Deliberately escaped/FD-closing descendants and uncatchable controller death remain outside guaranteed supervision.",
+    "Consumer implementation must validate these joins independently within its authorized scope. This capsule records producer facts; it adds no common helper, implementation API, fallback or consumer acceptance waiver."
+  ]
+}

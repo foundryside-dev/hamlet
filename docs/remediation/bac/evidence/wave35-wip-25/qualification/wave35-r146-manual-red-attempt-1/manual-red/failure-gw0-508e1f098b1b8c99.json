@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_bad_actions_refuse_before_physical_effects[invalid0]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "gw0",
+  "longrepr": "E   AssertionError: ENV must issue an authentic manual physical session\n    assert False\n     +  where False = callable(None)",
+  "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492"
+}

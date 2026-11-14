@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6380,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_review_completed_own_scra0/output/attempt/a/command.json",
+    "sha256": "d7a05e59b4d663419609c9c7d37a46e0699af599d10cb35225be2f9f1baedfff"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_review_completed_own_scra0/support/identity-policy.json",
+    "sha256": "362adb3433d4f6b20c38dd3271c72f2875ea472d9671597a458a9add952051ab"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244242,
+    "ppid": 244241,
+    "start_identity": "14145642"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_review_completed_own_scra0/output/attempt/source-0002.json",
+    "sha256": "3198165e9e84f1094f9452570c6aeeb6b81b4d7eea03459eb614112806b88f4b"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13682,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_review_completed_own_scra0/metadata/spec.json",
+    "sha256": "5eaa550f3e0e9d64da444b714107b2855f7f58e6e00ef213d844b420e0e6ff02"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_review_completed_own_scra0/support/grant.json",
+    "sha256": "fc2790127d9e716c01403fb4e8d93466f2fdf8098ba40dfd95f7f4b340449b85"
+  }
+}

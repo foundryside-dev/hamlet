@@ -35,7 +35,15 @@ class RewardCalculator:
             accepted=accepted,
             update_stats=True,
         )
+        return self._apply_shaped_rewards(intrinsic_raw=intrinsic_reward.raw, runtime_intrinsic_scale=intrinsic_reward.scales)
 
+    def _calculate_manual_rewards(self) -> torch.Tensor:
+        env = self._env
+        zero = torch.zeros(env.num_agents, dtype=env.meters.dtype, device=env.device)
+        return self._apply_shaped_rewards(intrinsic_raw=zero, runtime_intrinsic_scale=zero.clone())
+
+    def _apply_shaped_rewards(self, *, intrinsic_raw: torch.Tensor, runtime_intrinsic_scale: torch.Tensor) -> torch.Tensor:
+        env = self._env
         agent_positions = env.positions.to(device=env.device, dtype=torch.float32)
 
         kwargs = {
@@ -57,8 +65,8 @@ class RewardCalculator:
             step_counts=env.step_counts,
             dones=env.dones,
             meters=env.meters,
-            intrinsic_raw=intrinsic_reward.raw,
-            runtime_intrinsic_scale=intrinsic_reward.scales,
+            intrinsic_raw=intrinsic_raw,
+            runtime_intrinsic_scale=runtime_intrinsic_scale,
             reward_context=kwargs,
         )
 

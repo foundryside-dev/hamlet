@@ -1,0 +1,33 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r148-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r148-manual-integrated-owner-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "manual-integrated-owner",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+        "tests/test_townlet/regressions/bac/test_environment_parent_custody.py",
+        "tests/test_townlet/regressions/bac/test_initial_participation_env.py",
+        "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r148-manual-integrated-owner-attempt-1",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

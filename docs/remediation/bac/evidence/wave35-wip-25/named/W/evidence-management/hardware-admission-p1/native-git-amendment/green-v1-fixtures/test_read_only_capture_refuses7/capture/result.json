@@ -1,0 +1,13 @@
+{
+  "admission": {
+    "bytes": 13135,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v1-fixtures/test_read_only_capture_refuses7/capture/admission.json",
+    "sha256": "55f6e2dc6fe0bd6284318dce9009d5c71f05e20fa787869971cbfc9f32977e1b"
+  },
+  "disposition": "refused",
+  "reasons": [
+    "actual dependency version/origin inventory differs"
+  ],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": null
+}

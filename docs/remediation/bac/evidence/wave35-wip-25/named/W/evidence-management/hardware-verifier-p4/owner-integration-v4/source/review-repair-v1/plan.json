@@ -1,0 +1,40 @@
+{
+  "schema": "p4-review-repair-plan-v1",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+    "bytes": 140681,
+    "sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe"
+  },
+  "findings": [
+    "P4-ASTRA-V4-01",
+    "P4-ASTRA-V4-02"
+  ],
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v1/REVIEW.md",
+    "bytes": 5297,
+    "sha256": "09d94fbb9967ec29a9f0c70436f4c4c4e4cbb3983a30a950a4b36d837ad51520"
+  },
+  "immutable_red_probe": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v1/probe-result.json",
+    "bytes": 4669,
+    "sha256": "7f9f4b992289d07ee0b9d4eefab456131986717ced822592077de0d3e9b06987"
+  },
+  "changes": [
+    "ASCII decimal kernel birth-token predicate applied consistently to current capture/discovery/native Git/driver/ordinary process checks.",
+    "No-follow exact ten-file capture namespace footprint: observed sum st_blocks*512 includes directory and every final file; inode count includes directory. Compare actual retained cut to authorized overhead.",
+    "Snapshot actual directory/file identities and content stats; check initial and final budget and stable namespace. Allocated bytes remain observed facts, not logical sizes or P1 unrecorded prepublication reconstruction.",
+    "Retain capture-footprint observation record externally under receipt components and reference from receipt inventory. Preserve current public signatures and return shapes.",
+    "Reject receipt destinations inside immutable capture namespace before writes; preserve all existing other destination guards."
+  ],
+  "source_cap": 3000,
+  "approved_bodies": [
+    "verify_bac_hardware_v1.py",
+    "bac_hardware_protocol_v1.py",
+    "capture_bac_hardware_v1.py"
+  ],
+  "test_first": "Await test owner focused RED under root budget release; source unchanged until postflight.",
+  "limits": [
+    "No APP/Git/capture/hardware execution or prohibited implementation body reads.",
+    "Independent Astra must verify fixed exact source and unchanged probe; future P2 externally pinned capture manifest/wait/lease wire remains separate owed work."
+  ]
+}

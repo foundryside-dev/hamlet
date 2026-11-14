@@ -1,0 +1,9 @@
+{
+  "observed_at_utc": "2026-11-14T13:59:40.006988+00:00",
+  "operation": "neutral plan of root-terminal-receipt-v1",
+  "exit_code": 1,
+  "error": "ValueError: dependency closure missing",
+  "cause": "Root-added exact-document-approval dependency had empty required_by; schema requires nonempty check relationship. No application/source/result defect.",
+  "planned_correction": "Only set this dependency required_by to all15 existing exact check IDs in linked v2 receipt; retain v1 draft/final and failure.",
+  "copy_or_publication_performed": false
+}

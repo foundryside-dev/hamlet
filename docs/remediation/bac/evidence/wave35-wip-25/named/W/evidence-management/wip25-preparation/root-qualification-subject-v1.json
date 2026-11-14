@@ -1,0 +1,184 @@
+{
+  "candidate_manifest": {
+    "bytes": 210830,
+    "path": "wave35/r148-candidate.json",
+    "root": "W",
+    "sha256": "ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514"
+  },
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "component_receipts": [
+    {
+      "bytes": 58728,
+      "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492",
+      "path": "evidence-management/wip25-preparation/closed-r146-r148-v1/r146-history-component-v1.json",
+      "root": "W",
+      "scope": "Original R146 records including all failed, collection and UNRUN attempts.",
+      "sha256": "57c4612dca386d7a8419dced0b5160e73a34a44d23cce8a4abd6e463fcad890a"
+    },
+    {
+      "bytes": 28762,
+      "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+      "path": "evidence-management/wip25-preparation/closed-r146-r148-v1/r147-history-component-v1.json",
+      "root": "W",
+      "scope": "Original R147 records including all failed, collection and UNRUN attempts.",
+      "sha256": "fc24162edd54c77ead437c14a9a09bf456173a517f0f9b82afbf8b008fb40f42"
+    },
+    {
+      "bytes": 57579,
+      "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+      "path": "evidence-management/wip25-preparation/closed-r146-r148-v1/r148-history-component-v1.json",
+      "root": "W",
+      "scope": "Original R148 records including all failed, collection and UNRUN attempts.",
+      "sha256": "26fe0c7226b07a5fe18a94bd9b1169d4f40eb2f308b1db7101d7650c6e8f2783"
+    },
+    {
+      "bytes": 525,
+      "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+      "path": "evidence-management/wip25-preparation/packet-v1/component-1.json",
+      "root": "W",
+      "scope": "BOUNDED CPU M ADOPTED; integrated check retains 3 FAIL",
+      "sha256": "4fd58b13c4d9c7b34a626bc75f93f9b0fec55dac8c5590e1a23df3ad1a4f8ea8"
+    },
+    {
+      "bytes": 508,
+      "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+      "path": "evidence-management/wip25-preparation/packet-v1/component-2.json",
+      "root": "W",
+      "scope": "C3 DESIGN ONLY; implementation UNRUN",
+      "sha256": "d5968bf093abc394d9ce6bdcfabb581a3b433ca131a378123e784570c609c0f3"
+    },
+    {
+      "bytes": 524,
+      "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+      "path": "evidence-management/wip25-preparation/packet-v1/component-3.json",
+      "root": "W",
+      "scope": "BOUNDED P1 d91d native-Git tooling adoption",
+      "sha256": "874ed059de778c117e1bf94ef8c8bb6ff5b54229dd25befe4caba1b0c57e74a8"
+    },
+    {
+      "bytes": 549,
+      "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+      "path": "evidence-management/wip25-preparation/packet-v1/component-4.json",
+      "root": "W",
+      "scope": "BOUNDED P1 ASCII08 adopted; no actual hardware",
+      "sha256": "bb1946e79761d9ccd9f27e18d8062162aa48961a54122cf980e1eb34f123804c"
+    },
+    {
+      "bytes": 588,
+      "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+      "path": "evidence-management/wip25-preparation/packet-v1/component-5.json",
+      "root": "W",
+      "scope": "P2 PAUSED; 8397 repair GREEN and repin UNRUN; historical392 and RED15/6 retained",
+      "sha256": "4f98b649acf3388a9a46bc024ea61181f5e7cce0909e9f6f83c2fbc12e2b26a2"
+    },
+    {
+      "bytes": 537,
+      "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+      "path": "evidence-management/wip25-preparation/packet-v1/component-6.json",
+      "root": "W",
+      "scope": "BOUNDED P4 041 adopted against old P1d91d only",
+      "sha256": "bf46fe7fa8419a620fcb79c7c5172fd134786d76cae33f14dd0e391bc906a29e"
+    }
+  ],
+  "contract": {
+    "bytes": 10769,
+    "path": "evidence-management/wip25-preparation/root-checkpoint-contract-v1.json",
+    "root": "W",
+    "sha256": "6c20aeeffae6df7691e6ceb352a14ec6ff13db88b93816172b01828c622faf18"
+  },
+  "documents": [
+    {
+      "approval_status": "ROOT REVIEWED ACCEPTABLE; exact approval record/root seal separate",
+      "bytes": 123213,
+      "destination": "docs/remediation/bac/STATUS.md",
+      "path": "evidence-management/wip25-preparation/document-postimages-v3/STATUS.md",
+      "root": "W",
+      "sha256": "c4bf8475caa9c215e80048eb4b94aa2bf46e61aaf0c16b1392b80336c2ad1a63"
+    },
+    {
+      "approval_status": "ROOT REVIEWED ACCEPTABLE; exact approval record/root seal separate",
+      "bytes": 34236,
+      "destination": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "path": "evidence-management/wip25-preparation/document-postimages-v3/EVIDENCE-INDEX.md",
+      "root": "W",
+      "sha256": "37e3c73038211e75e533dc74ec9be18d723b4f70075dd5180fa43c103f999cb8"
+    },
+    {
+      "approval_status": "ROOT REVIEWED ACCEPTABLE; exact approval record/root seal separate",
+      "bytes": 33618,
+      "destination": "README.md",
+      "path": "evidence-management/wip25-preparation/document-postimages-v3/README.md",
+      "root": "W",
+      "sha256": "65de2527f5de9ebe9c56ce09f4ef0356a6b06406c8d24e35d1356a2c4fe9e658"
+    },
+    {
+      "approval_status": "ROOT REVIEWED ACCEPTABLE; exact approval record/root seal separate",
+      "bytes": 15045,
+      "destination": "docs/remediation/bac/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "path": "evidence-management/wip25-preparation/document-postimages-v3/CURRENT-PARENT-CUSTODY-COMPONENT-CONTRACT.md",
+      "root": "W",
+      "sha256": "26a8d4f882a0d73f027919138f9a2e9708ec1ab5e91590a6023eeb6ded812915"
+    },
+    {
+      "approval_status": "ROOT REVIEWED ACCEPTABLE; exact approval record/root seal separate",
+      "bytes": 7433,
+      "destination": "docs/remediation/bac/PAUSE-HANDOFF-WIP25.md",
+      "path": "evidence-management/wip25-preparation/document-postimages-v3/PAUSE-HANDOFF-WIP25.md",
+      "root": "W",
+      "sha256": "8c3bfff8017e0d497bc7a7f2d4e19c5ce4392f4ecb037278fa5ebcd88a547789"
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "3b2d5797ac2dc456cfc1dd71d2efae7b475123c9",
+    "tests": "a328493583764ee61c4c923a2f751248a49c0222"
+  },
+  "historical_alias_disposition": {
+    "bytes": 22093,
+    "path": "evidence-management/wip25-preparation/packet-v2/HISTORICAL-REPRODUCIBILITY-LIMITATIONS-v1.json",
+    "root": "W",
+    "sha256": "d75ab56b5f12f0bbb35dd20a55da851e327405d4e0ad86289868f300d4fdf455"
+  },
+  "historical_attestation": {
+    "bytes": 1200151,
+    "path": "evidence-management/wip25-preparation/root-historical-source-attestation-v1.json",
+    "root": "W",
+    "sha256": "467931ab5a83edb8c90197910bca894316cf161f21af6e9bef73c3f26c72734e"
+  },
+  "named_closure": {
+    "bytes": 511141,
+    "path": "evidence-management/wip25-preparation/named-closure-v3/NAMED-CLOSURE-v3.json",
+    "root": "W",
+    "sha256": "6a10d25d0f3ace302e346417ba49b1e03462ba84797c0b2b96687e0fd862b98a"
+  },
+  "named_fixture_closure": {
+    "bytes": 20658621,
+    "path": "evidence-management/wip25-preparation/NAMED-FIXTURE-CLOSURE-v1.json",
+    "root": "W",
+    "sha256": "f8ab54eea6baf3cab9a9404412c6682745359fca23eb71b2ed686ee8b7eeff11"
+  },
+  "required_next": [
+    "PAUSED at user request; no further implementation/runtime until explicit resume.",
+    "Three R148 parent lineage failures overlap prior18 G3/G4 obligations; PacketF/C3/full owner rerun remain.",
+    "Full RNG/device/child inventory and designated outer-completion consumers remain required.",
+    "P2 current repair GREEN/repin/bootstrap UNRUN; old invocation/P4 pins d91d remain. P4 new-wire/full-chain/hardware unqualified.",
+    "Actual server access/ancestry/topology unavailable; real CUDA UNRUN. Globalmypy12FAIL/full/default/coverage>=70/slow/learning/B6/finalBAC review/finalremoteCI remain.",
+    "Six unique historical helper bodies are unavailable (44 preserved references): P2 source22b27/e944, tests57cf/f40f, P4tests7a598/d746. Explicit reproducibility limitation; no reconstruction/current-byte substitution."
+  ],
+  "root_document_approval": {
+    "bytes": 2858,
+    "path": "evidence-management/wip25-preparation/ROOT-DOCUMENT-REVIEW-v1.json",
+    "root": "W",
+    "sha256": "bb0ab3476833de0934e1bd6508ff521a4231dad965674e8fe371408dffc87a58"
+  },
+  "scope": "Final finite R146-R148 pause; no package closure",
+  "status": "ROOT FROZEN FOR INDEPENDENT TERMINAL PUBLICATION REVIEW",
+  "supplemental_status_boundaries": {
+    "bytes": 1648,
+    "path": "evidence-management/wip25-preparation/packet-v2/SUPPLEMENTAL-STATUS-BOUNDARIES-v1.json",
+    "root": "W",
+    "sha256": "4e7f2be0c911e4a0b865ebc89672a624c21335089b10804d1fe07caf35e3a49e"
+  }
+}

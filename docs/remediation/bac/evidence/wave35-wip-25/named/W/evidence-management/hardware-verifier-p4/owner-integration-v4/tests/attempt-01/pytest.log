@@ -1,0 +1,22 @@
+FFFFFFFFF....                                                            [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1712: TypeError: 'NoneType' object is not subscriptable
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1712: TypeError: list indices must be integers or slices, not str
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1715: TypeError: unsupported operand type(s) for +: 'NoneType' and 'list'
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1757: TypeError: 'NoneType' object is not subscriptable
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1772: TypeError: 'NoneType' object is not subscriptable
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1772: TypeError: list indices must be integers or slices, not str
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1711: KeyError: 'context'
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1715: KeyError: 'owner_claim'
+/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:1715: KeyError: 'sampler'
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_virtual_malformed_child_graph_has_typed_refusal[child-start-raw.json-context-None]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_malformed_child_graph_has_typed_refusal[child-start-raw.json-context-replacement1]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_malformed_child_graph_has_typed_refusal[child-start-raw.json-owner_claim-None]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_malformed_child_graph_has_typed_refusal[child-start.json-debug-None]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_malformed_child_graph_has_typed_refusal[replay-result-replay_poison.json-acknowledgement-None]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_malformed_child_graph_has_typed_refusal[replay-result-replay_poison.json-acknowledgement-replacement5]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_missing_child_graph_field_has_typed_refusal[context]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_missing_child_graph_field_has_typed_refusal[owner_claim]
+FAILED test_verify_bac_hardware_v1.py::test_virtual_missing_child_graph_field_has_typed_refusal[sampler]
+9 failed, 4 passed, 172 deselected in 2.07s

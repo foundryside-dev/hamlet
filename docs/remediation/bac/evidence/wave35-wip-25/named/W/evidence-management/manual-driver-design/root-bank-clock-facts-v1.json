@@ -1,0 +1,23 @@
+{
+  "schema": "bac-manual-bank-clock-root-source-facts-v1",
+  "owner": "/root",
+  "sources": [
+    {
+      "path": "src/townlet/exploration/scoped_curiosity.py",
+      "sha256": "110d640bdb607fd58d6e991dba49da2cc5236f169cc4c1db45627db6b8082f7c"
+    },
+    {
+      "path": "src/townlet/environment/vectorized_env.py",
+      "sha256": "aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22"
+    }
+  ],
+  "method": "Root inspected exact current BANK prepare_step_stamp/_auth/_context and ENV accepted validator; static facts only, not new execution.",
+  "facts": [
+    "BANK prepare_step_stamp requires actual available BANK, authentic current accepted identity, exact accepted row order, exact nonnegative int vector_tick, bool strided mask of roster length on BANK device, and no disposed cursor.",
+    "First reservation permits any nonnegative vector_tick. Same pending tick and equal active mask returns its existing stamp. Different preparation requires pending serviced and strictly greater tick. There is no +1 or ENV global_tick equality in this operation.",
+    "Mask values are caller-supplied. Eligible sequence advances only active rows. No ENV dones/activity comparison occurs in prepare_step_stamp; _auth calls the supplied accepted validator then requires BANK accepted object identity. With these fixtures validator is real ENV accepted identity validation, separately source-qualified.",
+    "All-false and B-only masks satisfy prepare geometry; later _context/score/service still enforce full event/currentness/eligible-sequence/geometry/content/cache rules. Shared requires current stamp, per_world expired retry requires some eligible row and matching cached event/content. All-false expired reservation refuses. Do not infer arbitrary disposed/future/changed events are legal.",
+    "_context requires descriptor observation width, float32 selected profile/device and bounded action IDs, stamp/context eligibility agreement and matching current tick. Independent synthetic descriptor3/action2 does not become a compiled ENV observation."
+  ],
+  "boundary": "These facts support separate standalone BANK clocks/masks while actual ENV physical counts and completion participation remain genuine independent duties. They do not permit fabricated ENV/POP authority, double service, changed parent receipts or a claimed new runtime pass."
+}

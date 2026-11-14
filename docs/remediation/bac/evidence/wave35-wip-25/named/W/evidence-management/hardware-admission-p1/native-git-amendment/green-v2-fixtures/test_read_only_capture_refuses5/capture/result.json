@@ -1,0 +1,13 @@
+{
+  "admission": {
+    "bytes": 13147,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/admission.json",
+    "sha256": "e7f269601d00c3fd16ffa3c4c125e8a543766afae86aad9a6993f0475a135888"
+  },
+  "disposition": "refused",
+  "reasons": [
+    "capture output exceeds declared retained overhead bytes/inodes"
+  ],
+  "schema": "bac-hardware-capture-result-v1",
+  "spec": null
+}

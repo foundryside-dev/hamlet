@@ -1,0 +1,30 @@
+{
+  "schema": "bac-p1-ascii-resource-consumer-delta-v1",
+  "status": "FROZEN FOR REVIEW; REQUIRES ROOT ADOPTION BEFORE REPIN",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+    "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7",
+    "bytes": 64708
+  },
+  "prior_capture_custody_capsule": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/capture-consumer-custody-capsule-v2.json",
+    "sha256": "b79532047f10410aeb7c5c2fe6a6f60ae473d84239d225cd59061e2561b94c96",
+    "bytes": 26904
+  },
+  "semantics": "All prior closed fieldsets, bootstrap bytes, source/discovery/terminal/native-Git custody and resource arithmetic remain unchanged. On root adoption, consumers must bind this source digest and apply the exact ASCII resource grammar below; no current consumer pass is claimed.",
+  "numeric_scope": [
+    "raw cgroup cpu_max, including quota and period tokens",
+    "raw cgroup cpuset",
+    "raw cgroup memory_max finite numeric value or literal max",
+    "raw cgroup memory_current",
+    "MemTotal/MemAvailable numeric tokens and parsed separator grammar"
+  ],
+  "grammar": "Cgroup resource strings must be ASCII at parsing boundaries. Decimal tokens use ASCII digits0-9; cpuset uses ASCII decimal endpoints with existing comma/hyphen/range/duplicate checks. cpu.max retains existing two-token grammar and literal max; memory.max retains literal max. MemTotal/MemAvailable regex interpretation uses re.ASCII so numeric and whitespace classes cannot recognize non-ASCII substitutes. Existing ASCII stripping, limits, host-memory consistency and budget arithmetic unchanged.",
+  "boundaries": [
+    "cpuset",
+    "assess_resources numeric/cpu.max/meminfo parsing",
+    "discovery_preflight cpu.max/cpuset/memory/meminfo parsing"
+  ],
+  "preserved": "Legitimate Unicode filesystem paths remain accepted. No changes to general path, timestamp, CUDA/driver/PID grammar, interpreter context, P0 API, native Git command wire, bootstrap or consumers.",
+  "source_changes": "11 resource-boundary expressions, no added source lines. Source/tests AST PASS; no broad formatter pass over pre-existing compressed style."
+}

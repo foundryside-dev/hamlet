@@ -1,0 +1,43 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_native_git_cpu_collection_uses_native_probe_instead_of_distribution ___
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v2-fixtures/test_native_git_cpu_collection0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f0e6746ce90>
+
+    def test_native_git_cpu_collection_uses_native_probe_instead_of_distribution(tmp_path, monkeypatch):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch)
+        monkeypatch.setenv("TMPDIR", str(tmp_path))
+        monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "")
+        monkeypatch.setattr(tool, "read_kernel", lambda path: "unsupported synthetic kernel data")
+        monkeypatch.setattr(tool, "kernel_pids", lambda: [])
+        req = dict(request(), scratch_root=str(tmp_path))
+>       obs = tool.collect_discovery(req, {"dependencies": [dependency]}, None)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:862: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:359: in collect_discovery
+    "dependencies": observe(lambda: dependency_observations(environment), "dependency origin/version") or []}
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:343: in observe
+    return call()
+           ^^^^^^
+capture_bac_hardware_v1.py:359: in <lambda>
+    "dependencies": observe(lambda: dependency_observations(environment), "dependency origin/version") or []}
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:328: in dependency_observations
+    dist = metadata.distribution(dependency["name"])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'git'
+
+>   monkeypatch.setattr(tool.metadata, "distribution", lambda name: pytest.fail("native Git was treated as a Python distribution"))
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: native Git was treated as a Python distribution
+
+test_capture_bac_hardware_v1.py:781: Failed
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_native_git_cpu_collection_uses_native_probe_instead_of_distribution
+1 failed, 116 deselected in 0.64s

@@ -1,0 +1,316 @@
+{
+  "admitted_budget": {
+    "cpu_slots": 2,
+    "ram_bytes": 550,
+    "scratch_bytes": 999949,
+    "scratch_inodes": 78
+  },
+  "affinity": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "at": "2026-11-14T12:10:21.531916Z",
+  "cgroups": [
+    {
+      "cpu_period_us": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": 100000
+      },
+      "cpu_quota_us": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "cpu.max is max",
+        "state": "unlimited",
+        "value": null
+      },
+      "cpuset": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "memory_limit_bytes": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "memory.max is max",
+        "state": "unlimited",
+        "value": null
+      },
+      "path": "/inert/cgroup"
+    },
+    {
+      "cpu_period_us": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": 100000
+      },
+      "cpu_quota_us": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": 350000
+      },
+      "cpuset": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "memory_limit_bytes": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": 2000
+      },
+      "path": "/inert/cgroup/parent"
+    },
+    {
+      "cpu_period_us": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": 100000
+      },
+      "cpu_quota_us": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "cpu.max is max",
+        "state": "unlimited",
+        "value": null
+      },
+      "cpuset": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "memory_limit_bytes": {
+        "provenance": {
+          "bytes": 2141,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+          "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+        },
+        "reason": "",
+        "state": "measured",
+        "value": 1000
+      },
+      "path": "/inert/cgroup/parent/leaf"
+    }
+  ],
+  "competing_workloads": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": []
+  },
+  "cpu_topology": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": "synthetic"
+  },
+  "devices": [],
+  "discovery_process": {
+    "bytes": 40,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery-command.json",
+    "sha256": "3f77f17b6ac0db63aad6467fe6b39dec792d3c2485832827c0ef20f1a7da1cae"
+  },
+  "disposition": "refused",
+  "effective_cpu_capacity": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": 3.5
+  },
+  "effective_visibility": "",
+  "environment": {
+    "bytes": 2198,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/environment.json",
+    "sha256": "04deae4fc59026640c197d9a89509f7e1647042fe73c132ee07cefaf3dc0023a"
+  },
+  "gpu_topology": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "gpu_topology not observed",
+    "state": "unsupported",
+    "value": null
+  },
+  "host_ram_bytes": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": 4096
+  },
+  "kind": "admission",
+  "limited_ram_bytes": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": 1000
+  },
+  "minimum": {
+    "cpu_slots": 1,
+    "ram_bytes": 200,
+    "scratch_bytes": 100,
+    "scratch_inodes": 1
+  },
+  "numa_topology": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": "synthetic"
+  },
+  "probe_errors": [],
+  "profile": "cpu",
+  "ram_current_bytes": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": 200
+  },
+  "reasons": [
+    "capture output exceeds declared retained overhead bytes/inodes"
+  ],
+  "request": {
+    "bytes": 8544,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/request.json",
+    "sha256": "0ccc20bc7b840fd06fee4eb8b1d224b4085797485944f8f1233247f92a5060c2"
+  },
+  "requested_visibility": "",
+  "reserve": {
+    "cpu_slots": 0,
+    "ram_bytes": 100,
+    "scratch_bytes": 50,
+    "scratch_inodes": 2
+  },
+  "schema": "bac-hardware-v1",
+  "scratch_free_bytes": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": 1000000
+  },
+  "scratch_free_inodes": {
+    "provenance": {
+      "bytes": 2141,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/capture/discovery.json",
+      "sha256": "2dc087aa541e9c1114e144eaee23ca47d431ef66b2e5c271c7471d9069de3e1f"
+    },
+    "reason": "",
+    "state": "measured",
+    "value": 100
+  },
+  "tmpdir": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/green-v2-fixtures/test_read_only_capture_refuses5/scratch"
+}

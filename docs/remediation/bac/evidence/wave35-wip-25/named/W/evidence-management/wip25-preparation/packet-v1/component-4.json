@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "identity_scope": "Checkpoint inclusion anchor only; tooling/design original source identities and status remain in actual records. Not R148 APP execution.",
+  "input": {
+    "bytes": 2623,
+    "path": "evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/root-adoption-v1.json",
+    "root": "W",
+    "sha256": "13ad8983721f8daec548d26e9c106dddd58a4f7b4b2b0b2fb35ced2f7b03b5ec"
+  },
+  "status": "BOUNDED P1 ASCII08 adopted; no actual hardware"
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "bac-p2-current-p1-plan-independent-review-addendum-v1",
+  "disposition": "CHANGES_REQUIRED",
+  "base_record": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-plan-independent-review-v1/review.json",
+    "sha256": "3e633eb5b4d77156f7fa286bb3348c00b57acab7dbd55356be9ff1138320c95a",
+    "bytes": 2061
+  },
+  "base_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-plan-independent-review-v1/review.md",
+    "sha256": "3a193ca5bb38ae6039616f801bf6410cd77c33a702de21edb04e9ebccbb28f07",
+    "bytes": 12168
+  },
+  "binding_addendum": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-plan-independent-review-v1/creation-observation-addendum.md",
+    "sha256": "a199f5a0b4ddbd4686ed3018d3255930761c453eb3738f742d6c6e62a8f22ef1",
+    "bytes": 1912
+  },
+  "reason": "Avoid incompatible D precreation and invented exact creation timestamp; explicit post-wait observation preserves root-orchestration assurance boundary."
+}

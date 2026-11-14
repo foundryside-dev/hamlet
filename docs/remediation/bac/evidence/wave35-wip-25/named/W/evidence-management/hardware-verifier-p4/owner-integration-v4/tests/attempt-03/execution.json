@@ -1,0 +1,74 @@
+{
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-03/basetemp"
+  ],
+  "pid": 241872,
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "start": "2026-11-14T12:59:35.599775+00:00",
+  "end": "2026-11-14T13:00:57.957022+00:00",
+  "elapsed_ns": 82357300379,
+  "exit_code": 0,
+  "source_before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "sha256": "e30ecccf5b94e9b2f24069f23212c1f52e839ccb3dabb8fed0139de3809703e7",
+      "bytes": 140445
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "sha256": "ba23fefcb3e13ac2715632962d8468493b6b4d7451c11a8f63aecf8a06501c2e",
+      "bytes": 117043
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c",
+      "bytes": 79319
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+      "bytes": 64451
+    }
+  ],
+  "source_after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "sha256": "e30ecccf5b94e9b2f24069f23212c1f52e839ccb3dabb8fed0139de3809703e7",
+      "bytes": 140445
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "sha256": "ba23fefcb3e13ac2715632962d8468493b6b4d7451c11a8f63aecf8a06501c2e",
+      "bytes": 117043
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c",
+      "bytes": 79319
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+      "bytes": 64451
+    }
+  ],
+  "stable_sources": true,
+  "scope": "pure inert full suite after capture joins; no qualification"
+}

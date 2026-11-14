@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-14T13:33:37.751147+00:00",
+  "status": "PASS unchanged exact auxiliary source and actual fork child/wait joins",
+  "preflight_sha256": "6fc32054110cf285ddb852cd9e3a7ce65536d4fa12f2154ed0268f99d5d1f37d",
+  "auxiliary": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v2.py",
+      "bytes": 9035,
+      "sha256": "9d970655cf171c4f7c88c23352ab0170764cdb8fb5e2fa08b7389a16c54c1837"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v2.py.txt",
+      "bytes": 9035,
+      "sha256": "9d970655cf171c4f7c88c23352ab0170764cdb8fb5e2fa08b7389a16c54c1837"
+    }
+  ]
+}

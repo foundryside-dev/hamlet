@@ -1,0 +1,200 @@
+"""Independent Packet M probes. Root owns execution and PID/source custody."""
+import copy
+import json
+import hashlib
+import types
+import sys
+from pathlib import Path
+import os
+import select
+import signal
+
+import pytest
+
+from tests.test_townlet.regressions.bac.test_manual_physical_session import (
+    Rig, actions, advance, bind, compiled, policy,
+)
+from townlet.environment.manual_physical import ManualPhysicalSession
+
+
+def stable_code_value(value):
+    """Encode actual in-memory code without marshal reference/interning state."""
+    if isinstance(value, types.CodeType):
+        fields = ("co_code", "co_consts", "co_names", "co_varnames", "co_freevars", "co_cellvars",
+                  "co_argcount", "co_posonlyargcount", "co_kwonlyargcount", "co_nlocals",
+                  "co_stacksize", "co_flags", "co_name", "co_qualname", "co_filename",
+                  "co_firstlineno", "co_linetable", "co_exceptiontable")
+        return {"type": "code", "fields": {name: stable_code_value(getattr(value, name)) for name in fields}}
+    if value is None or type(value) in (bool, int, str):
+        return {"type": type(value).__name__, "value": value}
+    if type(value) is bytes:
+        return {"type": "bytes", "hex": value.hex()}
+    if type(value) is tuple:
+        return {"type": "tuple", "items": [stable_code_value(item) for item in value]}
+    if type(value) is float:
+        return {"type": "float", "hex": value.hex()}
+    if type(value) is frozenset:
+        items = [stable_code_value(item) for item in value]
+        return {"type": "frozenset", "items": sorted(items, key=lambda item: json.dumps(item, sort_keys=True))}
+    raise TypeError(f"unsupported in-memory code constant type: {type(value).__name__}")
+
+
+def code_sha(code):
+    encoded = json.dumps(stable_code_value(code), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def make(compiled):
+    rig = Rig(compiled, policy(compiled, "none", "shared", "paced_fifo"))
+    session = bind(rig)
+    rig.begin(0)
+    return rig, session
+
+
+def test_real_fork_session_refuses_before_env_entry(compiled, monkeypatch):
+    rig, session = make(compiled)
+    chosen = actions(rig)
+    entered = []
+    original = rig.env._step_manual
+
+    def observe(**kwargs):
+        entered.append(True)
+        return original(**kwargs)
+
+    monkeypatch.setattr(rig.env, "_step_manual", observe)
+    read_fd, write_fd = os.pipe()
+    parent_pid = os.getpid()
+    child_pid = os.fork()
+    if child_pid == 0:
+        os.close(read_fd)
+        module = sys.modules[ManualPhysicalSession.__module__]
+        module_path = Path(module.__file__).resolve()
+        report = {
+            "pid": os.getpid(), "ppid": os.getppid(), "issuer_pid": parent_pid,
+            "start_token": Path("/proc/self/stat").read_text().rsplit(")", 1)[1].split()[19],
+            "module_origin": str(module_path),
+            "module_sha256": hashlib.sha256(module_path.read_bytes()).hexdigest(),
+            "check_code_sha256": code_sha(ManualPhysicalSession._check.__code__),
+        }
+        try:
+            session.step(accepted=rig.accepted, actions=chosen, depletion_multiplier=1.0)
+            report["refused"] = False
+        except ValueError as error:
+            report.update(refused=True, error=str(error), entered=entered)
+        except BaseException as error:
+            report.update(refused=False, error=repr(error))
+        os.write(write_fd, json.dumps(report).encode())
+        os.close(write_fd)
+        os._exit(0)
+    os.close(write_fd)
+    try:
+        readable, _, _ = select.select([read_fd], [], [], 10)
+        if not readable:
+            os.kill(child_pid, signal.SIGKILL)
+        assert readable, "child must refuse without inherited-lock wait"
+        report = json.loads(os.read(read_fd, 16384))
+        print("ACTUAL_FORK_WITNESS=" + json.dumps(report, sort_keys=True), flush=True)
+        assert report["pid"] == child_pid != parent_pid
+        assert report["ppid"] == parent_pid == report["issuer_pid"]
+        assert report["refused"] and report["entered"] == []
+        assert report["start_token"].isdigit()
+        assert report["module_origin"] == str(Path(sys.modules[ManualPhysicalSession.__module__].__file__).resolve())
+        assert report["module_sha256"] == hashlib.sha256(Path(report["module_origin"]).read_bytes()).hexdigest()
+        assert report["check_code_sha256"] == code_sha(ManualPhysicalSession._check.__code__)
+        assert "issuing process and thread" in report["error"]
+    finally:
+        os.close(read_fd)
+        waited, status = os.waitpid(child_pid, 0)
+        print("ACTUAL_FORK_WAIT=" + json.dumps({"parent_pid": parent_pid, "child_pid": child_pid,
+              "waited_pid": waited, "raw_status": status, "exit_code": os.waitstatus_to_exitcode(status)}, sort_keys=True), flush=True)
+    assert waited == child_pid and os.waitstatus_to_exitcode(status) == 0
+    assert rig.env.global_tick == 0 and entered == []
+    assert advance(rig, session).physical_tick == 1
+
+
+def test_copied_consumed_and_cross_session_decision_refuse(compiled, monkeypatch):
+    rig, session = make(compiled)
+    other, other_session = make(compiled)
+    original = ManualPhysicalSession._claim
+    captured = []
+
+    def observe(self, decision, accepted, predecessor, chosen, active, tick):
+        with pytest.raises(ValueError):
+            original(self, copy.copy(decision), accepted, predecessor, chosen, active, tick)
+        with pytest.raises(ValueError):
+            original(other_session, decision, other.accepted, predecessor, chosen, active, tick)
+        original(self, decision, accepted, predecessor, chosen, active, tick)
+        with pytest.raises(ValueError):
+            original(self, decision, accepted, predecessor, chosen, active, tick)
+        captured.append(decision)
+
+    monkeypatch.setattr(ManualPhysicalSession, "_claim", observe)
+    result = advance(rig, session)
+    assert result.physical_tick == 1 and len(captured) == 1
+    assert rig.env.step_counts.tolist() == [1, 1]
+    assert other.env.step_counts.tolist() == [0, 0]
+    chosen = actions(rig)
+    with pytest.raises(ValueError):
+        original(session, captured[0], rig.accepted, result.observations, chosen, ~rig.env.dones, 2)
+    assert advance(rig, session).physical_tick == 2
+
+
+def test_prepared_record_failure_preserves_primary_and_healthy_retry(compiled, monkeypatch):
+    rig, session = make(compiled)
+    primary = MemoryError("independent prepared decision allocation failure")
+    original = rig.env._record
+
+    def fail(kind, payload):
+        if kind == "manual_physical_decision":
+            raise primary
+        return original(kind, payload)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(rig.env, "_record", fail)
+        with pytest.raises(MemoryError) as caught:
+            advance(rig, session)
+    assert caught.value is primary
+    assert session._pending is None and not session._busy and not session._failed
+    assert rig.env.world_phase == "active"
+    assert rig.env.global_tick == 0 and rig.env.step_counts.tolist() == [0, 0]
+    assert advance(rig, session).physical_tick == 1
+
+
+def test_retirement_cancellation_failure_preserves_primary_and_quarantines(compiled, monkeypatch):
+    rig, session = make(compiled)
+    advance(rig, session)
+    primary = RuntimeError("independent retirement cancellation failure")
+    original = rig.env._cancel_terminal_effects
+    reached = []
+
+    def fail(retired):
+        original(retired)
+        reached.append(retired.tolist())
+        raise primary
+
+    monkeypatch.setattr(rig.env, "_cancel_terminal_effects", fail)
+    with pytest.raises(RuntimeError) as caught:
+        session.retire(accepted=rig.accepted, world_ids=("B",), reason="cap")
+    assert caught.value is primary and reached == [[False, True]]
+    assert rig.env.world_phase == "quarantined"
+    abandonment = rig.env._world_equal["abandonment"]
+    rig.env._valid_record(abandonment, "abandonment")
+    assert abandonment.accepted is rig.accepted and abandonment.reason == "runtime_failure"
+    assert session._failed and session._failure[0] == "entered-physical"
+    assert rig.env.global_tick == 1 and rig.env.step_counts.tolist() == [1, 1]
+    with pytest.raises(ValueError):
+        session.step(accepted=rig.accepted, actions=actions(rig), depletion_multiplier=1.0)
+    with pytest.raises(ValueError):
+        session.retire(accepted=rig.accepted, world_ids=("A",), reason="cap")
+
+
+def test_retirement_receipt_copy_has_no_authority(compiled):
+    rig, session = make(compiled)
+    advance(rig, session)
+    receipt = session.retire(accepted=rig.accepted, world_ids=("B",), reason="cap")
+    rig.env._valid_record(receipt, "manual_physical_retirement")
+    with pytest.raises(ValueError):
+        rig.env._valid_record(copy.copy(receipt), "manual_physical_retirement")
+    receipt.step_counts.fill_(900)
+    assert receipt.step_counts.tolist() == [1, 1]
+    assert advance(rig, session).info["step_counts"].tolist() == [2, 1]

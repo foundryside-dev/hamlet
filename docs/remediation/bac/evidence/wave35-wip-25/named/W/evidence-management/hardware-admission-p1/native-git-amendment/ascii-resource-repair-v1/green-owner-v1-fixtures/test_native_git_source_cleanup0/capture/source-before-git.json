@@ -1,0 +1,50 @@
+[
+  {
+    "argv": [
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_native_git_source_cleanup0/inert-evidence",
+      "--no-optional-locks",
+      "-c",
+      "core.fsmonitor=false",
+      "-c",
+      "core.pager=cat",
+      "-C",
+      "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_native_git_source_cleanup0/source",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_native_git_source_cleanup0/source",
+    "end": "2026-11-14T13:36:21.334199Z",
+    "environment": {
+      "GIT_CONFIG_GLOBAL": "/dev/null",
+      "GIT_CONFIG_NOSYSTEM": "1",
+      "LC_ALL": "C",
+      "PATH": "/usr/bin:/bin"
+    },
+    "errors": [
+      "Git query interrupted: TimeoutExpired",
+      "Git cleanup incomplete; reap/EOF not established: TimeoutExpired: Command 'stub Git' timed out after 30 seconds"
+    ],
+    "executable": {
+      "bytes": 14,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_native_git_source_cleanup0/inert-evidence",
+      "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+    },
+    "executable_after": {
+      "bytes": 14,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/green-owner-v1-fixtures/test_native_git_source_cleanup0/inert-evidence",
+      "sha256": "5b33d99175fd9bc3407df2ab5506e6895fe6b31c8252bb3f43f8437da2a468fd"
+    },
+    "exit_code": -9,
+    "identity": {
+      "boot_id": "inert-boot",
+      "host": "synthetic",
+      "pid": 4321,
+      "ppid": 246343,
+      "start_identity": "55"
+    },
+    "schema": "bac-hardware-git-command-v1",
+    "start": "2026-11-14T13:36:21.334089Z",
+    "stderr": "partial-error",
+    "stdout": "partial"
+  }
+]

@@ -1,0 +1,123 @@
+........................................................................ [ 18%]
+........................................................................ [ 37%]
+.....................................................F.F................ [ 56%]
+........................................................................ [ 75%]
+........................FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF.FFFFFFF... [ 93%]
+............FFFFFFFFFFF                                                  [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1284: AssertionError: (b'', b'Traceback (most recent call last):
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:1319: AssertionError: (b'', b'Traceback (most recent call last):
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py:2507: AttributeError: 'Custody' object has no attribute 'git_ref'
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_public_signal_reaps_job_before_allocation_can_reopen
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_direct_controller_retains_leases_after_runner_sigkill
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_valid_pair
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[extra]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[phase]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[identity]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[launch]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[policy]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[negative]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[bool]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[lock-order]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[command-order]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[command-exit]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[command-unreaped]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[command-pid]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[command-argv]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[command-truncated]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[command-extra]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[cumulative]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[emission-before-source]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[emission-module]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[raw-module]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[guard-debug]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_transport_resealed_mutations[guard-anomaly]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-spawn-start.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-spawn-end.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-emission-spawn-start.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-emission-spawn-end.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-spawn-start-0.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-spawn-end-1.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-spawn-start-0.stdout]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[sampler-spawn-end-1.stderr]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[process-spawn-observation-end.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot[source-spawn-end.json]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[emission-raw]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[emission-process]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[emission-sampler]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[emission-extra]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[emission-bool]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[diagnostic-changed]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[head-mismatch]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[stdout-overflow]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[stderr-overflow]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[source-phase-path]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[source-UTC]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_emission_and_source_correspondence[cumulative-whole-call]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_prepared_input_cap_refuses
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[valid]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[wait-inclusive]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[sequential-pid-reuse]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[diagnostic-exit-bool]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[diagnostic-truncation-int]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[diagnostic-nested-bytes-float]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[sampler-after-wait]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[emission-after-wait]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[first-git-is-guard]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_owner_sampler_review_correspondence_gaps[second-git-is-guard]
+57 failed, 326 passed, 11 deselected in 51.69s

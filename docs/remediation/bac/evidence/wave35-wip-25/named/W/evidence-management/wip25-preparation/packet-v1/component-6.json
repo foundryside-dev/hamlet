@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "identity_scope": "Checkpoint inclusion anchor only; tooling/design original source identities and status remain in actual records. Not R148 APP execution.",
+  "input": {
+    "bytes": 1224,
+    "path": "evidence-management/hardware-verifier-p4/owner-integration-v4/root-review-repair-adoption-v1.json",
+    "root": "W",
+    "sha256": "c72dc475a0ca2df5b1c37126dd389c955874981455b82307eacc2b182a6fd697"
+  },
+  "status": "BOUNDED P4 041 adopted against old P1d91d only"
+}

@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-14T13:08:30.404929+00:00",
+  "scope": "Root static facts only; no new runtime qualification",
+  "facts": [
+    "registry.get(variable_id,reader) validates actor/access and returns value.clone(). is_digesting authoredagentboolinitialfalse readable_byengine/agent writable_byengine. Use env.vfs_registry.get(\"is_digesting\",reader=\"engine\").",
+    "env.get_action_label_names() returns copied dict int->labels. Model_pack authored WAIT enabled. Resolve unique label WAIT and validate current legal mask, never hardcode lane/action index."
+  ],
+  "sources": [
+    {
+      "path": "src/townlet/vfs/registry.py",
+      "sha256": "8e9da37fb2df6308b7e0a65ec5898437e5151159a8377948607e8e58bc35d884",
+      "bytes": 44060
+    },
+    {
+      "path": "src/townlet/environment/vectorized_env.py",
+      "sha256": "a517aa49c0bd76ae17c3d6bb3ae7b81e3f48e73a59cdd0cdb4d433424dd8be5a",
+      "bytes": 155117
+    },
+    {
+      "path": "configs/reference/model_pack/variables.yaml",
+      "sha256": "80ba82fea3b6205fe6b606925481930d89cc620017e1a550b083473ae7782fd6",
+      "bytes": 1414
+    },
+    {
+      "path": "configs/reference/model_pack/actions.yaml",
+      "sha256": "11cf7da67f3e824f45a743794a9bf4f6d3eaa2229b2b6603ab6e623b8a1f6c45",
+      "bytes": 195
+    }
+  ]
+}

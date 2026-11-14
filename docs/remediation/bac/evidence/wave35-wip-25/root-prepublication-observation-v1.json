@@ -1,0 +1,16 @@
+{
+  "observed_at_utc": "2026-11-14T13:56:29.866241+00:00",
+  "existing_branch": "project-recovery-bac-2026-11-01",
+  "remote_sha": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "command": [
+    "git",
+    "ls-remote",
+    "origin",
+    "refs/heads/project-recovery-bac-2026-11-01"
+  ],
+  "result": "exact SHA matched; exit0",
+  "initial_sandbox_attempt": "network proxy connection refused; retry with approved network access succeeded",
+  "registered_worktrees": 14,
+  "new_branch_or_worktree_created": false,
+  "qualification_processes": "No pytest, locked BAC or observed-spec processes active at close; only final metadata/review/publication work continues."
+}

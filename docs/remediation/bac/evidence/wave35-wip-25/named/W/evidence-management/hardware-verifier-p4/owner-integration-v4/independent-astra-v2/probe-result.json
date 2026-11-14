@@ -1,0 +1,548 @@
+{
+  "affinity": [
+    0
+  ],
+  "cases": [
+    {
+      "accepted": true,
+      "allocation": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "custody": "satisfied",
+      "expected_acceptance": true,
+      "label": "valid independently measured exact allocated bytes and inode boundary",
+      "observed_footprint": {
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "passed": true,
+      "retained_footprint": {
+        "allocation": {
+          "bytes": 786,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/allocation.json",
+          "sha256": "7f853e1e8a5ec56795c6cdbc00bd01897604b8d5f0d3ea1bbdccb0791475a584"
+        },
+        "end": "2026-11-14T13:32:07.710361Z",
+        "final": {
+          "allocated_bytes": 77824,
+          "directory": {
+            "allocated_bytes": 4096,
+            "ctime_ns": 1794663126913690719,
+            "device": 27,
+            "inode": 96305,
+            "links": 2,
+            "mode": 16832,
+            "mtime_ns": 1794663126913690719,
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture",
+            "size": 4096
+          },
+          "files": [
+            {
+              "allocated_bytes": 12288,
+              "ctime_ns": 1794663127318988231,
+              "device": 27,
+              "inode": 96334,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127318988231,
+              "reference": {
+                "bytes": 9118,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/admission.json",
+                "sha256": "f8809449f9d0ee384eab457b07dbd731695b05ceeb60d228923716a5e1bfb275"
+              },
+              "size": 9118
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127302810160,
+              "device": 27,
+              "inode": 96328,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127302810160,
+              "reference": {
+                "bytes": 6856,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/discovery-command.json",
+                "sha256": "501c998812118cd9d9a1e97837ee4f59a3136b433b1a912e01da8fc37a56b0e8"
+              },
+              "size": 6856
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127303465234,
+              "device": 27,
+              "inode": 96327,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127303465234,
+              "reference": {
+                "bytes": 4264,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/discovery.json",
+                "sha256": "ec229da1be3a404f101828c6c82460cf324581314cae8444bacd16ca718d9dde"
+              },
+              "size": 4264
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127364545406,
+              "device": 27,
+              "inode": 96336,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127364545406,
+              "reference": {
+                "bytes": 705,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/result.json",
+                "sha256": "15ebbedc13e269a6dcfa149d1c90849c5e76d4dc44d5f1edf4891cc05966d7f8"
+              },
+              "size": 705
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127304002308,
+              "device": 27,
+              "inode": 96332,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304002308,
+              "reference": {
+                "bytes": 5426,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-after-git.json",
+                "sha256": "3326d8d9ca5b6e5861c089a68846501f541896874b22ea49b495ec6b89d649e6"
+              },
+              "size": 5426
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127304266317,
+              "device": 27,
+              "inode": 96333,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304266317,
+              "reference": {
+                "bytes": 2393,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-after.json",
+                "sha256": "b0bdb613d5e71482750e98014ed85b7c79428c8c8243d21112449eb5e5fa8fc4"
+              },
+              "size": 2393
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127304519009,
+              "device": 27,
+              "inode": 96330,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304519009,
+              "reference": {
+                "bytes": 5426,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-before-git.json",
+                "sha256": "3326d8d9ca5b6e5861c089a68846501f541896874b22ea49b495ec6b89d649e6"
+              },
+              "size": 5426
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127304734467,
+              "device": 27,
+              "inode": 96331,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304734467,
+              "reference": {
+                "bytes": 2393,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-before.json",
+                "sha256": "b0bdb613d5e71482750e98014ed85b7c79428c8c8243d21112449eb5e5fa8fc4"
+              },
+              "size": 2393
+            },
+            {
+              "allocated_bytes": 12288,
+              "ctime_ns": 1794663127324786727,
+              "device": 27,
+              "inode": 96335,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127324786727,
+              "reference": {
+                "bytes": 8630,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/spec.json",
+                "sha256": "5a73576d2907bb58545364004d4b5386b50c197243caf62f79473d3dcbf27647"
+              },
+              "size": 8630
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127305654501,
+              "device": 27,
+              "inode": 96329,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127305654501,
+              "reference": {
+                "bytes": 2589,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/start.json",
+                "sha256": "f8655a3e363bc13b352d6cf71904a9f1fc0ff47609efe2e5a13d693eef8e1efe"
+              },
+              "size": 2589
+            }
+          ],
+          "inodes": 11
+        },
+        "initial": {
+          "allocated_bytes": 77824,
+          "directory": {
+            "allocated_bytes": 4096,
+            "ctime_ns": 1794663126913690719,
+            "device": 27,
+            "inode": 96305,
+            "links": 2,
+            "mode": 16832,
+            "mtime_ns": 1794663126913690719,
+            "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture",
+            "size": 4096
+          },
+          "files": [
+            {
+              "allocated_bytes": 12288,
+              "ctime_ns": 1794663127318988231,
+              "device": 27,
+              "inode": 96334,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127318988231,
+              "reference": {
+                "bytes": 9118,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/admission.json",
+                "sha256": "f8809449f9d0ee384eab457b07dbd731695b05ceeb60d228923716a5e1bfb275"
+              },
+              "size": 9118
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127302810160,
+              "device": 27,
+              "inode": 96328,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127302810160,
+              "reference": {
+                "bytes": 6856,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/discovery-command.json",
+                "sha256": "501c998812118cd9d9a1e97837ee4f59a3136b433b1a912e01da8fc37a56b0e8"
+              },
+              "size": 6856
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127303465234,
+              "device": 27,
+              "inode": 96327,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127303465234,
+              "reference": {
+                "bytes": 4264,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/discovery.json",
+                "sha256": "ec229da1be3a404f101828c6c82460cf324581314cae8444bacd16ca718d9dde"
+              },
+              "size": 4264
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127364545406,
+              "device": 27,
+              "inode": 96336,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127364545406,
+              "reference": {
+                "bytes": 705,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/result.json",
+                "sha256": "15ebbedc13e269a6dcfa149d1c90849c5e76d4dc44d5f1edf4891cc05966d7f8"
+              },
+              "size": 705
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127304002308,
+              "device": 27,
+              "inode": 96332,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304002308,
+              "reference": {
+                "bytes": 5426,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-after-git.json",
+                "sha256": "3326d8d9ca5b6e5861c089a68846501f541896874b22ea49b495ec6b89d649e6"
+              },
+              "size": 5426
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127304266317,
+              "device": 27,
+              "inode": 96333,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304266317,
+              "reference": {
+                "bytes": 2393,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-after.json",
+                "sha256": "b0bdb613d5e71482750e98014ed85b7c79428c8c8243d21112449eb5e5fa8fc4"
+              },
+              "size": 2393
+            },
+            {
+              "allocated_bytes": 8192,
+              "ctime_ns": 1794663127304519009,
+              "device": 27,
+              "inode": 96330,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304519009,
+              "reference": {
+                "bytes": 5426,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-before-git.json",
+                "sha256": "3326d8d9ca5b6e5861c089a68846501f541896874b22ea49b495ec6b89d649e6"
+              },
+              "size": 5426
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127304734467,
+              "device": 27,
+              "inode": 96331,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127304734467,
+              "reference": {
+                "bytes": 2393,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/source-before.json",
+                "sha256": "b0bdb613d5e71482750e98014ed85b7c79428c8c8243d21112449eb5e5fa8fc4"
+              },
+              "size": 2393
+            },
+            {
+              "allocated_bytes": 12288,
+              "ctime_ns": 1794663127324786727,
+              "device": 27,
+              "inode": 96335,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127324786727,
+              "reference": {
+                "bytes": 8630,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/spec.json",
+                "sha256": "5a73576d2907bb58545364004d4b5386b50c197243caf62f79473d3dcbf27647"
+              },
+              "size": 8630
+            },
+            {
+              "allocated_bytes": 4096,
+              "ctime_ns": 1794663127305654501,
+              "device": 27,
+              "inode": 96329,
+              "links": 1,
+              "mode": 33152,
+              "mtime_ns": 1794663127305654501,
+              "reference": {
+                "bytes": 2589,
+                "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/start.json",
+                "sha256": "f8655a3e363bc13b352d6cf71904a9f1fc0ff47609efe2e5a13d693eef8e1efe"
+              },
+              "size": 2589
+            }
+          ],
+          "inodes": 11
+        },
+        "producer_prepublication": {
+          "reason": "P1 does not record its prepublication allocation/projection; these are retained verification cuts only",
+          "state": "unavailable",
+          "value": null
+        },
+        "schema": "bac-hardware-capture-footprint-v1",
+        "spec": {
+          "bytes": 8630,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5/capture/spec.json",
+          "sha256": "5a73576d2907bb58545364004d4b5386b50c197243caf62f79473d3dcbf27647"
+        },
+        "start": "2026-11-14T13:32:07.586415Z",
+        "validation_process": {
+          "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+          "host": "51d55c80f0b0",
+          "pid": 246137,
+          "ppid": 246132,
+          "start_identity": "14243694"
+        }
+      },
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-8e23h8w5",
+      "test_outcome": "successful"
+    },
+    {
+      "accepted": false,
+      "allocation": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 0,
+        "scratch_inodes": 11
+      },
+      "error": "capture retained allocated bytes exceed overhead",
+      "expected_acceptance": false,
+      "label": "scratch_bytes zero",
+      "observed_footprint": {
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "passed": true,
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-cjgfs6e7"
+    },
+    {
+      "accepted": false,
+      "allocation": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 77823,
+        "scratch_inodes": 11
+      },
+      "error": "capture retained allocated bytes exceed overhead",
+      "expected_acceptance": false,
+      "label": "scratch_bytes undersized",
+      "observed_footprint": {
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "passed": true,
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-srq5dw47"
+    },
+    {
+      "accepted": false,
+      "allocation": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 77824,
+        "scratch_inodes": 0
+      },
+      "error": "capture retained inodes including directory exceed overhead",
+      "expected_acceptance": false,
+      "label": "scratch_inodes zero",
+      "observed_footprint": {
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "passed": true,
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-vvalwnf7"
+    },
+    {
+      "accepted": false,
+      "allocation": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 77824,
+        "scratch_inodes": 10
+      },
+      "error": "capture retained inodes including directory exceed overhead",
+      "expected_acceptance": false,
+      "label": "scratch_inodes undersized",
+      "observed_footprint": {
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "passed": true,
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-0tvv4gjc"
+    },
+    {
+      "accepted": false,
+      "allocation": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "error": "native Git birth identity",
+      "expected_acceptance": false,
+      "label": "native Git superscript kernel token",
+      "observed_footprint": {
+        "scratch_bytes": 77824,
+        "scratch_inodes": 11
+      },
+      "passed": true,
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-dfptd_mn"
+    },
+    {
+      "accepted": false,
+      "allocation": {
+        "cpu_slots": 1,
+        "ram_bytes": 1,
+        "scratch_bytes": 86016,
+        "scratch_inodes": 11
+      },
+      "error": "capture driver child identity",
+      "expected_acceptance": false,
+      "label": "mandatory CUDA driver superscript kernel token",
+      "observed_footprint": {
+        "scratch_bytes": 86016,
+        "scratch_inodes": 11
+      },
+      "passed": true,
+      "root": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/independent-astra-v2/astra-v2-2qnoit8i"
+    }
+  ],
+  "end": "2026-11-14T13:32:15.443600+00:00",
+  "passed": true,
+  "pid": 246137,
+  "rlimit_as": [
+    4294967296,
+    4294967296
+  ],
+  "source_after": {
+    "bac_hardware_protocol_v1.py": {
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    "capture_bac_hardware_v1.py": {
+      "bytes": 64451,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+    },
+    "test_verify_bac_hardware_v1.py": {
+      "bytes": 127616,
+      "sha256": "015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816"
+    },
+    "verify_bac_hardware_children_v1.py": {
+      "bytes": 79319,
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+    },
+    "verify_bac_hardware_v1.py": {
+      "bytes": 146323,
+      "sha256": "041f3b5bcd6ee8226744535938e9a27bd982db6077b10cb43fab42427533c360"
+    }
+  },
+  "source_before": {
+    "bac_hardware_protocol_v1.py": {
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    "capture_bac_hardware_v1.py": {
+      "bytes": 64451,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+    },
+    "test_verify_bac_hardware_v1.py": {
+      "bytes": 127616,
+      "sha256": "015e922fbb3621500aefd4ddc9c2f34ae9d4a47c40e487b7b9ad66f9f3a85816"
+    },
+    "verify_bac_hardware_children_v1.py": {
+      "bytes": 79319,
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c"
+    },
+    "verify_bac_hardware_v1.py": {
+      "bytes": 146323,
+      "sha256": "041f3b5bcd6ee8226744535938e9a27bd982db6077b10cb43fab42427533c360"
+    }
+  },
+  "sources_stable": true,
+  "start": "2026-11-14T13:32:06.658125+00:00"
+}

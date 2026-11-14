@@ -1,0 +1,84 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____ test_native_git_dependency_observes_actual_version_and_pinned_process _____
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v3-fixtures/test_native_git_dependency_obs0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe7b5d1ce90>
+
+    def test_native_git_dependency_observes_actual_version_and_pinned_process(tmp_path, monkeypatch):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch)
+        records = []; token = tool.LEASE_FDS.set((101, 102))
+>       try: observed = tool.dependency_observations({"dependencies": [dependency]}, records)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:790: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+environment = {'dependencies': [{'name': 'git', 'reference': {'bytes': 22, 'path': '/workspace/hamlet/.superpowers/sdd/2026-11-01-ba...git', 'sha256': '07ccf65a424fd96600597232e01c6058a70b24316e513ede8c9740e1b670ea8c'}, 'version': 'git version 2.50.0'}]}
+commands = [{'argv': ['/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admiss...ronment': {'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1', 'LC_ALL': 'C', 'PATH': '/usr/bin:/bin'}, ...}]
+
+    def dependency_observations(environment, commands):
+        observed = []
+        for dependency in environment["dependencies"]:
+            if dependency["name"] == "nvidia-smi":
+                continue  # Version and executable observed by the pinned driver query.
+            if dependency["name"] == "git":
+                output = run_git(dependency["reference"], ["--version"], str(Path.cwd()), commands)
+>               version = output.removesuffix("\n")
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+E               TypeError: a bytes-like object is required, not 'str'
+
+capture_bac_hardware_v1.py:338: TypeError
+_________ test_native_git_identity_cancellation_cleans_launched_child __________
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v3-fixtures/test_native_git_identity_cance0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe7b5d1cc30>
+
+    def test_native_git_identity_cancellation_cleans_launched_child(tmp_path, monkeypatch):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch)
+        def interrupt(pid): raise KeyboardInterrupt()
+        monkeypatch.setattr(tool, "process_identity", interrupt)
+        records = []
+        with pytest.raises(ValueError):
+>           try: tool.dependency_observations({"dependencies": [dependency]}, records)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+test_capture_bac_hardware_v1.py:888: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+capture_bac_hardware_v1.py:337: in dependency_observations
+    output = run_git(dependency["reference"], ["--version"], str(Path.cwd()), commands)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+capture_bac_hardware_v1.py:696: in run_git
+    identity = process_identity(child.pid)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+pid = 4321
+
+>   def interrupt(pid): raise KeyboardInterrupt()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyboardInterrupt
+
+test_capture_bac_hardware_v1.py:884: KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/red-v3-fixtures/test_native_git_identity_cance0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fe7b5d1cc30>
+
+    def test_native_git_identity_cancellation_cleans_launched_child(tmp_path, monkeypatch):
+        tool, dependency, calls, events = native_git_stub(tmp_path, monkeypatch)
+        def interrupt(pid): raise KeyboardInterrupt()
+        monkeypatch.setattr(tool, "process_identity", interrupt)
+        records = []
+        with pytest.raises(ValueError):
+            try: tool.dependency_observations({"dependencies": [dependency]}, records)
+>           except KeyboardInterrupt: pytest.fail("native Git child escaped identity-stage cancellation cleanup")
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: native Git child escaped identity-stage cancellation cleanup
+
+test_capture_bac_hardware_v1.py:889: Failed
+=========================== short test summary info ============================
+FAILED test_capture_bac_hardware_v1.py::test_native_git_dependency_observes_actual_version_and_pinned_process
+FAILED test_capture_bac_hardware_v1.py::test_native_git_identity_cancellation_cleans_launched_child
+2 failed, 117 deselected in 0.66s

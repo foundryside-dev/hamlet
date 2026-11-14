@@ -1,0 +1,34 @@
+{
+  "schema": "p4-source-candidate-inventory-v1",
+  "status": "FROZEN FOR TEST AND INDEPENDENT REVIEW; NOT QUALIFIED",
+  "bodies": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "bytes": 140681,
+      "sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe",
+      "lines": 2734,
+      "access": "edited"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "lines": 526,
+      "access": "read-only"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 64451,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+      "lines": 992,
+      "access": "read-only"
+    }
+  ],
+  "total_lines": 4252,
+  "body_cap": 3,
+  "line_cap": 4518,
+  "p4_line_cap": 3000,
+  "source_runtime": "UNRUN by source author; bounded test owner executes separately",
+  "prohibited_bodies_consumed": [],
+  "review": "pending independent actual-source review by root"
+}

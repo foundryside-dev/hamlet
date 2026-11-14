@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 1637,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_parent_wait_observation_b0/output/attempt/a/command.json",
+    "sha256": "ae1069785bb8f8b896de08941c59b2ab3575d6ed2327324147493c42751ff920"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_parent_wait_observation_b0/support/identity-policy.json",
+    "sha256": "3dd5b0845a93a44b307d468fd7dea74adb6f7d893ba032b1043f2a4cef1e0b81"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244070,
+    "ppid": 244069,
+    "start_identity": "14134966"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_parent_wait_observation_b0/output/attempt/source-0002.json",
+    "sha256": "9bf0f33110d01e8634080722d3443fd1af30213fcb95262516a06931613d6609"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 8940,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_parent_wait_observation_b0/metadata/spec.json",
+    "sha256": "3a754f78ca31d5567d49c82bf7b9fb744d9b1171de048f4c23de58d68d8a2a72"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_parent_wait_observation_b0/support/grant.json",
+    "sha256": "5f5ee177b8e5574dd193adb93135dd2d397d4ffd9ba2e626d167f75367c5ac6d"
+  }
+}

@@ -1,0 +1,271 @@
+"""ENV-issued manual physical work; this route has no learner or BANK event."""
+
+from __future__ import annotations
+
+import math
+import os
+import threading
+from dataclasses import dataclass
+from numbers import Real
+from typing import TYPE_CHECKING, Any
+
+import torch
+
+from townlet.config.world_roster import WorldAcceptedEpisode, WorldRecord, owned_value, same_value
+
+if TYPE_CHECKING:
+    from townlet.environment.vectorized_env import VectorizedHamletEnv
+
+
+@dataclass(frozen=True)
+class ManualPhysicalStepResult:
+    """Owned physical outputs and their authentic, completed ENV receipt."""
+
+    observations: torch.Tensor
+    rewards: torch.Tensor
+    dones: torch.Tensor
+    info: dict[str, Any]
+    physical_tick: int
+    accepted: WorldAcceptedEpisode
+    receipt: WorldRecord
+
+
+class ManualPhysicalSession:
+    """One thread's issued physical driver, retained by its exact ENV binding."""
+
+    def __new__(cls):
+        raise TypeError("manual sessions are issued only by ENV.bind_manual_execution")
+
+    @classmethod
+    def _issue(cls, env: VectorizedHamletEnv, owner: object) -> ManualPhysicalSession:
+        session = object.__new__(cls)
+        session._env, session._owner = env, owner
+        session._binding, session._authority = env._world_role_owners, env._world_authority
+        session._pid, session._thread = os.getpid(), threading.current_thread()
+        session._tick = 0
+        session._busy = session._failed = False
+        session._pending: WorldRecord | None = None
+        session._accepted: WorldAcceptedEpisode | None = None
+        session._state: dict[str, Any] | None = None
+        session._stage = "idle"
+        session._failure: tuple[str, int, BaseException] | None = None
+        return session
+
+    def __copy__(self):
+        raise TypeError("manual session authority cannot be copied")
+
+    def __deepcopy__(self, memo):
+        raise TypeError("manual session authority cannot be copied")
+
+    def __reduce_ex__(self, protocol):
+        raise TypeError("manual session authority cannot be serialized")
+
+    def _check(self) -> VectorizedHamletEnv:
+        try:
+            if type(self) is not ManualPhysicalSession or self._pid != os.getpid() or self._thread is not threading.current_thread():
+                raise ValueError("manual session requires its issuing process and thread")
+            env = self._env
+            if (
+                env._manual_session is not self
+                or env._world_role_owners is not self._binding
+                or env._world_role_owners["population"] is not self._owner
+                or env._world_authority is not self._authority
+                or env._exploration_bound
+                or self._failed
+                or self._busy
+            ):
+                raise ValueError("manual session is foreign, failed, rebound or already executing")
+            return env
+        except AttributeError as exc:
+            raise ValueError("manual session was not issued by ENV") from exc
+
+    def step(self, *, accepted: WorldAcceptedEpisode, actions: torch.Tensor, depletion_multiplier: float) -> ManualPhysicalStepResult:
+        env = self._check()  # Issuer/PID/thread misuse refuses before admission or lock work.
+        return env._step_manual(session=self, accepted=accepted, actions=actions, depletion_multiplier=depletion_multiplier)
+
+    def retire(self, *, accepted: WorldAcceptedEpisode, world_ids: tuple[str, ...], reason: str) -> WorldRecord:
+        env = self._check()
+        return env._retire_manual(session=self, accepted=accepted, world_ids=world_ids, reason=reason)
+
+    def _current(self, accepted: WorldAcceptedEpisode) -> None:
+        env = self._env
+        env._require_phase("active")
+        env._accepted(accepted)
+        env._check_committed_participation()
+        activation = env._world_equal.get("activation")
+        env._valid_record(activation, "activation")
+        if activation.accepted is not accepted or activation.population.owner is not self._owner:
+            raise ValueError("manual physical work requires its genuine population activation")
+        expected = self._state if self._accepted is accepted else env._participation_reset_state
+        if self._accepted is not accepted and env._participation_committed is not None:
+            expected = env._participation_committed["state"]
+        if expected is None:
+            raise ValueError("manual physical work requires an owned current reset or completed vector")
+        env._check_participation_state(expected)
+
+    def _claim(
+        self,
+        decision: WorldRecord,
+        accepted: WorldAcceptedEpisode,
+        predecessor: torch.Tensor,
+        actions: torch.Tensor,
+        active: torch.Tensor,
+        tick: int,
+    ) -> None:
+        env = self._env
+        env._valid_record(decision, "manual_physical_decision")
+        if (
+            self._pending is not decision
+            or self._stage != "prepared"
+            or not self._busy
+            or decision.accepted is not accepted
+            or decision.activation is not env._world_equal.get("activation")
+            or decision.revision != env._world_revision
+            or decision.physical_tick != tick
+            or tick != self._tick + 1
+            or not same_value(decision.predecessor, predecessor)
+            or not same_value(decision.actions, actions)
+            or not same_value(decision.active_on_entry, active)
+        ):
+            raise ValueError("manual physical decision is foreign, changed, stale or consumed")
+        self._current(accepted)
+        self._stage = "entered-physical"
+
+    def _failed_operation(self, accepted: WorldAcceptedEpisode, tick: int, error: BaseException) -> None:
+        self._failure = (self._stage, tick, error)
+        if self._stage in ("entered-physical", "physical-returned"):
+            self._failed = True
+            try:
+                self._env._abandon_episode(accepted=accepted, reason="runtime_failure")
+            except BaseException as cleanup:
+                error.add_note(f"manual physical cleanup failed: {cleanup!r}")
+            finally:
+                # Genuine cleanup was attempted under the original exclusion. Its
+                # own allocation failure cannot restore healthy physical authority.
+                self._env._world_phase = "quarantined"
+
+    def _step(self, accepted: WorldAcceptedEpisode, actions: torch.Tensor, depletion_multiplier: float) -> ManualPhysicalStepResult:
+        env = self._check()
+        self._current(accepted)
+        if env._manual_close_prepared is not None:
+            raise ValueError("manual physical completion is already prepared")
+        if (
+            not isinstance(actions, torch.Tensor)
+            or actions.layout != torch.strided
+            or actions.dtype != torch.int64
+            or actions.device != env.device
+            or actions.shape != (env.num_agents,)
+            or bool(((actions < 0) | (actions >= env.action_dim)).any())
+        ):
+            raise ValueError("manual actions require the actual compiled int64 action geometry")
+        if isinstance(depletion_multiplier, bool) or not isinstance(depletion_multiplier, Real) or not math.isfinite(depletion_multiplier):
+            raise ValueError("manual depletion multiplier must be finite and numeric")
+        active = ~env.dones.detach().clone()
+        if not bool(active.any()):
+            raise ValueError("manual vector requires at least one active physical world")
+        actions = actions.detach().clone()
+        legal = env._build_action_masks()
+        if not bool(legal.gather(1, actions[:, None]).flatten()[active].all()):
+            raise ValueError("manual actions must be legal in the actual predecessor")
+        tick = self._tick + 1
+        self._busy, self._stage = True, "validated"
+        try:
+            predecessor = env._get_observations().detach().clone()
+            env._participation_reading(predecessor, width=env.observation_dim, dtype=torch.float32)
+            decision = env._record(
+                "manual_physical_decision",
+                {
+                    "accepted": accepted,
+                    "activation": env._world_equal["activation"],
+                    "revision": env._world_revision,
+                    "physical_tick": tick,
+                    "predecessor": predecessor,
+                    "actions": actions,
+                    "active_on_entry": active,
+                },
+            )
+            self._pending, self._stage = decision, "prepared"
+            observations, rewards, dones, info = env._step_physical(
+                accepted=accepted,
+                predecessor=predecessor,
+                actions=actions,
+                active_on_entry=active,
+                vector_tick=tick,
+                depletion_multiplier=depletion_multiplier,
+                manual_decision=decision,
+            )
+            self._stage = "physical-returned"
+            state = env._participation_state()
+            observations, rewards, dones, info = owned_value((observations, rewards, dones, info))
+            receipt = env._record(
+                "manual_physical_step",
+                {
+                    "accepted": accepted,
+                    "world_ids": env.world_ids,
+                    "physical_tick": tick,
+                    "active_on_entry": active,
+                    "step_counts": env.step_counts,
+                    "revision": env._world_revision,
+                },
+            )
+            result = ManualPhysicalStepResult(observations, rewards, dones, info, tick, accepted, receipt)
+            self._state, self._accepted, self._tick, self._stage = state, accepted, tick, "completed"
+            return result
+        except BaseException as error:
+            self._failed_operation(accepted, tick, error)
+            raise
+        finally:
+            self._pending, self._busy = None, False
+
+    def _retire(self, accepted: WorldAcceptedEpisode, world_ids: tuple[str, ...], reason: str) -> WorldRecord:
+        env = self._check()
+        self._current(accepted)
+        if env._manual_close_prepared is not None or self._accepted is not accepted:
+            raise ValueError("manual retirement requires a completed vector and no pending completion")
+        if (
+            type(reason) is not str
+            or reason != "cap"
+            or type(world_ids) is not tuple
+            or not world_ids
+            or any(type(key) is not str for key in world_ids)
+            or len(set(world_ids)) != len(world_ids)
+            or tuple(key for key in env.world_ids if key in world_ids) != world_ids
+        ):
+            raise ValueError("manual retirement requires an ordered unique nonempty cap subset")
+        retired = torch.tensor([key in world_ids for key in env.world_ids], dtype=torch.bool, device=env.device)
+        if bool(env.dones[retired].any()):
+            raise ValueError("manual retirement cannot repeat or revive a terminal world")
+        self._busy, self._stage = True, "validated"
+        try:
+            revision = env._world_revision + 1
+            candidate_dones = env.dones | retired
+            observation = env._get_observations().detach().clone()
+            state = env._participation_state()
+            state["tensors"]["dones"] = candidate_dones.detach().clone()
+            committed = env._participation_committed
+            if committed is not None:
+                committed = {**committed, "state": owned_value(state), "observation": observation, "revision": revision}
+            receipt = env._record(
+                "manual_physical_retirement",
+                {
+                    "accepted": accepted,
+                    "world_ids": world_ids,
+                    "reason": reason,
+                    "physical_tick": self._tick,
+                    "step_counts": env.step_counts,
+                    "revision": revision,
+                },
+            )
+            self._current(accepted)
+            self._stage = "entered-physical"
+            env._cancel_terminal_effects(retired)
+            # Every reading, clone, receipt and cancellation precedes publication.
+            # Keep initial zero-count retirees distinct from this positive-count cap.
+            env.dones, env._participation_committed, env._world_revision = candidate_dones, committed, revision
+            self._state, self._stage = state, "completed"
+            return receipt
+        except BaseException as error:
+            self._failed_operation(accepted, self._tick, error)
+            raise
+        finally:
+            self._busy = False

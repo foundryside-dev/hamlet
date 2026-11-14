@@ -1,0 +1,40 @@
+{
+  "schema": "bac-packet-m-fixture-small-facts-v1",
+  "supplier": "/root/bac_c2_owner_failure_reconciliation",
+  "sources": [
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "lines": 1511,
+      "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "lines": 900,
+      "sha256": "bbfdc1e8d60a609de6dacf7b68c0d6cb7e014df308dddddde5698ad2bf7fd673"
+    }
+  ],
+  "same_supplier_packet_bodies": 4,
+  "same_supplier_packet_lines": 2975,
+  "policy_mode": {
+    "value_for_none_rnd_shared_per_world_controls": "paced_fifo",
+    "basis": "H169 make_parent calls policy(compiled,family,scope,paced_fifo); F35 MODES contains paced_fifo and occupancy_fifo; F policy assigns mode to rnd.service_mode."
+  },
+  "reward_components": {
+    "keys_source_asserted": [
+      "extrinsic",
+      "intrinsic",
+      "shaping"
+    ],
+    "composed_comparison": "H432 compares getattr(actual[rewards],name) to state.info[reward_components][name].",
+    "raw_comparison": "H434 separately compares state.intrinsic_rewards to runtime reward.raw.",
+    "restriction": "Do not equate composed intrinsic with raw intrinsic."
+  },
+  "temporal_effect_fixture_enablement": {
+    "established": false,
+    "reason": "Charged fixture/roster/custody bodies neither declare nor assert nontrivial temporal/effect-scheduler enablement. Config YAML/compiler body not read.",
+    "needed": "Root bounded authored-config/producer fact or existing source-qualified setup API; absence/no-op scheduler is not cancellation evidence."
+  },
+  "application_execution": false,
+  "application_edits": false,
+  "new_source_body_reads": false
+}

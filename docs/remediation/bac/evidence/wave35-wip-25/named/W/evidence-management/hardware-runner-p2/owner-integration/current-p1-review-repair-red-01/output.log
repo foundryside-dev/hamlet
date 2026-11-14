@@ -1,0 +1,34 @@
+.FFFF.FFFF...FFFFFFF.                                                    [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:486: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:486: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:486: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:486: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:486: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:486: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:460: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:460: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:500: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:500: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:512: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:512: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:512: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:512: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py:512: Failed: DID NOT RAISE <class 'ValueError'>
+=========================== short test summary info ============================
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[zero-bytes]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[zero-inodes]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[undersized-bytes]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[undersized-inodes]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[directory-bytes-omitted]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[directory-inode-omitted]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[late-extra-file]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_capture_footprint[late-identical-replacement]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_meminfo_consistency[available-exceeds]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_meminfo_consistency[total-zero]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_linux_resource_tokens_are_ascii[cpu_max]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_linux_resource_tokens_are_ascii[cpuset]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_linux_resource_tokens_are_ascii[memory_max]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_linux_resource_tokens_are_ascii[memory_current]
+FAILED bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py::test_current_p1_review_linux_resource_tokens_are_ascii[meminfo]
+15 failed, 6 passed, 394 deselected in 3.87s

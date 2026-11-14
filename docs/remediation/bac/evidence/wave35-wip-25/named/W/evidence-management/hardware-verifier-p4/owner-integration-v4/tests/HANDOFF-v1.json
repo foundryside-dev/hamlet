@@ -1,0 +1,268 @@
+{
+  "schema": "bac-p4-bounded-test-completion-v1",
+  "at": "2026-11-14T13:06:57.114283+00:00",
+  "status": "BOUNDED INERT TEST COMPLETION; NO HARDWARE OR WHOLE-CHAIN QUALIFICATION",
+  "owner": "bac_p4_test_completion",
+  "prior_handoff": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v3/handoff-v1/HANDOFF.md",
+    "sha256": "b06f7acb46958a7929a8a0cb97109fe2e8555474f3781a63fd3f9be1fdfd770c",
+    "bytes": 11266
+  },
+  "terminal_attempt": "attempt-05",
+  "source_frozen": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py",
+      "sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe",
+      "bytes": 140681,
+      "lines": 2734
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+      "sha256": "1fc7b174829c05b579224f5796d8e42e44bbef3b43dc955627ffc2ae24611a39",
+      "bytes": 121186,
+      "lines": 2831
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_children_v1.py",
+      "sha256": "ecc7b3c32716adfb19bf8e115f835dffb12468549d877561079db57a8a37e83c",
+      "bytes": 79319,
+      "lines": 1518
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+      "bytes": 64451,
+      "lines": 992
+    }
+  ],
+  "test_scope": {
+    "owned_source_bodies": [
+      "test_verify_bac_hardware_v1.py"
+    ],
+    "permitted_P0_lines": 526,
+    "final_test_lines": 2831,
+    "total_counted_lines": 3357,
+    "test_limit": 3500,
+    "additional_source_body_inspection": "NONE: no P4/P1/P2/P3/P5 implementation bodies inspected; fixed P5 runtime import allowed."
+  },
+  "preservation": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/retention-v1.json",
+    "sha256": "7b43209e1db8f6a2966378742e88f9cd2fced2ec12640af6ed385d914f36c531",
+    "bytes": 971
+  },
+  "final_inert_test_snapshot": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/final-test.py.txt",
+    "sha256": "1fc7b174829c05b579224f5796d8e42e44bbef3b43dc955627ffc2ae24611a39",
+    "bytes": 121186
+  },
+  "old_inert_test_snapshot": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/before-format.py.txt",
+    "sha256": "cee8ef9c8e5d8e1b653861641c9e43b3e691dec269d8ea59ad98ab13eb63beaa",
+    "bytes": 91912
+  },
+  "attempts": [
+    {
+      "id": "attempt-01",
+      "counts": {
+        "passed": 4,
+        "failed": 9,
+        "deselected": 172
+      },
+      "interpretation": "Meaningful malformed collector RED; TypeError/KeyError leaked.",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-01/execution.json",
+        "sha256": "56651527891738249bacafc1e5017dcdcd94da22818dfa01c8680894b6b9b152",
+        "bytes": 2945
+      },
+      "child_preexec": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-01/child.json",
+        "sha256": "2a5997f7502f33870db8907568988a05fe6c4aa458fb65eb06fd32c3543110a6",
+        "bytes": 403
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-01/pytest.log",
+        "sha256": "cbb9a79c5468951cbe07c4902c3242329f87d0c3005e53248f1f7718e9cefaae",
+        "bytes": 2534
+      },
+      "start": "2026-11-14T12:50:07.000029+00:00",
+      "end": "2026-11-14T12:50:09.431254+00:00",
+      "pid": 240259,
+      "exit_code": 1,
+      "stable_sources": true
+    },
+    {
+      "id": "attempt-02",
+      "counts": {
+        "passed": 198,
+        "failed": 38,
+        "deselected": 0
+      },
+      "interpretation": "Meaningful capture semantic RED;17resource and21CUDA controls wrongly accepted.",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-02/execution.json",
+        "sha256": "f8b6e7c98a35a056e53a58aedb720fd38ee6927aed26588c43014c301dd94fa1",
+        "bytes": 2850
+      },
+      "child_preexec": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-02/child.json",
+        "sha256": "b48e1bc72411e25b2b6988fa48447d255357246fd9a2770def35f5ed2cdb0ad3",
+        "bytes": 403
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-02/pytest.log",
+        "sha256": "9df1f58d3e65dea5857a839261a9f07334056a592ede165fef53eefb80ab5429",
+        "bytes": 9342
+      },
+      "start": "2026-11-14T12:54:06.077741+00:00",
+      "end": "2026-11-14T12:55:26.549309+00:00",
+      "pid": 240795,
+      "exit_code": 1,
+      "stable_sources": true
+    },
+    {
+      "id": "attempt-03",
+      "counts": {
+        "passed": 254,
+        "failed": 0,
+        "deselected": 0
+      },
+      "interpretation": "Full intermediate GREEN after capture joins; not terminal source.",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-03/execution.json",
+        "sha256": "47049f84094d12754c579a85d9fbe35b0939ba9e2fba7528dd4c7676ca6c8bc8",
+        "bytes": 2866
+      },
+      "child_preexec": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-03/child.json",
+        "sha256": "bcfcdb31bfb2e13fc8e9e76e266b6412f212cf74770754f2aad412e6bd1ec45b",
+        "bytes": 403
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-03/pytest.log",
+        "sha256": "517249655a018bfe2cdec915c0fc0a153391f21e4112a94c90fd896703e39c3f",
+        "bytes": 351
+      },
+      "start": "2026-11-14T12:59:35.599775+00:00",
+      "end": "2026-11-14T13:00:57.957022+00:00",
+      "pid": 241872,
+      "exit_code": 0,
+      "stable_sources": true
+    },
+    {
+      "id": "attempt-04",
+      "counts": {
+        "passed": 7,
+        "failed": 5,
+        "deselected": 254
+      },
+      "interpretation": "Meaningful final primitive RED; partition positive and six controls PASS.",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-04/execution.json",
+        "sha256": "49cda200e6771b8f493cf872cc0df9fc2e9fc4124535f9547a45b8737950cfa8",
+        "bytes": 2955
+      },
+      "child_preexec": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-04/child.json",
+        "sha256": "ad6165fd66dac649f4232595759ace5bdd747e03f4c48856ab1a2fd0b1e4c799",
+        "bytes": 403
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-04/pytest.log",
+        "sha256": "06ff73fe7fd156e5305aa20574f43b6ccbb524bae2e1729a5b9100058d89799c",
+        "bytes": 1453
+      },
+      "start": "2026-11-14T13:02:51.066869+00:00",
+      "end": "2026-11-14T13:03:01.175270+00:00",
+      "pid": 242371,
+      "exit_code": 1,
+      "stable_sources": true
+    },
+    {
+      "id": "attempt-05",
+      "counts": {
+        "passed": 266,
+        "failed": 0,
+        "deselected": 0
+      },
+      "interpretation": "Terminal full GREEN; all earlier failures preserved.",
+      "execution": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-05/execution.json",
+        "sha256": "04bd827f08d08b5c7fe4087cb08f8df42d4fb1ccc1876510f417b450b4406c60",
+        "bytes": 2862
+      },
+      "child_preexec": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-05/child.json",
+        "sha256": "00270c1c39e0ca0986a5388158a3280d96d85f40a706fa4f4e749ac150611263",
+        "bytes": 403
+      },
+      "log": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-05/pytest.log",
+        "sha256": "d7406b7026687315968fe4b992d7aa1cebf3426dc6dc2dcf5311e97ecc991d3c",
+        "bytes": 351
+      },
+      "start": "2026-11-14T13:04:14.684091+00:00",
+      "end": "2026-11-14T13:05:45.656159+00:00",
+      "pid": 242581,
+      "exit_code": 0,
+      "stable_sources": true
+    }
+  ],
+  "terminal_static_checks": {
+    "black": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/static-03/black.json",
+      "sha256": "c0120549711858b5dd4b2cacac4af9979241e03d92015e119045f0b19117f807",
+      "bytes": 651
+    },
+    "black_log": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/static-03/black.log",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "bytes": 55
+    },
+    "ruff": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/static-03/ruff.json",
+      "sha256": "e9b1276f236cdca35347caa047da24e1f45da7132aaa931a6a88ed199d2e0a48",
+      "bytes": 615
+    },
+    "ruff_log": {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/static-03/ruff.log",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "bytes": 19
+    }
+  },
+  "retained_static_attempts": [
+    "static-01: BlackPASS/Ruff6C408FAIL; fixes retained in later source",
+    "static-02: BlackPASS/RuffPASS on intermediate ba23fefc test",
+    "static-03: BlackPASS/RuffPASS on final1fc7b174 test"
+  ],
+  "runtime_observation": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-05/runtime-observation.json",
+    "sha256": "3d1d74aa1b103167d9f676c5559dd9763e334a8a4fff54865cf1685791c40041",
+    "bytes": 822
+  },
+  "runtime_limitations": [
+    "Each pytest child recorded actual pre-exec affinity [0] and RLIMIT_AS4GiB after applying constraints; exact launch argv/PID/UTC/status and source pre/post stamps retained.",
+    "Final runtime independently observed actual /proc cmdline, affinity [0], and4GiB address-space limit.",
+    "Independent /proc/PID/environ read was refused with PermissionError errno13. No escalation attempted; observed environment null with explicit reason. child.json environment is selected exec environment, not claimed post-exec observation.",
+    "static-02 ran during attempt03 without source mutation; its resource envelope was not independently recorded. Terminal static-03 inherited CPU0/4GiB."
+  ],
+  "coverage": [
+    "All172 existing cases retained; all66 original function names and parametrization decorators unchanged.",
+    "94 new cases cover malformed private graphs; exact nested receipt traversal; resources/cgroups/provenance/authority/partitions; driver/device/workload semantics; valid supported alternatives; sibling/authority mutation after initial read.",
+    "All observations and native command rows remain synthetic. No capture, recorder, Git, APP, native GPU command, hardware execution, source worktree/branch/checkout or executable source copy."
+  ],
+  "accounting": "Terminal266cases is one overlapping full-suite count; do not sum across attempts or call it package qualification.",
+  "remaining_gates": [
+    "Independent source/contract review and root adoption of exact terminal bytes.",
+    "Independent live positive full verify->P5 core/replay/fork/producer/phase graphs; existing supplied virtual positives patch transport/P0 and do not prove live common custody.",
+    "Actual P3->P2->P4->P5 execution, abrupt-death cleanup, APP source assertions and mandatory actual CUDA obligations remain separate unrun gates.",
+    "External capture namespace/no-writer custody from producer through snapshot/retention remains required; hashes of fixed siblings do not establish prior authority.",
+    "Local full cgroup ancestry remains unsupported; future CUDA server/16worker capacity unprobed."
+  ],
+  "no_further_source_edits_after_terminal": true
+}

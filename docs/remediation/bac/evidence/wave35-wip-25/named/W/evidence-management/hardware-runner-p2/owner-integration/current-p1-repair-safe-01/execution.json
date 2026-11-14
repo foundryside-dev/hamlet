@@ -1,0 +1,102 @@
+{
+  "affinity": [
+    1,
+    2
+  ],
+  "after": [
+    {
+      "bytes": 146230,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+    },
+    {
+      "bytes": 191486,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "1208468b7ac663b267d0d231e9467afde3326c24462a7f15cb40734f8f49e780"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "argv": [
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "current-p1-repair-safe-01",
+    "--tb=line",
+    "-k",
+    "not owner_public_run_observes and not owner_actual_git_backstop"
+  ],
+  "before": [
+    {
+      "bytes": 146230,
+      "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+      "sha256": "22b27a02c960019cc7aba0da61e99d25daf9acbe1353edbf4dfaffb3b7cdbc63"
+    },
+    {
+      "bytes": 191486,
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+      "sha256": "1208468b7ac663b267d0d231e9467afde3326c24462a7f15cb40734f8f49e780"
+    },
+    {
+      "bytes": 34654,
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    }
+  ],
+  "elapsed_seconds": 51.92700380799943,
+  "exit_code": 1,
+  "final_affinity": [
+    1,
+    2
+  ],
+  "imported_project_modules": {
+    "bac_hardware_protocol_v1": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+    "test_run_bac_hardware_v1": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py"
+  },
+  "kernel_argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "current-p1-repair-safe-01",
+    "--tb=line",
+    "-k",
+    "not owner_public_run_observes and not owner_actual_git_backstop"
+  ],
+  "log": {
+    "bytes": 16561,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/output.log",
+    "sha256": "8ce58e335a6c0d23d7d3ed69af96d977f2818f317f9187388c4e6f25cf3e083f"
+  },
+  "pid": 244070,
+  "ppid": 244069,
+  "proc_stat_start_identity": "14134966",
+  "pytest_args": [
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--confcutdir=/workspace/bac-review-2026-11-01/qualification",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "--tb=line",
+    "-k",
+    "not owner_public_run_observes and not owner_actual_git_backstop"
+  ],
+  "pytest_version": "8.4.2",
+  "ram_limit_bytes": 4294967296,
+  "runner": {
+    "bytes": 5571,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py",
+    "sha256": "7b1bd115eb770d380bcac95e3f6d225c57e7b721de7d6b31c71f3a34f1b838c3"
+  },
+  "scope": "Pure authored-data/inert-process P2 tooling only; no APP/source/Git/hardware qualification",
+  "source_unchanged": true,
+  "status": "FAILED",
+  "thread_environment": {
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "utc_end": "2026-11-14T13:14:51.312056+00:00",
+  "utc_start": "2026-11-14T13:13:59.384241+00:00",
+  "xdist_workers": 0
+}

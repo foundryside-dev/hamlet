@@ -1,0 +1,361 @@
+{
+  "allocation": {
+    "bytes": 830,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/allocation.json",
+    "sha256": "5470dc0c3b815cd7592b1bff0eaa847c5aab7f7eb3fd9ff8e472805de1a62ea6"
+  },
+  "end": "2026-11-14T13:28:59.422751Z",
+  "final": {
+    "allocated_bytes": 90112,
+    "directory": {
+      "allocated_bytes": 4096,
+      "ctime_ns": 1794662938455469868,
+      "device": 27,
+      "inode": 166487,
+      "links": 2,
+      "mode": 16832,
+      "mtime_ns": 1794662938455469868,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture",
+      "size": 4096
+    },
+    "files": [
+      {
+        "allocated_bytes": 12288,
+        "ctime_ns": 1794662938966850964,
+        "device": 27,
+        "inode": 166519,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938966850964,
+        "reference": {
+          "bytes": 10423,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/admission.json",
+          "sha256": "2f2e8461a47c4e1a3e7bca681dc8ad08320858bb24e4f66c73a1b115881f3445"
+        },
+        "size": 10423
+      },
+      {
+        "allocated_bytes": 16384,
+        "ctime_ns": 1794662938949781586,
+        "device": 27,
+        "inode": 166513,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938949781586,
+        "reference": {
+          "bytes": 12661,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/discovery-command.json",
+          "sha256": "115fefc4490f0ecf6369f031fd3db239fbe14740c43c4a75246b4ede79306f41"
+        },
+        "size": 12661
+      },
+      {
+        "allocated_bytes": 12288,
+        "ctime_ns": 1794662938950086796,
+        "device": 27,
+        "inode": 166512,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938950086796,
+        "reference": {
+          "bytes": 9550,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/discovery.json",
+          "sha256": "44731415237d66d34af1143b3b1e586697de979b135b3371479c282ff5df62db"
+        },
+        "size": 9550
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662939025249978,
+        "device": 27,
+        "inode": 166521,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662939025249978,
+        "reference": {
+          "bytes": 772,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/result.json",
+          "sha256": "f7c68a46c42f36f7d80bc1ecdf0a23aa501ca631533f39c25334c364e55e9440"
+        },
+        "size": 772
+      },
+      {
+        "allocated_bytes": 8192,
+        "ctime_ns": 1794662938950667638,
+        "device": 27,
+        "inode": 166517,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938950667638,
+        "reference": {
+          "bytes": 5954,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-after-git.json",
+          "sha256": "80b3fd1e8c418e4b9184520b1c42aafee96b722d597ba70c5542cbb1349a0af3"
+        },
+        "size": 5954
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662938950876966,
+        "device": 27,
+        "inode": 166518,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938950876966,
+        "reference": {
+          "bytes": 2657,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-after.json",
+          "sha256": "2153f2991cda6de69f0cb53ec049b1e006d697e6a062acefb5242ed7451e16cc"
+        },
+        "size": 2657
+      },
+      {
+        "allocated_bytes": 8192,
+        "ctime_ns": 1794662938951094167,
+        "device": 27,
+        "inode": 166515,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938951094167,
+        "reference": {
+          "bytes": 5954,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-before-git.json",
+          "sha256": "80b3fd1e8c418e4b9184520b1c42aafee96b722d597ba70c5542cbb1349a0af3"
+        },
+        "size": 5954
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662938951385151,
+        "device": 27,
+        "inode": 166516,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938951385151,
+        "reference": {
+          "bytes": 2657,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-before.json",
+          "sha256": "2153f2991cda6de69f0cb53ec049b1e006d697e6a062acefb5242ed7451e16cc"
+        },
+        "size": 2657
+      },
+      {
+        "allocated_bytes": 12288,
+        "ctime_ns": 1794662938973715846,
+        "device": 27,
+        "inode": 166520,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938973715846,
+        "reference": {
+          "bytes": 9911,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/spec.json",
+          "sha256": "8c802cb36800c00d4013dd90b5002d1110aa45dce3ec8e19c88f30bbdb147809"
+        },
+        "size": 9911
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662938951975183,
+        "device": 27,
+        "inode": 166514,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938951975183,
+        "reference": {
+          "bytes": 2787,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/start.json",
+          "sha256": "a7ac4fa5f87609a5a34f22d057dbf94297a80f898cb7e9f95042feef3d9cd1b7"
+        },
+        "size": 2787
+      }
+    ],
+    "inodes": 11
+  },
+  "initial": {
+    "allocated_bytes": 90112,
+    "directory": {
+      "allocated_bytes": 4096,
+      "ctime_ns": 1794662938455469868,
+      "device": 27,
+      "inode": 166487,
+      "links": 2,
+      "mode": 16832,
+      "mtime_ns": 1794662938455469868,
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture",
+      "size": 4096
+    },
+    "files": [
+      {
+        "allocated_bytes": 12288,
+        "ctime_ns": 1794662938966850964,
+        "device": 27,
+        "inode": 166519,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938966850964,
+        "reference": {
+          "bytes": 10423,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/admission.json",
+          "sha256": "2f2e8461a47c4e1a3e7bca681dc8ad08320858bb24e4f66c73a1b115881f3445"
+        },
+        "size": 10423
+      },
+      {
+        "allocated_bytes": 16384,
+        "ctime_ns": 1794662938949781586,
+        "device": 27,
+        "inode": 166513,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938949781586,
+        "reference": {
+          "bytes": 12661,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/discovery-command.json",
+          "sha256": "115fefc4490f0ecf6369f031fd3db239fbe14740c43c4a75246b4ede79306f41"
+        },
+        "size": 12661
+      },
+      {
+        "allocated_bytes": 12288,
+        "ctime_ns": 1794662938950086796,
+        "device": 27,
+        "inode": 166512,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938950086796,
+        "reference": {
+          "bytes": 9550,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/discovery.json",
+          "sha256": "44731415237d66d34af1143b3b1e586697de979b135b3371479c282ff5df62db"
+        },
+        "size": 9550
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662939025249978,
+        "device": 27,
+        "inode": 166521,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662939025249978,
+        "reference": {
+          "bytes": 772,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/result.json",
+          "sha256": "f7c68a46c42f36f7d80bc1ecdf0a23aa501ca631533f39c25334c364e55e9440"
+        },
+        "size": 772
+      },
+      {
+        "allocated_bytes": 8192,
+        "ctime_ns": 1794662938950667638,
+        "device": 27,
+        "inode": 166517,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938950667638,
+        "reference": {
+          "bytes": 5954,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-after-git.json",
+          "sha256": "80b3fd1e8c418e4b9184520b1c42aafee96b722d597ba70c5542cbb1349a0af3"
+        },
+        "size": 5954
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662938950876966,
+        "device": 27,
+        "inode": 166518,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938950876966,
+        "reference": {
+          "bytes": 2657,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-after.json",
+          "sha256": "2153f2991cda6de69f0cb53ec049b1e006d697e6a062acefb5242ed7451e16cc"
+        },
+        "size": 2657
+      },
+      {
+        "allocated_bytes": 8192,
+        "ctime_ns": 1794662938951094167,
+        "device": 27,
+        "inode": 166515,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938951094167,
+        "reference": {
+          "bytes": 5954,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-before-git.json",
+          "sha256": "80b3fd1e8c418e4b9184520b1c42aafee96b722d597ba70c5542cbb1349a0af3"
+        },
+        "size": 5954
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662938951385151,
+        "device": 27,
+        "inode": 166516,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938951385151,
+        "reference": {
+          "bytes": 2657,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/source-before.json",
+          "sha256": "2153f2991cda6de69f0cb53ec049b1e006d697e6a062acefb5242ed7451e16cc"
+        },
+        "size": 2657
+      },
+      {
+        "allocated_bytes": 12288,
+        "ctime_ns": 1794662938973715846,
+        "device": 27,
+        "inode": 166520,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938973715846,
+        "reference": {
+          "bytes": 9911,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/spec.json",
+          "sha256": "8c802cb36800c00d4013dd90b5002d1110aa45dce3ec8e19c88f30bbdb147809"
+        },
+        "size": 9911
+      },
+      {
+        "allocated_bytes": 4096,
+        "ctime_ns": 1794662938951975183,
+        "device": 27,
+        "inode": 166514,
+        "links": 1,
+        "mode": 33152,
+        "mtime_ns": 1794662938951975183,
+        "reference": {
+          "bytes": 2787,
+          "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/start.json",
+          "sha256": "a7ac4fa5f87609a5a34f22d057dbf94297a80f898cb7e9f95042feef3d9cd1b7"
+        },
+        "size": 2787
+      }
+    ],
+    "inodes": 11
+  },
+  "producer_prepublication": {
+    "reason": "P1 does not record its prepublication allocation/projection; these are retained verification cuts only",
+    "state": "unavailable",
+    "value": null
+  },
+  "schema": "bac-hardware-capture-footprint-v1",
+  "spec": {
+    "bytes": 9911,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/review-repair-attempt-02/basetemp/test_capture_retained_actual_a1/capture/spec.json",
+    "sha256": "8c802cb36800c00d4013dd90b5002d1110aa45dce3ec8e19c88f30bbdb147809"
+  },
+  "start": "2026-11-14T13:28:59.300680Z",
+  "validation_process": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 245782,
+    "ppid": 245781,
+    "start_identity": "14214712"
+  }
+}

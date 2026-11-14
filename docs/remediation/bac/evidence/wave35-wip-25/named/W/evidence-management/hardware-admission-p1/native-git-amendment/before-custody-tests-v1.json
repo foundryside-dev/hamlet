@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-14T12:16:51.522578+00:00",
+  "sources": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "96267d05038c755ee358861ffef3157b9a03d1088c778d9278eb30a213fe37b7",
+      "bytes": 63310
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "c4d5d3969f9fada6ba1f3d65718ca396cad9ff0355f32658840f77056abeb4be",
+      "bytes": 58378
+    }
+  ]
+}

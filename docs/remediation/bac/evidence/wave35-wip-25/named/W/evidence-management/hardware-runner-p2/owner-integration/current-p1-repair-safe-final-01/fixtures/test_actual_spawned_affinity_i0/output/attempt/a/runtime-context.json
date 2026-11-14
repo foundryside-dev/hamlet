@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 1659,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_actual_spawned_affinity_i0/output/attempt/a/command.json",
+    "sha256": "459b6a8dae4879eb539f7f6397a8232642a0270e77cf4a4cb345b6ef69f9cd15"
+  },
+  "policy": {
+    "bytes": 945,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_actual_spawned_affinity_i0/support/identity-policy.json",
+    "sha256": "40b63f58f4bed6cbcab64a89f69f9b10bcf637e233dd2e9a5c60c89eeed3875c"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244462,
+    "ppid": 244461,
+    "start_identity": "14154686"
+  },
+  "runner_source_start": {
+    "bytes": 3248,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_actual_spawned_affinity_i0/output/attempt/source-0002.json",
+    "sha256": "c2712ea9dd14dfe2c64fc4d39bb41e329b47aaca6ceca411bbc9b7c701b3d6a7"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 9076,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_actual_spawned_affinity_i0/metadata/spec.json",
+    "sha256": "1285531e7cee53663dc93331a135c54f85c10f4e60da77d91613fc36a570fde5"
+  },
+  "trusted_grant": {
+    "bytes": 3416,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_actual_spawned_affinity_i0/support/grant.json",
+    "sha256": "6fb647fba18f059ceaa4e62902f40fd41df91fef8f77d40eddf4edf964fe6ccb"
+  }
+}

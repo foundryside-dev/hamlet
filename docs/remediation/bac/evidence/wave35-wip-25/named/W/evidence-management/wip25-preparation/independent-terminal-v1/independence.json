@@ -1,0 +1,63 @@
+{
+  "schema": "bac-independent-terminal-publication-review-v1",
+  "producer": "/root",
+  "reviewer": "/root/bac_astra_manual_source_review",
+  "independent": true,
+  "at": "2026-11-14T13:58:15.991453+00:00",
+  "disposition": "APPROVE BOUNDED PUBLICATION",
+  "scope": "Fresh metadata-only R146-R148 WIP25 graceful-pause terminal publication review; no application/full-BAC acceptance",
+  "contract": {
+    "bytes": 10769,
+    "path": "evidence-management/wip25-preparation/root-checkpoint-contract-v1.json",
+    "root": "W",
+    "sha256": "6c20aeeffae6df7691e6ceb352a14ec6ff13db88b93816172b01828c622faf18"
+  },
+  "review_subject": {
+    "bytes": 8653,
+    "path": "evidence-management/wip25-preparation/root-qualification-subject-v1.json",
+    "root": "W",
+    "sha256": "5a9117c9bb7325343760f5edb8872a6ecd2d979d0db6bc01b449e6d121699a1e"
+  },
+  "candidate_manifest": {
+    "bytes": 210830,
+    "path": "wave35/r148-candidate.json",
+    "root": "W",
+    "sha256": "ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514"
+  },
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "reviewed_receipt_draft": {
+    "bytes": 35239963,
+    "path": "evidence-management/wip25-preparation/root-reviewed-receipt-draft-v1.json",
+    "root": "W",
+    "sha256": "6690aa2e825f0ab6d1ef64753625e051ab289440b3fe80f07430a56972fee976"
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/independent-terminal-v1/review.md",
+    "bytes": 6902,
+    "sha256": "cab9119b0f00a45ebdec2ac7bf6af74c3d0abf64e754411aff56d82676033b52"
+  },
+  "metadata_checks": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/wip25-preparation/independent-terminal-v1/metadata-checks.json",
+    "bytes": 8415,
+    "sha256": "fb5da8fb836a5dc4944ac6e748d62d328519453ca36ad208e68e8624e5ccf12f"
+  },
+  "independence_evidence": {
+    "publication_producer": "/root",
+    "reviewer": "/root/bac_astra_manual_source_review",
+    "prepared_or_sealed_packet": false,
+    "earlier_role_disclosed": "Packet M independent component reviewer/probe author; prior review is not this terminal publication review",
+    "fresh_scope": "Complete frozen publication subject, interval attempts, refs, limits and exact document approval",
+    "application_execution": false,
+    "git_operations": false,
+    "publication_edits": false
+  },
+  "remaining_root_checks": [
+    "actual output size gate before copying",
+    "final receipt and approved selection/assembly",
+    "selected and reused byte verification",
+    "exact publication source/document equivalence",
+    "authorized remote identity/CI handling"
+  ],
+  "historical_missing_bodies": 6,
+  "historical_missing_references": 44
+}

@@ -1,0 +1,19 @@
+{
+  "at": "2026-11-14T13:31:08.970430+00:00",
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "manifest_sha256": "ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514",
+  "spec_sha256": "90348d9b235704b016f8e01130a0bf14887d316f578c899f9f074857981fb135",
+  "auxiliary": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v2.py",
+      "bytes": 9035,
+      "sha256": "9d970655cf171c4f7c88c23352ab0170764cdb8fb5e2fa08b7389a16c54c1837"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/independent-astra-v1/test_independent_manual_probe_v2.py.txt",
+      "bytes": 9035,
+      "sha256": "9d970655cf171c4f7c88c23352ab0170764cdb8fb5e2fa08b7389a16c54c1837"
+    }
+  ],
+  "status": "EXACT BYTES VERIFIED BEFORE ROOT EXECUTION; RUNTIME PENDING"
+}

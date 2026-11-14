@@ -1,0 +1,96 @@
+{
+  "pid": 237978,
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/repair_probe.py"
+  ],
+  "pytest_argv": [
+    "-q",
+    "--tb=line",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--noconftest",
+    "--rootdir=/workspace/bac-review-2026-11-01/qualification",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/fixtures-v1",
+    "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v1/probe.py",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/repair_probe.py"
+  ],
+  "cwd": "/workspace/bac-review-2026-11-01/qualification",
+  "before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 64451,
+      "lines": 992,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 62025,
+      "lines": 946,
+      "sha256": "c9a7d973bfa6bcc83f2b6dec8363cc20c3fc0fc5481f73ae23d72e70ef47b2eb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "lines": 526,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v1/probe.py",
+      "bytes": 4714,
+      "lines": 94,
+      "sha256": "d77b8902e61d4f596e8999d2ff5cfaafc5e8f844234f77dc430958721f7d34e5"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/repair_probe.py",
+      "bytes": 4298,
+      "lines": 66,
+      "sha256": "5b4cac0b1de0f78030ea266393efef6663fa2dc06d71bf6617ecf7061d2e1e75"
+    }
+  ],
+  "start": "2026-11-14T12:21:16.926231+00:00",
+  "limits": {
+    "cpu_ids": [
+      0
+    ],
+    "rlimit_as": 4294967296
+  },
+  "exit_code": 0,
+  "after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "bytes": 64451,
+      "lines": 992,
+      "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "bytes": 62025,
+      "lines": 946,
+      "sha256": "c9a7d973bfa6bcc83f2b6dec8363cc20c3fc0fc5481f73ae23d72e70ef47b2eb"
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "bytes": 34654,
+      "lines": 526,
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v1/probe.py",
+      "bytes": 4714,
+      "lines": 94,
+      "sha256": "d77b8902e61d4f596e8999d2ff5cfaafc5e8f844234f77dc430958721f7d34e5"
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/independent-review/astra-p1-v2/repair_probe.py",
+      "bytes": 4298,
+      "lines": 66,
+      "sha256": "5b4cac0b1de0f78030ea266393efef6663fa2dc06d71bf6617ecf7061d2e1e75"
+    }
+  ],
+  "end": "2026-11-14T12:21:18.285013+00:00"
+}

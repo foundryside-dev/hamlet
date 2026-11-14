@@ -1,0 +1,50 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 34 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_manual_physical_session.py>
+            <Function test_real_manual_step_uses_actual_roster_and_returns_owned_physical_state[ids0-membership0-701]>
+            <Function test_real_manual_step_uses_actual_roster_and_returns_owned_physical_state[ids1-membership1-702]>
+            <Function test_real_manual_step_uses_actual_roster_and_returns_owned_physical_state[ids2-membership2-703]>
+            <Function test_manual_physics_keeps_real_dac_without_creating_a_bank_event>
+            <Function test_initial_retirement_is_genuine_and_zero_count_world_stays_inactive>
+            <Function test_between_vector_retirement_leaves_four_b_effects_and_five_a_effects>
+            <Function test_retirement_input_refusals_leave_next_physical_step_healthy[retired0-cap]>
+            <Function test_retirement_input_refusals_leave_next_physical_step_healthy[retired1-cap]>
+            <Function test_retirement_input_refusals_leave_next_physical_step_healthy[retired2-cap]>
+            <Function test_retirement_input_refusals_leave_next_physical_step_healthy[retired3-cap]>
+            <Function test_retirement_input_refusals_leave_next_physical_step_healthy[retired4-checkpoint]>
+            <Function test_retirement_before_first_vector_cannot_replace_initial_participation>
+            <Function test_wrong_owner_late_binding_and_duplicate_binding_refuse>
+            <Function test_ordinary_population_binding_remains_exclusive_and_integrated>
+            <Function test_unactivated_reset_and_empty_participation_cannot_advance>
+            <Function test_session_and_physical_receipt_copies_cannot_gain_authority>
+            <Function test_bad_actions_refuse_before_physical_effects[invalid0]>
+            <Function test_bad_actions_refuse_before_physical_effects[invalid1]>
+            <Function test_bad_actions_refuse_before_physical_effects[invalid2]>
+            <Function test_bad_actions_refuse_before_physical_effects[invalid3]>
+            <Function test_foreign_accepted_refuses_without_consuming_current_session>
+            <Function test_physical_or_finish_failure_preserves_primary_and_prevents_reexecution[entered]>
+            <Function test_physical_or_finish_failure_preserves_primary_and_prevents_reexecution[returned]>
+            <Function test_physical_or_finish_failure_preserves_primary_and_prevents_reexecution[finish]>
+            <Function test_cleanup_failure_is_a_note_and_cannot_replace_physical_primary>
+            <Function test_reentrant_callback_cannot_enter_another_manual_vector>
+            <Function test_wrong_thread_session_refuses_before_waiting_while_ordinary_env_reader_waits>
+            <Function test_sparse_bank_events_are_independent_of_sequential_physical_ticks>
+            <Function test_initial_participation_witness_survives_positive_count_retirement>
+            <Function test_genuine_nine_role_close_fences_work_and_next_episode_keeps_session_clock>
+            <Function test_fresh_bound_receiver_session_allows_completed_restore_but_history_cannot_step>
+            <Function test_retirement_cancels_real_pending_b_work_once_and_preserves_a_work>
+            <Function test_real_temporal_dac_and_nonempty_delayed_command_survive_b_retirement>
+            <Function test_session_pid_mismatch_refuses_before_env_guard_and_preserves_original_owner>
+
+========================= 34 tests collected in 0.20s ==========================

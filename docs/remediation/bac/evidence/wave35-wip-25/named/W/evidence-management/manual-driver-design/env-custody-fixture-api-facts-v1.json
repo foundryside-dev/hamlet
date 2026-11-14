@@ -1,0 +1,64 @@
+{
+  "schema": "bac-packet-m-env-custody-fixture-api-facts-v1",
+  "supplier": "/root/bac_c2_owner_failure_reconciliation",
+  "consumer": "/root/bac_manual_physical_session",
+  "status": "SOURCE_FACTS_ONLY_NO_APP_GRANT_NO_RUNTIME",
+  "sources": [
+    {
+      "path": "src/townlet/environment/parent_custody.py",
+      "lines": 252,
+      "sha256": "bc83c8ce94da32cf9296692e167bbab42c52794cb2d3da91595d19b3cd176022"
+    },
+    {
+      "path": "src/townlet/config/world_roster.py",
+      "lines": 312,
+      "sha256": "1c3f4ad0f29e663a3f7976b10593e08223bba2b46420b2d4472451a78c667f33"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_parent_intrinsic_handoff.py",
+      "lines": 900,
+      "sha256": "bbfdc1e8d60a609de6dacf7b68c0d6cb7e014df308dddddde5698ad2bf7fd673"
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+      "lines": 1511,
+      "sha256": "9b8783d2f1263e5e6f21a91ed319ebf280b79dc633a9c6dec8a98bdab006d85f"
+    }
+  ],
+  "source_body_count": 4,
+  "source_total_lines": 2975,
+  "report_sha256": "ee09ca9d2c4f7c96df6e21a54506b4a387afd24a5c140dd45a41c10c7ab1a915",
+  "design_sha256": "5d358375b1c506a3a2f240dbbb411c8e003a26b16da2ec43f25bacd9d905b6f2",
+  "critical_constraints": [
+    "env_guard recognizes ENV or WorldBoundaryAuthority receivers only, not arbitrary manual sessions.",
+    "EnvCustody.call has no generic internal/reentry/cleanup bypass.",
+    "Same-call world_phase and accepted_episode_seqs are narrow diagnostics only.",
+    "Manual session authenticity/prelock checks must be independently implemented by its producer.",
+    "Public abandon_episode during ordinary active manual body refuses absent the exact authorized claim/empty continuation.",
+    "Do not mint a fake outcall or RNG parent to obtain manual cleanup permission.",
+    "Ordinary waiting follows common admission then ENV lock; retention requires explicit authentic operation binding for guarded calls.",
+    "No ENV/POP/runtime/BANK/core/compiler producer body read."
+  ],
+  "compiled_fixture": {
+    "source": "tests/test_townlet/regressions/bac/test_pw_scope_conversion.py",
+    "line": 75,
+    "call": "UniverseCompiler().compile(Path(\"configs/test/token_set_smoke\"), primary_level=\"L0_test\", use_cache=False)"
+  },
+  "roster": {
+    "module": "townlet.config.world_roster",
+    "constructor": "WorldRosterDeclaration(world_ids)",
+    "transport": "WorldRosterDeclaration.from_dict({\"schema\":\"world-roster-v1\",\"world_ids\":list(ids)})"
+  },
+  "integrated_fixture": {
+    "module": "tests.test_townlet.regressions.bac.test_parent_intrinsic_handoff",
+    "constructor": "make_parent(compiled, family=\"none\", scope=\"shared\", *, selected_policy=None)",
+    "begin": "rig.enter(batch=0)",
+    "full_step": "rig.population.step_population(rig.env)",
+    "complete": "rig.complete()",
+    "population_size": 8,
+    "synthetic_width_not_supported_by_this_control": true
+  },
+  "application_execution": false,
+  "application_edits": false,
+  "git_operations": false
+}

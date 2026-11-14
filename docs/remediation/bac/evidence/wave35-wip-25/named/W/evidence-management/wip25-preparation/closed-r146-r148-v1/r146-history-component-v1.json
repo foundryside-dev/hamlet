@@ -1,0 +1,1391 @@
+{
+  "accounting": "Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.",
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+          "candidate_manifest": {
+            "bytes": 209624,
+            "path": "wave35/r146-candidate.json",
+            "root": "W",
+            "sha256": "a01ee4a036bb9b8f57ed2f40015a193d4f9c5b39cb29bb320511c0dec3ce050a"
+          },
+          "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 582,
+              "path": "wave35-r146-collection-spec.json",
+              "sha256": "58f51e493351cd0944c0812d30845d16ee1d9893c5703ae15fec2511edfc5905",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5532,
+            "path": "wave35/r146-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "df92486063091cd11e92c1b29fd73b7bf0f22341be2d2fc84bd51082e2e5715f"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r146-collection-spec.json--unrun",
+          "path": "wave35-r146-collection-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 146,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r146-collection-spec.json--unrun",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r146-collection-spec.json--unrun"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 0,
+          "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+          "candidate_manifest": {
+            "bytes": 209624,
+            "path": "wave35/r146-candidate.json",
+            "root": "W",
+            "sha256": "a01ee4a036bb9b8f57ed2f40015a193d4f9c5b39cb29bb320511c0dec3ce050a"
+          },
+          "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492",
+          "collected_count": 32,
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=line",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r146-manual-collection-attempt-1",
+            "--collect-only"
+          ],
+          "counts": null,
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r146-manual-collection-attempt-1/manual-collection",
+              "type": "directory"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r146-manual-collection-attempt-1/manual-collection/identity-controller.json",
+              "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83",
+              "type": "file"
+            },
+            {
+              "bytes": 1025,
+              "path": "wave35-r146-manual-collection-attempt-1/manual-collection-result.json",
+              "sha256": "fd1457df33b0a32c3b796114e2544f30d53a66aa9e570bb8d4a64e0387cf3762",
+              "type": "file"
+            },
+            {
+              "bytes": 3728,
+              "path": "wave35-r146-manual-collection-attempt-1/manual-collection.log",
+              "sha256": "2c0e1a9d2cc7f542d9e35dd9dadb9b86683500cf5306941f00f6768f9f97afbd",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 5.130359563976526,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5532,
+            "path": "wave35/r146-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "df92486063091cd11e92c1b29fd73b7bf0f22341be2d2fc84bd51082e2e5715f"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 0,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r146-manual-collection-attempt-1--manual-collection",
+          "log_paths": [
+            {
+              "bytes": 3728,
+              "path": "wave35-r146-manual-collection-attempt-1/manual-collection.log",
+              "root": "Q",
+              "sha256": "2c0e1a9d2cc7f542d9e35dd9dadb9b86683500cf5306941f00f6768f9f97afbd"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 917,
+            "path": "evidence-management/pop-standalone-step/wave35-r146-manual-collection-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "b66663354333a1809369883115743b72290db89a31716cc7a5d7957d19de6133"
+          },
+          "path": "wave35-r146-manual-collection-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r146-manual-collection-attempt-1/manual-collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r146-manual-collection-attempt-1/manual-collection/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83"
+            }
+          ],
+          "process_topology": "single_process",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1025,
+            "path": "wave35-r146-manual-collection-attempt-1/manual-collection-result.json",
+            "root": "Q",
+            "sha256": "fd1457df33b0a32c3b796114e2544f30d53a66aa9e570bb8d4a64e0387cf3762"
+          },
+          "record_id": "manual-collection",
+          "result": {
+            "bytes": 1025,
+            "path": "wave35-r146-manual-collection-attempt-1/manual-collection-result.json",
+            "root": "Q",
+            "sha256": "fd1457df33b0a32c3b796114e2544f30d53a66aa9e570bb8d4a64e0387cf3762"
+          },
+          "round": 146,
+          "started_at": null,
+          "status": "PASSED",
+          "verifier_unavailable_reason": "No unique original named postflight report; original result/log retained, root classification required."
+        }
+      ],
+      "check": "wave35-r146-manual-collection-attempt-1--manual-collection",
+      "check_kind": "collection",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r146-manual-collection-attempt-1--manual-collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "actual_worker_count": 2,
+          "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+          "candidate_manifest": {
+            "bytes": 209624,
+            "path": "wave35/r146-candidate.json",
+            "root": "W",
+            "sha256": "a01ee4a036bb9b8f57ed2f40015a193d4f9c5b39cb29bb320511c0dec3ce050a"
+          },
+          "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+            "--tb=line",
+            "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r146-manual-red-attempt-1",
+            "-n",
+            "2",
+            "--dist",
+            "worksteal"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 32,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+          "descendants": [
+            {
+              "path": "wave35-r146-manual-red-attempt-1/manual-red",
+              "type": "directory"
+            },
+            {
+              "bytes": 429,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-196185f5a2547676.json",
+              "sha256": "47c68a4b5b26a8ed78e39dc7a91aee0749826c7daebdb6c24275a04b7c38c504",
+              "type": "file"
+            },
+            {
+              "bytes": 421,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-1a7e56e2d1b07218.json",
+              "sha256": "67484d320bd2cb9a94ebffb273f39046b82f7a8bf65b687c443ef8fff8c5008c",
+              "type": "file"
+            },
+            {
+              "bytes": 446,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-1abcc367d154c746.json",
+              "sha256": "be977d5496482a4520d88fa3af2ba9e4f32ab2692e4371ea295e11575d9a8983",
+              "type": "file"
+            },
+            {
+              "bytes": 428,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-1b57c9c2df436477.json",
+              "sha256": "509a0cba221b601124cfc15c381aedb5ceff537665ba1b67221fea72f03b7235",
+              "type": "file"
+            },
+            {
+              "bytes": 459,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-25cbb6e0476df7f5.json",
+              "sha256": "94389052a2b3bae34a2ef39c56aba7c224badaf47031855e5148a4983bbd94f2",
+              "type": "file"
+            },
+            {
+              "bytes": 426,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-2dd687ebd20a77dc.json",
+              "sha256": "a3a6a5c3579859f9ac807c0cb760116d7171f27db1f22d0668a62e9d14deb329",
+              "type": "file"
+            },
+            {
+              "bytes": 422,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-3265ec5c7ddb2ead.json",
+              "sha256": "7493e51e13858b681470724256b9a11b65c3fbb4e8e31a148e78f2a53787a980",
+              "type": "file"
+            },
+            {
+              "bytes": 433,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-3b5fa2691ac7fa15.json",
+              "sha256": "40f50ea229de95a7365c39631d195c491acbf90627bd6bda55dc2b63051336ae",
+              "type": "file"
+            },
+            {
+              "bytes": 433,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-3e9654b09540c93f.json",
+              "sha256": "abb3a845bc3f54cbb265c3e46d47fbc618e03f246726278d656a253653c9002f",
+              "type": "file"
+            },
+            {
+              "bytes": 448,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-4fb8d2bef2857e4b.json",
+              "sha256": "7c0e5c505016cf4f596e638213ce2a9dba76c5637114ba310a7d6a6b8c94ce5b",
+              "type": "file"
+            },
+            {
+              "bytes": 421,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-508e1f098b1b8c99.json",
+              "sha256": "4990c2ceea8536c5ac108ea7c12507c47717ffdb4ea70d20e4eedc7a38617e01",
+              "type": "file"
+            },
+            {
+              "bytes": 427,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-63863e0be1b833b8.json",
+              "sha256": "53a827b637a75cb6860959f846cdd9adbf2d8934084de248a9212212ec82e985",
+              "type": "file"
+            },
+            {
+              "bytes": 421,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-66de85be04272ab2.json",
+              "sha256": "dfae0f103021efa42e32041db6a0bbf06df8fe7d9b8f42c2560feaaa9a4e34f4",
+              "type": "file"
+            },
+            {
+              "bytes": 435,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-6ebe03acde9dcc7c.json",
+              "sha256": "9db5912d372a6502a4d3cc137c649c2a3b1d053df57226952975f55f1b917ef1",
+              "type": "file"
+            },
+            {
+              "bytes": 436,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-72169e4733cf2b19.json",
+              "sha256": "1f517442bbc78cef7952a31a55dbe9aeb7cda17c470e97fbe935aa8e70c1052c",
+              "type": "file"
+            },
+            {
+              "bytes": 448,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-766dcfce676ea6fb.json",
+              "sha256": "1486dba7c835a7b55c5bdb7c79b00fb0e4860e6da592e37d6e723305868030e3",
+              "type": "file"
+            },
+            {
+              "bytes": 430,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-95c575b986e4a162.json",
+              "sha256": "79b67b0ade8ef717f8976d5cb5c86a0db89dfe0cd91fb7d38cf3d84892711a74",
+              "type": "file"
+            },
+            {
+              "bytes": 434,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-972909423fdc1ca5.json",
+              "sha256": "96418cf52a386f8f1d5734065e5bb7ac1adeb65c7985bc86c05fd88cb12b6d0a",
+              "type": "file"
+            },
+            {
+              "bytes": 459,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-9f3129ef1745bde3.json",
+              "sha256": "d285464042359075368398919dc3f2bc07db5375e702e4d9170045de63f02a90",
+              "type": "file"
+            },
+            {
+              "bytes": 432,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-aaf7f9f3aab2a69c.json",
+              "sha256": "207f1c274c5310472c4c81b022e0c8d8c5257e635e63cdd404e3b81a3ac6c9c7",
+              "type": "file"
+            },
+            {
+              "bytes": 441,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b1208acdc6af163d.json",
+              "sha256": "9e17d4f8031d55c3632e350f1adb9f969200f3fcbb2a97a71a9b62b88e87b46f",
+              "type": "file"
+            },
+            {
+              "bytes": 425,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b6b395ff48bf11a2.json",
+              "sha256": "70c5ff92c6b869a6ce6d4dc03e3d90e234980621c2469c1c5ad99daac38eb104",
+              "type": "file"
+            },
+            {
+              "bytes": 441,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b8eb9a6ac79ba055.json",
+              "sha256": "e2aa49e08a0743176536ff7dad668c988fdcdf730d47a81f4f7e5c0e854fc10a",
+              "type": "file"
+            },
+            {
+              "bytes": 447,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b9b828a3102d9205.json",
+              "sha256": "dfdc3039b97bb0353e35d578faee48a97b010459b01fd670930447e2e6b3545a",
+              "type": "file"
+            },
+            {
+              "bytes": 441,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-be1bc1cb6804c8a3.json",
+              "sha256": "a09ba0f647b39293b58a7afc7a1be759800ea4ffbb929f775e968c247b63c80d",
+              "type": "file"
+            },
+            {
+              "bytes": 441,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-c0ebeb7faf8e4e98.json",
+              "sha256": "ccedd4de70759f70560d0bcc5718e1b9455d72ae7d93cfb48eb6b26cbd0f5da2",
+              "type": "file"
+            },
+            {
+              "bytes": 446,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-c4a484e69b755055.json",
+              "sha256": "8f34f393a5587192821065e7285db81ca01ff4f74e3ac13de872fa05195cc811",
+              "type": "file"
+            },
+            {
+              "bytes": 459,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-c6330efd7404251e.json",
+              "sha256": "fa13b6da93a2ada0999b5708d1805eb1ec0feca780d273152e6eeed826db6c86",
+              "type": "file"
+            },
+            {
+              "bytes": 422,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-d3ad905a3c80743d.json",
+              "sha256": "50165dc14e3ef7be28768668938e6c52eb31cab84c1f622d6460eec9b3fd1297",
+              "type": "file"
+            },
+            {
+              "bytes": 444,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-e0abd6b1c0c8e938.json",
+              "sha256": "3d7a47fe4e472b260326e90230851f86ca043f2e4294f70bd54165af995e7184",
+              "type": "file"
+            },
+            {
+              "bytes": 421,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-e1e536f3fa3830f3.json",
+              "sha256": "f9676629f5dde9793848aed95f5d1aa328a5f5864af9176f7e56eebf2bf5e1c0",
+              "type": "file"
+            },
+            {
+              "bytes": 441,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-e84998630f5cd2b6.json",
+              "sha256": "c49acb929e45531e84bc0bb2a5269170116e8b5df49b0ad5adf5e37655018356",
+              "type": "file"
+            },
+            {
+              "bytes": 422,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-196185f5a2547676.json",
+              "sha256": "802ca8a08fef10eb4ec1fd0cb5988e5b7f8e7cf3cc7927b4e8bc24033ff316f0",
+              "type": "file"
+            },
+            {
+              "bytes": 414,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-1a7e56e2d1b07218.json",
+              "sha256": "2ee7f3c31d2ded0c632cf8fabf35d2a056e5372b584e3b6a02714f555212725c",
+              "type": "file"
+            },
+            {
+              "bytes": 439,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-1abcc367d154c746.json",
+              "sha256": "d2975494e9e80de6ce9f6fb9a74127bf66b24a3336b97b1a57273c23997392d8",
+              "type": "file"
+            },
+            {
+              "bytes": 419,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-2dd687ebd20a77dc.json",
+              "sha256": "384f3783ad83fb0de563487b35e01ce7c562974e9fce106464e7a10213371400",
+              "type": "file"
+            },
+            {
+              "bytes": 415,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-3265ec5c7ddb2ead.json",
+              "sha256": "4a7b0aa0801a296132ee874be3eadd2a4637f12bb9e2715f1e1612c50aa6538c",
+              "type": "file"
+            },
+            {
+              "bytes": 426,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-3b5fa2691ac7fa15.json",
+              "sha256": "597ac476d1e92a47eeeb7eda99d31db061b4fa7aacd0c1bf5efb076a52579577",
+              "type": "file"
+            },
+            {
+              "bytes": 426,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-3e9654b09540c93f.json",
+              "sha256": "1408f9b7b6c6da6fdf6792eb1ef8ae2f6a74df151f2d09396af82d10205fab65",
+              "type": "file"
+            },
+            {
+              "bytes": 441,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-4fb8d2bef2857e4b.json",
+              "sha256": "622f5c93049c6a351146c1e363e1b7ad2ed9507435713ba52faa1a5e5da575d6",
+              "type": "file"
+            },
+            {
+              "bytes": 414,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-508e1f098b1b8c99.json",
+              "sha256": "d2e7177a4ef09bd0016eaa41c2928a76228370fe82be0c16124d3c903bb420d2",
+              "type": "file"
+            },
+            {
+              "bytes": 420,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-63863e0be1b833b8.json",
+              "sha256": "5daa18b135c9f2cc5d72ae9bde60d76d669946053568439548f69769cf3cd1c7",
+              "type": "file"
+            },
+            {
+              "bytes": 414,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-66de85be04272ab2.json",
+              "sha256": "2861483bcbad17cffa3e3a6fd310c30099abcdd8beab98811652afae99257d9d",
+              "type": "file"
+            },
+            {
+              "bytes": 429,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-72169e4733cf2b19.json",
+              "sha256": "30c7ca2e3fbc78fa7e56cdfcbe82e2dab1c6ea70ca23366266d2f11f2ddf312f",
+              "type": "file"
+            },
+            {
+              "bytes": 441,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-766dcfce676ea6fb.json",
+              "sha256": "72016c2c65e93272e947725ade1639bc1c48dc0cd773e6ca713e9fe9f1b764cd",
+              "type": "file"
+            },
+            {
+              "bytes": 423,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-95c575b986e4a162.json",
+              "sha256": "83116302040bffaf8c589a6ba31bf663db3ce5cbf2e389cc70163b92246f3bd7",
+              "type": "file"
+            },
+            {
+              "bytes": 425,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-aaf7f9f3aab2a69c.json",
+              "sha256": "620049dddc4fb2768633d87e5e4a5dfc1376e11433c74bca318b677df1e3ef5d",
+              "type": "file"
+            },
+            {
+              "bytes": 434,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-b1208acdc6af163d.json",
+              "sha256": "7cadece84a129d02e79c021146e395b4a7ac57f77f3d780cf8a3907c8b2f7c88",
+              "type": "file"
+            },
+            {
+              "bytes": 418,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-b6b395ff48bf11a2.json",
+              "sha256": "85be62daa5884771c3e8c085f4a774ed54bc8eff0bcdb6032466d73f3d9b2af1",
+              "type": "file"
+            },
+            {
+              "bytes": 440,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-b9b828a3102d9205.json",
+              "sha256": "22131f1607fab449946601006147704ffe2d4df4e00295499e201b4456c3ab9c",
+              "type": "file"
+            },
+            {
+              "bytes": 434,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-be1bc1cb6804c8a3.json",
+              "sha256": "a20f91238f57c0720db6fa436f675e86f11cc8dc35b7b259250db08f9e8fb672",
+              "type": "file"
+            },
+            {
+              "bytes": 439,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-c4a484e69b755055.json",
+              "sha256": "29e4c4a02d44eb4d84ea66a3fc475e1b8e8cc61093eb1155b42cf381e364d4d0",
+              "type": "file"
+            },
+            {
+              "bytes": 415,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-d3ad905a3c80743d.json",
+              "sha256": "eb468db077418973645f497aaa5d0186567e162b9058ddc409466db854441c11",
+              "type": "file"
+            },
+            {
+              "bytes": 437,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-e0abd6b1c0c8e938.json",
+              "sha256": "5b02026fbfd707e6386c5ce54bd65132112d2637c49a51806b2ffb2f76669cce",
+              "type": "file"
+            },
+            {
+              "bytes": 414,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-e1e536f3fa3830f3.json",
+              "sha256": "eddde470f2887fcc0f9347587d249121c6543d667e70ac0ccf907fd298bf8ef2",
+              "type": "file"
+            },
+            {
+              "bytes": 434,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-e84998630f5cd2b6.json",
+              "sha256": "6f89604ff2e6f78ce82e732c14e0bc845fbb919f7bc53b815fdd89f1e5e024b2",
+              "type": "file"
+            },
+            {
+              "bytes": 421,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-1b57c9c2df436477.json",
+              "sha256": "fab5190e9a61323c7988843daf0f9c12e35d0480933d5c78ab56c55477742db6",
+              "type": "file"
+            },
+            {
+              "bytes": 452,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-25cbb6e0476df7f5.json",
+              "sha256": "98d0fdbe238193bd0eac0e08f392e69b2c2dd881a9a3214fabe2c38cecbdc8d7",
+              "type": "file"
+            },
+            {
+              "bytes": 428,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-6ebe03acde9dcc7c.json",
+              "sha256": "526976dba5cec90cb23ff9f29c233f7b96301609c889ae65282e24a7af7871d0",
+              "type": "file"
+            },
+            {
+              "bytes": 427,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-972909423fdc1ca5.json",
+              "sha256": "7531ca72492d1c84ee2d440700e84c0acf4af81516324794551a8d2ca2bf1ee8",
+              "type": "file"
+            },
+            {
+              "bytes": 452,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-9f3129ef1745bde3.json",
+              "sha256": "5aee6d91415872d94482db75f68c27385b971c6412215d4376f27638f42be19b",
+              "type": "file"
+            },
+            {
+              "bytes": 434,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-b8eb9a6ac79ba055.json",
+              "sha256": "9125fb6902355c386338b07fcc66c15421987c14ee2d0a38c4590b86515e98d6",
+              "type": "file"
+            },
+            {
+              "bytes": 434,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-c0ebeb7faf8e4e98.json",
+              "sha256": "2e1276d85a454dc250858d3c8c9b9449a5295226431c6f24b487db60749fdb1f",
+              "type": "file"
+            },
+            {
+              "bytes": 452,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-c6330efd7404251e.json",
+              "sha256": "cf57bd73a119e427d8ddcef73bc4fce5bbabcbd350cd59f74dbb6e5e2cd940f0",
+              "type": "file"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-controller.json",
+              "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-gw0.json",
+              "sha256": "f43743224a4354e468b6fef1320f1411be51b66cf0398d279193c9906ba34817",
+              "type": "file"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-gw1.json",
+              "sha256": "280753fee74aaae54d97aa27a261c6833a9c8e22362a8edee7db33bbe073b2ac",
+              "type": "file"
+            },
+            {
+              "bytes": 7386,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red-failure-index.json",
+              "sha256": "55ada88ca3df09eedbb660f1004ade90560ff6a7de8651dd5b744b06fb9c81e8",
+              "type": "file"
+            },
+            {
+              "bytes": 960,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red-negative-custody.json",
+              "sha256": "e29093a1324e6774a566cb1cd0d447e239a5a1047a0f83441b99a3d8aa9d61a3",
+              "type": "file"
+            },
+            {
+              "bytes": 1025,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red-result.json",
+              "sha256": "b6750ca9901af2f8ca998a559ebea4f26a47cf091043ee9df3ed45a2abc8399c",
+              "type": "file"
+            },
+            {
+              "bytes": 10531,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red.log",
+              "sha256": "04ec673b0afef3039b64aa8451b57cec1d4abdfbd78826ad9fac94e54a881e36",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": 15.39497196598677,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5532,
+            "path": "wave35/r146-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "df92486063091cd11e92c1b29fd73b7bf0f22341be2d2fc84bd51082e2e5715f"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": 1,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+          "id": "wave35-r146-manual-red-attempt-1--manual-red",
+          "log_paths": [
+            {
+              "bytes": 10531,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red.log",
+              "root": "Q",
+              "sha256": "04ec673b0afef3039b64aa8451b57cec1d4abdfbd78826ad9fac94e54a881e36"
+            }
+          ],
+          "outer_launcher_observation": {
+            "bytes": 903,
+            "path": "evidence-management/pop-standalone-step/wave35-r146-manual-red-attempt-1-outer.json",
+            "root": "W",
+            "sha256": "5591100a27265312b78bb5267b2ce22fed15165e4f0dd00cd54ec9512554b638"
+          },
+          "path": "wave35-r146-manual-red-attempt-1",
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-controller.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-gw0.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "f43743224a4354e468b6fef1320f1411be51b66cf0398d279193c9906ba34817"
+            },
+            {
+              "bytes": 239,
+              "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-gw1.json",
+              "role": "worker",
+              "root": "Q",
+              "sha256": "280753fee74aaae54d97aa27a261c6833a9c8e22362a8edee7db33bbe073b2ac"
+            }
+          ],
+          "process_topology": "xdist",
+          "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+          "record": {
+            "bytes": 1025,
+            "path": "wave35-r146-manual-red-attempt-1/manual-red-result.json",
+            "root": "Q",
+            "sha256": "b6750ca9901af2f8ca998a559ebea4f26a47cf091043ee9df3ed45a2abc8399c"
+          },
+          "record_id": "manual-red",
+          "result": {
+            "bytes": 1025,
+            "path": "wave35-r146-manual-red-attempt-1/manual-red-result.json",
+            "root": "Q",
+            "sha256": "b6750ca9901af2f8ca998a559ebea4f26a47cf091043ee9df3ed45a2abc8399c"
+          },
+          "round": 146,
+          "started_at": null,
+          "status": "FAILED",
+          "verifier": {
+            "bytes": 960,
+            "path": "wave35-r146-manual-red-attempt-1/manual-red-negative-custody.json",
+            "root": "Q",
+            "sha256": "e29093a1324e6774a566cb1cd0d447e239a5a1047a0f83441b99a3d8aa9d61a3"
+          }
+        }
+      ],
+      "check": "wave35-r146-manual-red-attempt-1--manual-red",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 4482,
+          "path": "run_bac_cold_checks_locked.py",
+          "root": "Q",
+          "sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r146-manual-red-attempt-1--manual-red"
+    },
+    {
+      "attempts": [
+        {
+          "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+          "candidate_manifest": {
+            "bytes": 209624,
+            "path": "wave35/r146-candidate.json",
+            "root": "W",
+            "sha256": "a01ee4a036bb9b8f57ed2f40015a193d4f9c5b39cb29bb320511c0dec3ce050a"
+          },
+          "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492",
+          "command": null,
+          "counts": null,
+          "descendants": [
+            {
+              "bytes": 707,
+              "path": "wave35-r146-owned-spec.json",
+              "sha256": "4444c63ab7f82c63d73800cdd474951bf65989cc91b5f82b4e573315da5f71b6",
+              "type": "file"
+            }
+          ],
+          "duration_seconds": null,
+          "ended_at": null,
+          "environment": {
+            "bytes": 5532,
+            "path": "wave35/r146-fixture-resource-preflight.json",
+            "root": "W",
+            "sha256": "df92486063091cd11e92c1b29fd73b7bf0f22341be2d2fc84bd51082e2e5715f"
+          },
+          "execution_subtrees": null,
+          "execution_subtrees_unavailable_reason": "Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.",
+          "exit_code": null,
+          "hardware": {
+            "profile": "Recorded CPU preflight; actual CUDA unqualified"
+          },
+          "id": "wave35-r146-owned-spec.json--unrun",
+          "path": "wave35-r146-owned-spec.json",
+          "process_custody": [],
+          "record_id": "unrun",
+          "round": 146,
+          "started_at": null,
+          "status": "UNRUN",
+          "unrun_reason": "Unused automatic unrelated T21 template; actual named interval checks retained separately."
+        }
+      ],
+      "check": "wave35-r146-owned-spec.json--unrun",
+      "check_kind": "runtime",
+      "qualifying": false,
+      "required_dependencies": [],
+      "scope": "Closed observed history only; no terminal checkpoint or full C2/BAC qualification.",
+      "status": "UNRUN",
+      "terminal_attempt": "wave35-r146-owned-spec.json--unrun"
+    }
+  ],
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "candidate_manifest": {
+    "bytes": 209624,
+    "path": "wave35/r146-candidate.json",
+    "root": "W",
+    "sha256": "a01ee4a036bb9b8f57ed2f40015a193d4f9c5b39cb29bb320511c0dec3ce050a"
+  },
+  "candidate_tree": "39a39a74ee1af21569927696e119fb5851c18492",
+  "fixture_preflight": {
+    "bytes": 5532,
+    "path": "wave35/r146-fixture-resource-preflight.json",
+    "root": "W",
+    "sha256": "df92486063091cd11e92c1b29fd73b7bf0f22341be2d2fc84bd51082e2e5715f"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r146-collection-spec.json",
+      "round": 146,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r146-manual-collection-attempt-1",
+      "round": 146,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r146-manual-collection-attempt-1-spec.json",
+      "round": 146,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r146-manual-red-attempt-1",
+      "round": 146,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r146-manual-red-attempt-1-spec.json",
+      "round": 146,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r146-owned-spec.json",
+      "round": 146,
+      "status": "UNRUN"
+    }
+  ],
+  "interval_inventory": {
+    "wave35-r146-collection-spec.json": [
+      {
+        "bytes": 582,
+        "path": "wave35-r146-collection-spec.json",
+        "sha256": "58f51e493351cd0944c0812d30845d16ee1d9893c5703ae15fec2511edfc5905",
+        "type": "file"
+      }
+    ],
+    "wave35-r146-manual-collection-attempt-1": [
+      {
+        "path": "wave35-r146-manual-collection-attempt-1/manual-collection",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r146-manual-collection-attempt-1/manual-collection/identity-controller.json",
+        "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83",
+        "type": "file"
+      },
+      {
+        "bytes": 1025,
+        "path": "wave35-r146-manual-collection-attempt-1/manual-collection-result.json",
+        "sha256": "fd1457df33b0a32c3b796114e2544f30d53a66aa9e570bb8d4a64e0387cf3762",
+        "type": "file"
+      },
+      {
+        "bytes": 3728,
+        "path": "wave35-r146-manual-collection-attempt-1/manual-collection.log",
+        "sha256": "2c0e1a9d2cc7f542d9e35dd9dadb9b86683500cf5306941f00f6768f9f97afbd",
+        "type": "file"
+      }
+    ],
+    "wave35-r146-manual-collection-attempt-1-spec.json": [
+      {
+        "bytes": 787,
+        "path": "wave35-r146-manual-collection-attempt-1-spec.json",
+        "sha256": "2af7be72eaefe7ee842a3d1a5ee757e2cd59e436a78810281e111fc05d3e2e5b",
+        "type": "file"
+      }
+    ],
+    "wave35-r146-manual-red-attempt-1": [
+      {
+        "path": "wave35-r146-manual-red-attempt-1/manual-red",
+        "type": "directory"
+      },
+      {
+        "bytes": 429,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-196185f5a2547676.json",
+        "sha256": "47c68a4b5b26a8ed78e39dc7a91aee0749826c7daebdb6c24275a04b7c38c504",
+        "type": "file"
+      },
+      {
+        "bytes": 421,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-1a7e56e2d1b07218.json",
+        "sha256": "67484d320bd2cb9a94ebffb273f39046b82f7a8bf65b687c443ef8fff8c5008c",
+        "type": "file"
+      },
+      {
+        "bytes": 446,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-1abcc367d154c746.json",
+        "sha256": "be977d5496482a4520d88fa3af2ba9e4f32ab2692e4371ea295e11575d9a8983",
+        "type": "file"
+      },
+      {
+        "bytes": 428,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-1b57c9c2df436477.json",
+        "sha256": "509a0cba221b601124cfc15c381aedb5ceff537665ba1b67221fea72f03b7235",
+        "type": "file"
+      },
+      {
+        "bytes": 459,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-25cbb6e0476df7f5.json",
+        "sha256": "94389052a2b3bae34a2ef39c56aba7c224badaf47031855e5148a4983bbd94f2",
+        "type": "file"
+      },
+      {
+        "bytes": 426,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-2dd687ebd20a77dc.json",
+        "sha256": "a3a6a5c3579859f9ac807c0cb760116d7171f27db1f22d0668a62e9d14deb329",
+        "type": "file"
+      },
+      {
+        "bytes": 422,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-3265ec5c7ddb2ead.json",
+        "sha256": "7493e51e13858b681470724256b9a11b65c3fbb4e8e31a148e78f2a53787a980",
+        "type": "file"
+      },
+      {
+        "bytes": 433,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-3b5fa2691ac7fa15.json",
+        "sha256": "40f50ea229de95a7365c39631d195c491acbf90627bd6bda55dc2b63051336ae",
+        "type": "file"
+      },
+      {
+        "bytes": 433,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-3e9654b09540c93f.json",
+        "sha256": "abb3a845bc3f54cbb265c3e46d47fbc618e03f246726278d656a253653c9002f",
+        "type": "file"
+      },
+      {
+        "bytes": 448,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-4fb8d2bef2857e4b.json",
+        "sha256": "7c0e5c505016cf4f596e638213ce2a9dba76c5637114ba310a7d6a6b8c94ce5b",
+        "type": "file"
+      },
+      {
+        "bytes": 421,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-508e1f098b1b8c99.json",
+        "sha256": "4990c2ceea8536c5ac108ea7c12507c47717ffdb4ea70d20e4eedc7a38617e01",
+        "type": "file"
+      },
+      {
+        "bytes": 427,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-63863e0be1b833b8.json",
+        "sha256": "53a827b637a75cb6860959f846cdd9adbf2d8934084de248a9212212ec82e985",
+        "type": "file"
+      },
+      {
+        "bytes": 421,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-66de85be04272ab2.json",
+        "sha256": "dfae0f103021efa42e32041db6a0bbf06df8fe7d9b8f42c2560feaaa9a4e34f4",
+        "type": "file"
+      },
+      {
+        "bytes": 435,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-6ebe03acde9dcc7c.json",
+        "sha256": "9db5912d372a6502a4d3cc137c649c2a3b1d053df57226952975f55f1b917ef1",
+        "type": "file"
+      },
+      {
+        "bytes": 436,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-72169e4733cf2b19.json",
+        "sha256": "1f517442bbc78cef7952a31a55dbe9aeb7cda17c470e97fbe935aa8e70c1052c",
+        "type": "file"
+      },
+      {
+        "bytes": 448,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-766dcfce676ea6fb.json",
+        "sha256": "1486dba7c835a7b55c5bdb7c79b00fb0e4860e6da592e37d6e723305868030e3",
+        "type": "file"
+      },
+      {
+        "bytes": 430,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-95c575b986e4a162.json",
+        "sha256": "79b67b0ade8ef717f8976d5cb5c86a0db89dfe0cd91fb7d38cf3d84892711a74",
+        "type": "file"
+      },
+      {
+        "bytes": 434,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-972909423fdc1ca5.json",
+        "sha256": "96418cf52a386f8f1d5734065e5bb7ac1adeb65c7985bc86c05fd88cb12b6d0a",
+        "type": "file"
+      },
+      {
+        "bytes": 459,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-9f3129ef1745bde3.json",
+        "sha256": "d285464042359075368398919dc3f2bc07db5375e702e4d9170045de63f02a90",
+        "type": "file"
+      },
+      {
+        "bytes": 432,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-aaf7f9f3aab2a69c.json",
+        "sha256": "207f1c274c5310472c4c81b022e0c8d8c5257e635e63cdd404e3b81a3ac6c9c7",
+        "type": "file"
+      },
+      {
+        "bytes": 441,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b1208acdc6af163d.json",
+        "sha256": "9e17d4f8031d55c3632e350f1adb9f969200f3fcbb2a97a71a9b62b88e87b46f",
+        "type": "file"
+      },
+      {
+        "bytes": 425,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b6b395ff48bf11a2.json",
+        "sha256": "70c5ff92c6b869a6ce6d4dc03e3d90e234980621c2469c1c5ad99daac38eb104",
+        "type": "file"
+      },
+      {
+        "bytes": 441,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b8eb9a6ac79ba055.json",
+        "sha256": "e2aa49e08a0743176536ff7dad668c988fdcdf730d47a81f4f7e5c0e854fc10a",
+        "type": "file"
+      },
+      {
+        "bytes": 447,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-b9b828a3102d9205.json",
+        "sha256": "dfdc3039b97bb0353e35d578faee48a97b010459b01fd670930447e2e6b3545a",
+        "type": "file"
+      },
+      {
+        "bytes": 441,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-be1bc1cb6804c8a3.json",
+        "sha256": "a09ba0f647b39293b58a7afc7a1be759800ea4ffbb929f775e968c247b63c80d",
+        "type": "file"
+      },
+      {
+        "bytes": 441,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-c0ebeb7faf8e4e98.json",
+        "sha256": "ccedd4de70759f70560d0bcc5718e1b9455d72ae7d93cfb48eb6b26cbd0f5da2",
+        "type": "file"
+      },
+      {
+        "bytes": 446,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-c4a484e69b755055.json",
+        "sha256": "8f34f393a5587192821065e7285db81ca01ff4f74e3ac13de872fa05195cc811",
+        "type": "file"
+      },
+      {
+        "bytes": 459,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-c6330efd7404251e.json",
+        "sha256": "fa13b6da93a2ada0999b5708d1805eb1ec0feca780d273152e6eeed826db6c86",
+        "type": "file"
+      },
+      {
+        "bytes": 422,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-d3ad905a3c80743d.json",
+        "sha256": "50165dc14e3ef7be28768668938e6c52eb31cab84c1f622d6460eec9b3fd1297",
+        "type": "file"
+      },
+      {
+        "bytes": 444,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-e0abd6b1c0c8e938.json",
+        "sha256": "3d7a47fe4e472b260326e90230851f86ca043f2e4294f70bd54165af995e7184",
+        "type": "file"
+      },
+      {
+        "bytes": 421,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-e1e536f3fa3830f3.json",
+        "sha256": "f9676629f5dde9793848aed95f5d1aa328a5f5864af9176f7e56eebf2bf5e1c0",
+        "type": "file"
+      },
+      {
+        "bytes": 441,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-controller-e84998630f5cd2b6.json",
+        "sha256": "c49acb929e45531e84bc0bb2a5269170116e8b5df49b0ad5adf5e37655018356",
+        "type": "file"
+      },
+      {
+        "bytes": 422,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-196185f5a2547676.json",
+        "sha256": "802ca8a08fef10eb4ec1fd0cb5988e5b7f8e7cf3cc7927b4e8bc24033ff316f0",
+        "type": "file"
+      },
+      {
+        "bytes": 414,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-1a7e56e2d1b07218.json",
+        "sha256": "2ee7f3c31d2ded0c632cf8fabf35d2a056e5372b584e3b6a02714f555212725c",
+        "type": "file"
+      },
+      {
+        "bytes": 439,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-1abcc367d154c746.json",
+        "sha256": "d2975494e9e80de6ce9f6fb9a74127bf66b24a3336b97b1a57273c23997392d8",
+        "type": "file"
+      },
+      {
+        "bytes": 419,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-2dd687ebd20a77dc.json",
+        "sha256": "384f3783ad83fb0de563487b35e01ce7c562974e9fce106464e7a10213371400",
+        "type": "file"
+      },
+      {
+        "bytes": 415,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-3265ec5c7ddb2ead.json",
+        "sha256": "4a7b0aa0801a296132ee874be3eadd2a4637f12bb9e2715f1e1612c50aa6538c",
+        "type": "file"
+      },
+      {
+        "bytes": 426,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-3b5fa2691ac7fa15.json",
+        "sha256": "597ac476d1e92a47eeeb7eda99d31db061b4fa7aacd0c1bf5efb076a52579577",
+        "type": "file"
+      },
+      {
+        "bytes": 426,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-3e9654b09540c93f.json",
+        "sha256": "1408f9b7b6c6da6fdf6792eb1ef8ae2f6a74df151f2d09396af82d10205fab65",
+        "type": "file"
+      },
+      {
+        "bytes": 441,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-4fb8d2bef2857e4b.json",
+        "sha256": "622f5c93049c6a351146c1e363e1b7ad2ed9507435713ba52faa1a5e5da575d6",
+        "type": "file"
+      },
+      {
+        "bytes": 414,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-508e1f098b1b8c99.json",
+        "sha256": "d2e7177a4ef09bd0016eaa41c2928a76228370fe82be0c16124d3c903bb420d2",
+        "type": "file"
+      },
+      {
+        "bytes": 420,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-63863e0be1b833b8.json",
+        "sha256": "5daa18b135c9f2cc5d72ae9bde60d76d669946053568439548f69769cf3cd1c7",
+        "type": "file"
+      },
+      {
+        "bytes": 414,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-66de85be04272ab2.json",
+        "sha256": "2861483bcbad17cffa3e3a6fd310c30099abcdd8beab98811652afae99257d9d",
+        "type": "file"
+      },
+      {
+        "bytes": 429,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-72169e4733cf2b19.json",
+        "sha256": "30c7ca2e3fbc78fa7e56cdfcbe82e2dab1c6ea70ca23366266d2f11f2ddf312f",
+        "type": "file"
+      },
+      {
+        "bytes": 441,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-766dcfce676ea6fb.json",
+        "sha256": "72016c2c65e93272e947725ade1639bc1c48dc0cd773e6ca713e9fe9f1b764cd",
+        "type": "file"
+      },
+      {
+        "bytes": 423,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-95c575b986e4a162.json",
+        "sha256": "83116302040bffaf8c589a6ba31bf663db3ce5cbf2e389cc70163b92246f3bd7",
+        "type": "file"
+      },
+      {
+        "bytes": 425,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-aaf7f9f3aab2a69c.json",
+        "sha256": "620049dddc4fb2768633d87e5e4a5dfc1376e11433c74bca318b677df1e3ef5d",
+        "type": "file"
+      },
+      {
+        "bytes": 434,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-b1208acdc6af163d.json",
+        "sha256": "7cadece84a129d02e79c021146e395b4a7ac57f77f3d780cf8a3907c8b2f7c88",
+        "type": "file"
+      },
+      {
+        "bytes": 418,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-b6b395ff48bf11a2.json",
+        "sha256": "85be62daa5884771c3e8c085f4a774ed54bc8eff0bcdb6032466d73f3d9b2af1",
+        "type": "file"
+      },
+      {
+        "bytes": 440,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-b9b828a3102d9205.json",
+        "sha256": "22131f1607fab449946601006147704ffe2d4df4e00295499e201b4456c3ab9c",
+        "type": "file"
+      },
+      {
+        "bytes": 434,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-be1bc1cb6804c8a3.json",
+        "sha256": "a20f91238f57c0720db6fa436f675e86f11cc8dc35b7b259250db08f9e8fb672",
+        "type": "file"
+      },
+      {
+        "bytes": 439,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-c4a484e69b755055.json",
+        "sha256": "29e4c4a02d44eb4d84ea66a3fc475e1b8e8cc61093eb1155b42cf381e364d4d0",
+        "type": "file"
+      },
+      {
+        "bytes": 415,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-d3ad905a3c80743d.json",
+        "sha256": "eb468db077418973645f497aaa5d0186567e162b9058ddc409466db854441c11",
+        "type": "file"
+      },
+      {
+        "bytes": 437,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-e0abd6b1c0c8e938.json",
+        "sha256": "5b02026fbfd707e6386c5ce54bd65132112d2637c49a51806b2ffb2f76669cce",
+        "type": "file"
+      },
+      {
+        "bytes": 414,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-e1e536f3fa3830f3.json",
+        "sha256": "eddde470f2887fcc0f9347587d249121c6543d667e70ac0ccf907fd298bf8ef2",
+        "type": "file"
+      },
+      {
+        "bytes": 434,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw0-e84998630f5cd2b6.json",
+        "sha256": "6f89604ff2e6f78ce82e732c14e0bc845fbb919f7bc53b815fdd89f1e5e024b2",
+        "type": "file"
+      },
+      {
+        "bytes": 421,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-1b57c9c2df436477.json",
+        "sha256": "fab5190e9a61323c7988843daf0f9c12e35d0480933d5c78ab56c55477742db6",
+        "type": "file"
+      },
+      {
+        "bytes": 452,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-25cbb6e0476df7f5.json",
+        "sha256": "98d0fdbe238193bd0eac0e08f392e69b2c2dd881a9a3214fabe2c38cecbdc8d7",
+        "type": "file"
+      },
+      {
+        "bytes": 428,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-6ebe03acde9dcc7c.json",
+        "sha256": "526976dba5cec90cb23ff9f29c233f7b96301609c889ae65282e24a7af7871d0",
+        "type": "file"
+      },
+      {
+        "bytes": 427,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-972909423fdc1ca5.json",
+        "sha256": "7531ca72492d1c84ee2d440700e84c0acf4af81516324794551a8d2ca2bf1ee8",
+        "type": "file"
+      },
+      {
+        "bytes": 452,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-9f3129ef1745bde3.json",
+        "sha256": "5aee6d91415872d94482db75f68c27385b971c6412215d4376f27638f42be19b",
+        "type": "file"
+      },
+      {
+        "bytes": 434,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-b8eb9a6ac79ba055.json",
+        "sha256": "9125fb6902355c386338b07fcc66c15421987c14ee2d0a38c4590b86515e98d6",
+        "type": "file"
+      },
+      {
+        "bytes": 434,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-c0ebeb7faf8e4e98.json",
+        "sha256": "2e1276d85a454dc250858d3c8c9b9449a5295226431c6f24b487db60749fdb1f",
+        "type": "file"
+      },
+      {
+        "bytes": 452,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/failure-gw1-c6330efd7404251e.json",
+        "sha256": "cf57bd73a119e427d8ddcef73bc4fce5bbabcbd350cd59f74dbb6e5e2cd940f0",
+        "type": "file"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-controller.json",
+        "sha256": "2d812c37097ff51f90a2140718d25216f191926faf30cc4f808921d858ccca83",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-gw0.json",
+        "sha256": "f43743224a4354e468b6fef1320f1411be51b66cf0398d279193c9906ba34817",
+        "type": "file"
+      },
+      {
+        "bytes": 239,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red/identity-gw1.json",
+        "sha256": "280753fee74aaae54d97aa27a261c6833a9c8e22362a8edee7db33bbe073b2ac",
+        "type": "file"
+      },
+      {
+        "bytes": 7386,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red-failure-index.json",
+        "sha256": "55ada88ca3df09eedbb660f1004ade90560ff6a7de8651dd5b744b06fb9c81e8",
+        "type": "file"
+      },
+      {
+        "bytes": 960,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red-negative-custody.json",
+        "sha256": "e29093a1324e6774a566cb1cd0d447e239a5a1047a0f83441b99a3d8aa9d61a3",
+        "type": "file"
+      },
+      {
+        "bytes": 1025,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red-result.json",
+        "sha256": "b6750ca9901af2f8ca998a559ebea4f26a47cf091043ee9df3ed45a2abc8399c",
+        "type": "file"
+      },
+      {
+        "bytes": 10531,
+        "path": "wave35-r146-manual-red-attempt-1/manual-red.log",
+        "sha256": "04ec673b0afef3039b64aa8451b57cec1d4abdfbd78826ad9fac94e54a881e36",
+        "type": "file"
+      }
+    ],
+    "wave35-r146-manual-red-attempt-1-spec.json": [
+      {
+        "bytes": 806,
+        "path": "wave35-r146-manual-red-attempt-1-spec.json",
+        "sha256": "194ab4a3b50a53dc32ca1f74f0028e7c5a85c00b355405a891c0056ccf2c42a2",
+        "type": "file"
+      }
+    ],
+    "wave35-r146-owned-spec.json": [
+      {
+        "bytes": 707,
+        "path": "wave35-r146-owned-spec.json",
+        "sha256": "4444c63ab7f82c63d73800cdd474951bf65989cc91b5f82b4e573315da5f71b6",
+        "type": "file"
+      }
+    ]
+  },
+  "round": 146,
+  "schema": "bac-closed-round-history-component-v1",
+  "status": "CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN"
+}

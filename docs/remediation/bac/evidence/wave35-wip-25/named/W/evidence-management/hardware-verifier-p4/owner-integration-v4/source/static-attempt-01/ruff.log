@@ -1,0 +1,47 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:8:1
+   |
+ 6 |   """
+ 7 |
+ 8 | / import csv
+ 9 | | import datetime
+10 | | import hashlib
+11 | | from functools import wraps
+12 | | import io
+13 | | import itertools
+14 | | import json
+15 | | import math
+16 | | import os
+17 | | import re
+18 | | import stat
+19 | | from pathlib import Path
+20 | |
+21 | | import bac_hardware_protocol_v1 as protocol
+   | |___________________________________________^
+22 |
+23 |   COMMON = frozenset(("process-custody", "source-freeze", "required-cases"))
+   |
+help: Organize imports
+   |
+10 | import hashlib
+   - from functools import wraps
+11 | import io
+--------------------------------------------------------------------------------
+17 | import stat
+18 + from functools import wraps
+19 | from pathlib import Path
+   |
+
+DTZ007 Naive datetime constructed using `datetime.datetime.strptime()` without %z
+   --> bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py:308:5
+    |
+306 | def capture_utc(value):
+307 |     require(type(value) is str and re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z", value), "capture…
+308 |     datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+309 |     return value
+    |
+help: Call `.replace(tzinfo=<timezone>)` or `.astimezone()` to convert to an aware datetime
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option.

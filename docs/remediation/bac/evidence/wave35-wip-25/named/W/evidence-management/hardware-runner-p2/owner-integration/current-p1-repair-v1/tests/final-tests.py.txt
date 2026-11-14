@@ -1,0 +1,2723 @@
+"""P2 tooling tests; actual P3/Git backstop cases require a separate root lease."""
+import importlib.util
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import threading
+import time
+
+import pytest
+
+Q = Path(__file__).parent
+RUNNER = Q / 'run_bac_hardware_v1.py'
+
+
+def implementation():
+    assert RUNNER.is_file(), 'P2 runner mechanics are not implemented'
+    spec = importlib.util.spec_from_file_location('p2_runner', RUNNER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+# Current P1 wire fixtures are authored synthetic observations, never real P1
+# execution, root authority, child waits, namespace custody or hardware proof.
+GIT_ENV = {'PATH': '/usr/bin:/bin', 'LC_ALL': 'C', 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_CONFIG_GLOBAL': '/dev/null'}
+CAPTURE = Q / 'capture_bac_hardware_v1.py'
+CAPTURE_SHA = 'd91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb'
+SIBLINGS = ('start.json', 'source-before.json', 'source-after.json', 'source-before-git.json', 'source-after-git.json')
+INVOCATION_CONTRACT = Path('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/root-p1-capture-invocation-contract-v2.json')
+
+
+def fixture_put(path, value):
+    import bac_hardware_protocol_v1 as p
+    path.write_text(json.dumps(value, sort_keys=True))
+    return p.file_reference(path)
+
+
+def fixture_read(path):
+    return json.loads(Path(path).read_text())
+
+
+def fixture_custody_ref(path):
+    # This retained external pin is not recomputed by the consumer or after a
+    # test mutates authority. Resealing is always an explicit fixture operation.
+    return fixture_read(path.parent.parent / 'fixture-root-pin.json')
+
+
+def native_fixture(git_ref, cwd, parent, argv, at, stdout=''):
+    return dict(schema='bac-hardware-git-command-v1', argv=argv, executable=git_ref,
+        executable_after=git_ref, cwd=cwd, environment=dict(GIT_ENV),
+        identity={**parent, 'pid': parent['pid'] + 100, 'ppid': parent['pid'], 'start_identity': 'synthetic-git-birth'},
+        start=at, end=at, exit_code=0, stdout=stdout, stderr='', errors=[])
+
+
+def install_current_p1_fixture(path, spec):
+    import bac_hardware_protocol_v1 as p
+    d = path.parent
+    capture_ref = p.file_reference(CAPTURE)
+    assert capture_ref['sha256'] == CAPTURE_SHA and capture_ref['bytes'] == 64451
+    git_path = d.parent / 'synthetic-git'; git_path.write_text('synthetic never-executed Git dependency')
+    git_ref = p.file_reference(git_path)
+    environment = fixture_read(spec['dependencies']['path'])
+    environment['dependencies'] = [dict(name='git', version='git version synthetic', reference=git_ref), *environment['dependencies']]
+    for name in ('torch_build', 'cuda_runtime', 'driver'):
+        environment[name] = dict(state='unsupported', value=None, reason='CPU capture does not observe CUDA', provenance=git_ref)
+    spec['dependencies'] = fixture_put(Path(spec['dependencies']['path']), environment)
+    for tool in spec['tools']:
+        if tool['name'] == 'capture': tool['reference'] = capture_ref
+    admission = fixture_read(spec['admission']['path'])
+    request = fixture_read(admission['request']['path'])
+    request.update(tools=spec['tools'], dependencies=spec['dependencies'])
+    request_ref = fixture_put(Path(admission['request']['path']), request)
+    wrapper = fixture_read(admission['discovery_process']['path'])
+    raw = fixture_read(admission['affinity']['provenance']['path'])
+    # Deliberately synthetic process identities: no actual capture was launched.
+    host, boot = raw['identity']['host'], raw['identity']['boot_id']
+    capture_identity = dict(pid=6000, ppid=5000, start_identity='synthetic-capture-birth', host=host, boot_id=boot)
+    discovery_identity = dict(pid=6100, ppid=6000, start_identity='synthetic-discovery-birth', host=host, boot_id=boot)
+    bootstrap = 'import sys;sys.path.insert(0,' + repr(str(CAPTURE.parent)) + ');from capture_bac_hardware_v1 import discovery_main;discovery_main()'
+    argv = [environment['interpreter']['path'], '-I', '-B', '-c', bootstrap, request_ref['path'], 'null']
+    raw.update(identity=discovery_identity, argv=argv, dependencies=environment['dependencies'],
+               torch_origin=None, torch_build=None, cuda_runtime=None, driver=None, gpu_topology=None)
+    raw['commands'] = [native_fixture(git_ref, spec['authorized_root'], discovery_identity,
+        [git_ref['path'], '--version'], raw['at'], 'git version synthetic\n')]
+    raw_ref = fixture_put(d / 'discovery.json', raw)
+    wrapper.update(request=request_ref, capture=capture_ref, capture_identity=capture_identity,
+                   identity=discovery_identity, argv=argv, stdout=json.dumps(raw))
+    admission.update(request=request_ref, environment=spec['dependencies'],
+        discovery_process=fixture_put(d / 'discovery-command.json', wrapper))
+    for fact in admission.values():
+        if type(fact) is dict and 'provenance' in fact: fact['provenance'] = raw_ref
+    for group in admission['cgroups']:
+        for fact in group.values():
+            if type(fact) is dict and 'provenance' in fact: fact['provenance'] = raw_ref
+    admission['gpu_topology'] = dict(state='unsupported', value=None, reason='CPU topology not queried', provenance=raw_ref)
+    spec['admission'] = fixture_put(d / 'admission.json', admission)
+    candidate = fixture_read(spec['candidate']['path'])
+    start = dict(at=raw['at'], candidate=spec['candidate'], request=request_ref,
+                 tools=spec['tools'], dependencies=spec['dependencies'])
+    fixture_put(d / 'start.json', start)
+    registry = Path(candidate['registry']['path']).read_text()
+    source = dict(at=raw['at'], head=candidate['head'], tree=candidate['tree'],
+        inventory=[entry['reference'] for category in ('source', 'tests', 'configs', 'scripts', 'ratchet', 'artifacts')
+                   for entry in candidate['inventory'][category]], registry=registry,
+        availability=fixture_read(candidate['availability']['path'])['worktrees'])
+    prefix = [git_ref['path'], '--no-optional-locks', '-c', 'core.fsmonitor=false', '-c', 'core.pager=cat', '-C', spec['authorized_root']]
+    tails = [(['rev-parse', 'HEAD'], candidate['head'] + '\n'),
+             (['diff-index', '--cached', '--quiet', candidate['tree'], '--'], ''),
+             (['worktree', 'list', '--porcelain'], registry)]
+    for phase in ('before', 'after'):
+        fixture_put(d / ('source-' + phase + '.json'), source)
+        fixture_put(d / ('source-' + phase + '-git.json'),
+                    [native_fixture(git_ref, spec['authorized_root'], capture_identity, prefix + tail, raw['at'], output)
+                     for tail, output in tails])
+
+
+def seal_current_p1_authority(path, spec):
+    import bac_hardware_protocol_v1 as p
+    d, outside = path.parent, path.parent.parent
+    admission = fixture_read(spec['admission']['path'])
+    wrapper = fixture_read(admission['discovery_process']['path'])
+    environment = fixture_read(spec['dependencies']['path'])
+    capture_ref = next(row['reference'] for row in spec['tools'] if row['name'] == 'capture')
+    capture_identity = wrapper['capture_identity']
+    controller = {**capture_identity, 'pid': capture_identity['ppid'], 'ppid': 4000, 'start_identity': 'synthetic-controller-birth'}
+    observed = fixture_put(outside / 'synthetic-root-observations.json', {
+        'synthetic': True, 'actual_producer_wait': 'UNRUN', 'actual_namespace_custody': 'UNRUN',
+        'description': 'Authored success-only schema fixture; no genuine producer or authority'})
+    authorization = fixture_put(outside / 'synthetic-root-authorization.json', {
+        'synthetic': True, 'assurance': 'root-orchestration-sole-writer', 'actual_authority': 'UNRUN'})
+    freeze = fixture_read(spec['source_freeze']['path'])
+    invocation = fixture_read(INVOCATION_CONTRACT)
+    assert p.file_reference(INVOCATION_CONTRACT)['sha256'] == '990056f047b4a3ac4a8a6a718c3d83a95f39e2a2735995da8f94bc7de34eb9b4'
+    protocol = next(row['reference'] for row in spec['tools'] if row['name'] == 'protocol')
+    publication = dict(schema='bac-root-p1-producer-wait-v1', capture_directory=str(d), capture_tool=capture_ref,
+        request=admission['request'], capture_identity=capture_identity, controller_identity=controller,
+        argv=[environment['interpreter']['path'], '-I', '-B', '-c', invocation['bootstrap'],
+              spec['candidate']['path'], admission['request']['path'], str(d), capture_ref['path'], protocol['path']],
+        cwd=str(Path(capture_ref['path']).parent), launched_at='2026-01-01T00:00:00.000000Z',
+        identity_observed_at='2026-01-01T00:00:00.000000Z', wait_observed_at='2026-01-01T00:00:01.000000Z',
+        wait_method='direct-child-wait', exit_code=0, terminal=p.file_reference(d / 'result.json'),
+        terminal_observed_at='2026-01-01T00:00:02.000000Z', evidence=[observed])
+    publication_ref = fixture_put(outside / 'synthetic-producer-wait.json', publication)
+    lease = dict(schema='bac-root-p1-capture-namespace-lease-v1', authorization=authorization,
+        capture_directory=str(d), source_authorization=freeze['grant'], request=admission['request'], owner='root',
+        mechanism='root-orchestration-sole-writer', start='2020-01-01T00:00:00.000000Z', end='2099-01-01T00:00:00.000000Z',
+        absent_before_launch_at='2025-12-31T23:59:59.000000Z', directory_observed_at='2026-01-01T00:00:02.000000Z',
+        directory_identity=dict(device=d.stat().st_dev, inode=d.stat().st_ino),
+        authorized_writers=['p1-producer-until-wait'], evidence=[observed])
+    lease_ref = fixture_put(outside / 'synthetic-namespace-lease.json', lease)
+    manifest = dict(schema='bac-root-p1-capture-custody-v1', authority='root', capture_directory=str(d),
+        candidate=spec['candidate'], request=admission['request'], tools=spec['tools'], dependencies=spec['dependencies'],
+        git=next(row['reference'] for row in environment['dependencies'] if row['name'] == 'git'),
+        spec=p.file_reference(path), admission=spec['admission'], terminal=p.file_reference(d / 'result.json'),
+        siblings=[p.file_reference(d / name) for name in SIBLINGS], capture_identity=capture_identity, publication=publication_ref,
+        namespace=dict(start=lease['start'], end=lease['end'], mechanism=lease['mechanism'], evidence=lease_ref),
+        sealed_at='2026-01-01T00:00:03.000000Z')
+    pin = fixture_put(outside / 'synthetic-root-custody.json', manifest)
+    fixture_put(outside / 'fixture-root-pin.json', pin)
+    return pin
+
+
+@pytest.fixture
+def current_p1_capture_bundle(tmp_path):
+    path, spec, registry = sealed_fixture(tmp_path)
+    return path, fixture_custody_ref(path)
+
+
+def test_current_p1_required_custody_api():
+    import inspect
+    r = implementation()
+    for function in (r.run, r.Custody):
+        parameter = inspect.signature(function).parameters['capture_custody_ref']
+        assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+        assert parameter.default is inspect.Parameter.empty
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'stderr', 'exit-bool', 'exit-float', 'exit-null', 'exit-failure',
+    'errors', 'truncated-extra', 'missing-schema', 'wrong-schema', 'after-null', 'after-mismatch', 'bytes-float',
+    'bytes-bool', 'argv', 'env', 'cwd', 'pid-bool', 'same-pid', 'ppid', 'host', 'boot', 'empty-birth',
+    'rollback', 'before-lower', 'after-upper', 'stdout-null'])
+def test_current_p1_native_record_independent(tmp_path, mutation):
+    import copy
+    import bac_hardware_protocol_v1 as p
+    r = implementation()
+    git = tmp_path / 'git'; git.write_text('synthetic never executed')
+    git_ref = p.file_reference(git)
+    parent = dict(pid=50, ppid=40, start_identity='synthetic-parent', host='synthetic-host', boot_id='synthetic-boot')
+    lower, at, upper = ['2026-01-01T00:00:0' + str(i) + '.000000Z' for i in range(3)]
+    argv = [str(git), '--version']; row = copy.deepcopy(native_fixture(git_ref, str(tmp_path), parent, argv, at, 'git version fixture\n'))
+    if mutation == 'stderr': row['stderr'] = 'permitted successful diagnostic\n'
+    elif mutation == 'exit-bool': row['exit_code'] = False
+    elif mutation == 'exit-float': row['exit_code'] = 0.0
+    elif mutation == 'exit-null': row['exit_code'] = None
+    elif mutation == 'exit-failure': row['exit_code'] = 1
+    elif mutation == 'errors': row['errors'] = ['incomplete cleanup']
+    elif mutation == 'truncated-extra': row['stdout_truncated'] = False
+    elif mutation == 'missing-schema': del row['schema']
+    elif mutation == 'wrong-schema': row['schema'] = 'old-git-record'
+    elif mutation == 'after-null': row['executable_after'] = None
+    elif mutation == 'after-mismatch': row['executable_after']['sha256'] = '0' * 64
+    elif mutation == 'bytes-float': row['executable']['bytes'] = float(row['executable']['bytes'])
+    elif mutation == 'bytes-bool': row['executable']['bytes'] = True
+    elif mutation == 'argv': row['argv'] = [str(git), 'version']
+    elif mutation == 'env': row['environment']['GIT_CONFIG_GLOBAL'] = '/tmp/unchecked'
+    elif mutation == 'cwd': row['cwd'] = str(tmp_path.parent)
+    elif mutation == 'pid-bool': row['identity']['pid'] = True
+    elif mutation == 'same-pid': row['identity']['pid'] = parent['pid']
+    elif mutation == 'ppid': row['identity']['ppid'] += 1
+    elif mutation == 'host': row['identity']['host'] = 'other'
+    elif mutation == 'boot': row['identity']['boot_id'] = 'other'
+    elif mutation == 'empty-birth': row['identity']['start_identity'] = ''
+    elif mutation == 'rollback': row['end'] = lower
+    elif mutation == 'before-lower': row['start'] = '2025-01-01T00:00:00.000000Z'
+    elif mutation == 'after-upper': row['end'] = '2027-01-01T00:00:00.000000Z'
+    elif mutation == 'stdout-null': row['stdout'] = None
+    kwargs = dict(git_ref=git_ref, argv=argv, cwd=str(tmp_path), parent_identity=parent, lower=lower, upper=upper)
+    if mutation in ('valid', 'stderr'): assert r._native_git_command(row, **kwargs) is None
+    else:
+        with pytest.raises(ValueError): r._native_git_command(row, **kwargs)
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'pre-mutation', 'post-mutation', 'failed-query'])
+def test_current_p1_source_git_binding(tmp_path, monkeypatch, mutation):
+    from types import SimpleNamespace
+    import bac_hardware_protocol_v1 as p
+    r = implementation(); calls = []
+    git = tmp_path / 'chosen-git'; git.write_text('synthetic sealed executable')
+    git_ref = p.file_reference(git)
+    def command(argv, **kwargs):
+        calls.append((argv, kwargs))
+        assert argv == [str(git), '--no-optional-locks', '-c', 'core.fsmonitor=false', '-c', 'core.pager=cat', '-C', str(tmp_path), 'rev-parse', 'HEAD']
+        assert kwargs['cwd'] == str(tmp_path) or kwargs['cwd'] == tmp_path
+        assert kwargs['env'] == GIT_ENV
+        if mutation == 'post-mutation': git.write_text('changed after query')
+        return SimpleNamespace(returncode=1 if mutation == 'failed-query' else 0, stdout='observed-head\n', stderr='')
+    monkeypatch.setattr(r.subprocess, 'run', command)
+    if mutation == 'pre-mutation': git.write_text('changed before query')
+    if mutation == 'valid': assert r._git(str(tmp_path), ['rev-parse', 'HEAD'], git_ref=git_ref) == 'observed-head\n'
+    else:
+        with pytest.raises(ValueError): r._git(str(tmp_path), ['rev-parse', 'HEAD'], git_ref=git_ref)
+    assert len(calls) == (0 if mutation == 'pre-mutation' else 1)
+
+
+def test_current_p1_positive_bundle(current_p1_capture_bundle):
+    path, pin = current_p1_capture_bundle
+    r = implementation()
+    custody = r.Custody(path, capture_custody_ref=pin)
+    assert custody.capture_custody_ref == pin
+    assert custody.capture_sibling_refs == fixture_read(pin['path'])['siblings']
+
+
+def repin_fixture_manifest(path, manifest):
+    pin = fixture_put(path.parent.parent / 'synthetic-root-custody.json', manifest)
+    fixture_put(path.parent.parent / 'fixture-root-pin.json', pin)
+    return pin
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'missing-pin', 'forged-pin', 'manifest-extra', 'manifest-duplicate',
+    'manifest-nan', 'manifest-bool-bytes', 'crosswired-spec', 'crosswired-request', 'capture-adoption', 'git-crosswired',
+    'capture-identity', 'missing-terminal', 'refused-terminal', 'terminal-null', 'terminal-bool-bytes', 'terminal-float-bytes',
+    'terminal-duplicate', 'terminal-mutated', 'missing-publication', 'missing-lease', 'publication-request',
+    'publication-terminal', 'publication-child', 'publication-controller', 'publication-host', 'publication-bool-exit',
+    'publication-wait-method', 'publication-wait-time', 'publication-terminal-time', 'publication-argv', 'publication-cwd',
+    'publication-evidence-empty', 'publication-evidence-duplicate', 'publication-extra', 'lease-request', 'lease-owner',
+    'lease-mode', 'lease-expired', 'lease-inode', 'lease-device-bool', 'lease-writers', 'lease-creation-time',
+    'lease-directory-time', 'lease-extra', 'lease-evidence-empty', 'lease-start-mismatch', 'seal-before-wait'])
+def test_current_p1_terminal_and_root_custody(current_p1_capture_bundle, monkeypatch, mutation):
+    import bac_hardware_protocol_v1 as p
+    path, original_pin = current_p1_capture_bundle
+    r = implementation(); manifest = fixture_read(original_pin['path'])
+    terminal_path = path.parent / 'result.json'; terminal = fixture_read(terminal_path)
+    publication_path = Path(manifest['publication']['path']); publication = fixture_read(publication_path)
+    lease_path = Path(manifest['namespace']['evidence']['path']); lease = fixture_read(lease_path)
+    if mutation == 'manifest-extra': manifest['synthetic-extra'] = True
+    elif mutation == 'manifest-bool-bytes': manifest['spec']['bytes'] = True
+    elif mutation == 'crosswired-spec': manifest['spec'] = manifest['admission']
+    elif mutation == 'crosswired-request': manifest['request'] = manifest['candidate']
+    elif mutation == 'capture-adoption':
+        next(row for row in manifest['tools'] if row['name'] == 'capture')['reference'] = manifest['git']
+    elif mutation == 'git-crosswired': manifest['git'] = manifest['candidate']
+    elif mutation == 'capture-identity': manifest['capture_identity']['pid'] += 1
+    elif mutation == 'refused-terminal': terminal.update(disposition='refused', reasons=['synthetic late refusal'])
+    elif mutation == 'terminal-null': terminal['spec'] = None
+    elif mutation == 'terminal-bool-bytes': terminal['spec']['bytes'] = True
+    elif mutation == 'terminal-float-bytes': terminal['spec']['bytes'] = float(terminal['spec']['bytes'])
+    elif mutation == 'publication-request': publication['request'] = manifest['candidate']
+    elif mutation == 'publication-terminal': publication['terminal'] = manifest['spec']
+    elif mutation == 'publication-child': publication['capture_identity']['pid'] += 1
+    elif mutation == 'publication-controller': publication['controller_identity']['pid'] += 1
+    elif mutation == 'publication-host': publication['controller_identity']['host'] = 'other-host'
+    elif mutation == 'publication-bool-exit': publication['exit_code'] = False
+    elif mutation == 'publication-wait-method': publication['wait_method'] = 'shell-session-ended'
+    elif mutation == 'publication-wait-time': publication['wait_observed_at'] = '2025-01-01T00:00:00.000000Z'
+    elif mutation == 'publication-terminal-time': publication['terminal_observed_at'] = publication['launched_at']
+    elif mutation == 'publication-argv': publication['argv'][7] = str(path.parent.parent)
+    elif mutation == 'publication-cwd': publication['cwd'] = str(path.parent)
+    elif mutation == 'publication-evidence-empty': publication['evidence'] = []
+    elif mutation == 'publication-evidence-duplicate': publication['evidence'] *= 2
+    elif mutation == 'publication-extra': publication['wait_complete'] = True
+    elif mutation == 'lease-request': lease['request'] = manifest['candidate']
+    elif mutation == 'lease-owner': lease['owner'] = 'self-authored'
+    elif mutation == 'lease-mode': lease['mechanism'] = 'chmod-arbitrary-writer-exclusion'
+    elif mutation == 'lease-expired': lease['end'] = manifest['namespace']['end'] = '2026-01-02T00:00:00.000000Z'
+    elif mutation == 'lease-inode': lease['directory_identity']['inode'] += 1
+    elif mutation == 'lease-device-bool': lease['directory_identity']['device'] = True
+    elif mutation == 'lease-writers': lease['authorized_writers'].append('consumer')
+    elif mutation == 'lease-creation-time': lease['absent_before_launch_at'] = publication['wait_observed_at']
+    elif mutation == 'lease-directory-time': lease['directory_observed_at'] = publication['launched_at']
+    elif mutation == 'lease-extra': lease['directory_created_at'] = lease['directory_observed_at']
+    elif mutation == 'lease-evidence-empty': lease['evidence'] = []
+    elif mutation == 'lease-start-mismatch': lease['start'] = '2021-01-01T00:00:00.000000Z'
+    elif mutation == 'seal-before-wait': manifest['sealed_at'] = publication['launched_at']
+    if mutation.startswith('terminal-') or mutation == 'refused-terminal':
+        if mutation == 'terminal-duplicate':
+            terminal_path.write_text(json.dumps(terminal)[:-1] + ', "disposition": "admitted"}')
+            manifest['terminal'] = p.file_reference(terminal_path)
+        else: manifest['terminal'] = fixture_put(terminal_path, terminal)
+        publication['terminal'] = manifest['terminal']
+    manifest['publication'] = fixture_put(publication_path, publication)
+    manifest['namespace']['evidence'] = fixture_put(lease_path, lease)
+    pin = repin_fixture_manifest(path, manifest)
+    if mutation == 'missing-pin': pin = None
+    elif mutation == 'forged-pin': pin = {**pin, 'sha256': '0' * 64}
+    elif mutation in ('manifest-duplicate', 'manifest-nan'):
+        text = Path(pin['path']).read_text()
+        Path(pin['path']).write_text(text[:-1] + (', "authority": "root"}' if mutation == 'manifest-duplicate' else ', "sealed_at": NaN}'))
+        pin = p.file_reference(Path(pin['path']))
+    elif mutation == 'missing-terminal': terminal_path.unlink()
+    elif mutation == 'terminal-mutated': terminal_path.write_text(terminal_path.read_text() + ' ')
+    elif mutation == 'missing-publication': publication_path.unlink()
+    elif mutation == 'missing-lease': lease_path.unlink()
+    def forbidden(*args, **kwargs): raise AssertionError('capture refusal must precede source/job execution')
+    monkeypatch.setattr(r, '_git', forbidden)
+    monkeypatch.setattr(r, 'execute_jobs', forbidden)
+    if mutation == 'valid':
+        custody = r.Custody(path, capture_custody_ref=pin)
+        assert custody.capture_custody_ref == pin
+    else:
+        with pytest.raises(ValueError): r.run(path, capture_custody_ref=pin)
+        assert not (Path(fixture_read(path)['output_root']) / 'attempt').exists()
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'missing-sibling', 'reordered-siblings', 'crosswired-sibling', 'changed-unpinned',
+    'start-request', 'start-extra', 'source-extra', 'inventory-reordered', 'inventory-ref-float', 'registry',
+    'availability-int', 'availability-path', 'head', 'tree', 'missing-command', 'reordered-command', 'command-head',
+    'command-registry', 'command-tree-argv', 'command-parent', 'command-time', 'before-at', 'after-at', 'start-at',
+    'duplicate-json', 'nonfinite-json'])
+def test_current_p1_source_siblings(current_p1_capture_bundle, mutation):
+    import bac_hardware_protocol_v1 as p
+    path, pin = current_p1_capture_bundle; r = implementation(); manifest = fixture_read(pin['path'])
+    target = path.parent / 'source-before.json'; value = fixture_read(target)
+    commands_path = path.parent / 'source-before-git.json'; commands = fixture_read(commands_path)
+    if mutation == 'missing-sibling': manifest['siblings'].pop()
+    elif mutation == 'reordered-siblings': manifest['siblings'].reverse()
+    elif mutation == 'crosswired-sibling': manifest['siblings'][0] = manifest['spec']
+    elif mutation == 'start-request':
+        target = path.parent / 'start.json'; value = fixture_read(target); value['request'] = manifest['candidate']
+    elif mutation == 'start-extra':
+        target = path.parent / 'start.json'; value = fixture_read(target); value['identity'] = manifest['capture_identity']
+    elif mutation == 'source-extra': value['start'] = value['at']
+    elif mutation == 'inventory-reordered': value['inventory'].reverse()
+    elif mutation == 'inventory-ref-float': value['inventory'][0]['bytes'] = float(value['inventory'][0]['bytes'])
+    elif mutation == 'registry': value['registry'] += '\n'
+    elif mutation == 'availability-int': value['availability'][0]['directory_exists'] = 1
+    elif mutation == 'availability-path': value['availability'][0]['path'] = str(path.parent)
+    elif mutation == 'head': value['head'] = 'c' * 40
+    elif mutation == 'tree': value['tree'] = 'c' * 40
+    elif mutation == 'missing-command': commands.pop()
+    elif mutation == 'reordered-command': commands.reverse()
+    elif mutation == 'command-head': commands[0]['stdout'] = 'c' * 40 + '\n'
+    elif mutation == 'command-registry': commands[2]['stdout'] += '\n'
+    elif mutation == 'command-tree-argv': commands[1]['argv'][-2] = 'a' * 40
+    elif mutation == 'command-parent': commands[0]['identity']['ppid'] = 6100
+    elif mutation == 'command-time': commands[1]['start'] = '2025-01-01T00:00:00.000000Z'
+    elif mutation == 'before-at': value['at'] = '2025-01-01T00:00:00.000000Z'
+    elif mutation == 'after-at':
+        target = path.parent / 'source-after.json'; value = fixture_read(target); value['at'] = '2027-01-01T00:00:00.000000Z'
+    elif mutation == 'start-at':
+        target = path.parent / 'start.json'; value = fixture_read(target); value['at'] = '2027-01-01T00:00:00.000000Z'
+    fixture_put(target, value); fixture_put(commands_path, commands)
+    if mutation == 'duplicate-json': target.write_text(json.dumps(value)[:-1] + ', "head": "' + value['head'] + '"}')
+    elif mutation == 'nonfinite-json': target.write_text(json.dumps(value).replace('"directory_exists": true', '"directory_exists": Infinity'))
+    if mutation not in ('missing-sibling', 'reordered-siblings', 'crosswired-sibling', 'changed-unpinned'):
+        manifest['siblings'] = [p.file_reference(path.parent / name) for name in SIBLINGS]
+    if mutation == 'changed-unpinned': target.write_text(target.read_text() + ' ')
+    pin = repin_fixture_manifest(path, manifest)
+    if mutation == 'valid': r.Custody(path, capture_custody_ref=pin).capture_sources()
+    else:
+        with pytest.raises(ValueError): r.Custody(path, capture_custody_ref=pin)
+
+
+def arithmetic_fixture(path, r):
+    custody = object.__new__(r.Custody)
+    custody.spec = fixture_read(path)
+    custody.admission = fixture_read(custody.spec['admission']['path'])
+    custody.request = fixture_read(custody.admission['request']['path'])
+    custody.environment = fixture_read(custody.spec['dependencies']['path'])
+    freeze = fixture_read(custody.spec['source_freeze']['path'])
+    grant = fixture_read(freeze['grant']['path'])
+    custody.allocation = fixture_read(grant['allocation_grant']['path'])
+    custody.git_ref = next(row['reference'] for row in custody.environment['dependencies'] if row['name'] == 'git')
+    return custody
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'missing-native', 'duplicate-native', 'unknown-command', 'native-as-driver',
+    'wrong-version', 'extra-newline-version', 'leading-space-version', 'after-executable', 'wrong-parent', 'clock-rollback',
+    'native-errors', 'native-exit-bool', 'stdout-affinity-float', 'stdout-bytes-float', 'raw-dependency-bytes-float',
+    'raw-dependency-bytes-bool', 'stdout-duplicate', 'stdout-nan', 'raw-duplicate', 'raw-nonfinite'])
+def test_current_p1_native_discovery(current_p1_capture_bundle, mutation):
+    import bac_hardware_protocol_v1 as p
+    path, pin = current_p1_capture_bundle; r = implementation(); spec = fixture_read(path)
+    custody = arithmetic_fixture(path, r)
+    admission = custody.admission; wrapper_path = Path(admission['discovery_process']['path'])
+    wrapper = fixture_read(wrapper_path); raw_path = Path(admission['affinity']['provenance']['path']); raw = fixture_read(raw_path)
+    if mutation == 'missing-native': raw['commands'] = []
+    elif mutation == 'duplicate-native': raw['commands'] *= 2
+    elif mutation == 'unknown-command': raw['commands'].append({'schema': 'unknown'})
+    elif mutation == 'native-as-driver':
+        for key in ('schema', 'executable_after', 'cwd', 'environment'): raw['commands'][0].pop(key)
+    elif mutation == 'wrong-version': raw['commands'][0]['stdout'] = 'git version unapproved\n'
+    elif mutation == 'extra-newline-version': raw['commands'][0]['stdout'] += '\n'
+    elif mutation == 'leading-space-version': raw['commands'][0]['stdout'] = ' ' + raw['commands'][0]['stdout']
+    elif mutation == 'after-executable': raw['commands'][0]['executable_after'] = spec['candidate']
+    elif mutation == 'wrong-parent': raw['commands'][0]['identity']['ppid'] = 6000
+    elif mutation == 'clock-rollback': raw['commands'][0]['end'] = '2025-01-01T00:00:00.000000Z'
+    elif mutation == 'native-errors': raw['commands'][0]['errors'] = ['partial stdout']
+    elif mutation == 'native-exit-bool': raw['commands'][0]['exit_code'] = False
+    elif mutation == 'raw-dependency-bytes-float': raw['dependencies'][0]['reference']['bytes'] = float(raw['dependencies'][0]['reference']['bytes'])
+    elif mutation == 'raw-dependency-bytes-bool': raw['dependencies'][0]['reference']['bytes'] = True
+    raw_ref = fixture_put(raw_path, raw)
+    if mutation == 'raw-duplicate':
+        raw_path.write_text(json.dumps(raw)[:-1] + ', "profile": "cpu"}'); raw_ref = p.file_reference(raw_path)
+    elif mutation == 'raw-nonfinite':
+        raw_path.write_text(json.dumps(raw).replace('"scratch_free_bytes": 10000001', '"scratch_free_bytes": Infinity')); raw_ref = p.file_reference(raw_path)
+    stdout = json.loads(json.dumps(raw))
+    if mutation == 'stdout-affinity-float': stdout['affinity'][0] = float(stdout['affinity'][0])
+    elif mutation == 'stdout-bytes-float': stdout['dependencies'][0]['reference']['bytes'] = float(stdout['dependencies'][0]['reference']['bytes'])
+    wrapper['stdout'] = json.dumps(stdout)
+    if mutation == 'stdout-duplicate': wrapper['stdout'] = wrapper['stdout'][:-1] + ', "profile": "cpu"}'
+    elif mutation == 'stdout-nan': wrapper['stdout'] = wrapper['stdout'].replace('"scratch_free_bytes": 10000001', '"scratch_free_bytes": NaN')
+    admission['discovery_process'] = fixture_put(wrapper_path, wrapper)
+    for fact in admission.values():
+        if type(fact) is dict and 'provenance' in fact: fact['provenance'] = raw_ref
+    for group in admission['cgroups']:
+        for fact in group.values():
+            if type(fact) is dict and 'provenance' in fact: fact['provenance'] = raw_ref
+    # Direct arithmetic, independent of root/signature/native-sibling admission.
+    if mutation == 'valid': custody._admitted_arithmetic()
+    else:
+        with pytest.raises(ValueError): custody._admitted_arithmetic()
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'manifest', 'sibling', 'publication', 'lease', 'raw-evidence',
+    'authorization', 'source-authorization', 'terminal', 'git', 'inode', 'expired-later'])
+def test_current_p1_custody_retained(current_p1_capture_bundle, monkeypatch, mutation):
+    path, pin = current_p1_capture_bundle; r = implementation(); manifest = fixture_read(pin['path'])
+    custody = r.Custody(path, capture_custody_ref=pin)
+    publication = fixture_read(manifest['publication']['path']); lease = fixture_read(manifest['namespace']['evidence']['path'])
+    required = [pin, *manifest['siblings'], manifest['publication'], manifest['namespace']['evidence'],
+                *publication['evidence'], *lease['evidence'], lease['authorization'], lease['source_authorization'],
+                manifest['terminal'], manifest['spec'], manifest['admission']]
+    assert all(ref in custody.capture_refs for ref in required)
+    if mutation == 'valid': custody.capture_boundary(); return
+    targets = dict(manifest=pin, sibling=manifest['siblings'][0], publication=manifest['publication'],
+        lease=manifest['namespace']['evidence'], **{'raw-evidence': publication['evidence'][0],
+        'authorization': lease['authorization'], 'source-authorization': lease['source_authorization'],
+        'terminal': manifest['terminal'], 'git': manifest['git']})
+    if mutation == 'inode':
+        d = path.parent; d.rename(d.with_name('retained-capture')); d.mkdir()
+    elif mutation == 'expired-later': monkeypatch.setattr(r, '_utc', lambda: '2099-01-02T00:00:00.000000Z')
+    else:
+        changed = Path(targets[mutation]['path']); changed.write_bytes(changed.read_bytes() + b' ')
+    with pytest.raises(ValueError): custody.capture_boundary()
+    def forbidden(*args, **kwargs): raise AssertionError('lost custody must refuse before source Git')
+    monkeypatch.setattr(r, '_git', forbidden)
+    with pytest.raises(ValueError): custody.source(None, [], [])
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'optional-topology-failure', 'mandatory-driver-failure',
+    'missing-native', 'duplicate-native', 'driver-native-schema', 'driver-exit-bool', 'driver-parent', 'driver-time'])
+def test_current_p1_cuda_native_discovery(current_p1_capture_bundle, mutation):
+    path, pin = current_p1_capture_bundle; r = implementation(); custody = arithmetic_fixture(path, r)
+    admission = custody.admission; wrapper_path = Path(admission['discovery_process']['path']); wrapper = fixture_read(wrapper_path)
+    raw_path = Path(admission['affinity']['provenance']['path']); raw = fixture_read(raw_path)
+    # Pure declared CUDA transport fixture. No NVIDIA, Torch or hardware runs.
+    torch_ref = fixture_put(path.parent.parent / 'synthetic-torch.json', {'synthetic': 'torch origin'})
+    nvidia_ref = fixture_put(path.parent.parent / 'synthetic-nvidia.json', {'synthetic': 'driver executable'})
+    environment = custody.environment
+    environment['dependencies'] = sorted([*environment['dependencies'],
+        dict(name='torch', version='synthetic-torch', reference=torch_ref),
+        dict(name='nvidia-smi', version='synthetic-driver', reference=nvidia_ref)], key=lambda row: row['name'])
+    for name, value in [('torch_build', 'synthetic-torch'), ('cuda_runtime', 'synthetic-runtime'), ('driver', 'synthetic-driver')]:
+        environment[name] = dict(state='measured', value=value, reason='', provenance=torch_ref)
+        raw[name] = value
+    raw.update(profile='cuda', dependencies=environment['dependencies'], torch_origin=torch_ref,
+               effective_visibility='GPU-A', gpu_topology='synthetic topology')
+    device = dict(logical_index=0, gpu_uuid='GPU-A', mig_uuid=None, physical_parent_uuid='GPU-A',
+                  model='synthetic GPU', vram_bytes=1024, isolation='physical-exclusive')
+    raw['devices'] = [device]
+    raw['commands'] += [dict(argv=[nvidia_ref['path'], '--query-gpu=driver_version', '--format=csv,noheader'],
+        executable=nvidia_ref, identity={**raw['identity'], 'pid': 6300, 'ppid': raw['identity']['pid'], 'start_identity': 'synthetic-driver'},
+        start=raw['at'], end=raw['at'], exit_code=0, stdout='synthetic-driver\n', stderr='', errors=[]),
+        dict(argv=[nvidia_ref['path'], 'topo', '-m'], executable=nvidia_ref,
+        identity={**raw['identity'], 'pid': 6301, 'ppid': raw['identity']['pid'], 'start_identity': 'synthetic-topology'},
+        start=raw['at'], end=raw['at'], exit_code=0, stdout='synthetic topology', stderr='', errors=[])]
+    if mutation == 'optional-topology-failure':
+        raw['commands'][-1].update(exit_code=1, stdout='', stderr='unsupported topology', errors=['optional unavailable'])
+        raw['gpu_topology'] = None
+    elif mutation == 'mandatory-driver-failure': raw['commands'][1]['exit_code'] = 1
+    elif mutation == 'missing-native': raw['commands'].pop(0)
+    elif mutation == 'duplicate-native': raw['commands'].insert(0, raw['commands'][0])
+    elif mutation == 'driver-native-schema': raw['commands'][1]['schema'] = 'bac-hardware-git-command-v1'
+    elif mutation == 'driver-exit-bool': raw['commands'][1]['exit_code'] = False
+    elif mutation == 'driver-parent': raw['commands'][1]['identity']['ppid'] += 1
+    elif mutation == 'driver-time': raw['commands'][1]['start'] = '2027-01-01T00:00:00.000000Z'
+    raw_ref = fixture_put(raw_path, raw)
+    custody.spec['profile'] = custody.request['profile'] = admission['profile'] = 'cuda'
+    custody.request.update(requested_visibility='GPU-A', authorized_devices=['GPU-A'])
+    custody.allocation['authorized_devices'] = ['GPU-A']
+    wrapper['environment']['CUDA_VISIBLE_DEVICES'] = 'GPU-A'; wrapper['stdout'] = json.dumps(raw)
+    admission.update(requested_visibility='GPU-A', effective_visibility='GPU-A',
+                     devices=[{**device, 'mapping_provenance': raw_ref}], discovery_process=fixture_put(wrapper_path, wrapper))
+    admission['gpu_topology'] = dict(state='unsupported' if raw['gpu_topology'] is None else 'measured',
+        value=raw['gpu_topology'], reason='optional unsupported' if raw['gpu_topology'] is None else '', provenance=raw_ref)
+    for fact in admission.values():
+        if type(fact) is dict and 'provenance' in fact: fact['provenance'] = raw_ref
+    for group in admission['cgroups']:
+        for fact in group.values():
+            if type(fact) is dict and 'provenance' in fact: fact['provenance'] = raw_ref
+    if mutation in ('valid', 'optional-topology-failure'): custody._admitted_arithmetic()
+    else:
+        with pytest.raises(ValueError): custody._admitted_arithmetic()
+
+
+def job(tmp_path, name, *, cpu=1, devices=(), domains=(), timing='ordinary', code=None, timeout=4, grace=.05):
+    return {'id': name, 'argv': [sys.executable, '-c', code or 'print("observed", flush=True)'],
+            'interpreter': sys.executable, 'cwd': str(tmp_path),
+            'environment': {'OMP_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1',
+                            'CUDA_VISIBLE_DEVICES': '', 'PYTHONHASHSEED': '17'},
+            'seed': {'policy': 'explicit', 'python': 17, 'numpy': 18, 'torch': 19, 'cuda': []},
+            'roles': [{'count': 1, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1, 'peak_cpu_slots': 1}],
+            'budget': {'cpu_slots': cpu, 'ram_bytes': 2, 'scratch_bytes': 2, 'scratch_inodes': 2},
+            'devices': [{'physical_parent_uuid': d} for d in devices], 'serialization_domains': list(domains),
+            'timing': timing, 'output': str(tmp_path / 'out' / 'attempt' / name),
+            'scratch': str(tmp_path / 'scratch' / 'attempt' / name),
+            'timeout_seconds': timeout, 'termination_grace_seconds': grace}
+
+
+def spec(tmp_path, jobs, *, cpu=4, concurrency=4):
+    (tmp_path / 'out').mkdir(exist_ok=True)
+    (tmp_path / 'scratch').mkdir(exist_ok=True)
+    (tmp_path / 'leases').mkdir(exist_ok=True)
+    return {'attempt_id': 'attempt', 'output_root': str(tmp_path / 'out'), 'scratch_root': str(tmp_path / 'scratch'),
+            'lease_root': str(tmp_path / 'leases'), 'job_concurrency': concurrency,
+            'budget': {'cpu_slots': cpu, 'ram_bytes': 100, 'scratch_bytes': 100, 'scratch_inodes': 100}, 'jobs': jobs}
+
+
+def test_nested_budget(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'nested', cpu=16)
+    j['roles'] = [{'count': 1, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1, 'peak_cpu_slots': 1},
+                  {'count': 16, 'replacement_limit': 0, 'intra_op': 1, 'inter_op': 1, 'peak_cpu_slots': 1}]
+    with pytest.raises(ValueError, match='CPU'):
+        r.check_resources(spec(tmp_path, [j], cpu=16, concurrency=16))
+    j['roles'] = [{'count': 1, 'replacement_limit': 1, 'intra_op': 1, 'inter_op': 5, 'peak_cpu_slots': 1}]
+    j['budget']['cpu_slots'] = 1
+    with pytest.raises(ValueError, match='CPU'):
+        r.check_resources(spec(tmp_path, [j]))
+
+
+def test_exclusive_attempt_race(tmp_path):
+    r = implementation()
+    s = spec(tmp_path, [job(tmp_path, 'a')])
+    barrier = threading.Barrier(2)
+    results = []
+    def reserve():
+        barrier.wait()
+        try:
+            a = r.Attempt(s)
+            results.append(a)
+        except (ValueError, FileExistsError):
+            results.append(None)
+    threads = [threading.Thread(target=reserve) for _ in range(2)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+    assert sum(v is not None for v in results) == 1
+    for value in results:
+        if value is not None: value.close()
+
+
+@pytest.mark.parametrize('occupied', ['attempt', 'scratch', 'symlink'])
+def test_occupied_destinations_are_preserved(tmp_path, occupied):
+    r = implementation()
+    s = spec(tmp_path, [job(tmp_path, 'a')])
+    target = tmp_path / ('scratch' if occupied == 'scratch' else 'out') / 'attempt'
+    if occupied == 'symlink':
+        other = tmp_path / 'other'; other.mkdir()
+        target.symlink_to(other, target_is_directory=True)
+    else:
+        target.mkdir()
+    (target / 'stdout.log').write_text('do not overwrite')
+    with pytest.raises((ValueError, FileExistsError)):
+        r.Attempt(s)
+    assert (target / 'stdout.log').read_text() == 'do not overwrite'
+
+
+def test_lease_domains_and_canonical_multi_device_acquisition(tmp_path):
+    r = implementation()
+    root = tmp_path / 'leases'; root.mkdir()
+    first = r.Leases(root)
+    second = r.Leases(root)
+    a = job(tmp_path, 'a', devices=('GPU-B', 'GPU-A'), domains=('rng-shared',))
+    b = job(tmp_path, 'b', devices=('GPU-A', 'GPU-B'), domains=('rng-other',))
+    with first.try_acquire(a) as held:
+        assert held
+        assert second.try_acquire(b) is None
+        assert second.try_acquire(job(tmp_path, 'rng', domains=('rng-shared',))) is None
+        with second.try_acquire(job(tmp_path, 'cpu')) as cpu:
+            assert cpu
+        with second.try_acquire(job(tmp_path, 'other', devices=('GPU-C',))) as gpu:
+            assert gpu
+        assert second.try_acquire(job(tmp_path, 'timing', timing='exclusive-host')) is None
+    with second.try_acquire(b) as recovered:
+        assert recovered
+    with first.try_acquire(job(tmp_path, 'timing', timing='exclusive-host')):
+        assert second.try_acquire(job(tmp_path, 'cpu')) is None
+    first.close(); second.close()
+
+
+def test_scheduler_advances_cpu_past_blocked_gpu(tmp_path):
+    r = implementation()
+    gpu = job(tmp_path, 'gpu', devices=('GPU-A',), domains=('gpu-rng',))
+    cpu = job(tmp_path, 'cpu', domains=('cpu-rng',), code='from pathlib import Path; Path("cpu-ran").write_text("yes")')
+    s = spec(tmp_path, [gpu, cpu], concurrency=2)
+    lease = r.Leases(Path(s['lease_root']))
+    held = lease.try_acquire(gpu)
+    outcomes = []
+    thread = threading.Thread(target=lambda: outcomes.extend(r.execute_jobs(s)))
+    thread.start()
+    deadline = time.monotonic() + 5
+    while not (tmp_path / 'cpu-ran').exists() and time.monotonic() < deadline:
+        time.sleep(.01)
+    assert (tmp_path / 'cpu-ran').is_file(), 'CPU stalled behind an unrelated physical-device lease'
+    held.close(); lease.close(); thread.join(5)
+    assert not thread.is_alive()
+    assert {x['job_id'] for x in outcomes} == {'cpu', 'gpu'}
+
+
+def test_failure_and_exact_environment(tmp_path):
+    r = implementation()
+    code = 'import os,json,sys; print(json.dumps({"cwd":os.getcwd(),"env":dict(os.environ),"argv":sys.argv}),flush=True); sys.exit(7)'
+    j = job(tmp_path, 'bad', code=code)
+    s = spec(tmp_path, [j])
+    os.environ['P2_MUST_NOT_LEAK'] = 'secret-sentinel'
+    results = r.execute_jobs(s)
+    assert results[0]['exit_code'] == 7
+    assert results[0]['disposition'] == 'completed-failed'
+    output = Path(j['output'])
+    observed = json.loads((output / 'stdout.log').read_text())
+    assert observed['cwd'] == str(tmp_path)
+    assert 'P2_MUST_NOT_LEAK' not in observed['env']
+    assert observed['env']['PYTHONHASHSEED'] == '17'
+    command = json.loads((output / 'command.json').read_text())
+    assert command['argv'] == j['argv'] and command['environment'] == j['environment'] and command['seed'] == j['seed']
+    assert not (output / 'completion.json').exists()
+
+
+def test_zero_exit_does_not_invent_witnesses(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'zero')
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == 0
+    assert result['disposition'] == 'completed-unverified'
+    assert result['process_records'] == []
+    assert not (Path(j['output']) / 'completion.json').exists()
+
+
+def test_timeout_preserves_actual_partial_and_kills_process_group(tmp_path):
+    r = implementation()
+    code = ('import os,signal,time; from pathlib import Path; '
+            'signal.signal(signal.SIGTERM,signal.SIG_IGN); '
+            'Path("partial").write_text("actual partial"); print("before timeout",flush=True); time.sleep(20)')
+    j = job(tmp_path, 'timeout', code=code, timeout=.2, grace=.05)
+    started = time.monotonic()
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert time.monotonic() - started < 3
+    assert result['disposition'] == 'interrupted'
+    assert result['exit_code'] == -signal.SIGKILL
+    assert 'timeout' in result['reason']
+    assert (tmp_path / 'partial').read_text() == 'actual partial'
+    assert (Path(j['output']) / 'stdout.log').read_text() == 'before timeout\n'
+    assert not (Path(j['output']) / 'completion.json').exists()
+
+
+def test_runtime_cpu_capacity_and_persistent_scratch(tmp_path):
+    r = implementation()
+    code = 'import time; print("begin",flush=True); time.sleep(.15); print("end",flush=True)'
+    jobs = [job(tmp_path, name, cpu=2, code=code) for name in ('a', 'b', 'c')]
+    results = r.execute_jobs(spec(tmp_path, jobs, cpu=2, concurrency=3))
+    times = sorted((v['monotonic_start_ns'], v['monotonic_end_ns']) for v in results)
+    assert all(a[1] <= b[0] for a, b in zip(times, times[1:]))
+    other = tmp_path / 'other'; other.mkdir()
+    jobs = [job(other, name) for name in ('a', 'b')]
+    s = spec(other, jobs); s['budget']['scratch_bytes'] = 3
+    with pytest.raises(ValueError, match='scratch'):
+        r.execute_jobs(s)
+
+
+def test_signal_preserves_started_and_unrun_evidence(tmp_path):
+    implementation()
+    first = job(tmp_path, 'active', code='import time; print("ready",flush=True); time.sleep(30)', timeout=10)
+    pending = job(tmp_path, 'pending')
+    s = spec(tmp_path, [first, pending], cpu=1, concurrency=1)
+    source = tmp_path / 'mechanics-input.json'; source.write_text(json.dumps(s))
+    code = ('import json,sys; from pathlib import Path; '
+            'sys.path.insert(0,sys.argv[1]); import run_bac_hardware_v1 as r; '
+            'results=r.execute_jobs(json.loads(Path(sys.argv[2]).read_text())); '
+            'sys.exit(1 if any(x["disposition"]!="successful" for x in results) else 0)')
+    child = subprocess.Popen([sys.executable, '-c', code, str(Q), str(source)],
+                             env={'PATH': '/usr/bin:/bin', 'PYTHONDONTWRITEBYTECODE': '1'},
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        log = Path(first['output']) / 'stdout.log'
+        deadline = time.monotonic() + 5
+        while (not log.exists() or 'ready' not in log.read_text()) and time.monotonic() < deadline:
+            time.sleep(.01)
+        assert log.exists() and log.read_text() == 'ready\n'
+        child.send_signal(signal.SIGTERM)
+        stdout, stderr = child.communicate(timeout=4)
+        assert child.returncode == 1, (stdout, stderr, child.returncode)
+        active = json.loads((Path(first['output']) / 'result.json').read_text())
+        unrun = json.loads((Path(pending['output']) / 'result.json').read_text())
+        assert active['disposition'] == 'interrupted'
+        assert active['exit_code'] == -signal.SIGTERM
+        assert unrun['disposition'] == 'unrun' and unrun['exit_code'] is None
+        assert not (Path(pending['output']) / 'command.json').exists()
+    finally:
+        if child.poll() is None:
+            child.kill(); child.wait()
+
+
+def test_launch_error_is_retained_and_other_jobs_finish(tmp_path):
+    r = implementation()
+    broken = job(tmp_path, 'missing')
+    broken['argv'][0] = broken['interpreter'] = str(tmp_path / 'missing-executable')
+    good = job(tmp_path, 'good')
+    results = {x['job_id']: x for x in r.execute_jobs(spec(tmp_path, [broken, good]))}
+    assert results['missing']['disposition'] == 'refused'
+    assert results['missing']['exit_code'] is None
+    assert 'launch' in results['missing']['reason']
+    assert results['good']['exit_code'] == 0
+    assert (Path(broken['output']) / 'command.json').is_file()
+
+
+def test_negative_command_signal_is_interrupted(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'signal', code='import os,signal; os.kill(os.getpid(),signal.SIGTERM)')
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == -signal.SIGTERM
+    assert result['disposition'] == 'interrupted'
+
+
+def test_descendant_cannot_outlive_controller_and_lease(tmp_path):
+    r = implementation()
+    code = ('import subprocess,sys; '
+            'subprocess.Popen([sys.executable,"-c",'
+            '"import time; from pathlib import Path; time.sleep(.6); Path(\'orphan-side-effect\').write_text(\'bad\')"]); '
+            'print("controller finished",flush=True)')
+    j = job(tmp_path, 'orphan', code=code)
+    result = r.execute_jobs(spec(tmp_path, [j]))[0]
+    assert result['exit_code'] == 0
+    assert result['disposition'] == 'completed-unverified'
+    time.sleep(.7)
+    assert not (tmp_path / 'orphan-side-effect').exists(), 'lease released while a child could continue work'
+
+
+def test_occupied_log_and_result_refuse_overwrite(tmp_path):
+    r = implementation()
+    j = job(tmp_path, 'a')
+    a = r.Attempt(spec(tmp_path, [j]))
+    try:
+        with pytest.raises(FileExistsError): a.open_file('a', 'stdout.log')
+        a.write('a', 'result.json', {'original': 1})
+        with pytest.raises(FileExistsError): a.write('a', 'result.json', {'replacement': 2})
+        assert json.loads((Path(j['output']) / 'result.json').read_text()) == {'original': 1}
+        old = Path(j['output']); moved = old.with_name('moved')
+        old.rename(moved); old.mkdir()
+        with pytest.raises(ValueError, match='namespace replaced'): a.open_file('a', 'late.json')
+        assert not (old / 'late.json').exists() and not (moved / 'late.json').exists()
+    finally: a.close()
+
+
+def test_cpu_ram_and_timing_overlap_are_observed(tmp_path):
+    r = implementation()
+    code = 'import time; time.sleep(.15)'
+    jobs = [job(tmp_path, name, code=code) for name in ('a', 'b')]
+    results = r.execute_jobs(spec(tmp_path, jobs, cpu=2, concurrency=2))
+    times = sorted((x['monotonic_start_ns'], x['monotonic_end_ns']) for x in results)
+    assert times[1][0] < times[0][1], 'independent work was serialized'
+    other = tmp_path / 'timed'; other.mkdir()
+    jobs = [job(other, 'timing', code=code, timing='exclusive-host'), job(other, 'cpu', code=code)]
+    results = r.execute_jobs(spec(other, jobs, cpu=2, concurrency=2))
+    times = sorted((x['monotonic_start_ns'], x['monotonic_end_ns']) for x in results)
+    assert times[0][1] <= times[1][0]
+
+
+# The public-run fixtures are closed synthetic records. Git observations are
+# inert command stubs; actual PID/start/affinity and filesystem observations remain real.
+def sealed_fixture(tmp_path, code='print("sealed child",flush=True)', overhead_cpu=1, owner=False, sampler=None):
+    import bac_hardware_protocol_v1 as p
+    root = tmp_path / 'source'; root.mkdir()
+    for name in ('output', 'scratch', 'leases', 'metadata', 'support'): (tmp_path / name).mkdir()
+    meta = tmp_path / 'metadata'
+    support = tmp_path / 'support'
+    def put(name, value):
+        path = (meta if name in ('admission.json', 'discovery-command.json') else support) / name
+        path.write_text(json.dumps(value, sort_keys=True))
+        return p.file_reference(path)
+    def measured(value, provenance):
+        return {'state': 'measured', 'value': value, 'reason': '', 'provenance': provenance}
+    def record(kind, **values): return {'schema': 'bac-hardware-v1', 'kind': kind, **values}
+    inert = root / 'inert.txt'; inert.write_text('synthetic input only')
+    input_ref = p.file_reference(inert)
+    input_inventory = {}
+    for category in ('source', 'tests', 'configs', 'scripts', 'ratchet', 'artifacts'):
+        path = root / (category + '.txt'); path.write_text('inert ' + category)
+        input_inventory[category] = [{'path': str(path), 'reference': p.file_reference(path)}]
+    inputs = [entry['reference'] for values in input_inventory.values() for entry in values]
+    interpreter = p.file_reference(Path(sys.executable).resolve())
+    times = {'start': '2020-01-01T00:00:00.000000Z', 'end': None}
+    capacity_cpu = min(5, len(os.sched_getaffinity(0)))
+    assert capacity_cpu >= 2, 'sealed fixture needs controller plus orchestration CPU'
+    budget = {'cpu_slots': capacity_cpu - 1, 'ram_bytes': 10000000, 'scratch_bytes': 10000000, 'scratch_inodes': 1000}
+    if owner:
+        assert capacity_cpu >= 3, 'public owner fixture requires runner/controller/child CPU reservations'
+        budget['ram_bytes'] = 512 * 1024**2
+    overhead = {key: 1 for key in budget}
+    overhead['cpu_slots'] = overhead_cpu
+    allocation = put('allocation.json', {'schema': 'bac-hardware-resource-allocation-v1', 'allocation_id': 'allocation',
+        'pool_id': 'pool', 'host': os.uname().nodename, 'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
+        'lease_root': str(tmp_path / 'leases'), 'capacity': {key: budget[key] + overhead[key] for key in budget}, 'overhead': overhead,
+        'partition_basis': 'exclusive-pool', 'partition_evidence': [], 'authorized_cpu_ids': sorted(os.sched_getaffinity(0)),
+        'authorized_devices': [], **times, 'authority': 'synthetic root authorization', 'no_writer_barrier': True})
+    j = job(root, 'a', code=code)
+    j.update(interpreter=interpreter['path'], argv=[interpreter['path'], '-c', code], profile='cpu',
+             output=str(tmp_path / 'output' / 'attempt' / 'a'), scratch=str(tmp_path / 'scratch' / 'attempt' / 'a'),
+             required_collected_ids=['synthetic::case'], xdist_workers=0, timing_contract=[], prerequisites=[],
+             serialization_domains=['synthetic-rng'])
+    policy = put('identity-policy.json', {'schema': 'bac-hardware-identity-policy-v1', 'spec_path': str(meta / 'spec.json'),
+        'command_path': str(Path(j['output']) / 'command.json'), 'runtime_path': str(Path(j['output']) / 'runtime-context.json'),
+        'job_id': 'a', 'role_id': 'controller', 'required_imports': [], 'worker_roles': [],
+        'environment_delta': {'common': {'LC_CTYPE': 'C.UTF-8'}, 'worker': {}}})
+    j['argv'] += ['--bac-identity-policy', policy['path'], '--bac-identity-policy-sha256', policy['sha256']]
+    role = {'id': 'controller', 'role': 'controller', 'count': 1, 'replacement_limit': 0,
+            'observer': 'uninitialized', 'intra_op': 1, 'inter_op': 1, 'debug': True, 'torch_policy': 'forbidden',
+            'cuda_policy': 'no-initialize', 'peak_cpu_slots': 1, 'cpu_reservation_basis': 'accepted-case-contract'}
+    bound = put('bound.json', {'schema': 'bac-hardware-cpu-bound-v1', 'basis': 'accepted-case-contract',
+        'role_id': 'controller', **{key: role[key] for key in ('role', 'observer', 'intra_op', 'inter_op', 'debug',
+        'torch_policy', 'cuda_policy', 'peak_cpu_slots')}, 'argv': j['argv'], 'environment': j['environment'],
+        'required_cases': j['required_collected_ids'], 'head': 'a' * 40, 'tree': 'b' * 40, 'inputs': inputs,
+        'justification': [input_ref], 'authority': 'synthetic accepted bound', 'bound_statement': 'serial inert subprocess upper bound'})
+    role['cpu_reservation_evidence'] = bound
+    j['roles'] = [role]
+    j['obligations'] = [{'id': key, 'kind': key, 'required_cases': ['synthetic::case'], 'contract': input_ref,
+        'validator': input_ref, 'evidence_class': 'cpu', 'minimum_devices': 0}
+        for key in ('process-custody', 'source-freeze', 'required-cases')]
+    if owner:
+        child_role = {**role, 'id': 'spawn', 'role': 'spawn-child', 'inter_op': 5}
+        if sampler is not None:
+            child_role.update(role='fork-guard', observer='guard-only', torch_policy='forbidden', cuda_policy='forbidden')
+            sampler_ref = put('sampler-policy.json', sampler)
+            j['prerequisites'] = [sampler_ref]
+        child_bound = json.loads((support / 'bound.json').read_text())
+        child_bound.update(role_id='spawn', **{k: child_role[k] for k in ('role', 'observer', 'intra_op', 'inter_op', 'debug', 'torch_policy', 'cuda_policy', 'peak_cpu_slots')})
+        if sampler is not None: child_bound['justification'] = [sampler_ref]
+        child_role['cpu_reservation_evidence'] = put('spawn-bound.json', child_bound)
+        j['roles'].append(child_role)
+        j['budget'].update(cpu_slots=2, ram_bytes=256 * 1024**2, scratch_bytes=4 * 1024**2, scratch_inodes=100)
+        owner_kind = 'fork-three-trials' if sampler is not None else 'strict-child-core'
+        contract = put('spawn-contract.json', record('case-contract', obligation_kind=owner_kind,
+            required_cases=['synthetic::case'], witness_schema=input_ref, validator=input_ref,
+            roles=[child_role], evidence_class='cpu', minimum_devices=0))
+        j['obligations'].append({'id': 'owner', 'kind': owner_kind, 'required_cases': ['synthetic::case'],
+            'contract': contract, 'validator': input_ref, 'evidence_class': 'cpu', 'minimum_devices': 0})
+    grant = put('grant.json', {'schema': 'bac-hardware-source-grant-v1', 'authorized_root': str(root),
+        'head': 'a' * 40, 'tree': 'b' * 40, 'import_roots': [str(root / 'source.txt')], 'inputs': inputs,
+        **times, 'no_writer_barrier': True, 'includes_untracked': True, 'authority': 'synthetic root',
+        'allocation_grant': allocation, 'cpu_reservation_evidence': [item['cpu_reservation_evidence'] for item in j['roles']]})
+    freeze = put('freeze.json', record('source-freeze', authorized_root=str(root), grant=grant,
+        start=times['start'], end={'state': 'unavailable', 'value': None, 'reason': 'active root barrier'},
+        no_writer_barrier=True, includes_untracked=True, index_lock=str(support / 'index.lock'), retention='root no-writer retained'))
+    registry_path = support / 'registry.txt'; registry_path.write_text('worktree ' + str(root) + '\nHEAD ' + 'a' * 40 + '\n\n')
+    registry = p.file_reference(registry_path)
+    availability = put('availability.json', {'schema': 'bac-hardware-availability-v1',
+        'worktrees': [{'path': str(root), 'directory_exists': True}]})
+    candidate = put('candidate.json', record('candidate', head='a' * 40, tree='b' * 40, authorized_root=str(root),
+        import_roots=[str(root / 'source.txt')], inventory=input_inventory, registry=registry,
+        availability=availability, source_freeze=freeze))
+    environment = put('environment.json', record('environment', interpreter=interpreter, python_version='synthetic',
+        dependencies=[{'name': 'synthetic', 'version': '1', 'reference': input_ref}], environment=j['environment'],
+        platform='synthetic-linux', torch_build=measured('no torch imported', input_ref),
+        cuda_runtime=measured('none', input_ref), driver=measured('none', input_ref)))
+    tools = [{'name': name, 'reference': p.file_reference(Q / filename) if filename else input_ref}
+             for name, filename in [('protocol', 'bac_hardware_protocol_v1.py'), ('runner', 'run_bac_hardware_v1.py'),
+             ('capture', None), ('identity', None), ('verifier', None), ('children-verifier', None)]]
+    minimum = dict(j['budget'])
+    request = put('request.json', record('admission-request', attempt_id='attempt', lease_root=str(tmp_path / 'leases'),
+        authorized_root=str(root), interpreter=interpreter, scratch_root=str(tmp_path / 'scratch'),
+        output_root=str(tmp_path / 'output'), profile='cpu', requested_job_concurrency=1, minimum=minimum,
+        reserve={key: 0 for key in budget}, authorized_devices=[], requested_visibility='', jobs=[j],
+        source_freeze=freeze, tools=tools, dependencies=environment))
+    def identity(pid):
+        data = Path(f'/proc/{pid}/stat').read_text(); parts = data[data.rfind(')') + 2:].split()
+        return {'pid': pid, 'ppid': int(parts[1]), 'start_identity': parts[19], 'host': os.uname().nodename,
+                'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+    bootstrap = 'import sys;sys.path.insert(0,' + repr(str(Path(input_ref['path']).parent)) + ');from capture_bac_hardware_v1 import discovery_main;discovery_main()'
+    discovery_argv = [interpreter['path'], '-I', '-B', '-c', bootstrap, request['path'], 'null']
+    memory_limit = budget['ram_bytes'] + 1
+    host_ram = 1024 * 1024**2 if owner else 10240000
+    raw_value = {'schema': 'bac-hardware-discovery-v1', 'profile': 'cpu', 'identity': identity(os.getpid()),
+        'at': '2026-01-01T00:00:00.000000Z', 'argv': discovery_argv, 'interpreter': interpreter['path'], 'cwd': str(root),
+        'inherited_visibility': None, 'effective_visibility': '', 'tmpdir': str(tmp_path / 'scratch'),
+        'cgroup_root': str(meta), 'cgroup_leaf': str(meta), 'ancestry_complete': True,
+        'cgroups': [{'path': str(meta), 'cpu_max': '500000 100000', 'cpuset': ','.join(map(str, sorted(os.sched_getaffinity(0)))),
+                    'memory_max': str(memory_limit), 'memory_current': '0'}], 'affinity': sorted(os.sched_getaffinity(0)),
+        'meminfo': f'MemTotal: {host_ram // 1024} kB\nMemAvailable: {host_ram // 1024} kB\n', 'scratch_free_bytes': 10000001, 'scratch_free_inodes': 1001,
+        'cpu_topology': 'synthetic', 'numa_topology': 'synthetic', 'gpu_topology': 'none', 'torch_build': 'no torch imported',
+        'cuda_runtime': 'none', 'driver': 'none', 'competing_workloads': [], 'devices': [], 'probe_errors': [],
+        'commands': [], 'python_version': 'synthetic', 'dependencies': [{'name': 'synthetic', 'version': '1', 'reference': input_ref}],
+        'torch_origin': None}
+    raw = put('raw.json', raw_value)
+    wrapper = put('discovery-command.json', {'schema': 'bac-hardware-discovery-command-v1', 'request': request,
+        'capture': input_ref, 'executable': interpreter, 'capture_identity': identity(os.getppid()),
+        'argv': discovery_argv, 'cwd': str(root), 'environment': {**j['environment'], 'TMPDIR': str(tmp_path / 'scratch'), 'BAC_CAPTURE_LEASE_FDS': json.dumps([3, 4, 5])},
+        'start': raw_value['at'], 'end': raw_value['at'], 'identity': raw_value['identity'], 'exit_code': 0,
+        'stdout': json.dumps(raw_value), 'stderr': '', 'errors': []})
+    admission = put('admission.json', record('admission', request=request, discovery_process=wrapper,
+        at='2026-01-01T00:00:00.000000Z', profile='cpu', disposition='admitted', reasons=[],
+        cgroups=[{'path': str(meta), 'cpu_quota_us': measured(500000, raw), 'cpu_period_us': measured(100000, raw),
+                  'memory_limit_bytes': measured(memory_limit, raw), 'cpuset': measured(sorted(os.sched_getaffinity(0)), raw)}],
+        affinity=measured(sorted(os.sched_getaffinity(0)), raw), effective_cpu_capacity=measured(capacity_cpu, raw),
+        host_ram_bytes=measured(host_ram, raw), limited_ram_bytes=measured(memory_limit, raw), ram_current_bytes=measured(0, raw),
+        scratch_free_bytes=measured(10000001, raw), scratch_free_inodes=measured(1001, raw), tmpdir=str(tmp_path / 'scratch'),
+        cpu_topology=measured('synthetic', raw), numa_topology=measured('synthetic', raw), gpu_topology=measured('none', raw),
+        environment=environment, requested_visibility='', effective_visibility='', devices=[],
+        competing_workloads=measured([], raw), probe_errors=[], minimum=minimum, reserve={key: 0 for key in budget}, admitted_budget=budget))
+    value = record('spec', attempt_id='attempt', lease_root=str(tmp_path / 'leases'), candidate=candidate, tools=tools,
+        dependencies=environment, admission=admission, profile='cpu', authorized_root=str(root), output_root=str(tmp_path / 'output'),
+        scratch_root=str(tmp_path / 'scratch'), job_concurrency=1, budget=budget, jobs=[j], source_freeze=freeze)
+    path = meta / 'spec.json'
+    install_current_p1_fixture(path, value)
+    seal_spec_fixture(path, value)
+    p.validate_spec(value)
+    return path, value, registry_path.read_text()
+
+
+def stub_source(monkeypatch, runner, registry):
+    def git(root, args, *, git_ref):
+        if args == ['rev-parse', 'HEAD']: return 'a' * 40 + '\n'
+        if args == ['worktree', 'list', '--porcelain']: return registry
+        assert args in (['diff-index', '--cached', '--quiet', 'b' * 40, '--'], ['diff', '--quiet', '--'])
+        return ''
+    monkeypatch.setattr(runner, '_git', git, raising=False)
+    monkeypatch.setattr(runner, '_owned_resources', lambda spec, ref, active: ({}, {}))
+    monkeypatch.setattr(runner, '_live_capacity', lambda raw, scratch: {'cpu_slots': 1024, 'ram_bytes': 10**12, 'scratch_bytes': 10**12, 'scratch_inodes': 10**9}, raising=False)
+
+
+def test_public_run_seals_zero_exit_as_unverified(tmp_path, monkeypatch):
+    r = implementation()
+    path, s, registry = sealed_fixture(tmp_path)
+    stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) != 0
+    output = Path(s['output_root']) / 'attempt'
+    import bac_hardware_protocol_v1 as p
+    start = json.loads((output / 'start.json').read_text()); p.validate_record('attempt-start', start)
+    result = json.loads((output / 'a' / 'result.json').read_text()); p.validate_record('job-result', result)
+    seal = json.loads((output / 'seal.json').read_text()); p.validate_record('attempt-seal', seal)
+    assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+    assert result['process_records'] == []
+    assert seal['disposition'] == 'completed-unverified'
+    witness = json.loads(Path(start['source_witness']['path']).read_text())
+    assert witness['process_identity']['pid'] == os.getpid()
+    assert witness['process_identity']['ppid'] == os.getppid()
+    assert witness['head'] == 'a' * 40 and witness['tree'] == 'b' * 40
+    assert start['spec'] == p.file_reference(path)
+    assert result['command']['sha256'] == p.file_reference(output / 'a' / 'command.json')['sha256']
+
+
+@pytest.mark.parametrize('mutation', ['admission-budget', 'candidate-freeze', 'affinity', 'bound-argv', 'expired-grant', 'allocation-busy'])
+def test_public_run_refuses_cross_binding_before_launch(tmp_path, monkeypatch, mutation):
+    r = implementation()
+    path, s, registry = sealed_fixture(tmp_path)
+    stub_source(monkeypatch, r, registry)
+    import bac_hardware_protocol_v1 as p
+    held = None
+    if mutation == 'admission-budget':
+        s['budget']['cpu_slots'] = 3
+    elif mutation == 'candidate-freeze':
+        freeze = json.loads(Path(s['source_freeze']['path']).read_text())
+        freeze['retention'] = 'different reference'
+        other = path.parent.parent / 'support' / 'other-freeze.json'; other.write_text(json.dumps(freeze)); s['source_freeze'] = p.file_reference(other)
+    elif mutation == 'affinity':
+        monkeypatch.setattr(r.os, 'sched_getaffinity', lambda pid: set())
+    elif mutation == 'bound-argv':
+        # Re-seal the edited bound and grant chain: rejection must be semantic.
+        boundpath = path.parent.parent / 'support' / 'bound.json'; bound = json.loads(boundpath.read_text()); bound['argv'] = ['/wrong']
+        boundpath.write_text(json.dumps(bound))
+        s['jobs'][0]['roles'][0]['cpu_reservation_evidence'] = p.file_reference(boundpath)
+    elif mutation == 'expired-grant':
+        grantpath = path.parent.parent / 'support' / 'grant.json'; grant = json.loads(grantpath.read_text()); grant['end'] = '2020-01-02T00:00:00.000000Z'
+        grantpath.write_text(json.dumps(grant))
+    else:
+        held = r.Leases(Path(s['lease_root'])).try_allocation(json.loads((path.parent.parent / 'support' / 'allocation.json').read_text()))
+    seal_spec_fixture(path, s)
+    try:
+        with pytest.raises((ValueError, OSError)): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+        assert not (Path(s['jobs'][0]['output']) / 'command.json').exists()
+    finally:
+        if held: held.close()
+
+
+def reseal_admission(path, spec, mutation):
+    import bac_hardware_protocol_v1 as p
+    admission_path = Path(spec['admission']['path'])
+    admission = json.loads(admission_path.read_text())
+    wrapper_path = Path(admission['discovery_process']['path'])
+    wrapper = json.loads(wrapper_path.read_text())
+    raw_path = Path(admission['affinity']['provenance']['path'])
+    raw = json.loads(raw_path.read_text())
+    mutation(admission, wrapper, raw)
+    raw_path.write_text(json.dumps(raw)); ref = p.file_reference(raw_path)
+    wrapper['stdout'] = json.dumps(raw); wrapper_path.write_text(json.dumps(wrapper))
+    for value in admission.values():
+        if type(value) is dict and 'provenance' in value: value['provenance'] = ref
+    for group in admission['cgroups']:
+        for value in group.values():
+            if type(value) is dict and 'provenance' in value: value['provenance'] = ref
+    admission['discovery_process'] = p.file_reference(wrapper_path)
+    admission_path.write_text(json.dumps(admission)); spec['admission'] = p.file_reference(admission_path)
+    seal_spec_fixture(path, spec)
+
+
+@pytest.mark.parametrize('mutation', ['raw-headroom', 'raw-cpu', 'wrapper-parent', 'wrapper-tool', 'raw-affinity', 'raw-extra', 'raw-dependency'])
+def test_raw_discovery_cannot_authorize_unobserved_capacity(tmp_path, monkeypatch, mutation):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+    def change(admission, wrapper, raw):
+        if mutation == 'raw-headroom': raw['cgroups'][0]['memory_current'] = '9999999'
+        elif mutation == 'raw-cpu': raw['cgroups'][0]['cpu_max'] = '100000 100000'
+        elif mutation == 'wrapper-parent': wrapper['capture_identity']['pid'] += 1
+        elif mutation == 'wrapper-tool': wrapper['argv'][1] = '/unapproved-capture'
+        elif mutation == 'raw-affinity': raw['affinity'] = []
+        elif mutation == 'raw-extra': raw['unrecognized'] = True
+        else: raw['dependencies'][0]['version'] = 'wrong'
+    reseal_admission(path, s, change)
+    with pytest.raises(ValueError): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+    assert not (Path(s['jobs'][0]['output']) / 'command.json').exists()
+
+
+SUCCESS_CODE = r'''
+import os,json,time,hashlib,socket,sys
+from pathlib import Path
+from datetime import datetime,timezone
+specpath=Path.cwd().parent/'metadata'/'spec.json'
+s=json.loads(specpath.read_text()); j=s['jobs'][0]; out=Path(j['output'])
+def ref(path):
+    p=Path(path); b=p.read_bytes(); return {'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+def put(name,v):
+    p=out/name;p.write_text(json.dumps(v));return ref(p)
+def utc():return datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+def record(kind,**kw):return {'schema':'bac-hardware-v1','kind':kind,**kw}
+raw=Path('/proc/self/stat').read_text();parts=raw[raw.rfind(')')+2:].split()
+identity={'pid':os.getpid(),'ppid':os.getppid(),'start_identity':parts[19],'host':socket.gethostname(),'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+c=json.loads(Path(s['candidate']['path']).read_text());e=json.loads(Path(s['dependencies']['path']).read_text())
+inventory=[x['reference'] for rows in c['inventory'].values() for x in rows]
+fact=put('observed.json',{'synthetic':'inert actual subprocess observation','pid':os.getpid()})
+def measured(v):return {'state':'measured','value':v,'reason':'','provenance':fact}
+runtime=ref(out/'runtime-context.json');descriptor=json.loads(Path(runtime['path']).read_text());policy=json.loads(Path(descriptor['policy']['path']).read_text())
+context={k:descriptor[k] for k in ('spec','command','trusted_grant')}
+context.update(schema='bac-hardware-identity-context-v1',job_id=j['id'],role_id='controller',required_imports=policy['required_imports'],worker_roles=policy['worker_roles'],environment_delta=policy['environment_delta'],parent_start=[],replacement_start=[],lifecycle=[],worker_identity=None,policy=[descriptor['policy']],runtime=[runtime])
+process=[];sources=[];raws=[];start=time.monotonic_ns()
+for phase in ('start','end'):
+    at=utc();ns=time.monotonic_ns()
+    if phase=='start':start=ns
+    witness=put('source-'+phase+'.json',record('source-witness',candidate=s['candidate'],source_freeze=s['source_freeze'],head=c['head'],tree=c['tree'],inventory=inventory,at=at,process_identity=identity))
+    sources.append(witness)
+    modules=hashlib.sha256(json.dumps(sorted(sys.modules),ensure_ascii=True,separators=(',',':')).encode('ascii')).hexdigest()
+    rawref=put('process-actual-controller-observation-'+phase+'.json',{'schema':'bac-hardware-process-observation-v2','context':context,'identity':identity,'phase':phase,'environment':dict(os.environ),'worker_identity':None,'torch_loaded':False,'cuda_marker':None,'observation_limit':'Torch absent; no import or runtime configuration observation','at':at,'python_debug':__debug__,'python_optimize':sys.flags.optimize,'torch_anomaly':{'state':'unavailable','value':None,'reason':'Torch absent; no import or runtime configuration observation'},'source_method':'direct-git','recorder_mode':'ordinary','module_names_before_sha256':modules,'module_names_after_sha256':modules,'owner_claim':[],'sampler':[]});raws.append(rawref)
+    unavailable={'state':'unavailable','value':None,'reason':'Torch absent; no import or runtime configuration observation','provenance':rawref}
+    debug={'state':'measured','value':__debug__,'reason':'','provenance':rawref}
+    process.append(put('process-'+phase+'.json',record('process',attempt_id=s['attempt_id'],job_id=j['id'],spec=ref(specpath),process_id='actual-controller',role_id='controller',role='controller',phase=phase,identity=identity,parent_identity=[],replacement_of=[],interpreter=e['interpreter'],argv=j['argv'],cwd=os.getcwd(),imports=[],source_witness=witness,environment=dict(os.environ),devices=j['devices'],intra_op=unavailable,inter_op=unavailable,debug=debug,torch_observation='not-loaded',cuda_observation='uninitialized',at=at,monotonic_ns=ns,elapsed_ns={'state':'unavailable','value':None,'reason':'start'} if phase=='start' else {'state':'measured','value':ns-start,'reason':''})))
+obligations=[]
+for o in j['obligations']:
+    obligations.append(put(o['id']+'.json',record('obligation-evidence',attempt_id=s['attempt_id'],job_id=j['id'],spec=ref(specpath),obligation_id=o['id'],obligation_kind=o['kind'],contract=o['contract'],validator=o['validator'],case_id='synthetic::case',evidence_class='cpu',payload=fact,producer_process=process[0],related_attempts=[])))
+put('completion.json',record('job-evidence',attempt_id=s['attempt_id'],job_id=j['id'],spec=ref(specpath),command=ref(out/'command.json'),collected_ids=['synthetic::case'],outcomes=[{'case_id':'synthetic::case','setup':'passed','call':'passed','teardown':'passed','evidence':[fact]}],process_records=process,obligation_records=obligations,source_witnesses=sources,inventory=[fact,*sources,*raws,*process,*obligations]))
+'''
+
+
+def test_public_run_success_requires_actual_controller_envelope(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) == 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['exit_code'] == 0 and result['disposition'] == 'successful'
+    identity = json.loads(Path(result['process_records'][0]['path']).read_text())['identity']
+    assert identity['pid'] != os.getpid() and identity['ppid'] == os.getpid()
+    import bac_hardware_protocol_v1 as p
+    p.validate_record('job-result', result)
+    seal = fixture_read(Path(s['output_root']) / 'attempt' / 'seal.json')
+    custody = r.Custody(path, capture_custody_ref=fixture_custody_ref(path))
+    assert all(reference in seal['inventory'] for reference in custody.capture_refs)
+
+
+@pytest.mark.parametrize('change', ['wrong-pid', 'missing-end', 'wrong-seed-command', 'skip', 'bad-obligation'])
+def test_envelope_mutation_preserves_zero_exit_but_refuses_success(tmp_path, monkeypatch, change):
+    suffix = {
+        'wrong-pid': "v=json.loads((out/'process-start.json').read_text());v['identity']['pid']+=1;put('process-start.json',v)",
+        'missing-end': "v=json.loads((out/'completion.json').read_text());v['process_records']=v['process_records'][:1];put('completion.json',v)",
+        'wrong-seed-command': "v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)",
+        'skip': "v=json.loads((out/'completion.json').read_text());v['outcomes'][0]['call']='skipped';put('completion.json',v)",
+        'bad-obligation': "v=json.loads((out/'completion.json').read_text());v['obligation_records']=[];put('completion.json',v)",
+    }[change]
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + '\n' + suffix); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) != 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+    assert 'evidence incomplete' in result['reason']
+
+
+def test_same_command_rewritten_and_resealed_cannot_pass(tmp_path, monkeypatch):
+    suffix = """
+v=json.loads((out/'command.json').read_text());v['seed']['python']+=1;put('command.json',v)
+v=json.loads((out/'completion.json').read_text());v['command']=ref(out/'command.json');put('completion.json',v)
+"""
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) != 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['disposition'] == 'completed-unverified'
+
+
+def test_live_capacity_drop_refuses_before_job_launch(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+    monkeypatch.setattr(r, '_live_capacity', lambda raw, scratch: {key: 0 for key in s['budget']}, raising=False)
+    with pytest.raises(ValueError): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+    assert not (Path(s['jobs'][0]['output']) / 'command.json').exists()
+
+
+def test_process_group_cleanup_precedes_pid_reaping(tmp_path, monkeypatch):
+    r = implementation(); events = []
+    actual_poll, actual_wait, actual_killpg = subprocess.Popen._internal_poll, subprocess.Popen.wait, os.killpg
+    def poll(process, *args, **kwargs):
+        result = actual_poll(process, *args, **kwargs)
+        if result is not None: events.append('reaped')
+        return result
+    def wait(process, *args, **kwargs):
+        result = actual_wait(process, *args, **kwargs); events.append('reaped'); return result
+    def killpg(pid, signum):
+        if signum == signal.SIGTERM: events.append('cleanup')
+        return actual_killpg(pid, signum)
+    monkeypatch.setattr(r.subprocess.Popen, '_internal_poll', poll)
+    monkeypatch.setattr(r.subprocess.Popen, 'wait', wait)
+    monkeypatch.setattr(r.os, 'killpg', killpg)
+    result = r.execute_jobs(spec(tmp_path, [job(tmp_path, 'short')]))[0]
+    assert result['exit_code'] == 0
+    assert events.index('cleanup') < events.index('reaped'), 'PID was released before process-group ownership cleanup'
+
+
+def test_post_spawn_observation_error_never_fabricates_nonexecution(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, 'import time; time.sleep(.5)'); stub_source(monkeypatch, r, registry)
+    original = r._identity
+    def observe(pid):
+        if pid != os.getpid(): raise OSError('synthetic post-spawn observation failure')
+        return original(pid)
+    monkeypatch.setattr(r, '_identity', observe)
+    with pytest.raises((ValueError, OSError)): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+    output = Path(s['jobs'][0]['output'])
+    assert (output / 'command.json').exists()
+    if (output / 'result.json').exists():
+        result = json.loads((output / 'result.json').read_text())
+        assert result['disposition'] not in ('refused', 'unrun'), 'started child relabeled as nonexecution'
+
+
+def test_pool_partition_lock_modes_and_peak_reservation(tmp_path):
+    r = implementation(); root = tmp_path / 'leases'; root.mkdir()
+    first, second = r.Leases(root), r.Leases(root)
+    exclusive = {'partition_basis': 'exclusive-pool', 'pool_id': 'p', 'allocation_id': 'whole'}
+    a = {'partition_basis': 'root-proven-disjoint', 'pool_id': 'p', 'allocation_id': 'a'}
+    b = {'partition_basis': 'root-proven-disjoint', 'pool_id': 'p', 'allocation_id': 'b'}
+    with first.try_allocation(exclusive): assert second.try_allocation(a) is None
+    with first.try_allocation(a):
+        assert second.try_allocation(exclusive) is None
+        assert second.try_allocation(a) is None
+        with second.try_allocation(b): pass
+    first.close(); second.close()
+    j = job(tmp_path, 'peak', cpu=3)
+    j['roles'] = [{'count': 1, 'replacement_limit': 1, 'intra_op': 1, 'inter_op': 5, 'peak_cpu_slots': 2}]
+    with pytest.raises(ValueError, match='CPU'): r.check_resources(spec(tmp_path, [j]))
+
+
+def test_current_capacity_reads_actual_nested_limits(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path)
+    raw = fixture_read(fixture_read(s['admission']['path'])['affinity']['provenance']['path'])
+    raw['cgroup_root'] = '/cg'; raw['cgroup_leaf'] = '/cg/leaf'
+    raw['cgroups'] = [{'path': path, 'cpu_max': '500000 100000', 'cpuset': '0-7', 'memory_max': '100000', 'memory_current': '0'} for path in ('/cg', '/cg/leaf')]
+    data = {'/proc/self/cgroup': '0::/leaf\n', '/proc/self/mountinfo': '1 2 0:1 / /cg rw - cgroup2 cgroup rw\n',
+            '/proc/meminfo': 'MemTotal: 100 kB\nMemAvailable: 90 kB\n'}
+    for parent in ('/cg', '/cg/leaf'):
+        data.update({parent + '/cpu.max': '150000 100000', parent + '/cpuset.cpus.effective': '0-7',
+                     parent + '/memory.max': '100000', parent + '/memory.current': '99000' if parent == '/cg' else '0'})
+    monkeypatch.setattr(r, '_kernel', lambda path: data[path])
+    monkeypatch.setattr(r.os, 'sched_getaffinity', lambda pid: {0, 1, 2, 3})
+    available = r._live_capacity(raw, s['scratch_root'])
+    assert available['cpu_slots'] == 1 and available['ram_bytes'] == 1000
+    data['/proc/self/cgroup'] = '0::/other\n'
+    with pytest.raises(ValueError, match='different cgroup'): r._live_capacity(raw, s['scratch_root'])
+
+
+def test_sealed_execution_timeout_does_not_expire_in_queue(tmp_path):
+    r = implementation()
+    first = job(tmp_path, 'first', code='import time; time.sleep(.15)', timeout=1)
+    second = job(tmp_path, 'queued', timeout=.05)
+    results = r.execute_jobs(spec(tmp_path, [first, second], cpu=1, concurrency=1))
+    assert len(results) == 2 and all(x['exit_code'] == 0 for x in results)
+    assert (Path(second['output']) / 'command.json').exists()
+
+
+def test_resealed_future_process_times_cannot_pass(tmp_path, monkeypatch):
+    suffix = """
+updated=[]
+for name in ('process-start.json','process-end.json'):
+    v=json.loads((out/name).read_text());v['at']='2099-01-01T00:00:00.000000Z';v['monotonic_ns']+=10**18
+    updated.append(put(name,v))
+v=json.loads((out/'completion.json').read_text());v['process_records']=updated
+for index,item in enumerate(v['obligation_records']):
+    o=json.loads(Path(item['path']).read_text());o['producer_process']=updated[0];v['obligation_records'][index]=put(Path(item['path']).name,o)
+v['inventory']=[fact,*sources,*raws,*updated,*v['obligation_records']];put('completion.json',v)
+"""
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE + suffix); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) != 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['disposition'] == 'completed-unverified'
+
+
+def test_actual_spawned_affinity_is_observed_and_refused(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, 'import time; time.sleep(1)'); stub_source(monkeypatch, r, registry)
+    parent_affinity = set(os.sched_getaffinity(0))
+    assert len(parent_affinity) > 1, 'synthetic affinity test needs two permitted CPUs'
+    actual_popen = r.subprocess.Popen
+    def spawn(*args, **kwargs):
+        kwargs['preexec_fn'] = lambda: os.sched_setaffinity(0, {min(parent_affinity)})
+        return actual_popen(*args, **kwargs)
+    monkeypatch.setattr(r.subprocess, 'Popen', spawn)
+    with pytest.raises(ValueError, match='actual affinity'): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+    assert set(os.sched_getaffinity(0)) == parent_affinity
+    assert not (Path(s['output_root']) / 'attempt' / 'seal.json').exists()
+
+
+def test_held_lock_path_replacement_is_detected(tmp_path):
+    r = implementation(); root = tmp_path / 'leases'; root.mkdir()
+    manager = r.Leases(root)
+    held = manager.try_allocation({'pool_id': 'pool', 'allocation_id': 'allocation', 'partition_basis': 'exclusive-pool'})
+    import hashlib
+    lock = root / (hashlib.sha256(b'allocation:pool:allocation').hexdigest() + '.lock')
+    lock.rename(lock.with_suffix('.retained'))
+    lock.touch()
+    try:
+        with pytest.raises(ValueError, match='lease'): held.check()
+    finally:
+        held.close(); manager.close()
+
+
+def test_public_signal_reaps_job_before_allocation_can_reopen(tmp_path):
+    r = implementation()
+    code = 'import os,time;from pathlib import Path;Path.cwd().parent.joinpath("output/attempt/a/actual-pid.txt").write_text(str(os.getpid()));time.sleep(30)'
+    path, s, registry = sealed_fixture(tmp_path, code)
+    bootstrap = ('import sys,json;from pathlib import Path;sys.path.insert(0,sys.argv[1]);import run_bac_hardware_v1 as r;'
+        'r._git=lambda root,args,*,git_ref: "a"*40+"\\n" if args==["rev-parse","HEAD"] else sys.argv[3] if args==["worktree","list","--porcelain"] else "";'
+        'r._live_capacity=lambda raw,scratch: {"cpu_slots":1024,"ram_bytes":10**12,"scratch_bytes":10**12,"scratch_inodes":10**9};'
+        'sys.exit(r.run(Path(sys.argv[2]),capture_custody_ref=json.loads(Path(sys.argv[2]).parent.parent.joinpath("fixture-root-pin.json").read_text())))')
+    child = subprocess.Popen([sys.executable, '-c', bootstrap, str(Q), str(path), registry],
+        env={'PATH': '/usr/bin:/bin', 'PYTHONDONTWRITEBYTECODE': '1'}, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    manager = r.Leases(Path(s['lease_root']))
+    allocation = json.loads((path.parent.parent / 'support' / 'allocation.json').read_text())
+    try:
+        pidfile = Path(s['jobs'][0]['output']) / 'actual-pid.txt'
+        deadline = time.monotonic() + 5
+        while not pidfile.exists() and time.monotonic() < deadline and child.poll() is None: time.sleep(.01)
+        assert pidfile.exists(), child.communicate(timeout=1) if child.poll() is not None else 'missing actual child PID'
+        actual_pid = int(pidfile.read_text())
+        assert manager.try_allocation(allocation) is None
+        child.send_signal(signal.SIGTERM)
+        stdout, stderr = child.communicate(timeout=5)
+        assert child.returncode == 1, (stdout, stderr)
+        with manager.try_allocation(allocation):
+            with pytest.raises(ProcessLookupError): os.kill(actual_pid, 0)
+        result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+        assert result['disposition'] == 'interrupted' and result['exit_code'] == -signal.SIGTERM
+    finally:
+        if child.poll() is None: child.kill(); child.wait()
+        manager.close()
+
+
+def test_allocation_must_reserve_the_orchestration_controller(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, overhead_cpu=0); stub_source(monkeypatch, r, registry)
+    with pytest.raises(ValueError, match='overhead'): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+
+
+def test_direct_controller_retains_leases_after_runner_sigkill(tmp_path):
+    r = implementation()
+    code = 'import os,time;from pathlib import Path;Path.cwd().parent.joinpath("output/attempt/a/actual-pid.txt").write_text(str(os.getpid()));time.sleep(10)'
+    path, s, registry = sealed_fixture(tmp_path, code)
+    bootstrap = ('import sys,json;from pathlib import Path;sys.path.insert(0,sys.argv[1]);import run_bac_hardware_v1 as r;'
+        'r._git=lambda root,args,*,git_ref: "a"*40+"\\n" if args==["rev-parse","HEAD"] else sys.argv[3] if args==["worktree","list","--porcelain"] else "";'
+        'r._live_capacity=lambda raw,scratch: {"cpu_slots":1024,"ram_bytes":10**12,"scratch_bytes":10**12,"scratch_inodes":10**9};'
+        'sys.exit(r.run(Path(sys.argv[2]),capture_custody_ref=json.loads(Path(sys.argv[2]).parent.parent.joinpath("fixture-root-pin.json").read_text())))')
+    runner = subprocess.Popen([sys.executable, '-c', bootstrap, str(Q), str(path), registry],
+        env={'PATH': '/usr/bin:/bin', 'PYTHONDONTWRITEBYTECODE': '1'}, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    manager = r.Leases(Path(s['lease_root'])); allocation = json.loads((path.parent.parent / 'support' / 'allocation.json').read_text())
+    controller = None; retained_identity = None
+    try:
+        marker = Path(s['jobs'][0]['output']) / 'actual-pid.txt'; deadline = time.monotonic() + 5
+        while not marker.exists() and runner.poll() is None and time.monotonic() < deadline: time.sleep(.01)
+        assert marker.exists(), runner.communicate(timeout=1) if runner.poll() is not None else 'no controller marker'
+        controller = int(marker.read_text()); retained_identity = r._identity(controller)
+        assert retained_identity['ppid'] == runner.pid
+        runner.kill(); runner.communicate(timeout=3)
+        held = manager.try_allocation(allocation)
+        try: assert held is None, 'runner death released allocation while its admitted direct controller was alive'
+        finally:
+            if held is not None: held.close()
+        assert not (Path(s['output_root']) / 'attempt' / 'seal.json').exists()
+    finally:
+        if runner.poll() is None: runner.kill(); runner.wait()
+        if controller is not None:
+            try:
+                if r._identity(controller)['start_identity'] == retained_identity['start_identity']:
+                    os.killpg(controller, signal.SIGTERM)
+            except ProcessLookupError: pass
+        deadline = time.monotonic() + 3; released = None
+        while released is None and time.monotonic() < deadline:
+            released = manager.try_allocation(allocation)
+            if released is None: time.sleep(.01)
+        if released is not None: released.close()
+        manager.close()
+        assert released is not None, 'owned controller cleanup leaked allocation descriptors'
+
+
+def test_runtime_descriptor_binds_authorized_grant_and_actual_runner(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) != 0
+    import bac_hardware_protocol_v1 as p
+    output = Path(s['jobs'][0]['output'])
+    descriptor = json.loads((output / 'runtime-context.json').read_text())
+    freeze = json.loads(Path(s['source_freeze']['path']).read_text())
+    assert descriptor['spec'] == p.file_reference(path) and descriptor['command'] == p.file_reference(output / 'command.json')
+    assert descriptor['trusted_grant'] == freeze['grant']
+    assert descriptor['runner_identity']['pid'] == os.getpid()
+    witness = json.loads(Path(descriptor['runner_source_start']['path']).read_text())
+    assert witness['process_identity'] == descriptor['runner_identity']
+
+
+def test_observed_xdist_additions_are_exact_and_cannot_override_launch():
+    r = implementation()
+    base = {'OMP_NUM_THREADS': '1', 'CUDA_VISIBLE_DEVICES': '', 'PYTHONHASHSEED': '17'}
+    delta = {'common': {'PYTEST_VERSION': '8.4.2', 'LC_CTYPE': 'C.UTF-8'}, 'worker': {'COLUMNS': '80', 'LINES': '24'}}
+    worker = {'workerid': 'gw1', 'workercount': 1, 'testrunuid': '0123456789abcdef0123456789abcdef', 'mainargv': ['pytest', 'synthetic_case']}
+    expected = r._environment_expected(base, delta, worker)
+    assert expected == {'OMP_NUM_THREADS': '1', 'CUDA_VISIBLE_DEVICES': '', 'PYTHONHASHSEED': '17',
+        'PYTEST_VERSION': '8.4.2', 'LC_CTYPE': 'C.UTF-8', 'COLUMNS': '80', 'LINES': '24',
+        'PYTEST_XDIST_WORKER': 'gw1', 'PYTEST_XDIST_WORKER_COUNT': '1', 'PYTEST_XDIST_TESTRUNUID': '0123456789abcdef0123456789abcdef'}
+    assert 'PYTEST_XDIST_WORKER' not in r._environment_expected(base, delta, None)
+    with pytest.raises(ValueError): r._environment_expected({**base, 'PYTEST_XDIST_WORKER': 'sealed'}, delta, worker)
+    with pytest.raises(ValueError): r._environment_expected(base, {'common': {'PYTHONHASHSEED': '0'}, 'worker': {}}, worker)
+    with pytest.raises(ValueError): r._environment_expected(base, delta, {**worker, 'workercount': True})
+
+
+@pytest.mark.parametrize('key,value', [('PYTEST_CURRENT_TEST', 'undelegated'), ('PYTHONHASHSEED', '999'), ('CUDA_VISIBLE_DEVICES', '0')])
+def test_actual_uncontracted_environment_never_becomes_success(tmp_path, monkeypatch, key, value):
+    code = 'import os;os.environ[' + repr(key) + ']=' + repr(value) + '\n' + SUCCESS_CODE
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, code); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) != 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+
+
+def seal_spec_fixture(path, value):
+    import bac_hardware_protocol_v1 as p
+    path.write_text(json.dumps(value))
+    (path.parent / 'result.json').write_text(json.dumps({'schema': 'bac-hardware-capture-result-v1',
+        'disposition': 'admitted', 'reasons': [], 'admission': value['admission'], 'spec': p.file_reference(path)}))
+    if (path.parent / 'start.json').exists(): seal_current_p1_authority(path, value)
+
+
+@pytest.mark.parametrize('mutation', ['missing', 'refused', 'other-spec', 'extra-field'])
+def test_provisional_capture_spec_never_authorizes_launch(tmp_path, monkeypatch, mutation):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+    terminal = path.parent / 'result.json'; value = json.loads(terminal.read_text())
+    if mutation == 'missing': terminal.rename(path.parent / 'retained-terminal.json')
+    else:
+        if mutation == 'refused': value.update(disposition='refused', reasons=['late capture failure'], spec=None)
+        elif mutation == 'other-spec': value['spec'] = s['admission']
+        else: value['unexpected'] = True
+        terminal.write_text(json.dumps(value))
+    with pytest.raises(ValueError): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+    assert not (Path(s['output_root']) / 'attempt').exists()
+
+
+@pytest.mark.parametrize('fds', ['[]', '[true]', '[2]', '[3, 3]', '[3,4,5]', 'null'])
+def test_capture_lease_fd_observation_is_closed_and_canonical(tmp_path, monkeypatch, fds):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path); stub_source(monkeypatch, r, registry)
+    def change(admission, wrapper, raw): wrapper['environment']['BAC_CAPTURE_LEASE_FDS'] = fds
+    reseal_admission(path, s, change)
+    with pytest.raises(ValueError): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+    assert not (Path(s['output_root']) / 'attempt').exists()
+
+
+def test_parent_wait_observation_binds_actual_exit_and_launch(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, 'import sys;sys.exit(7)'); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) == 1
+    import bac_hardware_protocol_v1 as p
+    output = Path(s['jobs'][0]['output'])
+    wait = json.loads((output / 'wait.json').read_text()); launch = json.loads((output / 'launch.json').read_text())
+    assert wait['launch'] == p.file_reference(output / 'launch.json')
+    assert wait['identity'] == launch['identity'] and wait['exit_code'] == 7 and wait['signal'] == 0
+    assert wait['start_monotonic_ns'] <= launch['monotonic_ns'] <= wait['end_monotonic_ns']
+    assert wait['spec'] == p.file_reference(path) and wait['command'] == p.file_reference(output / 'command.json')
+
+
+def test_review_completed_own_scratch_is_not_charged_again(tmp_path, monkeypatch):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE); stub_source(monkeypatch, r, registry)
+    calls = []
+    def available(raw, scratch):
+        calls.append(len(calls) + 1)
+        return {'cpu_slots': 5, 'ram_bytes': 10000001, 'scratch_bytes': 10000000 if len(calls) >= 3 else 10000001, 'scratch_inodes': 1001}
+    monkeypatch.setattr(r, '_live_capacity', available)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) == 0
+    assert len(calls) >= 3 and (Path(s['output_root']) / 'attempt' / 'seal.json').exists()
+
+
+def test_review_raw_cuda_marker_cannot_be_relabelled_uninitialized(tmp_path, monkeypatch):
+    code = SUCCESS_CODE.replace("'torch_loaded':False,'cuda_marker':None", "'torch_loaded':True,'cuda_marker':True")
+    code = code.replace("torch_observation='not-loaded'", "torch_observation='loaded-without-calls'")
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, code); stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) != 0
+    result = json.loads((Path(s['jobs'][0]['output']) / 'result.json').read_text())
+    assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+
+
+def test_remaining_resource_demand_protects_active_growth_and_reserves(tmp_path):
+    r = implementation()
+    jobs = [job(tmp_path, name, cpu=2) for name in ('a', 'b', 'c')]
+    for value in jobs: value['budget'].update(ram_bytes=100, scratch_bytes=10, scratch_inodes=5)
+    overhead = {'cpu_slots': 1, 'ram_bytes': 10, 'scratch_bytes': 5, 'scratch_inodes': 2}
+    reserve = {'cpu_slots': 1, 'ram_bytes': 5, 'scratch_bytes': 3, 'scratch_inodes': 1}
+    ram = {'_runner': 4, 'a': 60}
+    storage = {'_overhead': {'scratch_bytes': 2, 'scratch_inodes': 1},
+               'a': {'scratch_bytes': 6, 'scratch_inodes': 2},
+               'b': {'scratch_bytes': 0, 'scratch_inodes': 0}, 'c': {'scratch_bytes': 0, 'scratch_inodes': 0}}
+    active = r._remaining_resources(jobs, ['b', 'c'], ['a'], 2, overhead, reserve, ram, storage)
+    assert active == {'cpu_slots': 6, 'ram_bytes': 151, 'scratch_bytes': 30, 'scratch_inodes': 15}
+    finished = r._remaining_resources(jobs, ['b', 'c'], [], 2, overhead, reserve, ram, storage)
+    assert finished == {'cpu_slots': 6, 'ram_bytes': 211, 'scratch_bytes': 26, 'scratch_inodes': 12}
+    final = r._remaining_resources(jobs, [], [], 2, overhead, reserve, ram, storage)
+    assert final == {'cpu_slots': 2, 'ram_bytes': 11, 'scratch_bytes': 6, 'scratch_inodes': 2}
+
+
+@pytest.mark.parametrize('phase,key,value', [('launch', 'scratch_bytes', 2), ('launch', 'ram_bytes', 2), ('final', 'scratch_bytes', 0)])
+def test_remaining_capacity_still_refuses_external_shortfall(tmp_path, monkeypatch, phase, key, value):
+    r = implementation(); path, s, registry = sealed_fixture(tmp_path, SUCCESS_CODE); stub_source(monkeypatch, r, registry)
+    calls = []
+    def available(raw, scratch):
+        calls.append(1)
+        capacity = {'cpu_slots': 5, 'ram_bytes': 10000001, 'scratch_bytes': 10000001, 'scratch_inodes': 1001}
+        if len(calls) >= (2 if phase == 'launch' else 3): capacity[key] = value
+        return capacity
+    monkeypatch.setattr(r, '_live_capacity', available)
+    with pytest.raises(ValueError, match='current capacity'): r.run(path, capture_custody_ref=fixture_custody_ref(path))
+    assert not (Path(s['output_root']) / 'attempt' / 'seal.json').exists()
+    if phase == 'launch': assert not (Path(s['jobs'][0]['output']) / 'launch.json').exists()
+
+
+def test_owned_resource_credit_observes_private_group_ram_and_excludes_links(tmp_path):
+    r = implementation()
+    value = job(tmp_path, 'owned')
+    output, scratch, capture = tmp_path / 'output', tmp_path / 'scratch', tmp_path / 'capture'
+    value['output'] = str(output / 'attempt' / 'owned'); value['scratch'] = str(scratch / 'attempt' / 'owned')
+    for path in (Path(value['output']), Path(value['scratch']), capture): path.mkdir(parents=True)
+    exclusive = Path(value['scratch']) / 'allocated'; exclusive.write_bytes(b'x' * 8192)
+    outside = tmp_path / 'outside'; outside.write_bytes(b'y' * 16384)
+    (Path(value['scratch']) / 'symlink').symlink_to(outside)
+    os.link(outside, Path(value['scratch']) / 'hardlink')
+    spec = {'jobs': [value], 'output_root': str(output), 'scratch_root': str(scratch), 'attempt_id': 'attempt'}
+    child = subprocess.Popen([sys.executable, '-I', '-B', '-c', "import time; data=bytearray(1048576); print('ready',flush=True); time.sleep(10)"],
+                             stdout=subprocess.PIPE, text=True, start_new_session=True, env={'PATH': '/usr/bin:/bin'})
+    try:
+        assert child.stdout.readline() == 'ready\n'
+        ram, storage = r._owned_resources(spec, {'path': str(capture / 'spec.json')}, [{'job': value, 'process': child}])
+        assert ram['_runner'] > 0 and ram['owned'] >= 1048576
+        assert storage['owned']['scratch_inodes'] == 2
+        assert storage['owned']['scratch_bytes'] == (Path(value['scratch']).stat().st_blocks + exclusive.stat().st_blocks) * 512
+        identity = r._identity(child.pid)
+        assert r._private_resident({**identity, 'start_identity': 'wrong'}) == 0
+    finally:
+        child.terminate(); child.wait(timeout=3); child.stdout.close()
+
+
+# Authored data fixtures exercise the actual consumer, never source qualification.
+# No child, Git, P3, APP or Torch execution occurs in these direct consumer tests.
+def owner_transport_fixture(tmp_path, end_import=False):
+    import bac_hardware_protocol_v1 as p
+    r = implementation()
+    spec_path, sealed, _ = sealed_fixture(tmp_path)
+    selected = sealed['jobs'][0]
+    output = Path(selected['output']); output.mkdir(parents=True)
+    def put(name, value):
+        path = output / name
+        path.write_text(json.dumps(value, sort_keys=True, allow_nan=False))
+        return p.file_reference(path)
+    def read(reference): return json.loads(Path(reference['path']).read_text())
+    custody = object.__new__(r.Custody)
+    custody.spec = sealed; custody.spec_ref = p.file_reference(spec_path)
+    custody.freeze = read(sealed['source_freeze']); custody.grant = read(custody.freeze['grant'])
+    custody.candidate = read(sealed['candidate']); custody.environment = read(sealed['dependencies'])
+    custody.git_ref = next(row['reference'] for row in custody.environment['dependencies'] if row['name'] == 'git')
+    custody.allocation = read(custody.grant['allocation_grant'])
+    custody.inputs = [x['reference'] for rows in custody.candidate['inventory'].values() for x in rows]
+    command = put('command.json', {'schema': 'bac-hardware-v1', 'kind': 'command',
+        'attempt_id': sealed['attempt_id'], 'job_id': selected['id'], 'spec': custody.spec_ref,
+        'runner': p.file_reference(RUNNER), 'at': '2026-01-01T00:00:00.000000Z',
+        **{k: selected[k] for k in ('argv', 'environment', 'cwd', 'seed')}})
+    policy_ref = p.file_reference(spec_path.parent.parent / 'support' / 'identity-policy.json'); policy = read(policy_ref)
+    if end_import:
+        policy['required_imports'] = [{'name': 'late_required', 'reference': custody.candidate['inventory']['source'][0]['reference'], 'phases': ['end']}]
+        Path(policy_ref['path']).write_text(json.dumps(policy))
+        policy_ref = p.file_reference(Path(policy_ref['path']))
+    identity = {'pid': 1000, 'ppid': 900, 'start_identity': '100',
+        'host': custody.allocation['host'], 'boot_id': custody.allocation['boot_id']}
+    runtime = put('runtime-context.json', {'schema': 'bac-hardware-identity-runtime-v1',
+        'spec': custody.spec_ref, 'command': command, 'trusted_grant': custody.freeze['grant'],
+        'policy': policy_ref, 'runner_identity': {**identity, 'pid': 900, 'ppid': 800},
+        'runner_source_start': sealed['candidate']})
+    custody.commands = {selected['id']: command}; custody.policies = {selected['id']: (policy_ref, policy)}
+    custody.runtimes = {selected['id']: runtime}; custody.processes = {selected['id']: identity}
+    custody.observations = {selected['id']: {'start': '2026-01-01T00:00:00.000000Z',
+        'end': '2026-01-01T00:00:20.000000Z', 'monotonic_start_ns': 0, 'monotonic_end_ns': 20_000_000_000}}
+    context = {'schema': 'bac-hardware-identity-context-v1', 'spec': custody.spec_ref, 'command': command,
+        'trusted_grant': custody.freeze['grant'], 'job_id': selected['id'], 'role_id': 'controller',
+        **{k: policy[k] for k in ('required_imports', 'worker_roles', 'environment_delta')},
+        'parent_start': [], 'replacement_start': [], 'lifecycle': [], 'worker_identity': None,
+        'policy': [policy_ref], 'runtime': [runtime]}
+    source = put('source-controller-start.json', {'schema': 'bac-hardware-v1', 'kind': 'source-witness',
+        'candidate': sealed['candidate'], 'source_freeze': sealed['source_freeze'],
+        'head': custody.candidate['head'], 'tree': custody.candidate['tree'], 'inventory': custody.inputs,
+        'at': '2026-01-01T00:00:01.000000Z', 'process_identity': identity})
+    raw = {'schema': 'bac-hardware-process-observation-v2', 'context': context, 'identity': identity,
+        'phase': 'start', 'environment': {**selected['environment'], 'LC_CTYPE': 'C.UTF-8'},
+        'worker_identity': None, 'torch_loaded': False, 'cuda_marker': None,
+        'observation_limit': 'Torch absent; no import or runtime configuration observation', 'at': '2026-01-01T00:00:01.000000Z',
+        'python_debug': True, 'python_optimize': 0,
+        'torch_anomaly': {'state': 'unavailable', 'value': None, 'reason': 'Torch absent; no import or runtime configuration observation'},
+        'source_method': 'direct-git', 'recorder_mode': 'ordinary',
+        'module_names_before_sha256': 'c' * 64, 'module_names_after_sha256': 'c' * 64,
+        'owner_claim': [], 'sampler': []}
+    record = {'schema': 'bac-hardware-v1', 'kind': 'process', 'attempt_id': sealed['attempt_id'],
+        'job_id': selected['id'], 'spec': custody.spec_ref, 'process_id': 'controller', 'role_id': 'controller',
+        'role': 'controller', 'phase': 'start', 'identity': identity, 'parent_identity': [], 'replacement_of': [],
+        'interpreter': custody.environment['interpreter'], 'argv': selected['argv'], 'cwd': selected['cwd'],
+        'imports': [], 'source_witness': source, 'environment': raw['environment'], 'devices': [],
+        'intra_op': {'state': 'unavailable', 'value': None, 'reason': 'Torch absent; no import or runtime configuration observation'},
+        'inter_op': {'state': 'unavailable', 'value': None, 'reason': 'Torch absent; no import or runtime configuration observation'},
+        'debug': {'state': 'measured', 'value': True, 'reason': ''}, 'torch_observation': 'not-loaded',
+        'cuda_observation': 'uninitialized', 'at': raw['at'], 'monotonic_ns': 1_000_000_000,
+        'elapsed_ns': {'state': 'unavailable', 'value': None, 'reason': 'start'}}
+    envelope = {'inventory': [source], 'source_witnesses': [source], 'process_records': []}
+    def seal():
+        raw_ref = put(f"process-{record['process_id']}-observation-{record['phase']}.json", raw)
+        for key in ('intra_op', 'inter_op', 'debug'): record[key]['provenance'] = raw_ref
+        record_ref = put(f"process-{record['process_id']}-{record['phase']}.json", record)
+        refs = [raw_ref, record_ref]
+        paths = {x['path'] for x in refs}
+        envelope['inventory'] = [x for x in envelope['inventory'] if x['path'] not in paths] + refs
+        envelope['process_records'] = [x for x in envelope['process_records'] if x['path'] != record_ref['path']] + [record_ref]
+        return record_ref
+    seal()
+    return r, custody, selected, record, selected['roles'][0], raw, envelope, put, seal
+
+
+def test_owner_current_adopted_protocol_is_accepted(tmp_path):
+    # A stale historical dependency pin must not reject the adopted P0 module.
+    r = implementation(); path, _, _ = sealed_fixture(tmp_path)
+    r.Custody(path, capture_custody_ref=fixture_custody_ref(path))
+
+
+@pytest.mark.parametrize('profile', ['unloaded-start', 'unloaded-end', 'loaded-observer', 'work-anomaly-false'])
+def test_owner_raw_v2_python_debug_is_independent_of_torch(tmp_path, profile):
+    r, custody, selected, record, role, raw, envelope, put, seal = owner_transport_fixture(tmp_path)
+    if profile == 'unloaded-end':
+        raw['phase'] = record['phase'] = 'end'; record['elapsed_ns'] = {'state': 'measured', 'value': 1, 'reason': ''}
+    if profile in ('loaded-observer', 'work-anomaly-false'):
+        raw.update(torch_loaded=True, cuda_marker=False)
+        record['torch_observation'] = 'loaded-without-calls'
+        raw['torch_anomaly']['reason'] = 'loaded Torch initialization marker only, not every native CUDA context; runtime calls prohibited'
+        raw['observation_limit'] = raw['torch_anomaly']['reason']
+        role['torch_policy'] = 'observe-loaded'
+        for key in ('intra_op', 'inter_op'): record[key]['reason'] = raw['observation_limit']
+    if profile == 'work-anomaly-false':
+        role.update(observer='work', torch_policy='work')
+        raw['observation_limit'] = 'loaded Torch initialization state only, not independent proof of native device work'
+        record['torch_observation'] = 'work'; raw['torch_anomaly'] = {'state': 'measured', 'value': False, 'reason': ''}
+        for key in ('intra_op', 'inter_op'): record[key] = {'state': 'measured', 'value': 1, 'reason': ''}
+    seal()
+    r.validate_record('process', record)
+    custody.process_context(selected, record, role, envelope)
+
+
+@pytest.mark.parametrize('mutation', ['old-schema', 'missing-debug', 'extra-field', 'bool-optimize', 'negative-optimize',
+    'optimized', 'assertions-off', 'wrong-source', 'wrong-mode', 'anomaly-bool-state', 'observer-anomaly-measured',
+    'unloaded-anomaly-measured', 'ordinary-claim', 'ordinary-sampler', 'debug-unavailable', 'debug-false',
+    'work-end-no-threads', 'bad-module-hash'])
+def test_owner_raw_v2_resealed_semantic_mutations_refuse(tmp_path, mutation):
+    r, custody, selected, record, role, raw, envelope, put, seal = owner_transport_fixture(tmp_path)
+    if mutation == 'old-schema': raw['schema'] = 'bac-hardware-process-observation-v1'
+    elif mutation == 'missing-debug': del raw['python_debug']
+    elif mutation == 'extra-field': raw['accept_anyway'] = True
+    elif mutation == 'bool-optimize': raw['python_optimize'] = False
+    elif mutation == 'negative-optimize': raw['python_optimize'] = -1
+    elif mutation == 'optimized': raw['python_optimize'] = 1
+    elif mutation == 'assertions-off': raw['python_debug'] = False
+    elif mutation == 'wrong-source': raw['source_method'] = 'inherited'
+    elif mutation == 'wrong-mode': raw['recorder_mode'] = 'fork-guard'
+    elif mutation == 'anomaly-bool-state': raw['torch_anomaly'] = {'state': True, 'value': False, 'reason': ''}
+    elif mutation in ('observer-anomaly-measured', 'unloaded-anomaly-measured'):
+        raw['torch_anomaly'] = {'state': 'measured', 'value': False, 'reason': ''}
+        if mutation == 'observer-anomaly-measured':
+            raw.update(torch_loaded=True, cuda_marker=False); record['torch_observation'] = 'loaded-without-calls'
+    elif mutation == 'ordinary-claim': raw['owner_claim'] = [record['source_witness']]
+    elif mutation == 'ordinary-sampler': raw['sampler'] = [record['source_witness']]
+    elif mutation == 'debug-unavailable': record['debug'].update(state='unavailable', value=None, reason='not observed')
+    elif mutation == 'debug-false': record['debug']['value'] = False
+    elif mutation == 'work-end-no-threads':
+        role.update(observer='work', torch_policy='work'); raw['phase'] = record['phase'] = 'end'
+    else: raw['module_names_before_sha256'] = 'invalid'
+    seal()
+    with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+def spawn_owner_transport_fixture(tmp_path, end_import=False):
+    values = owner_transport_fixture(tmp_path, end_import=end_import)
+    r, custody, selected, record, role, raw, envelope, put, seal = values
+    parent_ref = seal(); parent_identity = dict(record['identity'])
+    child_role = {**role, 'id': 'spawn', 'role': 'spawn-child', 'inter_op': 5}
+    selected['roles'].append(child_role)
+    contract = put('owner-contract.json', {'schema': 'bac-hardware-v1', 'kind': 'case-contract',
+        'obligation_kind': 'strict-child-core', 'required_cases': ['synthetic::case'], 'evidence_class': 'cpu',
+        'minimum_devices': 0, 'roles': [child_role], 'witness_schema': record['source_witness'], 'validator': record['source_witness']})
+    selected['obligations'].append({'id': 'owner', 'kind': 'strict-child-core', 'required_cases': ['synthetic::case'],
+        'contract': contract, 'validator': contract, 'evidence_class': 'cpu', 'minimum_devices': 0})
+    launch = {'schema': 'bac-hardware-owner-launch-v1', 'spec': custody.spec_ref, 'command': custody.commands[selected['id']],
+        'owner_contract': contract, 'parent_process': parent_ref, 'source_witness': record['source_witness'],
+        'parent_identity': parent_identity, 'parent_argv': list(record['argv']), 'case_id': 'synthetic::case',
+        'pytest_phase': 'call', 'child_role_id': 'spawn', 'instance_id': 'spawn-one', 'start_method': 'spawn',
+        'environment': {**raw['environment'], 'PYTEST_CURRENT_TEST': 'synthetic::case (call)'},
+        'python_assertions_enabled': True, 'inherited_imports': [], 'module_names_sha256': 'c' * 64,
+        'sampler_policy': [], 'owner_deadline_ns': None, 'sampler_cutoff_ns': None,
+        'at': '2026-01-01T00:00:02.000000Z', 'monotonic_ns': 2_000_000_000}
+    launch_source = json.loads(Path(record['source_witness']['path']).read_text()); launch_source['at'] = launch['at']
+    launch['source_witness'] = put('source-launch-spawn-one.json', launch_source)
+    launch_ref = put('owner-launch-spawn-one.json', launch)
+    child_identity = {**parent_identity, 'pid': 1001, 'ppid': 1000, 'start_identity': '101'}
+    claim = {'schema': 'bac-hardware-owner-claim-v1', 'launch': launch_ref, 'identity': child_identity,
+        'role_id': 'spawn', 'at': '2026-01-01T00:00:03.000000Z', 'monotonic_ns': 3_000_000_000}
+    claim_ref = put('owner-claim-spawn-one.json', claim)
+    source = json.loads(Path(record['source_witness']['path']).read_text())
+    source.update(process_identity=child_identity, at=claim['at'])
+    source_ref = put('source-spawn-start.json', source)
+    context = {**raw['context'], 'role_id': 'spawn', 'parent_start': [parent_ref], 'lifecycle': [launch_ref],
+        'replacement_start': [], 'worker_identity': None, 'policy': [], 'runtime': []}
+    raw.update(context=context, identity=child_identity, environment=launch['environment'], at=claim['at'], owner_claim=[claim_ref])
+    record.update(process_id='spawn', role_id='spawn', role='spawn-child', identity=child_identity,
+        parent_identity=[parent_identity], argv=[selected['interpreter'], '-c', 'multiprocessing.spawn'],
+        environment=launch['environment'], source_witness=source_ref, at=claim['at'], monotonic_ns=3_000_000_000)
+    envelope['inventory'] += [contract, launch_ref, claim_ref, source_ref, launch['source_witness']]
+    envelope['source_witnesses'] += [source_ref, launch['source_witness']]
+    seal()
+    return (*values[:4], child_role, *values[5:], launch, claim)
+
+
+def test_owner_spawn_context_accepts_only_authenticated_parent_derivation(tmp_path):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    custody.process_context(selected, record, role, envelope)
+
+
+@pytest.mark.parametrize('mutation', ['no-claim', 'foreign-claim', 'wrong-case', 'wrong-phase', 'wrong-parent',
+    'wrong-role', 'inherited-worker-role', 'missing-launch-inventory', 'missing-source-inventory',
+    'missing-source-list', 'extra-environment', 'direct-policy', 'replacement', 'wrong-host', 'wrong-boot',
+    'extra-launch-field', 'extra-claim-field', 'missing-launch-field', 'wrong-instance-path', 'claim-role',
+    'claim-start-token', 'claim-late', 'claim-bool-clock', 'launch-bool-clock', 'launch-late',
+    'wrong-method', 'spawn-deadline', 'spawn-policy', 'parent-end', 'parent-not-declared', 'raw-policy-inheritance'])
+def test_owner_spawn_resealed_context_mutations_refuse(tmp_path, mutation):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    if mutation == 'no-claim': raw['owner_claim'] = []
+    elif mutation == 'foreign-claim': claim['identity'] = {**claim['identity'], 'pid': 1002}
+    elif mutation == 'wrong-case': launch['case_id'] = 'synthetic::other'
+    elif mutation == 'wrong-phase': launch['pytest_phase'] = 'teardown'
+    elif mutation == 'wrong-parent': record['identity']['ppid'] = 777
+    elif mutation == 'wrong-role': launch['child_role_id'] = 'controller'
+    elif mutation == 'inherited-worker-role': raw['context']['worker_identity'] = {'workerid': 'gw0'}
+    elif mutation == 'extra-environment': raw['environment']['UNDECLARED'] = 'bad'
+    elif mutation == 'direct-policy': raw['context']['policy'] = [custody.policies[selected['id']][0]]
+    elif mutation == 'replacement': raw['context']['replacement_start'] = raw['context']['parent_start']
+    elif mutation == 'wrong-host': record['identity']['host'] = 'foreign-host'
+    elif mutation == 'wrong-boot': record['identity']['boot_id'] = 'foreign-boot'
+    elif mutation == 'extra-launch-field': launch['trusted'] = True
+    elif mutation == 'extra-claim-field': claim['trusted'] = True
+    elif mutation == 'missing-launch-field': del launch['python_assertions_enabled']
+    elif mutation == 'wrong-instance-path': launch['instance_id'] = 'other-instance'
+    elif mutation == 'claim-role': claim['role_id'] = 'controller'
+    elif mutation == 'claim-start-token': claim['identity'] = {**claim['identity'], 'start_identity': 'foreign'}
+    elif mutation == 'claim-late': claim['monotonic_ns'] = 19_000_000_000
+    elif mutation == 'claim-bool-clock': claim['monotonic_ns'] = True
+    elif mutation == 'launch-bool-clock': launch['monotonic_ns'] = True
+    elif mutation == 'launch-late': launch['monotonic_ns'] = 19_000_000_000
+    elif mutation == 'wrong-method': launch['start_method'] = 'fork'
+    elif mutation == 'spawn-deadline': launch['owner_deadline_ns'] = 10_000_000_000
+    elif mutation == 'spawn-policy': launch['sampler_policy'] = [record['source_witness']]
+    elif mutation == 'parent-end':
+        parent = json.loads(Path(launch['parent_process']['path']).read_text()); parent['phase'] = 'end'
+        parent['elapsed_ns'] = {'state': 'measured', 'value': 0, 'reason': ''}
+        parent_ref = put('parent-end.json', parent); launch['parent_process'] = parent_ref
+        raw['context']['parent_start'] = [parent_ref]; envelope['process_records'].append(parent_ref)
+        envelope['inventory'].append(parent_ref)
+    elif mutation == 'parent-not-declared': envelope['process_records'].remove(launch['parent_process'])
+    elif mutation == 'raw-policy-inheritance': raw['context']['required_imports'] = [{'name': 'forged'}]
+    launch_ref = put('owner-launch-spawn-one.json', launch)
+    claim['launch'] = launch_ref; claim_ref = put('owner-claim-spawn-one.json', claim)
+    raw['context']['lifecycle'] = [launch_ref]
+    if mutation != 'no-claim': raw['owner_claim'] = [claim_ref]
+    replace = {x['path']: x for x in (launch_ref, claim_ref)}
+    envelope['inventory'] = [replace.get(x['path'], x) for x in envelope['inventory']]
+    if mutation == 'missing-launch-inventory': envelope['inventory'] = [x for x in envelope['inventory'] if x != launch_ref]
+    if mutation == 'missing-source-inventory': envelope['inventory'] = [x for x in envelope['inventory'] if x != record['source_witness']]
+    if mutation == 'missing-source-list': envelope['source_witnesses'].remove(record['source_witness'])
+    seal()
+    with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+def test_owner_spawn_nested_context_keeps_immediate_parent_and_case(tmp_path):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    parent_ref = seal(); parent = json.loads(json.dumps(record)); parent_raw = json.loads(json.dumps(raw))
+    nested_role = {**role, 'id': 'nested'}; selected['roles'].append(nested_role)
+    old_contract = json.loads(Path(launch['owner_contract']['path']).read_text())
+    old_contract['roles'] = [nested_role]
+    contract = put('nested-contract.json', old_contract)
+    selected['obligations'].append({**selected['obligations'][-1], 'id': 'nested-owner', 'contract': contract})
+    nested_launch = {**launch, 'owner_contract': contract, 'parent_process': parent_ref,
+        'parent_identity': parent['identity'], 'parent_argv': parent['argv'], 'source_witness': parent['source_witness'],
+        'child_role_id': 'nested', 'instance_id': 'nested-one', 'environment': parent['environment'],
+        'at': '2026-01-01T00:00:04.000000Z', 'monotonic_ns': 4_000_000_000}
+    launch_source = json.loads(Path(parent['source_witness']['path']).read_text()); launch_source['at'] = nested_launch['at']
+    nested_launch['source_witness'] = put('source-launch-nested-one.json', launch_source)
+    nested_launch_ref = put('owner-launch-nested-one.json', nested_launch)
+    nested_identity = {**parent['identity'], 'pid': 1002, 'ppid': 1001, 'start_identity': '102'}
+    nested_claim = {**claim, 'launch': nested_launch_ref, 'identity': nested_identity, 'role_id': 'nested',
+        'at': '2026-01-01T00:00:05.000000Z', 'monotonic_ns': 5_000_000_000}
+    nested_claim_ref = put('owner-claim-nested-one.json', nested_claim)
+    source = json.loads(Path(parent['source_witness']['path']).read_text())
+    source.update(process_identity=nested_identity, at=nested_claim['at'])
+    source_ref = put('source-nested-start.json', source)
+    raw.update(identity=nested_identity, at=nested_claim['at'], owner_claim=[nested_claim_ref],
+        context={**parent_raw['context'], 'role_id': 'nested', 'parent_start': [parent_ref], 'lifecycle': [nested_launch_ref]})
+    record.update(process_id='nested', role_id='nested', identity=nested_identity, parent_identity=[parent['identity']],
+        source_witness=source_ref, at=nested_claim['at'], monotonic_ns=nested_claim['monotonic_ns'])
+    envelope['inventory'] += [contract, nested_launch_ref, nested_claim_ref, source_ref, nested_launch['source_witness']]
+    envelope['source_witnesses'] += [source_ref, nested_launch['source_witness']]; seal()
+    custody.process_context(selected, record, nested_role, envelope)
+    # Reseal an immediate-parent lie; the valid grandparent cannot replace it.
+    record['identity'] = {**record['identity'], 'ppid': 1000}; raw['identity'] = record['identity']; seal()
+    with pytest.raises(ValueError): custody.process_context(selected, record, nested_role, envelope)
+
+
+def reseal_owner_fixture(envelope, output, change):
+    """Reseal authored acyclic local data so semantic negatives reach consumers."""
+    import bac_hardware_protocol_v1 as p
+    cache = {}; active = set()
+    def visit(value):
+        if type(value) is list: return [visit(item) for item in value]
+        if type(value) is not dict: return value
+        if set(value) == {'path', 'bytes', 'sha256'}:
+            path = Path(value['path'])
+            if path.parent != output: return value
+            if str(path) in cache: return cache[str(path)]
+            assert str(path) not in active, 'fixture author introduced a reference cycle'
+            active.add(str(path))
+            body = visit(json.loads(path.read_text()))
+            path.write_text(json.dumps(body, sort_keys=True))
+            result = p.file_reference(path); cache[str(path)] = result; active.remove(str(path))
+            return result
+        return change({key: visit(item) for key, item in value.items()})
+    return visit(envelope)
+
+
+def test_owner_spawn_resealed_foreign_controller_cannot_acquire_root_authority(tmp_path):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    reference = seal()
+    def forge(value):
+        if set(value) == {'pid', 'ppid', 'start_identity', 'host', 'boot_id'}:
+            if value['pid'] == 1000: value['pid'] = 1009
+            if value['ppid'] == 1000: value['ppid'] = 1009
+        return value
+    envelope = reseal_owner_fixture(envelope, Path(selected['output']), forge)
+    for obligation in selected['obligations']:
+        for key in ('contract', 'validator'):
+            if Path(obligation[key]['path']).parent == Path(selected['output']):
+                obligation[key] = r.file_reference(Path(obligation[key]['path']))
+    record = json.loads(Path(reference['path']).read_text())
+    with pytest.raises(ValueError, match='controller identity'): custody.process_context(selected, record, role, envelope)
+
+
+def test_owner_spawn_worker_parent_preserves_worker_environment_without_relabelling(tmp_path):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    def read(reference): return json.loads(Path(reference['path']).read_text())
+    controller = read(launch['parent_process']); controller_raw = read(controller['intra_op']['provenance'])
+    policy_ref, policy = custody.policies[selected['id']]
+    policy['worker_roles'] = ['worker']; Path(policy_ref['path']).write_text(json.dumps(policy))
+    policy_ref = r.file_reference(Path(policy_ref['path'])); custody.policies[selected['id']] = (policy_ref, policy)
+    runtime = read(custody.runtimes[selected['id']]); runtime['policy'] = policy_ref
+    runtime_ref = put('runtime-context.json', runtime); custody.runtimes[selected['id']] = runtime_ref
+    controller_raw['context'].update(policy=[policy_ref], runtime=[runtime_ref], worker_roles=['worker'])
+    controller_raw_ref = put('process-controller-observation-start.json', controller_raw)
+    for key in ('intra_op', 'inter_op', 'debug'): controller[key]['provenance'] = controller_raw_ref
+    controller_ref = put('process-controller-start.json', controller)
+    selected['xdist_workers'] = 1
+    worker_role = {**selected['roles'][0], 'id': 'worker', 'role': 'worker'}; selected['roles'].append(worker_role)
+    worker = {'workerid': 'gw0', 'workercount': 1, 'testrunuid': '0123456789abcdef0123456789abcdef', 'mainargv': selected['argv']}
+    identity = {**controller['identity'], 'pid': 1010, 'ppid': 1000, 'start_identity': '110'}
+    configure_ref = put('configure-worker.json', {'schema': 'bac-hardware-worker-lifecycle-v1', 'phase': 'configure',
+        'controller_start': controller_ref, 'worker_identity': worker, 'role_id': 'worker', 'predecessor_start': [],
+        'process_start': [], 'error': '', 'at': '2026-01-01T00:00:02.000000Z', 'prior_lifecycle': []})
+    environment = {**controller['environment'], 'PYTEST_XDIST_WORKER': 'gw0', 'PYTEST_XDIST_WORKER_COUNT': '1',
+        'PYTEST_XDIST_TESTRUNUID': worker['testrunuid']}
+    worker_raw = json.loads(json.dumps(controller_raw))
+    worker_raw.update(identity=identity, environment=environment, worker_identity=worker, at='2026-01-01T00:00:02.000000Z')
+    worker_raw['context'].update(role_id='worker', parent_start=[controller_ref], lifecycle=[configure_ref], worker_identity=worker)
+    worker_raw_ref = put('process-worker-observation-start.json', worker_raw)
+    worker_source = read(controller['source_witness']); worker_source.update(process_identity=identity, at=worker_raw['at'])
+    worker_source_ref = put('source-worker-start.json', worker_source)
+    worker_record = json.loads(json.dumps(controller))
+    worker_record.update(process_id='worker', role_id='worker', role='worker', identity=identity,
+        parent_identity=[controller['identity']], argv=[selected['interpreter'], '-c', 'execnet worker'],
+        environment=environment, source_witness=worker_source_ref, at=worker_raw['at'], monotonic_ns=2_000_000_000)
+    for key in ('intra_op', 'inter_op', 'debug'): worker_record[key]['provenance'] = worker_raw_ref
+    worker_ref = put('process-worker-start.json', worker_record)
+    launch.update(parent_process=worker_ref, parent_identity=identity, parent_argv=worker_record['argv'],
+        source_witness=worker_source_ref, environment={**environment, 'PYTEST_CURRENT_TEST': 'synthetic::case (call)'},
+        at='2026-01-01T00:00:03.000000Z', monotonic_ns=3_000_000_000)
+    launch_source = {**worker_source, 'at': launch['at']}
+    launch['source_witness'] = put('source-launch-spawn-one.json', launch_source)
+    launch_ref = put('owner-launch-spawn-one.json', launch)
+    child_identity = {**record['identity'], 'ppid': 1010}
+    claim.update(launch=launch_ref, identity=child_identity, at='2026-01-01T00:00:04.000000Z', monotonic_ns=4_000_000_000)
+    claim_ref = put('owner-claim-spawn-one.json', claim)
+    child_source = read(record['source_witness']); child_source.update(process_identity=child_identity, at=claim['at'])
+    child_source_ref = put('source-spawn-start.json', child_source)
+    raw.update(identity=child_identity, environment=launch['environment'], at=claim['at'], owner_claim=[claim_ref])
+    raw['context'].update(parent_start=[worker_ref], lifecycle=[launch_ref], worker_roles=['worker'])
+    record.update(identity=child_identity, parent_identity=[identity], environment=launch['environment'],
+        source_witness=child_source_ref, at=claim['at'], monotonic_ns=claim['monotonic_ns'])
+    child_ref = seal()
+    envelope.update(process_records=[controller_ref, worker_ref, child_ref],
+        source_witnesses=[controller['source_witness'], worker_source_ref, child_source_ref, launch['source_witness']],
+        inventory=[r.file_reference(path) for path in Path(selected['output']).iterdir() if path.is_file()])
+    custody.process_context(selected, record, role, envelope)
+    assert record['role'] == 'spawn-child' and raw['worker_identity'] is None
+    raw['environment']['PYTEST_XDIST_WORKER'] = 'gw1'; seal()
+    with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+def owner_completion_fixture(tmp_path, changed_launch):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    def read(reference): return json.loads(Path(reference['path']).read_text())
+    for start_ref in list(envelope['process_records']):
+        end = read(start_ref); end_raw = read(end['intra_op']['provenance'])
+        end.update(phase='end', at='2026-01-01T00:00:07.000000Z', monotonic_ns=7_000_000_000,
+            elapsed_ns={'state': 'measured', 'value': 7_000_000_000 - end['monotonic_ns'], 'reason': ''})
+        end_raw.update(phase='end', at=end['at'])
+        if changed_launch and end['role'] == 'spawn-child':
+            another_launch = {**launch, 'instance_id': 'spawn-other'}
+            another_launch['source_witness'] = put('source-launch-spawn-other.json', read(launch['source_witness']))
+            another_ref = put('owner-launch-spawn-other.json', another_launch)
+            another_claim = put('owner-claim-spawn-other.json', {**claim, 'launch': another_ref})
+            end_raw['context']['lifecycle'] = [another_ref]; end_raw['owner_claim'] = [another_claim]
+            envelope['inventory'] += [another_ref, another_claim, another_launch['source_witness']]
+            envelope['source_witnesses'].append(another_launch['source_witness'])
+        source = read(end['source_witness']); source['at'] = end['at']
+        source_ref = put('source-' + end['process_id'] + '-end.json', source); end['source_witness'] = source_ref
+        raw_ref = put('process-' + end['process_id'] + '-observation-end.json', end_raw)
+        for key in ('intra_op', 'inter_op', 'debug'): end[key]['provenance'] = raw_ref
+        end_ref = put('process-' + end['process_id'] + '-end.json', end)
+        envelope['process_records'].append(end_ref); envelope['source_witnesses'].append(source_ref)
+        envelope['inventory'] += [source_ref, raw_ref, end_ref]
+    obligations = []
+    for item in selected['obligations']:
+        obligations.append(put('obligation-' + item['id'] + '.json', {'schema': 'bac-hardware-v1', 'kind': 'obligation-evidence',
+            'attempt_id': custody.spec['attempt_id'], 'job_id': selected['id'], 'spec': custody.spec_ref,
+            'obligation_id': item['id'], 'obligation_kind': item['kind'], 'contract': item['contract'],
+            'validator': item['validator'], 'case_id': 'synthetic::case', 'evidence_class': 'cpu',
+            'payload': record['source_witness'], 'producer_process': envelope['process_records'][0], 'related_attempts': []}))
+    envelope['inventory'] += obligations
+    completion = {'schema': 'bac-hardware-v1', 'kind': 'job-evidence', 'attempt_id': custody.spec['attempt_id'],
+        'job_id': selected['id'], 'spec': custody.spec_ref, 'command': custody.commands[selected['id']],
+        'collected_ids': ['synthetic::case'], 'outcomes': [{'case_id': 'synthetic::case', 'setup': 'passed',
+            'call': 'passed', 'teardown': 'passed', 'evidence': [record['source_witness']]}],
+        'obligation_records': obligations, **envelope}
+    put('completion.json', completion)
+    return r, custody, selected, completion, put
+
+
+@pytest.mark.parametrize('changed_launch', [False, True])
+def test_owner_spawn_completion_requires_one_launch_and_claim_across_phases(tmp_path, changed_launch):
+    r, custody, selected, completion, put = owner_completion_fixture(tmp_path, changed_launch)
+    if changed_launch:
+        with pytest.raises(ValueError, match='owner phase'): custody.evidence(selected)
+    else:
+        assert custody.evidence(selected) == completion
+
+
+@pytest.mark.parametrize('phase', ['start', 'end'])
+@pytest.mark.parametrize('authority', ['frozen-source', 'unfrozen-source', 'outside-import-root'])
+def test_owner_observed_child_import_authority_in_complete_envelope(tmp_path, phase, authority):
+    r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+    reference = custody.candidate['inventory']['source'][0]['reference']
+    if authority == 'unfrozen-source':
+        path = Path(selected['cwd']) / 'unfrozen-child-module.txt'
+        path.write_text('authored bytes absent from frozen candidate')
+        reference = r.file_reference(path)
+    elif authority == 'outside-import-root':
+        reference = custody.candidate['inventory']['configs'][0]['reference']
+    for index, process_ref in enumerate(completion['process_records']):
+        process = json.loads(Path(process_ref['path']).read_text())
+        if process['role'] == 'spawn-child' and process['phase'] == phase:
+            # A child may load a legitimate module absent from its parent START
+            # and from launch.inherited_imports; its own byte authority is required.
+            process['imports'] = [{'name': '_observed_child_extra', 'reference': reference}]
+            updated = put(Path(process_ref['path']).name, process)
+            completion['process_records'][index] = updated
+            completion['inventory'] = [updated if item == process_ref else item for item in completion['inventory']]
+            break
+    else:
+        raise AssertionError('authored child phase missing')
+    put('completion.json', completion)
+    if authority == 'frozen-source':
+        assert custody.evidence(selected) == completion
+    else:
+        with pytest.raises(ValueError): custody.evidence(selected)
+
+
+@pytest.mark.parametrize('kind', ['strict-child-core', 'rng-custody'])
+def test_owner_spawn_selected_contract_kind_follows_unique_job_obligation(tmp_path, kind):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    contract = json.loads(Path(launch['owner_contract']['path']).read_text()); contract['obligation_kind'] = kind
+    contract_ref = put('owner-contract.json', contract)
+    selected_owner = selected['obligations'][-1]
+    selected_owner.update(contract=contract_ref, kind=kind)
+    if kind == 'rng-custody':
+        # P0's independent job-level strict-kind presence still applies.
+        core_ref = put('required-core-contract.json', {**contract, 'obligation_kind': 'strict-child-core'})
+        selected['obligations'].append({**selected_owner, 'id': 'required-core', 'kind': 'strict-child-core', 'contract': core_ref})
+    launch['owner_contract'] = contract_ref; launch_ref = put('owner-launch-spawn-one.json', launch)
+    claim['launch'] = launch_ref; claim_ref = put('owner-claim-spawn-one.json', claim)
+    raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+    updated = {x['path']: x for x in (contract_ref, launch_ref, claim_ref)}
+    envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+    custody.process_context(selected, record, role, envelope)
+    selected['obligations'].append({**selected_owner, 'id': 'duplicate-owner-authority'})
+    with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+def test_owner_fork_private_ancestry_does_not_enable_public_sampler_acceptance(tmp_path):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    role.update(role='fork-guard', observer='guard-only', torch_policy='forbidden', cuda_policy='forbidden')
+    contract = json.loads(Path(launch['owner_contract']['path']).read_text())
+    contract.update(obligation_kind='fork-three-trials', roles=[role]); contract_ref = put('owner-contract.json', contract)
+    selected['obligations'][-1].update(kind='fork-three-trials', contract=contract_ref)
+    policy_ref = put('unqualified-sampler-policy.json', {'authored': 'opaque prerequisite; Task3 acceptance UNRUN'})
+    selected['prerequisites'] = [policy_ref]
+    launch.update(owner_contract=contract_ref, start_method='fork', sampler_policy=[policy_ref],
+        owner_deadline_ns=12_000_000_000, sampler_cutoff_ns=10_000_000_000)
+    launch_ref = put('owner-launch-spawn-one.json', launch)
+    # Fork START records recorder entry; exclusive claim is observed afterwards.
+    claim.update(launch=launch_ref, monotonic_ns=3_000_000_100)
+    claim_ref = put('owner-claim-spawn-one.json', claim)
+    raw.update(recorder_mode='fork-guard', owner_claim=[claim_ref])
+    raw['context']['lifecycle'] = [launch_ref]
+    record.update(role='fork-guard', argv=launch['parent_argv'], torch_observation='forbidden-inherited-module-witness', cuda_observation='forbidden')
+    for key in ('intra_op', 'inter_op', 'debug'):
+        record[key] = {'state': 'unavailable', 'value': None, 'reason': 'guard-only: no Torch/CUDA calls permitted'}
+    updated = {x['path']: x for x in (contract_ref, launch_ref, claim_ref)}
+    envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']] + [policy_ref]; seal()
+    assert custody.owner_context(selected, record, role, raw, envelope, set()) == launch
+    with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+def test_owner_spawn_launch_source_cannot_reuse_parent_start_witness(tmp_path):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    parent = json.loads(Path(launch['parent_process']['path']).read_text())
+    launch['source_witness'] = parent['source_witness']
+    launch_ref = put('owner-launch-spawn-one.json', launch); claim['launch'] = launch_ref
+    claim_ref = put('owner-claim-spawn-one.json', claim)
+    raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+    updated = {x['path']: x for x in (launch_ref, claim_ref)}
+    envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+    with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+def test_owner_spawn_process_source_is_observed_after_process_entry(tmp_path):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    reference = seal()
+    def later_source(value):
+        if value.get('kind') == 'source-witness' and value['at'] in ('2026-01-01T00:00:01.000000Z', '2026-01-01T00:00:03.000000Z'):
+            value['at'] = value['at'].replace('.000000Z', '.500000Z')
+        return value
+    envelope = reseal_owner_fixture(envelope, Path(selected['output']), later_source)
+    for obligation in selected['obligations']:
+        for key in ('contract', 'validator'):
+            if Path(obligation[key]['path']).parent == Path(selected['output']):
+                obligation[key] = r.file_reference(Path(obligation[key]['path']))
+    record = json.loads(Path(reference['path']).read_text())
+    custody.process_context(selected, record, role, envelope)
+
+
+@pytest.mark.parametrize('owner_role', ['discovery', 'observer', 'work-child'])
+def test_owner_spawn_all_admitted_noncontroller_nonworker_roles_use_owner_context(tmp_path, owner_role):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    role['role'] = record['role'] = owner_role
+    contract = json.loads(Path(launch['owner_contract']['path']).read_text()); contract['roles'] = [role]
+    contract_ref = put('owner-contract.json', contract); selected['obligations'][-1]['contract'] = contract_ref
+    launch['owner_contract'] = contract_ref; launch_ref = put('owner-launch-spawn-one.json', launch)
+    claim['launch'] = launch_ref; claim_ref = put('owner-claim-spawn-one.json', claim)
+    raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+    updated = {x['path']: x for x in (contract_ref, launch_ref, claim_ref)}
+    envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+    custody.process_context(selected, record, role, envelope)
+
+
+@pytest.mark.parametrize('authority', ['candidate', 'unfrozen', 'outside-import-root', 'duplicate-name'])
+def test_owner_spawn_inherited_imports_follow_pinned_source_authority(tmp_path, authority):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path)
+    allowed = custody.candidate['inventory']['source'][0]['reference']
+    if authority == 'unfrozen':
+        path = Path(selected['cwd']) / 'unfrozen.txt'; path.write_text('authored unapproved bytes')
+        allowed = r.file_reference(path)
+    elif authority == 'outside-import-root': allowed = custody.inputs[1]
+    launch['inherited_imports'] = [{'name': '_late_alias', 'reference': allowed}]
+    if authority == 'duplicate-name': launch['inherited_imports'] *= 2
+    launch_ref = put('owner-launch-spawn-one.json', launch); claim['launch'] = launch_ref
+    claim_ref = put('owner-claim-spawn-one.json', claim)
+    raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+    updated = {x['path']: x for x in (launch_ref, claim_ref)}
+    envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+    if authority == 'candidate':
+        custody.process_context(selected, record, role, envelope)
+    else:
+        with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+@pytest.mark.parametrize('present', [True, False])
+def test_owner_spawn_launch_requires_end_import_without_requiring_parent_start_import(tmp_path, present):
+    r, custody, selected, record, role, raw, envelope, put, seal, launch, claim = spawn_owner_transport_fixture(tmp_path, end_import=True)
+    if present: launch['inherited_imports'] = [{'name': 'late_required', 'reference': custody.candidate['inventory']['source'][0]['reference']}]
+    launch_ref = put('owner-launch-spawn-one.json', launch); claim['launch'] = launch_ref
+    claim_ref = put('owner-claim-spawn-one.json', claim)
+    raw['context']['lifecycle'] = [launch_ref]; raw['owner_claim'] = [claim_ref]
+    updated = {x['path']: x for x in (launch_ref, claim_ref)}
+    envelope['inventory'] = [updated.get(x['path'], x) for x in envelope['inventory']]; seal()
+    if present:
+        custody.process_context(selected, record, role, envelope)
+    else:
+        with pytest.raises(ValueError): custody.process_context(selected, record, role, envelope)
+
+
+OWNER_CHILD_CODE = r'''
+import os,sys,json,time,hashlib,socket
+from pathlib import Path
+from datetime import datetime,timezone
+def ref(path):
+    p=Path(path);b=p.read_bytes();return {'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+def utc():return datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+launchref=ref(sys.argv[1]);launch=json.loads(Path(sys.argv[1]).read_text())
+s=json.loads(Path(launch['spec']['path']).read_text());j=s['jobs'][0];out=Path(j['output'])
+def put(name,v):
+    p=out/name
+    with p.open('x') as f:json.dump(v,f)
+    return ref(p)
+def record(kind,**kw):return {'schema':'bac-hardware-v1','kind':kind,**kw}
+c=json.loads(Path(s['candidate']['path']).read_text());e=json.loads(Path(s['dependencies']['path']).read_text())
+parts=Path('/proc/self/stat').read_text().rsplit(')',1)[1].split()
+identity={'pid':os.getpid(),'ppid':os.getppid(),'start_identity':parts[19],'host':socket.gethostname(),'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+parent=json.loads(Path(launch['parent_process']['path']).read_text())
+parentraw=json.loads(Path(parent['intra_op']['provenance']['path']).read_text())
+context=dict(parentraw['context']);context.update(role_id='spawn',parent_start=[launch['parent_process']],lifecycle=[launchref],replacement_start=[],worker_identity=None,policy=[],runtime=[])
+claim=put('owner-claim-spawn-one.json',dict(schema='bac-hardware-owner-claim-v1',launch=launchref,identity=identity,role_id='spawn',at=utc(),monotonic_ns=time.monotonic_ns()))
+inventory=[x['reference'] for rows in c['inventory'].values() for x in rows]
+process=[];sources=[];raws=[];start=None
+for phase in ('start','end'):
+    ns=time.monotonic_ns();at=utc()
+    if phase=='start':start=ns
+    source=put('source-actual-spawn-'+phase+'.json',record('source-witness',candidate=s['candidate'],source_freeze=s['source_freeze'],head=c['head'],tree=c['tree'],inventory=inventory,at=utc(),process_identity=identity));sources.append(source)
+    reason='Torch absent; no import or runtime configuration observation'
+    modules=hashlib.sha256(json.dumps(sorted(sys.modules),ensure_ascii=True,separators=(',',':')).encode('ascii')).hexdigest()
+    raw=put('process-actual-spawn-observation-'+phase+'.json',dict(schema='bac-hardware-process-observation-v2',context=context,identity=identity,phase=phase,environment=dict(os.environ),worker_identity=None,torch_loaded=False,cuda_marker=None,observation_limit=reason,at=at,python_debug=__debug__,python_optimize=sys.flags.optimize,torch_anomaly=dict(state='unavailable',value=None,reason=reason),source_method='direct-git',recorder_mode='ordinary',module_names_before_sha256=modules,module_names_after_sha256=modules,owner_claim=[claim],sampler=[]));raws.append(raw)
+    missing=dict(state='unavailable',value=None,reason=reason,provenance=raw)
+    debug=dict(state='measured',value=__debug__,reason='',provenance=raw)
+    argv=[x.decode() for x in Path('/proc/self/cmdline').read_bytes().split(b'\0')[:-1]]
+    process.append(put('process-actual-spawn-'+phase+'.json',record('process',attempt_id=s['attempt_id'],job_id=j['id'],spec=launch['spec'],process_id='actual-spawn',role_id='spawn',role='spawn-child',phase=phase,identity=identity,parent_identity=[parent['identity']],replacement_of=[],interpreter=e['interpreter'],argv=argv,cwd=os.getcwd(),imports=[],source_witness=source,environment=dict(os.environ),devices=j['devices'],intra_op=missing,inter_op=missing,debug=debug,torch_observation='not-loaded',cuda_observation='uninitialized',at=at,monotonic_ns=ns,elapsed_ns=dict(state='unavailable',value=None,reason='start') if phase=='start' else dict(state='measured',value=ns-start,reason=''))))
+put('authored-child-handoff.json',dict(process=process,sources=sources,raws=raws,claim=claim,pid=os.getpid(),ppid=os.getppid(),pgid=os.getpgrp(),affinity=sorted(os.sched_getaffinity(0))))
+'''
+
+
+def owner_public_code():
+    # Reuse only this test's authored -c fixture, never a source execution clone.
+    first, obligations = SUCCESS_CODE.split('obligations=[]', 1)
+    end_loop = first[first.index("for phase in ('start','end'):"):].replace("for phase in ('start','end'):", "for phase in ('end',):", 1)
+    first = first.replace("for phase in ('start','end'):", "for phase in ('start',):", 1)
+    owner = r'''
+import subprocess
+os.environ['PYTEST_CURRENT_TEST']='synthetic::case (call)'
+contract=next(o['contract'] for o in j['obligations'] if o['id']=='owner')
+launchsource=put('source-launch-spawn-one.json',record('source-witness',candidate=s['candidate'],source_freeze=s['source_freeze'],head=c['head'],tree=c['tree'],inventory=inventory,at=utc(),process_identity=identity));sources.append(launchsource)
+launch=put('owner-launch-spawn-one.json',dict(schema='bac-hardware-owner-launch-v1',spec=ref(specpath),command=ref(out/'command.json'),owner_contract=contract,parent_process=process[0],source_witness=launchsource,parent_identity=identity,parent_argv=j['argv'],case_id='synthetic::case',pytest_phase='call',child_role_id='spawn',instance_id='spawn-one',start_method='spawn',environment=dict(os.environ),python_assertions_enabled=__debug__,inherited_imports=[],module_names_sha256=hashlib.sha256(json.dumps(sorted(sys.modules),ensure_ascii=True,separators=(',',':')).encode('ascii')).hexdigest(),sampler_policy=[],owner_deadline_ns=None,sampler_cutoff_ns=None,monotonic_ns=time.monotonic_ns(),at=utc()))
+child=subprocess.Popen([sys.executable,'-B','-c',CHILD_CODE,launch['path']],env=dict(os.environ),start_new_session=False)
+try:
+    code=child.wait(timeout=5)
+    if code!=0:raise RuntimeError('authored child failed '+str(code))
+finally:
+    if child.poll() is None:child.kill();child.wait(timeout=2)
+handoff=json.loads((out/'authored-child-handoff.json').read_text())
+assert handoff['pid']==child.pid and handoff['ppid']==os.getpid() and handoff['pgid']==os.getpgrp()
+put('authored-parent-wait.json',dict(pid=child.pid,returncode=code,pgid=os.getpgrp(),affinity=sorted(os.sched_getaffinity(0))))
+process.extend(handoff['process']);sources.extend(handoff['sources']);raws.extend(handoff['raws'])
+owner_extra=[launch,handoff['claim']]
+del os.environ['PYTEST_CURRENT_TEST']
+'''.replace('CHILD_CODE', repr(OWNER_CHILD_CODE))
+    # The current transport uses fixed process identity filenames for owner ancestry.
+    first = first.replace("'process-'+phase+'.json'", "'process-actual-controller-'+phase+'.json'")
+    end_loop = end_loop.replace("'process-'+phase+'.json'", "'process-actual-controller-'+phase+'.json'")
+    return first + owner + end_loop + 'obligations=[]' + obligations.replace('inventory=[fact,', 'inventory=[*owner_extra,fact,')
+
+
+def test_owner_public_run_observes_controller_spawn_identities_and_owned_group(tmp_path, monkeypatch):
+    assert len(os.sched_getaffinity(0)) == 3, 'root grants three CPUs for this finite public owner transport case'
+    r = implementation(); path, selected, registry = sealed_fixture(tmp_path, owner_public_code(), owner=True)
+    stub_source(monkeypatch, r, registry)
+    assert r.run(path, capture_custody_ref=fixture_custody_ref(path)) == 0
+    output = Path(selected['jobs'][0]['output'])
+    result = json.loads((output / 'result.json').read_text())
+    handoff = json.loads((output / 'authored-child-handoff.json').read_text())
+    wait = json.loads((output / 'authored-parent-wait.json').read_text())
+    controller = json.loads((output / 'process-actual-controller-start.json').read_text())
+    child = json.loads((output / 'process-actual-spawn-start.json').read_text())
+    assert result['disposition'] == 'successful'
+    assert child['identity']['pid'] == handoff['pid'] == wait['pid']
+    assert child['identity']['ppid'] == controller['identity']['pid'] == handoff['ppid']
+    assert handoff['pgid'] == wait['pgid'] == controller['identity']['pid']
+    assert handoff['affinity'] == wait['affinity'] == sorted(os.sched_getaffinity(0))
+    assert wait['returncode'] == 0
+    with pytest.raises(ProcessLookupError): os.kill(handoff['pid'], 0)
+    completion = json.loads((output / 'completion.json').read_text())
+    for key in ('collected_ids', 'outcomes', 'process_records', 'obligation_records', 'source_witnesses'):
+        assert result[key] == completion[key]
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'raw', 'process', 'launch', 'claim', 'source', 'source-list', 'duplicate', 'contradictory'])
+def test_owner_completion_result_correspondence_and_declared_closure(tmp_path, mutation):
+    r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+    child_ref = next(ref for ref in completion['process_records'] if json.loads(Path(ref['path']).read_text())['role'] == 'spawn-child')
+    child = json.loads(Path(child_ref['path']).read_text())
+    raw_ref = child['intra_op']['provenance']; raw = json.loads(Path(raw_ref['path']).read_text())
+    targets = {'raw': raw_ref, 'process': child_ref, 'launch': raw['context']['lifecycle'][0],
+        'claim': raw['owner_claim'][0], 'source': child['source_witness']}
+    if mutation in targets:
+        completion['inventory'].remove(targets[mutation])
+    elif mutation == 'source-list': completion['source_witnesses'].remove(child['source_witness'])
+    elif mutation == 'duplicate': completion['inventory'].append(raw_ref)
+    elif mutation == 'contradictory': completion['inventory'].append({**raw_ref, 'sha256': 'f' * 64})
+    put('completion.json', completion)
+    Path(selected['output'], 'stdout.log').write_text('authored pure transport log')
+    observation = {**custody.observations[selected['id']], 'exit_code': 0, 'signal': 0,
+        'disposition': 'completed-unverified', 'reason': 'awaiting evidence'}
+    result = custody.result(selected, observation, None)
+    if mutation == 'valid':
+        assert result['disposition'] == 'successful'
+        for key in ('collected_ids', 'outcomes', 'process_records', 'obligation_records', 'source_witnesses'):
+            assert result[key] == completion[key]
+        assert result['inventory'] != completion['inventory']
+    else:
+        assert result['disposition'] != 'successful'
+        # The fresh result snapshot can contain bytes omitted from the declaration;
+        # this never repairs the earlier closed owner's missing declaration.
+        if mutation in targets: assert targets[mutation] in result['inventory']
+
+
+def authored_sampler_policy(role_id):
+    return dict(schema='bac-hardware-owner-sampler-policy-v1', role_ids=[role_id],
+        owner_deadline_ns=10_000_000_000, sampler_cutoff_ns=8_000_000_000,
+        sampler_total_ns=6_000_000_000, phase_ns=3_000_000_000, lock_wait_ns=250_000_000,
+        command_run_ns=500_000_000, term_grace_ns=100_000_000, kill_reap_ns=400_000_000,
+        emission_reserve_ns=250_000_000, stdout_limit_bytes=8192, stderr_limit_bytes=8192,
+        max_input_bytes=100_000_000, cpu_slots=1, scratch_bytes=1_000_000, scratch_inodes=50)
+
+
+def owner_sampler_fixture(tmp_path, mutate=lambda parts: None, policy_mutate=lambda policy: None):
+    r, custody, selected, completion, put = owner_completion_fixture(tmp_path, False)
+    read = lambda ref: json.loads(Path(ref['path']).read_text())
+    role = selected['roles'][-1]
+    role.update(role='fork-guard', observer='guard-only', torch_policy='forbidden', cuda_policy='forbidden')
+    policy = authored_sampler_policy(role['id']); policy_mutate(policy)
+    policy_path = tmp_path / 'metadata' / 'sampler-policy.json'
+    policy_path.write_text(json.dumps(policy)); policy_ref = r.file_reference(policy_path)
+    selected['prerequisites'] = [policy_ref]
+    selected['budget'].update(scratch_bytes=2_000_000, scratch_inodes=100)
+    bound = read(role['cpu_reservation_evidence'])
+    bound.update(role_id=role['id'], **{k: role[k] for k in ('role', 'observer', 'intra_op', 'inter_op', 'debug', 'torch_policy', 'cuda_policy', 'peak_cpu_slots')}, justification=[policy_ref])
+    bound_path = tmp_path / 'metadata' / 'guard-bound.json'; bound_path.write_text(json.dumps(bound))
+    role['cpu_reservation_evidence'] = r.file_reference(bound_path)
+    custody.grant['cpu_reservation_evidence'].append(role['cpu_reservation_evidence'])
+    git = Path(next(row['reference']['path'] for row in custody.environment['dependencies'] if row['name'] == 'git'))
+    child_records = [read(ref) for ref in completion['process_records'] if read(ref)['role'] == 'spawn-child']
+    first_raw = read(child_records[0]['debug']['provenance']); launch = read(first_raw['context']['lifecycle'][0])
+    contract = read(launch['owner_contract']); contract.update(roles=[role], obligation_kind='fork-three-trials')
+    contract_ref = put('owner-contract.json', contract)
+    selected['obligations'][-1].update(kind='fork-three-trials', contract=contract_ref, validator=contract_ref)
+    launch.update(owner_contract=contract_ref, start_method='fork', sampler_policy=[policy_ref],
+        owner_deadline_ns=12_000_000_000, sampler_cutoff_ns=10_000_000_000)
+    launch_ref = put('owner-launch-spawn-one.json', launch)
+    claim = read(first_raw['owner_claim'][0]); claim.update(launch=launch_ref, monotonic_ns=3_000_000_001)
+    claim_ref = put('owner-claim-spawn-one.json', claim)
+    phase_parts = []
+    for rec in child_records:
+        phase = rec['phase']; begin = rec['monotonic_ns']; raw = read(rec['debug']['provenance'])
+        reason = 'guard-only: no Torch/CUDA calls permitted'
+        raw.update(recorder_mode='fork-guard', observation_limit=reason, cuda_marker=None,
+            torch_anomaly={'state': 'unavailable', 'value': None, 'reason': reason}, owner_claim=[claim_ref])
+        raw['context']['lifecycle'] = [launch_ref]
+        rec.update(role='fork-guard', argv=launch['parent_argv'], torch_observation='forbidden-inherited-module-witness', cuda_observation='forbidden')
+        for key in ('intra_op', 'inter_op', 'debug'): rec[key] = {'state': 'unavailable', 'value': None, 'reason': reason}
+        commands = []
+        for i, suffix in enumerate((['rev-parse', 'HEAD'], ['diff-index', '--cached', '--quiet', custody.candidate['tree'], '--'])):
+            logrefs = {}
+            for stream in ('stdout', 'stderr'):
+                path = Path(selected['output']) / f'sampler-spawn-{phase}-{i}.{stream}'
+                path.write_text(custody.candidate['head']+'\n' if i == 0 and stream == 'stdout' else '')
+                logrefs[stream] = r.file_reference(path)
+            commands.append(dict(argv=[str(git), '-C', custody.spec['authorized_root'], *suffix], pid=1100+i,
+                start_ns=begin+20+i*30, end_ns=begin+40+i*30, exit_code=0,
+                stdout_truncated=False, stderr_truncated=False, **logrefs))
+        sampler = dict(schema='bac-hardware-owner-sampler-observation-v1', policy=policy_ref, launch=launch_ref,
+            identity=rec['identity'], phase=phase, start_ns=begin, end_ns=begin+100,
+            cumulative_ns=100 if phase == 'start' else 200, lock_acquired_ns=begin+10,
+            lock_released_ns=begin+80, commands=commands)
+        emission = dict(schema='bac-hardware-owner-sampler-emission-v1', policy=policy_ref, launch=launch_ref,
+            identity=rec['identity'], phase=phase, emission_end_ns=begin+150, module_names_after_sha256=launch['module_names_sha256'])
+        parts = dict(record=rec, raw=raw, sampler=sampler, emission=emission, policy=policy, role=role,
+            launch=launch, claim=claim, bound=bound, completion=completion, custody=custody, selected=selected)
+        phase_parts.append(parts)
+    mutate(phase_parts)
+    for parts in phase_parts:
+        rec, raw, sampler, emission = (parts[k] for k in ('record', 'raw', 'sampler', 'emission'))
+        phase = rec['phase']
+        for i, row in enumerate(sampler['commands']): put(f'sampler-spawn-{phase}-{i}.json', row)
+        sampler_ref = put(f'sampler-spawn-{phase}.json', sampler); raw['sampler'] = [sampler_ref]
+        raw_ref = put(f'process-spawn-observation-{phase}.json', raw)
+        for key in ('intra_op', 'inter_op', 'debug'): rec[key]['provenance'] = raw_ref
+        rec_ref = put(f'process-spawn-{phase}.json', rec)
+        emission.update(sampler=sampler_ref, raw=raw_ref, process=rec_ref)
+        put(f'sampler-emission-spawn-{phase}.json', emission)
+    completion['process_records'] = [r.file_reference(Path(ref['path'])) for ref in completion['process_records']]
+    for ref in completion['obligation_records']:
+        obligation = read(ref)
+        if obligation['obligation_id'] == 'owner': obligation.update(obligation_kind='fork-three-trials', contract=contract_ref, validator=contract_ref)
+        put(Path(ref['path']).name, obligation)
+    completion['obligation_records'] = [r.file_reference(Path(ref['path'])) for ref in completion['obligation_records']]
+    completion['inventory'] = [r.file_reference(path) for path in sorted(Path(selected['output']).iterdir()) if path.is_file() and path.name != 'completion.json']
+    put('completion.json', completion)
+    return r, custody, selected, completion, put, phase_parts
+
+
+def test_owner_sampler_transport_valid_pair(tmp_path):
+    r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path)
+    assert custody.evidence(selected) == completion
+
+
+@pytest.mark.parametrize('mutation', ['extra', 'phase', 'identity', 'launch', 'policy', 'negative', 'bool',
+    'lock-order', 'command-order', 'command-exit', 'command-unreaped', 'command-pid', 'command-argv',
+    'command-truncated', 'command-extra', 'cumulative', 'emission-before-source', 'emission-module', 'raw-module',
+    'guard-debug', 'guard-anomaly'])
+def test_owner_sampler_transport_resealed_mutations(tmp_path, mutation):
+    def mutate(parts):
+        row = parts[1]; s = row['sampler']; c = s['commands'][0]
+        if mutation == 'extra': s['extra'] = True
+        elif mutation == 'phase': s['phase'] = 'start'
+        elif mutation == 'identity': s['identity'] = {**s['identity'], 'pid': 9999}
+        elif mutation in ('launch', 'policy'): s[mutation] = row['record']['source_witness']
+        elif mutation == 'negative': s['end_ns'] = -1
+        elif mutation == 'bool': s['start_ns'] = True
+        elif mutation == 'lock-order': s['lock_released_ns'] = s['lock_acquired_ns']
+        elif mutation == 'command-order': s['commands'].reverse()
+        elif mutation == 'command-exit': c['exit_code'] = 1
+        elif mutation == 'command-unreaped': c['exit_code'] = None
+        elif mutation == 'command-pid': c['pid'] = True
+        elif mutation == 'command-argv': c['argv'][-1] = 'other'
+        elif mutation == 'command-truncated': c['stdout_truncated'] = True
+        elif mutation == 'command-extra': c['reaped_claim'] = True
+        elif mutation == 'cumulative': s['cumulative_ns'] += 1
+        elif mutation == 'emission-before-source': row['emission']['emission_end_ns'] = s['end_ns']-1
+        elif mutation == 'emission-module': row['emission']['module_names_after_sha256'] = 'f'*64
+        elif mutation == 'raw-module': row['raw']['module_names_after_sha256'] = 'f'*64
+        elif mutation == 'guard-debug': row['record']['debug'].update(state='measured', value=True, reason='')
+        else: row['raw']['torch_anomaly'].update(state='measured', value=False, reason='')
+    r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, mutate)
+    with pytest.raises(ValueError): custody.evidence(selected)
+
+
+@pytest.mark.parametrize('target', ['sampler-spawn-start.json', 'sampler-spawn-end.json',
+    'sampler-emission-spawn-start.json', 'sampler-emission-spawn-end.json',
+    'sampler-spawn-start-0.json', 'sampler-spawn-end-1.json', 'sampler-spawn-start-0.stdout',
+    'sampler-spawn-end-1.stderr', 'process-spawn-observation-end.json', 'source-spawn-end.json'])
+def test_owner_sampler_local_inventory_cannot_be_repaired_by_later_snapshot(tmp_path, target):
+    r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path)
+    omitted = next(ref for ref in completion['inventory'] if Path(ref['path']).name == target)
+    completion['inventory'].remove(omitted); put('completion.json', completion)
+    with pytest.raises(ValueError): custody.evidence(selected)
+    assert omitted == r.file_reference(Path(omitted['path']))
+
+
+@pytest.mark.parametrize('mutation', ['emission-raw', 'emission-process', 'emission-sampler', 'emission-extra',
+    'emission-bool', 'emission-missing', 'diagnostic-changed', 'head-mismatch', 'stdout-overflow', 'stderr-overflow',
+    'source-phase-path', 'source-UTC', 'cumulative-whole-call'])
+def test_owner_sampler_emission_and_source_correspondence(tmp_path, mutation):
+    def alter(parts):
+        part = parts[1]; row = part['sampler']['commands'][0]
+        if mutation in ('head-mismatch', 'stdout-overflow', 'stderr-overflow'):
+            stream = 'stderr' if mutation == 'stderr-overflow' else 'stdout'; path = Path(row[stream]['path'])
+            path.write_text('x'*8193 if 'overflow' in mutation else 'f'*40)
+            row[stream] = implementation().file_reference(path)
+        elif mutation == 'source-UTC': part['record']['at'] = part['raw']['at'] = '2026-01-01T00:00:07.100000Z'
+        elif mutation == 'source-phase-path': part['record']['source_witness'] = parts[0]['record']['source_witness']
+        elif mutation == 'cumulative-whole-call': part['sampler']['cumulative_ns'] = 7_000_000_100-3_000_000_000
+    r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+    path = Path(selected['output']) / 'sampler-emission-spawn-end.json'; emission = json.loads(path.read_text())
+    if mutation.startswith('emission-'):
+        key = mutation[9:]
+        if key in ('raw', 'process', 'sampler'): emission[key] = parts[0]['record']['source_witness']
+        elif key == 'extra': emission['whole_call_success'] = True
+        elif key == 'bool': emission['emission_end_ns'] = True
+        else: path.rename(path.with_suffix('.retained'))
+        if key != 'missing': put(path.name, emission)
+    elif mutation == 'diagnostic-changed':
+        row = dict(parts[1]['sampler']['commands'][0]); row['pid'] += 1
+        put('sampler-spawn-end-0.json', row)
+    if mutation != 'emission-missing':
+        completion['inventory'] = [r.file_reference(Path(ref['path'])) for ref in completion['inventory']]
+        put('completion.json', completion)
+    with pytest.raises((ValueError, OSError)): custody.evidence(selected)
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'unknown-schema', 'extra', 'missing', 'zero', 'bool', 'deadline',
+    'roles', 'duplicate-role', 'CPU', 'scratch', 'justification', 'grant-bound', 'bound-input-order', 'bound-role'])
+def test_owner_sampler_policy_closed_authority(tmp_path, mutation):
+    r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path)
+    ref = selected['prerequisites'][0]; policy = json.loads(Path(ref['path']).read_text()); role = selected['roles'][-1]
+    if mutation == 'unknown-schema': policy['schema'] = 'unadopted-sampler-v2'
+    elif mutation == 'extra': policy['accept'] = True
+    elif mutation == 'missing': del policy['max_input_bytes']
+    elif mutation == 'zero': policy['max_input_bytes'] = 0
+    elif mutation == 'bool': policy['cpu_slots'] = True
+    elif mutation == 'deadline': policy['sampler_cutoff_ns'] += 1
+    elif mutation == 'roles': policy['role_ids'] = ['controller']
+    elif mutation == 'duplicate-role': policy['role_ids'] *= 2
+    elif mutation == 'CPU': policy['cpu_slots'] = role['peak_cpu_slots']+1
+    elif mutation == 'scratch': policy['scratch_bytes'] = selected['budget']['scratch_bytes']+1
+    Path(ref['path']).write_text(json.dumps(policy)); newref = r.file_reference(Path(ref['path']))
+    selected['prerequisites'] = [newref]
+    boundpath = Path(role['cpu_reservation_evidence']['path']); bound = json.loads(boundpath.read_text())
+    bound['justification'] = [newref] if mutation != 'justification' else []
+    if mutation == 'bound-input-order': bound['inputs'].reverse()
+    if mutation == 'bound-role': bound['inter_op'] += 1
+    boundpath.write_text(json.dumps(bound)); role['cpu_reservation_evidence'] = r.file_reference(boundpath)
+    custody.grant['cpu_reservation_evidence'] = [] if mutation == 'grant-bound' else [role['cpu_reservation_evidence']]
+    if mutation == 'valid': assert custody.owner_sampler_policy(selected, newref) == policy
+    else:
+        with pytest.raises(ValueError): custody.owner_sampler_policy(selected, newref)
+
+
+def test_owner_sampler_prepared_input_cap_refuses(tmp_path):
+    r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, policy_mutate=lambda p: p.update(max_input_bytes=1))
+    with pytest.raises(ValueError, match='input.*cap'): custody.evidence(selected)
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'unknown-schema', 'wrong-kind', 'missing', 'crosswired-role', 'forged-CPU', 'bool', 'extra'])
+def test_owner_public_run_observes_sampler_admission(tmp_path, mutation):
+    policy = authored_sampler_policy('spawn')
+    if mutation == 'unknown-schema': policy['schema'] = 'bac-hardware-owner-sampler-policy-v2'
+    elif mutation == 'wrong-kind': policy.update(schema='bac-hardware-v1', kind='source-witness')
+    elif mutation == 'missing': del policy['phase_ns']
+    elif mutation == 'crosswired-role': policy['role_ids'] = ['controller']
+    elif mutation == 'forged-CPU': policy['cpu_slots'] = 2
+    elif mutation == 'bool': policy['max_input_bytes'] = True
+    elif mutation == 'extra': policy['accept'] = True
+    path, spec, registry = sealed_fixture(tmp_path, owner=True, sampler=policy)
+    r = implementation()
+    if mutation == 'valid': r.Custody(path, capture_custody_ref=fixture_custody_ref(path))
+    else:
+        with pytest.raises(ValueError): r.Custody(path, capture_custody_ref=fixture_custody_ref(path))
+
+
+@pytest.mark.parametrize('mutation', ['valid', 'wait-inclusive', 'sequential-pid-reuse', 'diagnostic-exit-bool',
+    'diagnostic-truncation-int', 'diagnostic-nested-bytes-float', 'sampler-after-wait', 'emission-after-wait',
+    'first-git-is-guard', 'second-git-is-guard'])
+def test_owner_sampler_review_correspondence_gaps(tmp_path, mutation):
+    def alter(parts):
+        for part in parts:
+            rows = part['sampler']['commands']
+            if mutation == 'sequential-pid-reuse': rows[1]['pid'] = rows[0]['pid']
+            elif mutation in ('first-git-is-guard', 'second-git-is-guard'):
+                rows[0 if mutation == 'first-git-is-guard' else 1]['pid'] = part['record']['identity']['pid']
+    r, custody, selected, completion, put, parts = owner_sampler_fixture(tmp_path, alter)
+    if mutation.startswith('diagnostic-'):
+        name = 'sampler-spawn-end-0.json'; diagnostic = json.loads(Path(selected['output'], name).read_text())
+        if mutation == 'diagnostic-exit-bool': diagnostic['exit_code'] = False
+        elif mutation == 'diagnostic-truncation-int': diagnostic['stdout_truncated'] = 0
+        else: diagnostic['stdout']['bytes'] = float(diagnostic['stdout']['bytes'])
+        changed = put(name, diagnostic)
+        completion['inventory'] = [changed if ref['path'] == changed['path'] else ref for ref in completion['inventory']]
+        put('completion.json', completion)
+    elif mutation in ('wait-inclusive', 'sampler-after-wait', 'emission-after-wait'):
+        last = parts[1]
+        endpoint = last['emission']['emission_end_ns']
+        if mutation == 'sampler-after-wait': endpoint = last['sampler']['end_ns'] - 1
+        elif mutation == 'emission-after-wait': endpoint -= 1
+        custody.observations[selected['id']]['monotonic_end_ns'] = endpoint
+    if mutation in ('valid', 'wait-inclusive', 'sequential-pid-reuse'):
+        assert custody.evidence(selected) == completion
+    else:
+        with pytest.raises(ValueError): custody.evidence(selected)
+
+
+# Actual Task4 cases are deliberately gated; no source/Git substitute is allowed.
+def _task4_stat(pid):
+    fields = Path(f'/proc/{pid}/stat').read_text().rsplit(')', 1)[1].split()
+    return dict(pid=pid, state=fields[0], ppid=int(fields[1]), pgid=int(fields[2]),
+                sid=int(fields[3]), start_identity=fields[19])
+
+
+def _task4_live(pid):
+    import hashlib
+    before = _task4_stat(pid)
+    assert before['state'] not in ('Z', 'X'), 'actual process is not live'
+    executable = Path(f'/proc/{pid}/exe')
+    data = executable.read_bytes()
+    result = {**before, 'exe': os.readlink(executable), 'exe_sha256': hashlib.sha256(data).hexdigest(),
+              'exe_bytes': len(data), 'argv': [x.decode() for x in Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0') if x]}
+    assert _task4_stat(pid)['start_identity'] == before['start_identity'], 'process identity changed'
+    return result
+
+
+def _task4_write(path, value):
+    path = Path(path); temporary = path.with_name(path.name + '.pending')
+    with temporary.open('x') as stream:
+        json.dump(value, stream, sort_keys=True); stream.flush(); os.fsync(stream.fileno())
+    assert not path.exists(), 'Task4 evidence cannot be overwritten'
+    temporary.rename(path)
+
+
+def _task4_wait(predicate, seconds):
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        value = predicate()
+        if value: return value
+        time.sleep(.005)
+    raise AssertionError('bounded Task4 observation did not arrive')
+
+
+def _task4_driver(mode):
+    # Imports and primitive preparation precede the actual P3 handle snapshot.
+    import select
+    import bac_hardware_identity_v1 as producer
+    import bac_hardware_protocol_v1 as protocol
+    snapshot = producer.current_process_context()
+    assert snapshot is not None and set(snapshot) == {'context', 'start'}
+    context = snapshot['context']; spec = json.loads(Path(context['spec']['path']).read_text())
+    job = next(item for item in spec['jobs'] if item['id'] == context['job_id'])
+    output = Path(job['output']); case = f'test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[{mode}]'
+    assert job['required_collected_ids'] == [case] and os.environ['PYTEST_CURRENT_TEST'] == case + ' (call)'
+    guard_role = next(role for role in job['roles'] if role['role'] == 'fork-guard')
+    obligation = next(item for item in job['obligations'] if item['kind'] == 'fork-three-trials')
+    environment = json.loads(Path(spec['dependencies']['path']).read_text())
+    git_ref = next(item['reference'] for item in environment['dependencies'] if item['name'] == 'git')
+    protocol.validate_record('reference', git_ref)
+    expected_argv = [git_ref['path'], '-C', spec['authorized_root'], 'rev-parse', 'HEAD']
+    read_fd, write_fd = os.pipe(); real_spawn = os.posix_spawn; armed = [False]
+    # Preload the live observer's hashlib before prepare; no imports in guard.
+    controller = _task4_live(os.getpid()); signal.signal(signal.SIGTERM, signal.SIG_DFL)
+    def spawn_observer(executable, argv, env, **kwargs):
+        if not armed[0]: return real_spawn(executable, argv, env, **kwargs)
+        assert executable == git_ref['path'] and list(argv) == expected_argv
+        pid = real_spawn(executable, argv, env, **kwargs)
+        os.kill(pid, signal.SIGSTOP)
+        os.write(write_fd, str(pid).encode('ascii') + b'\n')
+        while True: signal.pause()  # Deliberately killed before returning to P3.
+    os.posix_spawn = spawn_observer
+    prepared = producer.prepare_owner_launch(context, snapshot['start'], obligation['contract'], case,
+        guard_role['id'], 'task4-' + mode, 'fork')
+    guard_pid = os.fork()
+    if guard_pid == 0:
+        os.close(read_fd); armed[0] = True
+        try: producer.record_fork_process(prepared['handle'], 'start')
+        except BaseException: os._exit(82)
+        os._exit(83)  # A returned recorder did not exercise this backstop.
+    os.close(write_fd)
+    assert select.select([read_fd], [], [], 5)[0], 'real Git spawn handshake absent'
+    message = os.read(read_fd, 64); os.close(read_fd)
+    assert message.endswith(b'\n') and message[:-1].isdigit(), 'invalid real PID handshake'
+    git_pid = int(message)
+    def stopped_git():
+        observed = _task4_live(git_pid)
+        return observed if observed['state'] in ('T', 't') else None
+    git = _task4_wait(stopped_git, 1)
+    guard = _task4_live(guard_pid)
+    assert git['ppid'] == guard_pid and guard['ppid'] == controller['pid']
+    assert git['pgid'] == guard['pgid'] == controller['pgid'] == controller['sid'] == controller['pid']
+    assert git['sid'] == guard['sid'] == controller['sid']
+    assert (git['exe'], git['exe_bytes'], git['exe_sha256']) == (git_ref['path'], git_ref['bytes'], git_ref['sha256'])
+    assert git['argv'] == expected_argv
+    claim_path = output / ('owner-claim-task4-' + mode + '.json'); claim_ref = protocol.file_reference(claim_path)
+    claim = json.loads(claim_path.read_text())
+    assert claim['launch'] == prepared['reference'] and claim['identity']['pid'] == guard_pid
+    assert claim['identity']['start_identity'] == guard['start_identity']
+    ready = dict(controller=controller, guard=guard, git=git, git_reference=git_ref, claim=claim_ref,
+                 launch=prepared['reference'], at_ns=time.monotonic_ns(), host=os.uname().nodename,
+                 boot_id=Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+    _task4_write(output / 'task4-live.json', ready)
+    approval = output / 'task4-stop-approved.json'
+    _task4_wait(approval.exists, 5)
+    approved = json.loads(approval.read_text())
+    assert approved['git']['pid'] == git_pid and approved['git']['start_identity'] == git['start_identity']
+    assert _task4_stat(guard_pid)['start_identity'] == guard['start_identity']
+    os.kill(guard_pid, signal.SIGKILL)
+    waited = _task4_wait(lambda: (result if (result := os.waitpid(guard_pid, os.WNOHANG))[0] else None), 2)
+    assert waited[0] == guard_pid and os.WIFSIGNALED(waited[1]) and os.WTERMSIG(waited[1]) == signal.SIGKILL
+    still_live = stopped_git(); assert still_live is not None and still_live['start_identity'] == git['start_identity']
+    _task4_write(output / 'task4-parent.json', dict(guard_wait_pid=waited[0], guard_wait_status=waited[1],
+        git_after_guard_death=still_live, at_ns=time.monotonic_ns()))
+    if mode == 'controller-exit': os._exit(0)
+    while True: signal.pause()  # Real sealed P2 timeout must terminate this controller.
+
+
+def _task4_lease(mode):
+    import datetime
+    import resource
+    import bac_hardware_protocol_v1 as protocol
+    assert os.environ.get('BAC_P2_TASK4_LEASE') and os.environ.get('BAC_P2_TASK4_LEASE_SHA256'), 'actual Task4 root lease required'
+    path = Path(os.environ['BAC_P2_TASK4_LEASE']); reference = protocol.file_reference(path)
+    assert reference['sha256'] == os.environ['BAC_P2_TASK4_LEASE_SHA256']
+    value = json.loads(path.read_text())
+    assert set(value) == set('schema authority start end recipe source_freezes pins cpu_ids ram_limit_bytes execution_root cases'.split())
+    assert value['schema'] == 'bac-p2-task4-execution-lease-v1' and value['authority'] == 'root'
+    now = datetime.datetime.now(datetime.timezone.utc)
+    assert datetime.datetime.fromisoformat(value['start']) <= now
+    assert now + datetime.timedelta(seconds=35) <= datetime.datetime.fromisoformat(value['end'])
+    assert type(value['cpu_ids']) is list and all(type(cpu) is int for cpu in value['cpu_ids'])
+    assert value['cpu_ids'] == sorted(os.sched_getaffinity(0)) and len(value['cpu_ids']) == 4
+    assert type(value['source_freezes']) is list and len(value['source_freezes']) == 2
+    assert type(value['ram_limit_bytes']) is int and value['ram_limit_bytes'] == 2 * 1024**3
+    assert resource.getrlimit(resource.RLIMIT_AS) == (value['ram_limit_bytes'], value['ram_limit_bytes'])
+    assert set(value['cases']) == {'controller-exit', 'job-timeout'}
+    assert value['recipe']['sha256'] == 'c8fd6245cf2b80f423121fe3bf7047d19c8ade07dcdef3445da73c716167999d'
+    for item in value['pins'] + [value['recipe']] + value['source_freezes']: protocol.validate_record('reference', item)
+    required = [RUNNER, Path(__file__), Q / 'bac_hardware_protocol_v1.py', Q / 'bac_hardware_identity_v1.py', Path(sys.executable).resolve()]
+    assert all(protocol.file_reference(p) in value['pins'] for p in required)
+    assert protocol.file_reference(Q / 'bac_hardware_identity_v1.py')['sha256'] == 'dee9852055bdc1427567f217ae83f8bcc837f158aa753c2d8a95e2f701f08b07'
+    selected = value['cases'][mode]; assert set(selected) == {'spec', 'capture_custody_ref'}
+    protocol.validate_record('reference', selected['capture_custody_ref'])
+    protocol.validate_record('reference', selected['spec'])
+    spec = json.loads(Path(selected['spec']['path']).read_text()); protocol.validate_spec(spec)
+    assert spec['source_freeze'] in value['source_freezes'] and len(spec['jobs']) == 1 and spec['profile'] == 'cpu'
+    job = spec['jobs'][0]; case = f'test_run_bac_hardware_v1.py::test_owner_actual_git_backstop[{mode}]'
+    assert job['required_collected_ids'] == [case] and job['environment']['BAC_P2_TASK4_DRIVER'] == mode
+    assert job['timing'] == 'exclusive-host' and job['timeout_seconds'] == 15 and job['termination_grace_seconds'] == .1
+    assert job['budget']['cpu_slots'] == 3 and job['devices'] == []
+    assert job['argv'][0] == str(Path(sys.executable).resolve()) and str(Q / case) in job['argv']
+    assert '--rootdir=' + str(Q) in job['argv'] and '--confcutdir=' + str(Q) in job['argv']
+    assert 'bac_hardware_identity_v1' in job['argv'] and '--bac-identity-policy' in job['argv']
+    for key in ('output_root', 'scratch_root'): assert Path(spec[key]).is_relative_to(Path(value['execution_root']))
+    environment = json.loads(Path(spec['dependencies']['path']).read_text())
+    git = next(item['reference'] for item in environment['dependencies'] if item['name'] == 'git')
+    assert git in value['pins']
+    return value, selected['spec'], spec, job
+
+
+@pytest.mark.parametrize('mode', ['controller-exit', 'job-timeout'])
+def test_owner_actual_git_backstop(tmp_path, monkeypatch, mode):
+    if os.environ.get('BAC_P2_TASK4_DRIVER'):
+        assert os.environ['BAC_P2_TASK4_DRIVER'] == mode
+        _task4_driver(mode)
+        raise AssertionError('negative-path controller unexpectedly returned')
+    import ctypes
+    import hashlib
+    lease, spec_ref, plan, selected = _task4_lease(mode)
+    r = implementation(); events = []; errors = []; ready = {}; stopping = threading.Event(); active = [True]
+    output = Path(selected['output']); packet = tmp_path / 'task4-events.json'
+    real_close, real_wait, real_killpg = r.HeldLeases.close, subprocess.Popen.wait, os.killpg
+    job_names = sorted(hashlib.sha256(key.encode()).hexdigest() + '.lock' for key in
+                       ['host-timing', *('domain:' + x for x in selected['serialization_domains'])])
+    libc = ctypes.CDLL(None, use_errno=True); prior_subreaper = ctypes.c_int()
+    assert libc.prctl(37, ctypes.byref(prior_subreaper), 0, 0, 0) == 0
+    assert libc.prctl(36, 1, 0, 0, 0) == 0
+    def event(kind, **fields): events.append(dict(kind=kind, at_ns=time.monotonic_ns(), **fields))
+    def probe(expect_blocked):
+        handle = r.Leases(Path(plan['lease_root']))
+        try:
+            held = handle.try_acquire(selected)
+            event('lease-probe', blocked=held is None)
+            if held is not None: real_close(held)
+            if (held is None) != expect_blocked: errors.append('lease contention/reuse mismatch')
+        finally: handle.close()
+    def monitor():
+        try:
+            while not stopping.is_set():
+                path = output / 'task4-live.json'
+                if path.exists(): break
+                stopping.wait(.005)
+            if stopping.is_set(): return
+            ready.update(json.loads(path.read_text()))
+            git = _task4_live(ready['git']['pid']); controller = _task4_live(ready['controller']['pid'])
+            assert git == ready['git'] and git['state'] in ('T', 't')
+            assert controller['pgid'] == controller['sid'] == controller['pid'] == git['pgid']
+            event('supervisor-live-git', observation=git); probe(True)
+            _task4_write(output / 'task4-stop-approved.json', dict(git=git, at_ns=time.monotonic_ns()))
+        except BaseException as exc: errors.append('monitor: ' + repr(exc))
+    def close(held):
+        relevant = active[0] and sorted(held.names) == job_names
+        if relevant:
+            try:
+                assert ready, 'no verified live Git setup before lease close'
+                identity = _task4_stat(ready['git']['pid'])
+                assert identity['start_identity'] == ready['git']['start_identity']
+                status = os.waitid(os.P_PID, identity['pid'], os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                event('before-job-lease-close', git=identity, wait_status=None if status is None else list(status),
+                      locks=[dict(name=name, device=os.fstat(fd).st_dev, inode=os.fstat(fd).st_ino)
+                             for fd, name in zip(held.descriptors, held.names)])
+                if identity['state'] != 'Z' or status is None: errors.append('live Git at lease release')
+                elif status.si_code != os.CLD_KILLED or status.si_status != signal.SIGKILL: errors.append('unexpected Git termination')
+                probe(True)
+            except BaseException as exc: errors.append('lease observation: ' + repr(exc))
+        real_close(held)
+        if relevant: event('after-job-lease-close')
+    def wait(process, *args, **kwargs):
+        code = real_wait(process, *args, **kwargs); event('actual-popen-wait', pid=process.pid, code=code); return code
+    def killpg(pgid, signum):
+        event('actual-group-signal', pgid=pgid, signal=signum); return real_killpg(pgid, signum)
+    def alarm(signum, frame):
+        event('watchdog-failure'); raise TimeoutError('actual Task4 exceeded30s; not a passing cleanup')
+    thread = threading.Thread(target=monitor, daemon=True)
+    previous_alarm = signal.signal(signal.SIGALRM, alarm)
+    monkeypatch.setattr(r.HeldLeases, 'close', close); monkeypatch.setattr(subprocess.Popen, 'wait', wait)
+    monkeypatch.setattr(r.os, 'killpg', killpg)
+    thread.start(); signal.setitimer(signal.ITIMER_REAL, 30)
+    try:
+        code = r.run(Path(spec_ref['path']), capture_custody_ref=lease['cases'][mode]['capture_custody_ref']); active[0] = False
+        assert code == 1 and ready, 'negative actual case was successful or lacked setup'
+        parent = json.loads((output / 'task4-parent.json').read_text())
+        assert parent['guard_wait_pid'] == ready['guard']['pid'] and os.WIFSIGNALED(parent['guard_wait_status'])
+        assert os.WTERMSIG(parent['guard_wait_status']) == signal.SIGKILL
+        reaped = _task4_wait(lambda: (v if (v := os.waitpid(ready['git']['pid'], os.WNOHANG))[0] else None), 2)
+        event('supervisor-actual-git-reap', pid=reaped[0], wait_status=reaped[1])
+        assert os.WIFSIGNALED(reaped[1]) and os.WTERMSIG(reaped[1]) == signal.SIGKILL
+        result = json.loads((output / 'result.json').read_text())
+        if mode == 'controller-exit': assert result['exit_code'] == 0 and result['disposition'] == 'completed-unverified'
+        else: assert result['disposition'] == 'interrupted' and 'job timeout' in result['reason']
+        assert result['disposition'] != 'successful'
+        for who in ('controller', 'guard', 'git'): assert not Path(f"/proc/{ready[who]['pid']}").exists()
+        with pytest.raises(ProcessLookupError): real_killpg(ready['controller']['pgid'], 0)
+        before = next(item for item in events if item['kind'] == 'before-job-lease-close')
+        leader_wait = next(item for item in events if item['kind'] == 'actual-popen-wait' and item['pid'] == ready['controller']['pid'])
+        kill = next(item for item in events if item['kind'] == 'actual-group-signal' and item['signal'] == signal.SIGKILL and item['pgid'] == ready['controller']['pgid'])
+        assert kill['at_ns'] <= leader_wait['at_ns'] <= before['at_ns']
+        probe(False); assert not errors, errors
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0); signal.signal(signal.SIGALRM, previous_alarm)
+        stopping.set(); thread.join(timeout=1); active[0] = False
+        # Failure cleanup is separate evidence and cannot manufacture PASS.
+        for who in ('git', 'guard', 'controller'):
+            observed = ready.get(who)
+            if observed is None: continue
+            try:
+                current = _task4_stat(observed['pid'])
+                if current['start_identity'] != observed['start_identity']: continue
+                event('emergency-cleanup', process=current); errors.append('emergency cleanup was required')
+                os.kill(observed['pid'], signal.SIGKILL)
+                try: _task4_wait(lambda: (v if (v := os.waitpid(observed['pid'], os.WNOHANG))[0] else None), 2)
+                except (ChildProcessError, AssertionError): pass
+            except ProcessLookupError: pass
+            except FileNotFoundError: pass
+        # Include any adopted descendant whose live-group setup failed early.
+        launch_path = output / 'launch.json'
+        if launch_path.exists():
+            controller_pid = json.loads(launch_path.read_text())['identity']['pid']
+            children = Path(f'/proc/self/task/{os.getpid()}/children').read_text().split()
+            for child in children:
+                try:
+                    observed = _task4_stat(int(child))
+                    if observed['pgid'] != controller_pid: continue
+                    event('emergency-adopted-group-cleanup', process=observed); errors.append('adopted group required emergency cleanup')
+                    os.kill(observed['pid'], signal.SIGKILL)
+                    _task4_wait(lambda: (v if (v := os.waitpid(observed['pid'], os.WNOHANG))[0] else None), 2)
+                except (ProcessLookupError, FileNotFoundError, ChildProcessError): pass
+        restored = libc.prctl(36, prior_subreaper.value, 0, 0, 0)
+        unchanged = [r.file_reference(Path(pin['path'])) == pin for pin in lease['pins']]
+        _task4_write(packet, dict(events=events, errors=errors, lease=lease, spec=spec_ref,
+                                 source_unchanged=unchanged, failure=repr(sys.exc_info()[1]), subreaper_restore=restored))
+    assert restored == 0 and all(unchanged) and not errors and not thread.is_alive()

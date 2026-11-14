@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 6491,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv3/output/attempt/a/command.json",
+    "sha256": "de73660ab3c2b81ce877080709f762bab21dfe0816f03099be9fcae187403c56"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv3/support/identity-policy.json",
+    "sha256": "0d82a6f5cd42980b8aecdf3455023ee40f8423fd0cd550083a100a29f4011a9a"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244242,
+    "ppid": 244241,
+    "start_identity": "14145642"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv3/output/attempt/source-0002.json",
+    "sha256": "8f073a69f0d481ac259935d8ef0dec3ee19b3d3dd1d1e83b1ec0ba42b07a204c"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 13793,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv3/metadata/spec.json",
+    "sha256": "5430ca6bec65b82a1ec5cf22d28a75af99b17b468b4c3900344e70e4254abc58"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_envelope_mutation_preserv3/support/grant.json",
+    "sha256": "781748d63bdbd43c3e81959595ccde2639ea57cdce7d2432e98295d95a4996d3"
+  }
+}

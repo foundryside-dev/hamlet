@@ -1,0 +1,28 @@
+{
+  "name": "black-changed",
+  "argv": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "black",
+    "--check",
+    "src/townlet/environment/manual_physical.py",
+    "src/townlet/environment/reward_calculator.py",
+    "src/townlet/environment/vectorized_env.py",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py"
+  ],
+  "cwd": "/workspace/hamlet",
+  "start_utc": "2026-11-14T13:10:01.405921+00:00",
+  "parent_pid": 243348,
+  "affinity": [
+    4
+  ],
+  "manifest": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r147-candidate.json",
+  "manifest_sha256": "06fb55ad80205625f85d16a36eef1a923cd9fd63814139039966b13cae56c244",
+  "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+  "script_sha256": "078ff093c395158dca379fee91a46f11b26b5cc879ebe6244b4a739dd5f1308b",
+  "pid": 243482,
+  "exit_code": 0,
+  "end_utc": "2026-11-14T13:10:02.308118+00:00",
+  "log": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/manual-driver-design/r147-static-attempt-1/black-changed.log",
+  "log_sha256": "26a5fd9505f2b5608a20c4fed4b4c4795e0783d03b72ade02a6af34dae8ad086"
+}

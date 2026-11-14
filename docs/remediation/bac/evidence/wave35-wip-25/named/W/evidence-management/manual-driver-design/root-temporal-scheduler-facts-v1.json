@@ -1,0 +1,43 @@
+{
+  "at": "2026-11-14T12:53:55.729523+00:00",
+  "scope": "Root static supplier only; no application execution or qualification",
+  "facts": [
+    "token_set_smoke stratum temporal_support=enabled, but L0_test active_temporal=false/day_length=null and effects definitions empty. Do not claim positive temporal dynamics from it.",
+    "ENV329-340 enable_temporal_mechanics requires both stratum support and active curriculum. ENV409-418 constructs real EffectManager when compiled_effect_catalog is not None, time_enabled is stratum support (not active_temporal). This does not independently prove fixture compiler produced a non-None catalog; assert actual manager/scheduler existence in observed test before counting evidence.",
+    "EffectManager128 creates actual Scheduler(time_enabled=time_enabled); cancel_scheduled_for_entity(scope,entity_id) delegates scheduler.cancel. Scheduler.schedule(commands,delay_ticks,scope,entity_id,context_overrides,base_tick,effect_instance) creates actual pending ScheduledItem. No fake scheduler or private mutation needed: schedule distinct real A/B entries with due future ticks, prove actual pending A/B before retirement; require B removed and A retained after actual retirement with counts/tick unchanged. Empty commands can prove scheduling/cancellation routing but not command effects; label exact scope.",
+    "Scheduler current_tick/pending are public state; observation is allowed, direct private mutation is not. schedule with explicit parameters. For actual delayed command effects use compiled commands and source-verified command compiler interface, not guessed schema.",
+    "Existing authored temporal-enabled fixture candidate configs/test/action_masking/levels/L0_masking/curriculum.yaml identified by search only; compiler/geometry compatibility not verified. Freeze core RED tests now if ready; meaningful temporal/actual-effect qualification still required before component acceptance, can add finite test after source facts."
+  ],
+  "sources": [
+    {
+      "path": "configs/test/token_set_smoke/stratum.yaml",
+      "sha256": "d78508ca7d6b3a72966a766829e75e9deefff9300f21bfd4e801a7769dcb26d2",
+      "bytes": 258
+    },
+    {
+      "path": "configs/test/token_set_smoke/levels/L0_test/curriculum.yaml",
+      "sha256": "3cc1e1583939f8d1fd4b6be265250ec174fea6ceb24712150892b7d64599b987",
+      "bytes": 449
+    },
+    {
+      "path": "configs/test/token_set_smoke/effects.yaml",
+      "sha256": "2b9f559e318f638d2d96a8c5d5efd45a8bd9f22b739b6625053e0c2d8e737fa9",
+      "bytes": 43
+    },
+    {
+      "path": "src/townlet/environment/vectorized_env.py",
+      "sha256": "aefccf149c20d9d1b7505539a7e261c7a0aa9ce9e40898a1fc18f5f3691c9b22",
+      "bytes": 150750
+    },
+    {
+      "path": "src/townlet/effects/scheduler.py",
+      "sha256": "adadc5718c9638cf33d87a5c5305b26cb42c7db1417a00debcf586679c71dd4b",
+      "bytes": 3900
+    },
+    {
+      "path": "src/townlet/effects/manager.py",
+      "sha256": "887ff837fdc7cbd5f7519a7a72456de6f288940819dc2159ccda6f59633fed07",
+      "bytes": 37214
+    }
+  ]
+}

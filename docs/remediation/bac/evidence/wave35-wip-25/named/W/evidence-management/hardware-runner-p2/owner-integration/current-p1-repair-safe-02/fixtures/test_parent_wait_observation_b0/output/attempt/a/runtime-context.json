@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 1637,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_parent_wait_observation_b0/output/attempt/a/command.json",
+    "sha256": "b3e72390d58cc9b7647313c967ab103671db84c86f442375b16bda549d87eb02"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_parent_wait_observation_b0/support/identity-policy.json",
+    "sha256": "72280bba42d49e49cc325b30ff3250d15d496a15224ec418989e79f90d25d7e2"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244242,
+    "ppid": 244241,
+    "start_identity": "14145642"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_parent_wait_observation_b0/output/attempt/source-0002.json",
+    "sha256": "80080649942e543daefc68be38ba3bf3a79bdb41dd692db24ee86fa3fef885d1"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 8940,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_parent_wait_observation_b0/metadata/spec.json",
+    "sha256": "15a44acf4d0456a6ad4fb7348550d60f81cdd66c0f8eab82f4e650b6709a5219"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_parent_wait_observation_b0/support/grant.json",
+    "sha256": "a3181d3a3267864ec116c8eee50f1283440c402358844a435c82d9841e3002bc"
+  }
+}

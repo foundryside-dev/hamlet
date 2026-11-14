@@ -1,0 +1,37 @@
+{
+  "schema": "p4-partition-interface-v1",
+  "allocation_change": {
+    "partition_basis": "root-proven-disjoint",
+    "partition_evidence": [
+      "reference of partition object"
+    ]
+  },
+  "partition": {
+    "schema": "bac-hardware-capacity-partition-v1",
+    "pool_id": "MATCH allocation.pool_id",
+    "host": "MATCH allocation.host",
+    "boot_id": "MATCH allocation.boot_id",
+    "lease_root": "MATCH allocation.lease_root",
+    "pool_capacity": "P0 budget >= sum all row capacities",
+    "allocations": [
+      {
+        "allocation_id": "MATCH current allocation.allocation_id",
+        "capacity": "MATCH current allocation.capacity",
+        "authorized_cpu_ids": "MATCH current allocation.authorized_cpu_ids ordered",
+        "authorized_devices": "MATCH current allocation.authorized_devices ordered"
+      }
+    ],
+    "start": "UTC <=capture start.at",
+    "end": null,
+    "authority": "nonempty root authority"
+  },
+  "rules": [
+    "One current matching row exactly equals allocation projection in row field order-agnostic dict equality; at least one partition row.",
+    "Each row allocation_id nonempty unique string; capacity P0 budget; CPU IDs nonempty unique exact nonnegative integers; devices unique nonempty text list (empty allowed).",
+    "No CPU or GPU identifiers shared across rows.",
+    "Sum each dimension capacities across rows <= pool_capacity dimension.",
+    "Active whole capture interval and matching pool_id/host/boot_id/lease_root; current allocation fields exact.",
+    "Optional second disjoint row may use spare CPU ID not in raw discovery affinity, provided pool_capacity accounts for it.",
+    "Partition reference retained in expanded capture custody closure and final rechecked."
+  ]
+}

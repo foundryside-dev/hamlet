@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-14T13:17:40.817605Z",
+  "error_type": "OSError",
+  "reason": "synthetic post-spawn observation failure",
+  "schema": "bac-hardware-runner-failure-v1",
+  "spec": {
+    "bytes": 9077,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-final-01/fixtures/test_post_spawn_observation_er0/metadata/spec.json",
+    "sha256": "78ce04dc3837199012c2cdafadcb5a1320d7ddc053f56302e50b7daf36589511"
+  }
+}

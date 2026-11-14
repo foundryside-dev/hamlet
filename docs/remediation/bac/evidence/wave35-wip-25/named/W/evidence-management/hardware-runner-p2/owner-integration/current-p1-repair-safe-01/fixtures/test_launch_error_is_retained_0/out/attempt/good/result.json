@@ -1,0 +1,22 @@
+{
+  "command": {
+    "bytes": 638,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_launch_error_is_retained_0/out/attempt/good/command.json",
+    "sha256": "e03a644cdb0b1ae4fa56886c8f35cb1f155e38bcb638196cb3be3991ae5b38f9"
+  },
+  "disposition": "completed-unverified",
+  "end": "2026-11-14T13:14:18.170859Z",
+  "exit_code": 0,
+  "job_id": "good",
+  "log": {
+    "bytes": 9,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_launch_error_is_retained_0/out/attempt/good/stdout.log",
+    "sha256": "08cfb1f08c9a2b3985853df5336808a27d616d731c6e944ff0a4e8e74dde5e5f"
+  },
+  "monotonic_end_ns": 141368511315915,
+  "monotonic_start_ns": 141368440533069,
+  "process_records": [],
+  "reason": "completion transport not integrated",
+  "signal": 0,
+  "start": "2026-11-14T13:14:18.100051Z"
+}

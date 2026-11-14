@@ -1,6 +1,8 @@
 # Current runtime/BANK parent custody component contract
 
-2026-11-14. Runtime/BANK diagnostic contract source-verified at R133; the R144 ENV guard/diagnostic and R145 G1/G2 fixture components have separate bounded reviews and root adoptions. The historical R133/R132 executions below retain their original identities. Full C1/C2 acceptance remains open. Current R145 global mypy fails with 12 diagnostics in two files. Actual CUDA is UNRUN.
+**PAUSED at the user’s request.** No further implementation or runtime is authorized by this checkpoint. See the [pause handoff](PAUSE-HANDOFF-WIP25.md) for the finite cut, exact pins, retained failures and explicit resume sequence.
+
+2026-11-14. Runtime/BANK diagnostics, ENV custody and the bounded CPU manual physical component have separate source reviews and root adoptions through R148. Earlier R132–R145 executions below retain their original identities. Full C1/C2 acceptance remains open; R148 global mypy fails with 12 existing diagnostics. Actual CUDA is UNRUN.
 
 ## Exact source
 
@@ -118,3 +120,20 @@ R145 manifest SHA256 is `d29b30f41e6c9d46f471e8fadbaa3d80f5b8b58481b0534ac2b798c
 Local P1 full-ancestry admission is unsupported: cgroup membership is `/`, the mount root is `/..`, and PID 1 namespace access returns EACCES. This is not CPU scarcity: four CPU and 16 GiB remain available for authorized local APP and inert checks. Actual P2 Task 4 remains UNRUN pending access to the user-provided server and measured ancestry; the promised 16-worker CUDA server is unprobed. The two identified P1 code fixes are not qualified in WIP24; subsequent implementation is outside this checkpoint.
 
 The width-three manual ENV driver is designed, not implemented. Complete child/source/device inventory, outer completion consumers, restore/cohort/recurrent integration, P1 real-input repair, P2 actual backstop, P4 strict dispatch, actual full chain and CUDA remain required. P2 Task 4 is AST-only unqualified preparation; checkpointed P4's 99 inert passes lack independent review. P5 v4 adoption is tooling scope only. No original package closure is claimed: 28 qualified / 38 remaining / 66 total. See [WIP24 evidence](evidence/wave35-wip-24.json) and its [selection plan](evidence/wave35-wip-24/selection-plan.json) for exact adoptions, reviews, failures and source/helper identities.
+
+## R148 bounded CPU manual physical component M
+
+Independent terminal review and root adoption bind candidate `f462ece6fc9b61ad1b68d9e5ccc933b5b825791e`, manifest SHA256 `ed5686aa7b31b4b26da0a62865dcc9e4f10a80a96c9b97af232f855debd44514`. The exact reviewed component source is:
+
+| Source under repository root | Lines | SHA256 |
+| --- | ---: | --- |
+| src/townlet/environment/vectorized_env.py | 3035 | a517aa49c0bd76ae17c3d6bb3ae7b81e3f48e73a59cdd0cdb4d433424dd8be5a |
+| src/townlet/environment/manual_physical.py | 292 | 56f63aa121f18cb64493d84e01c709475ac4167b7db9a676560aa295ff40a77a |
+| src/townlet/environment/reward_calculator.py | 76 | 1df0de89e29d9ce984847ce506fe551a919c27c68c1d473ac9b1e64a438718e6 |
+| tests/test_townlet/regressions/bac/test_manual_physical_session.py | 801 | 7810ef42e5768998e8addd36998a9728cad58c879738f2b3e4b37f81b46a1942 |
+
+The manual session supports genuine CPU physical/DAC/temporal work, nonempty delayed-command routing and authentic retirement while preserving ordinary POP behavior. Issuer/session/decision/lifetime refusal is supported by five independent probes, including an actual fork child with source identity and successful original-parent continuation. The integrated result remains 212 PASS / 3 FAIL across 215 cases, including M 34, ENV custody 50, initial participation 82 and parent handoff 46/49. Three causal passes overlap. No full-suite PASS or extra unique child coverage is claimed.
+
+The three initial transport/install/roundtrip failures are the known G4 missing replay-lineage family, overlapping the earlier 18 G3/G4 obligations. Packet F must preserve genuine fixture/control inventory and exact parent correlation. C3 v3 is design-approved only. Full ENV device/RNG inventory, registration and explicit operation binding, designated invocation-exit/monotonic uncertainty consumption, restore composition, full owner and hardware gates remain required. A physical finish receipt is not sealed outer RNG completion. A fresh manual session before INITIAL/COMPLETED restore remains permitted; copied historical session or restored last-closed tokens do not grant stepping authority. All runtime/BANK retention and completion constraints above remain in force.
+
+R146 missing-API RED, R147 fixture-count/type/default failures and R148 three parent failures remain evidence. R148 Ruff/Black/no-defaults pass; global mypy12 fails. See [WIP25](evidence/wave35-wip-25.json) and its [selection plan](evidence/wave35-wip-25/selection-plan.json) for own-source attempts, probe v1 UNRUN/v2 execution, fork custody and separate tooling versions. No package count changes: 28 qualified / 38 remaining / 66 total.

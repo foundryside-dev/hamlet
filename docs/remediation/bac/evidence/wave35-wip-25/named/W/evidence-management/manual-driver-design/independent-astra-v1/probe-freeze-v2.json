@@ -1,0 +1,13 @@
+{
+  "schema": "packet-m-independent-probe-freeze-v2",
+  "supersedes": "test_independent_manual_probe_v1.py",
+  "prior_status": "INERT_UNRUN_RETAINED",
+  "reason": "Root supplied prior marshal reference/interning instability; deterministic actual in-memory code fields replace marshal witness without dropping code identity",
+  "probe": "test_independent_manual_probe_v2.py",
+  "sha256": "9d970655cf171c4f7c88c23352ab0170764cdb8fb5e2fa08b7389a16c54c1837",
+  "lines": 200,
+  "total_whole_body_lines": 4404,
+  "whole_bodies": 5,
+  "application_execution": false,
+  "stable_code_fields": "CodeType bytecode, recursively typed constants, names, varnames, free/cell vars, argument counts, locals, stacksize, flags, name/qualname, source filename/firstline, line/exception tables; unsupported types refuse"
+}

@@ -1,0 +1,12 @@
+B023 Function definition does not bind loop variable `overhead`
+    --> bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2860:35
+     |
+2858 |         def mutate(path, row):
+2859 |             if path.name == "allocation.json":
+2860 |                 for key, value in overhead.items():
+     |                                   ^^^^^^^^
+2861 |                     row["overhead"][key] = value
+2862 |                     row["capacity"][key] = value + evidence.budget[key]
+     |
+
+Found 1 error.

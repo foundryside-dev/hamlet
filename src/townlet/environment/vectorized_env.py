@@ -42,6 +42,7 @@ from townlet.environment.action_labels import ActionLabels
 from townlet.environment.action_mask_builder import ActionMaskBuilder
 from townlet.environment.affordance_engine import AffordanceEngine
 from townlet.environment.dac_engine import DACEngine
+from townlet.environment.manual_physical import ManualPhysicalSession, ManualPhysicalStepResult
 from townlet.environment.observation_encoder import build_token_observation_encoder
 from townlet.environment.parent_custody import EnvCustody, EnvParentCustody, env_guard
 from townlet.environment.reward_calculator import RewardCalculator
@@ -535,6 +536,8 @@ class VectorizedHamletEnv:
 
         # Required current runtime and parent claim are bound before stepping.
         self._exploration_bound = False
+        self._manual_session: ManualPhysicalSession | None = None
+        self._manual_close_prepared: WorldRecord | None = None
         self._exploration_runtime: ExplorationRuntime
         self._claim_vector_step: Callable[..., int]
 
@@ -629,13 +632,46 @@ class VectorizedHamletEnv:
     def set_exploration_runtime(self, *, exploration: ExplorationRuntime, claim_vector_step: Callable[..., int]) -> None:
         """Bind once before world role custody freezes; equal rebinding also refuses."""
         self._participation_ingress()
-        if self._exploration_bound or self._world_phase != "fresh-unbound":
+        if self._exploration_bound or self._manual_session is not None or self._world_phase != "fresh-unbound":
             raise ValueError("exploration runtime must bind once before world authority registration")
         if not isinstance(exploration, ExplorationRuntime) or not callable(claim_vector_step):
             raise TypeError("ENV requires a current exploration runtime and parent claim callback")
         self._exploration_runtime = exploration
         self._claim_vector_step = claim_vector_step
         self._exploration_bound = True
+
+    @env_guard
+    def bind_manual_execution(self, *, population_owner: object) -> ManualPhysicalSession:
+        """Issue the sole manual driver after role binding, before bootstrap/reset."""
+        self._require_phase("fresh-bound")
+        if (
+            self._manual_session is not None
+            or self._exploration_bound
+            or self._world_role_owners.get("population") is not population_owner
+            or self._world_authority is None
+            or self._world_bootstrap is not None
+            or self._env_custody.scope is not None
+        ):
+            raise ValueError("manual execution requires the exact fresh bound population and no execution binding")
+        session = ManualPhysicalSession._issue(self, population_owner)
+        self._manual_session = session
+        return session
+
+    @env_guard
+    def _step_manual(
+        self, *, session: ManualPhysicalSession, accepted: WorldAcceptedEpisode, actions: torch.Tensor, depletion_multiplier: float
+    ) -> ManualPhysicalStepResult:
+        if type(session) is not ManualPhysicalSession or session is not self._manual_session:
+            raise ValueError("manual physical entry requires this ENV's issued session")
+        return session._step(accepted, actions, depletion_multiplier)
+
+    @env_guard
+    def _retire_manual(
+        self, *, session: ManualPhysicalSession, accepted: WorldAcceptedEpisode, world_ids: tuple[str, ...], reason: str
+    ) -> WorldRecord:
+        if type(session) is not ManualPhysicalSession or session is not self._manual_session:
+            raise ValueError("manual retirement requires this ENV's issued session")
+        return session._retire(accepted, world_ids, reason)
 
     def _apply_configured_affordance_positions(self) -> None:
         """Load static affordance positions from config/optimization data."""
@@ -1321,6 +1357,8 @@ class VectorizedHamletEnv:
                 successor_action_masks for this same committed observation/status
         """
         self._participation_ingress()
+        if not self._exploration_bound or self._manual_session is not None:
+            raise ValueError("ordinary ENV.step requires its real POP/runtime binding")
         if self._world_phase != "active":
             raise ValueError("world episode must be accepted and activated before stepping")
         accepted = self._world_accepted
@@ -1347,6 +1385,34 @@ class VectorizedHamletEnv:
         self._require_phase("active")
         self._accepted(accepted)
         self._check_committed_participation()
+        return self._step_physical(
+            accepted=accepted,
+            predecessor=predecessor,
+            actions=actions,
+            active_on_entry=active_on_entry,
+            vector_tick=vector_tick,
+            depletion_multiplier=depletion_multiplier,
+            manual_decision=None,
+        )
+
+    def _step_physical(
+        self,
+        *,
+        accepted: WorldAcceptedEpisode,
+        predecessor: torch.Tensor,
+        actions: torch.Tensor,
+        active_on_entry: torch.Tensor,
+        vector_tick: int,
+        depletion_multiplier: float,
+        manual_decision: WorldRecord | None,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict]:
+        """The shared physical kernel; a manual entry consumes its genuine decision."""
+        if manual_decision is not None:
+            if self._manual_session is None:
+                raise ValueError("manual physical decision has no bound issuer")
+            self._manual_session._claim(manual_decision, accepted, predecessor, actions, active_on_entry, vector_tick)
+        elif self._manual_session is not None:
+            raise ValueError("manual physical work requires its issued decision")
         self._world_revision += 1
         self.vfs_registry.reset_tick_scoped()
         refusals_before = 0
@@ -1425,26 +1491,30 @@ class VectorizedHamletEnv:
         newly_retired = active_on_entry & ~authored_terminal & (self.step_counts >= self.agent_lifespan)
 
         # 6. Calculate rewards (interoception-aware)
-        intrinsic_context = IntrinsicTransitionContext(
-            predecessor=predecessor,
-            actions=actions,
-            successor=self._get_observations(),
-            active_on_entry=active_on_entry,
-            vector_tick=vector_tick,
-        )
-        intrinsic_stamp = self._exploration_runtime.prepare_step_stamp(
-            accepted=accepted,
-            world_ids=self.world_ids,
-            active_on_entry=active_on_entry,
-            vector_tick=vector_tick,
-        )
-        intrinsic_transition = IntrinsicStepHandoff(intrinsic_context, intrinsic_stamp, accepted)
-        rewards = self._reward_calculator._calculate_shaped_rewards(
-            active_on_entry=active_on_entry,
-            intrinsic_context=intrinsic_context,
-            intrinsic_stamp=intrinsic_stamp,
-            accepted=accepted,
-        )
+        intrinsic_transition = None
+        if manual_decision is None:
+            intrinsic_context = IntrinsicTransitionContext(
+                predecessor=predecessor,
+                actions=actions,
+                successor=self._get_observations(),
+                active_on_entry=active_on_entry,
+                vector_tick=vector_tick,
+            )
+            intrinsic_stamp = self._exploration_runtime.prepare_step_stamp(
+                accepted=accepted,
+                world_ids=self.world_ids,
+                active_on_entry=active_on_entry,
+                vector_tick=vector_tick,
+            )
+            intrinsic_transition = IntrinsicStepHandoff(intrinsic_context, intrinsic_stamp, accepted)
+            rewards = self._reward_calculator._calculate_shaped_rewards(
+                active_on_entry=active_on_entry,
+                intrinsic_context=intrinsic_context,
+                intrinsic_stamp=intrinsic_stamp,
+                accepted=accepted,
+            )
+        else:
+            rewards = self._reward_calculator._calculate_manual_rewards()
         bonus = newly_retired.to(dtype=rewards.dtype)
         components = self._last_reward_components
         components["extrinsic"] = components["extrinsic"] + bonus
@@ -1457,10 +1527,7 @@ class VectorizedHamletEnv:
         newly_terminal = authored_terminal | newly_retired
 
         # Cancel any pending agent-scoped delayed work for agents that just became done
-        if self.effect_manager is not None and self.effect_manager.scheduler is not None:
-            if newly_terminal.any():
-                for idx in torch.nonzero(newly_terminal, as_tuple=False).flatten():
-                    self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
+        self._cancel_terminal_effects(newly_terminal)
 
         # 7. time_of_day is DERIVED from global_tick — one temporal pipeline (token-obs
         # unit 2c). It flips to the new instant's hour only here: the reward calculator
@@ -1481,7 +1548,6 @@ class VectorizedHamletEnv:
             )
 
         info = {
-            "intrinsic_transition": intrinsic_transition,
             "successor_action_masks": successor_action_masks,
             "active_on_entry": active_on_entry.clone(),
             "newly_terminal": newly_terminal.clone(),
@@ -1494,9 +1560,17 @@ class VectorizedHamletEnv:
             # Effect spawns this step refused at `max_active_effects`, each naming its world.
             "effect_spawn_refusals": () if self.effect_manager is None else tuple(self.effect_manager.spawn_refusals[refusals_before:]),
         }
+        if intrinsic_transition is not None:
+            info["intrinsic_transition"] = intrinsic_transition
 
         self._advance_participation_witness(observations)
         return observations, rewards, self.dones, info
+
+    def _cancel_terminal_effects(self, newly_terminal: torch.Tensor) -> None:
+        if self.effect_manager is not None and self.effect_manager.scheduler is not None:
+            if newly_terminal.any():
+                for idx in torch.nonzero(newly_terminal, as_tuple=False).flatten():
+                    self.effect_manager.cancel_scheduled_for_entity(scope="agent", entity_id=int(idx))
 
     def _evaluate_vfs_profiles(self) -> None:
         """Evaluate global then agent profile expressions and commit them to the registry."""
@@ -2254,6 +2328,7 @@ class VectorizedHamletEnv:
         self._validate_episode_reservation(reservation)
         self._participation_pending = self._participation_committed = self._participation_reset_state = None
         self._participation_failed = False
+        self._manual_close_prepared = None
         candidate = VFSWorldContext(
             training_seed=self._world_seed,
             world_ids=reservation.world_ids,
@@ -2707,6 +2782,9 @@ class VectorizedHamletEnv:
         self._require_phase("active", "closed-awaiting-release", "released-completed")
         self._accepted(accepted)
         self._check_committed_participation()
+        if self._manual_session is not None and self._world_phase == "active":
+            self._manual_session._check()
+            self._manual_session._current(accepted)
         exact_integer(boundary_key, 0, "boundary key")
         participants = exact_world_ids(participated_world_ids)
         actual = {key for index, key in enumerate(self.world_ids) if int(self.step_counts[index]) > 0}
@@ -2735,7 +2813,10 @@ class VectorizedHamletEnv:
             "dispositions": dispositions,
             "revision": self._world_revision,
         }
-        return self._record("prepared_close", payload)
+        result = self._record("prepared_close", payload)
+        if self._manual_session is not None:
+            self._manual_close_prepared = result
+        return result
 
     @env_guard
     def freeze_episode_close(self, prepared: WorldRecord) -> WorldRecord:
@@ -2777,6 +2858,10 @@ class VectorizedHamletEnv:
 
     @env_guard
     def abandon_episode(self, *, accepted: WorldAcceptedEpisode, reason: str) -> WorldRecord:
+        return self._abandon_episode(accepted=accepted, reason=reason)
+
+    def _abandon_episode(self, *, accepted: WorldAcceptedEpisode, reason: str) -> WorldRecord:
+        """ENV-owned cleanup also used beneath the original manual operation guard."""
         self._accepted(accepted)
         if reason == "runtime_failure" and accepted is self._world_accepted:
             # Fail-closed owner cleanup must work even while public entry is fenced.
@@ -2918,6 +3003,7 @@ class VectorizedHamletEnv:
             self._world_generation += 1
             self._participation_pending = self._participation_committed = self._participation_reset_state = None
             self._participation_failed = False
+            self._manual_close_prepared = None
             self._world_cursors = dict(state["accepted_episode_seqs"])
             self._world_bindings = {item["batch_episode"]: owned_value(item) for item in state["accepted_bindings"]}
             self._world_last_closed = owned_value(state["last_closed_episode"])

@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-14T13:46:15.793034+00:00",
+  "status": "PASS",
+  "results_sha256": "0852b47e2e8862cd642340125abb70764ac0fae042eda5d5a929dd8a2ca58fed",
+  "passed_rows": 78,
+  "focused_exit": 0,
+  "source_before_after": "PASS",
+  "checker_correction": "Initial root assertion incorrectly treated independent_pass as numeric count78; actual schema is booleanTrue plus78individual rows. That check failed before this correct verification. No source/evidence was changed or execution repeated."
+}

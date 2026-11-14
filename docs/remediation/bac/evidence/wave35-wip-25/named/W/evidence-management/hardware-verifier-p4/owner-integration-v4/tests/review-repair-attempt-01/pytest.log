@@ -1,0 +1,26 @@
+..FFFFFFFFFFF                                                            [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2888: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2888: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2888: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2888: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2918: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2918: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2918: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2918: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2918: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2918: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2926: Failed: DID NOT RAISE <class 'ValueError'>
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_capture_retained_actual_allocation_refuses_insufficient_overhead[zero-scratch_bytes]
+FAILED test_verify_bac_hardware_v1.py::test_capture_retained_actual_allocation_refuses_insufficient_overhead[zero-scratch_inodes]
+FAILED test_verify_bac_hardware_v1.py::test_capture_retained_actual_allocation_refuses_insufficient_overhead[undersized-scratch_bytes]
+FAILED test_verify_bac_hardware_v1.py::test_capture_retained_actual_allocation_refuses_insufficient_overhead[undersized-scratch_inodes]
+FAILED test_verify_bac_hardware_v1.py::test_kernel_birth_tokens_require_ascii_decimal[\xb2-native-git]
+FAILED test_verify_bac_hardware_v1.py::test_kernel_birth_tokens_require_ascii_decimal[\xb2-driver]
+FAILED test_verify_bac_hardware_v1.py::test_kernel_birth_tokens_require_ascii_decimal[\xb2-ordinary-process]
+FAILED test_verify_bac_hardware_v1.py::test_kernel_birth_tokens_require_ascii_decimal[\u0662-native-git]
+FAILED test_verify_bac_hardware_v1.py::test_kernel_birth_tokens_require_ascii_decimal[\u0662-driver]
+FAILED test_verify_bac_hardware_v1.py::test_kernel_birth_tokens_require_ascii_decimal[\u0662-ordinary-process]
+FAILED test_verify_bac_hardware_v1.py::test_capture_receipt_destination_cannot_extend_retained_namespace
+11 failed, 2 passed, 266 deselected in 11.57s

@@ -1,0 +1,31 @@
+{
+  "name": "manual-owner",
+  "exit_code": 1,
+  "seconds": 15.02776343000005,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r147-manual-owner-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r147-manual-owner-attempt-1/manual-owner.log",
+  "sha256": "6676b9684675f611dade56bb45a8320edf25828ab92c24c5dbcb5a028ce50886",
+  "candidate_tree": "2574046d1c30ede92b1a86918d3d2b9e49cb1635",
+  "base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+  "manifest_sha256": "06fb55ad80205625f85d16a36eef1a923cd9fd63814139039966b13cae56c244",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

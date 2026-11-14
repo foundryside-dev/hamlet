@@ -1,0 +1,27 @@
+{
+  "status": "READ ONLY PREFLIGHT; awaiting test-owner RED",
+  "at": "2026-11-14T13:02:28.536456+00:00",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97",
+    "bytes": 110631,
+    "lines": 1603
+  },
+  "owned_source_bodies": [
+    "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py"
+  ],
+  "read_only_source_bodies": [
+    "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/run-inert-v1.py"
+  ],
+  "limit": {
+    "runner_lines": 3000,
+    "whole_body_total": 3626,
+    "bodies": 3
+  },
+  "rulings": [
+    "Root assignment overrides generic skill Git/worktree/runtime/deletion steps; no such action authorized.",
+    "Retain original source only as inert .py.txt; no execution copy.",
+    "Finite approved plan v2 governs source; test owner owns tests and actual runtime."
+  ]
+}

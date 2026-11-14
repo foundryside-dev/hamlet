@@ -6,7 +6,7 @@
     "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
   },
   "chain_semantics": "Natural publication-label order; links authenticate exact checkpoint bytes, not inferred Git ancestry or current-source equivalence. Missing wave labels are not synthesized.",
-  "current_local_candidate": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+  "current_local_candidate": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
   "entries": [
     {
       "artifact_checks": {
@@ -1951,15 +1951,55 @@
         "sha256": "1d7180158b15d17aa132c46080e0a2141bcb12d2f85b3d0829c20564d3552265"
       },
       "publication": "WIP checkpoint; exact remote/CI verification separate"
+    },
+    {
+      "id": "wave35-wip-25",
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-25.json",
+        "bytes": 55362771,
+        "sha256": "b6a246fdb0737c802972412e8b61590ea1fe0ea3af8857899e725ac0061aa5f7"
+      },
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-24.json",
+        "sha256": "9afafa9a66289b5a766aacfea2a95c43517c78b8661d764aa0c9f0292da74d83"
+      },
+      "previous_catalog_entry": "wave35-wip-24",
+      "identity": {
+        "evidence_base_commit": "6477ff4efdadaf33955c0096cb1cf27a0d348d65",
+        "evidence_candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "3b2d5797ac2dc456cfc1dd71d2efae7b475123c9",
+          "tests": "a328493583764ee61c4c923a2f751248a49c0222"
+        }
+      },
+      "status": "PAUSED WIP; bounded manual physical component and tooling repairs preserved; full BAC/global/hardware gates open",
+      "packet": "Manual physical component, current tool snapshots, retained failures and graceful pause handoff",
+      "round": 148,
+      "receipt_pointer": "#/receipt",
+      "package_accounting": {
+        "qualified": 28,
+        "remaining": 38,
+        "total": 66
+      },
+      "qualified_progress": "28 qualified /38 remaining /66 original packages unchanged",
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-25/selection-plan.json",
+        "bytes": 55394433,
+        "sha256": "07def2ecd35cba56f4b9528774ee15377086211332d2db5214d013823ae2b34c"
+      },
+      "publication": "WIP checkpoint; exact remote/CI verification separate"
     }
   ],
-  "latest_verified_remote_publication_at_assembly": "wave35-wip-23",
+  "latest_verified_remote_publication_at_assembly": "wave35-wip-24",
   "current_checkpoint": {
-    "path": "docs/remediation/bac/evidence/wave35-wip-24.json",
-    "bytes": 85192298,
-    "sha256": "9afafa9a66289b5a766aacfea2a95c43517c78b8661d764aa0c9f0292da74d83",
-    "candidate_tree": "192bfdbd16fd998e0095f303c5e93a49e346a471",
+    "path": "docs/remediation/bac/evidence/wave35-wip-25.json",
+    "bytes": 55362771,
+    "sha256": "b6a246fdb0737c802972412e8b61590ea1fe0ea3af8857899e725ac0061aa5f7",
+    "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
     "publication": "WIP checkpoint; exact remote/CI verification separate"
   },
-  "latest_verified_remote_commit_at_assembly": "a42d61920ab302e16a4aab885fbbd44640e5d908"
+  "latest_verified_remote_commit_at_assembly": "6477ff4efdadaf33955c0096cb1cf27a0d348d65"
 }

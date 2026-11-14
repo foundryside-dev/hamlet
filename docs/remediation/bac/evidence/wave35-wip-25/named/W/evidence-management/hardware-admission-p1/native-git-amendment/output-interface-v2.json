@@ -1,0 +1,89 @@
+{
+  "schema": "bac-p1-native-git-output-interface-v1",
+  "status": "REPAIR FROZEN FOR INDEPENDENT REVIEW; NOT ROOT ADOPTED",
+  "base_output_interface": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/capture-output-interface-v2.json",
+    "sha256": "dcdaf7ca144f7a91a349f3ec658a3b1dd2faae29b0f06f25c89efb536f557d08",
+    "bytes": 5867
+  },
+  "changes": {
+    "dependency": "Exactly one dependency named git is required by capture, with full observed single-line git --version stdout (remove only one terminal LF) as version, and actual pinned native executable reference. No importlib.metadata lookup for git; no alternate native names. Other distribution observations unchanged.",
+    "current_protocol_sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+    "git_command_closed_fields": {
+      "schema": "literal bac-hardware-git-command-v1",
+      "argv": "exact argv list, argv[0] equals executable.path",
+      "executable": "sealed native Git P0 reference, validated before spawn",
+      "executable_after": "actual post-wait P0 reference; equals executable for accepted observation; null or changed reference possible in refused diagnostic",
+      "cwd": "actual selected cwd passed to Popen, absolute canonical path",
+      "environment": "exact fixed environment: PATH=/usr/bin:/bin, LC_ALL=C, GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_GLOBAL=/dev/null",
+      "identity": "actual child PID/PPID/start/host/boot P0 identity; null in refused diagnostic",
+      "start": "UTC before spawn",
+      "end": "UTC after wait/reference checks",
+      "exit_code": "Actual observed integer child status, including -9 where known; null if unknown. A status alone never proves pipe EOF or successful cleanup.",
+      "stdout": "Available bytes decoded UTF-8 with surrogateescape. On timeout, retain cumulative byte prefix from all available TimeoutExpired.output values and successful bounded retry output; never infer EOF. Prefer the longer consistent prefix; an inconsistent extra observation is preserved as hex in errors without fabricating concatenated stdout.",
+      "stderr": "Same available-prefix/reversible-decoding rules as stdout, using TimeoutExpired.stderr; absent retry data cannot erase earlier bytes.",
+      "errors": "Primary error retained first; kill/retry failures appended; incomplete cleanup explicitly states reap/EOF not established. Every error forces refusal. No successful cleanup claim follows a second timeout."
+    },
+    "command_locations": {
+      "discovery.json.commands": "git --version command among raw discovery commands; legacy-shaped driver commands unchanged",
+      "discovery-command.json.stdout": "same discovery value retained in actual child stdout",
+      "source-before-git.json": "exact ordered list of pinned read-only source Git commands; retained even if source-before observation fails",
+      "source-after-git.json": "same after discovery, retained if attempted even on failure"
+    },
+    "source_command_order": [
+      [
+        "rev-parse",
+        "HEAD"
+      ],
+      [
+        "diff-index",
+        "--cached",
+        "--quiet",
+        "candidate.tree",
+        "--"
+      ],
+      [
+        "worktree",
+        "list",
+        "--porcelain"
+      ]
+    ],
+    "source_command_prefix": [
+      "executable.path",
+      "--no-optional-locks",
+      "-c",
+      "core.fsmonitor=false",
+      "-c",
+      "core.pager=cat",
+      "-C",
+      "authorized_root"
+    ],
+    "source_cwd": "authorized_root",
+    "version_command": [
+      "executable.path",
+      "--version"
+    ],
+    "version_cwd": "actual discovery cwd, required equal authorized_root by existing wrapper binding",
+    "source_wire": "source-before.json and source-after.json existing payload unchanged; sibling *-git.json lists are additional retained evidence. A failed source query may leave sibling commands and refused result without source observation.",
+    "consumer_join": [
+      "Require current frozen capture and protocol pins, current adopted terminal result gate and all prior source/discovery custody bindings.",
+      "Require the environment git dependency reference equal every native command executable and executable_after, and P3 pinned Git executable.",
+      "For discovery version query require exact [pinned_git,--version], actual command child PPID equal discovery identity.pid, host/boot consistent, nonempty observed start token, successful status/no errors, command interval within discovery wrapper interval, canonical cwd authorized_root and exact fixed environment.",
+      "Derive git dependency.version from exactly one successful native version command and compare full line to sealed/observed dependency inventory; hash alone is not version proof.",
+      "Source command siblings require exact ordered fixed source argv, pinned executable/cwd/environment and observed child identity/status; do not accept source command lists as job execution evidence.",
+      "P2/P4 must explicitly consume this current native command shape before real integration; this freeze implies no consumer PASS."
+    ],
+    "limits": "Native query timeout30s. On catchable timeout/cancellation retain partial output, attempt child.kill once, attempt communicate30s once even after kill error, contain bounded cleanup failures, observe post-executable ref and append exactly one refused command. Existing discovery group cleanup/custody bounds unchanged; no supervision guarantee for escaped descendants, uncatchable death or failed cleanup. Root must maintain custody of incomplete attempts."
+  },
+  "unchanged": [
+    "No interpreter-context amendment; isolated discovery still uses resolved interpreter equality and ignores PYTHONPATH.",
+    "CPU profile never imports Torch or queries NVIDIA; Git-only dependency inventory does not attest venv distributions.",
+    "No cgroup ancestry relaxation; root-reported local membership/mount/namespace prerequisites block qualified local capture.",
+    "Driver query wire, CUDA capability, P0/P2/P3/P4 bodies, root grants and APP source unchanged."
+  ],
+  "supersedes": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/output-interface-v1.json",
+    "sha256": "459470cddf05d5f2098bb12a5d00168d4abd16b71ba6ca5421787772087db7ff",
+    "bytes": 5445
+  }
+}

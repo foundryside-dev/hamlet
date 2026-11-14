@@ -1,0 +1,133 @@
+{
+  "adopted_p1": {
+    "bytes": 3369,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/root-v2-adoption-v1.json",
+    "sha256": "9b3489237f82591804daad0f3c305a01b705542013ca986e6721b69e9ad4f39f"
+  },
+  "adopted_p2": {
+    "bytes": 1820,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/root-task3-adoption-v1.json",
+    "sha256": "99557032bb471d7af538ce96c540c32ba41119d87563218ddeaba883ebca2c99"
+  },
+  "at": "2026-11-14T12:33:25.303296+00:00",
+  "budget": "No body added/read beyond owned runner. Future implementation must stay within existing four-body4431/current5000 cap or obtain explicit new scope; this capsule grants no implementation.",
+  "finite_future_validation": [
+    "Explicit authored current-native CPU and CUDA fixtures: current records accepted only after all joins; old CPU-empty/legacy-shaped Git/missing/duplicate/extra native rows refuse.",
+    "Resealed wrong executable_after/version/argv/env/cwd/PID/PPID/host/boot/time, bool exit, partial/errors and recursive diagnostic/stdout type coercions refuse; exact version LF behavior retained.",
+    "Missing/crosswired/reordered source siblings, wrong ordered inventory/registry/availability, clock regression and sibling mutation after accepted snapshot refuse under agreed namespace/retention authority.",
+    "Strict terminal nested reference types plus existing missing/refused/provisional gate; actual P2 source-query invocation uses explicit pinned executable and before/after refs in pure instrumented tests.",
+    "All original inert tests on exact future bytes; coordinate shared P4 pin only after independent freeze. Actual server/full-chain work remains UNRUN."
+  ],
+  "gaps": [
+    {
+      "current": "CPU requires raw.commands==[]; CUDA applies only legacy nine-key driver shape to every command. Current P1 always emits one schema-bearing native Git version command, so both paths reject that current record. No native version child identity, executable_after, fixed environment/cwd, interval or full-version derivation is validated.",
+      "id": "P2-NATIVE-1",
+      "locations": [
+        "discovery custody lines872-902",
+        "CPU/CUDA command branches lines920-931"
+      ],
+      "required": [
+        "Require exactly one environment dependency named git; exact observed raw dependency inventory must bind it without distribution fallback.",
+        "Dispatch current bac-hardware-git-command-v1 separately from unchanged NVIDIA driver wire. CPU requires exactly one native version row and no driver/device/Torch observations; CUDA requires the same native version row plus its separately valid existing driver observations. Unknown/missing/duplicate native rows refuse; do not convert new rows to old shapes.",
+        "Native row exact keys schema,argv,executable,executable_after,cwd,environment,identity,start,end,exit_code,stdout,stderr,errors. Validate nested P0 refs/identity and exact types; exit_code exact int0, errors[], nonnull unchanged executable_after; partial diagnostic/status alone never proves successful cleanup or EOF.",
+        "Version argv exactly [git.reference.path,--version], cwd authorized_root, fixed Git environment from supplier; executable/executable_after equal exact git.reference. Native child PPID equals raw discovery PID, PID differs from live parent, host/boot match discovery/allocation, birth token nonempty; validate UTC command interval within wrapper interval and after raw collection-entry timestamp.",
+        "Derive dependency.version from full successful stdout line with only one terminal LF removed, no strip/split/prefix normalization; compare exact sealed/observed version. Preserve nonempty stderr if supplier permits it; errors force refusal.",
+        "Parsed wrapper.stdout==raw currently uses Python structural equality; make the join recursively type-exact so False/0 or float/int coercion in nested native fields/references cannot pass. Raw dependency equality needs the same exact-type protection."
+      ]
+    },
+    {
+      "authority_decision": "Root/P4 must explicitly agree that capture directory and these sibling bytes remain under no-writer custody from accepted P1 publication through first consumer snapshot, or provide an independently sealed root manifest. A P2-local bounded option is to capture exact five file refs at admission under that authority, retain/recheck them at source boundaries and in the existing attempt seal inventory (alongside terminal ref) for P4. This is a proposed consumer retention boundary, not an existing P1 hash aggregate and not authorization to change P0. Without agreed custody/refs, do not claim full source-sibling correspondence.",
+      "current": "P2 does not open or retain P1 start.json, source-before.json, source-after.json, source-before-git.json or source-after-git.json. Supplier confirms these five fixed siblings have no hash edge from current result/spec/admission; terminal result itself is likewise discovered by fixed filename. Existing terminal gate cannot authenticate sibling contents.",
+      "id": "P2-NATIVE-2",
+      "locations": [
+        "Custody.__init__ lines725-729",
+        "discovery/source methods",
+        "attempt seal inventory line432"
+      ],
+      "required": [
+        "Use D=exact captured spec parent and the actual fixed capture paths; reconcile spec/admission/discovery-command/discovery/result filename/ref bindings before joining extra siblings.",
+        "Validate start closed keys at,candidate,request,tools,dependencies against exact spec/request/environment. Validate each source observation closed keys at,head,tree,inventory,registry,availability. Registry is observed porcelain STRING, availability is ordered LIST of {path,directory_exists}, inventory is ordered LIST of P0 refs, not invented references to observation values.",
+        "Require both source native lists, exactly three successful commands in supplier order: rev-parse HEAD; diff-index --cached --quiet candidate.tree --; worktree list --porcelain. Exact fixed prefix/env/cwd/executable before/after and closed row types. Join child PPID to wrapper.capture_identity.pid and same host/boot, not to discovery PID.",
+        "Reconcile source head/tree with candidate, HEAD stdout with head, staged-index equality through exit0 rather than HEAD tree, registry with command2 stdout and candidate registry bytes, availability with candidate availability rows. Flatten source/tests/configs/scripts/ratchet/artifacts in fixed category and existing array order for P1 inventory/bound joins; P2 self.inputs currently uses JSON dict iteration and must not be blindly reused as that ordered list.",
+        "Under accepted non-regressing UTC require start.at <= before commands ordered intervals <= source-before.at <= wrapper.start <= raw.at <= native discovery queries <= wrapper.end <= after commands ordered intervals <= source-after.at <= admission.at. Producer does not itself assert this entire chain; do not invent missing source identity/start/end fields or a monotonic clock."
+      ]
+    },
+    {
+      "current": "P2 own source helper invokes hardcoded /usr/bin/git with PATH/GIT_OPTIONAL_LOCKS/LC_ALL, without joining that executable to environment.git or pre/post native reference checks. P3 owner sampler already derives exact Git path from environment dependency and requires its own producer-specific argv.",
+      "id": "P2-NATIVE-3",
+      "locations": [
+        "_git lines498-504",
+        "Custody.source lines971-975",
+        "owner_sampler lines1382-1409"
+      ],
+      "required": [
+        "Select the sole sealed git reference for P2 own source queries; require live exact bytes before/after invocation instead of a path/default. Update internal call sites explicitly, with no old-signature fallback.",
+        "Use agreed fixed safe source argv/env corresponding to current native Git profile: executable,--no-optional-locks,-c,core.fsmonitor=false,-c,core.pager=cat,-C,authorized_root plus each query tail; exact environment PATH=/usr/bin:/bin,LC_ALL=C,GIT_CONFIG_NOSYSTEM=1,GIT_CONFIG_GLOBAL=/dev/null.",
+        "Preserve P2 additional unstaged diff --quiet -- guard as its own check. Do not demand that fourth query in P1 source siblings, which contain exactly three.",
+        "Require one executable reference across P1 native version/source records, environment dependency and P2/P3 source identity. P3 sampler argv/environment remain their existing separately adopted producer profile; do not replace P3 argv with P1 prefix or pretend P3 emitted native-Git wire. No P3 edit is implied."
+      ]
+    },
+    {
+      "current": "Current P0 e4f31 pin is already adopted. P2 has no hardcoded capture SHA literal to replace; it compares wrapper.capture to sealed spec.tools capture ref and validates referenced bytes through P0. That is sealed-byte correspondence, not an independent current-adoption allowlist.",
+      "id": "P2-NATIVE-4",
+      "locations": [
+        "tool binding lines776-781",
+        "wrapper capture binding lines862-865"
+      ],
+      "required": [
+        "New root-sealed request/spec/tools/dependency fixtures must carry capture d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb (64451bytes), and current P0e4f31. Never reuse historical capture fixture refs or call it a literal update already present in P2.",
+        "To implement interface requirement of current adopted producer explicitly, add/check exact adopted capture-pin authority at this boundary (root decides hard pin versus separately authenticated adoption mechanism); no acceptance of arbitrary or historical capture bytes by fallback.",
+        "P2 runner source hash changes only after a later grant and coordinated freeze. P4 shared runner pin/fixtures must update to that final reviewed hash; current0d2a...cc97 remains unchanged throughout active verification."
+      ]
+    },
+    {
+      "current": "The admitted disposition/reasons[]/supplied spec/admission equality gate exists and terminal ref is rehashed during source checks. However _read(terminal_ref) has no record kind and its nested spec/admission refs are only Python== compared, not explicitly P0-reference validated.",
+      "id": "P2-NATIVE-5",
+      "locations": [
+        "terminal gate lines725-729",
+        "source rehash line944"
+      ],
+      "required": [
+        "Keep exact current terminal schema and failure/refusal rules; do not invent a new accepted terminal shape.",
+        "Explicitly validate terminal.spec and terminal.admission as current P0 references before equality, including exact numeric types. A floating byte count can compare equal to int under current code; this is static source reasoning, NOT a runtime-reproduced finding.",
+        "Retain terminal ref and recheck unchanged bytes; missing/refused/partial/provisional terminal must continue to refuse. Do not infer the five source siblings are covered by terminal gate."
+      ]
+    }
+  ],
+  "native_interface": {
+    "bytes": 6440,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/output-interface-v2.json",
+    "sha256": "0554e5f0422ff7ce1488dae4c404a25fb8966def7ffd61cd57ac457da91dd3c0"
+  },
+  "no_gap_or_preserve": [
+    "Existing terminal admitted/empty-reasons/exact spec/admission semantic checks are already present; only typed-ref precision above is missing.",
+    "P0 pin is current e4f31; no P0 schema/body edit or compatibility adapter needed.",
+    "Discovery wrapper request/capture/interpreter, actual PID/PPID host/boot, isolated argv, environment/lease-FD declaration, raw identity/context/provenance, budgets and full ancestry checks are present and must remain.",
+    "P2 staged tree check already uses diff-index --cached candidate.tree, not HEAD-tree equality; preserve separate unstaged guard.",
+    "P3 sampler transport already uses the environment Git reference and its own exact two query argv. Existing Task3 source-stage/clock/typed-diagnostic/PID fixes and terminal five-array rules stay intact.",
+    "Actual local Task4 remains unsupported because full cgroup ancestry is unavailable. No local real capture/backstop retry, fake admission, namespace weakening or hardware claim follows from this capsule."
+  ],
+  "producer_custody_facts": {
+    "bytes": 26904,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/capture-consumer-custody-capsule-v2.json",
+    "sha256": "b79532047f10410aeb7c5c2fe6a6f60ae473d84239d225cd59061e2561b94c96"
+  },
+  "schema": "bac-p2-p1-native-git-consumer-gaps-v1",
+  "scope": "Only already-owned P2 runner body inspected. P1/P3/P4 body contents not read; producer facts consumed from root-adopted interface and supplier capsule. No APP, Git, index, lease, capture, tests, source copy, branch or worktree action.",
+  "source_after": {
+    "bytes": 110631,
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+  },
+  "source_before": {
+    "bytes": 110631,
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "0d2a163305efb4683b8d90f42364d894a1af962129b9df15137ccd466374cc97"
+  },
+  "status": "STATIC SOURCE/CONTRACT FACTS ONLY; NO P2 EDIT OR RUNTIME; IMPLEMENTATION NOT GRANTED",
+  "task4_preparation": {
+    "bytes": 7215,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/task4-preparation-freeze-v1.json",
+    "sha256": "6fab4b8b4a6120035316898f60bd3bb6db87355afb1f48fe5acc37bb4d315c26"
+  }
+}

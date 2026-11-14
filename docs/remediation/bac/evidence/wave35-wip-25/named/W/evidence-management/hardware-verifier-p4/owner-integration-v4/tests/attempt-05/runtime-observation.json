@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-14T13:05:16.895654+00:00",
+  "pid": 242581,
+  "observed_selected_environment": null,
+  "environment_unavailable": "Independent /proc/PID/environ read refused with PermissionError errno13; child.json records selected exec environment, not a post-exec observation.",
+  "actual_cmdline": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "-m",
+    "pytest",
+    "/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py",
+    "-q",
+    "--tb=line",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-verifier-p4/owner-integration-v4/tests/attempt-05/basetemp"
+  ],
+  "actual_affinity": [
+    0
+  ],
+  "address_space_limit_line": "Max address space         4294967296           4294967296           bytes     "
+}

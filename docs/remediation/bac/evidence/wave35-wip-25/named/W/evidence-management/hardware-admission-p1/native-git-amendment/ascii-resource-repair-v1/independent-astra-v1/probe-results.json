@@ -1,0 +1,910 @@
+{
+  "start": "2026-11-14T13:41:10.134660+00:00",
+  "pid": 246510,
+  "ppid": 246509,
+  "argv": [
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/independent-astra-v1/probe.py"
+  ],
+  "actual_cmdline": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/independent-astra-v1/probe.py"
+  ],
+  "cwd": "/workspace",
+  "affinity": [
+    3
+  ],
+  "rlimit_as": [
+    4294967296,
+    4294967296
+  ],
+  "before": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7",
+      "bytes": 64708,
+      "lines": 992
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907",
+      "bytes": 64111,
+      "lines": 979
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/independent-astra-v1/probe.py",
+      "sha256": "f8afe1e9f19bc07193519d95c50af8cc4ea9236ae4f7282e0cadf19b26dea280",
+      "bytes": 7068,
+      "lines": 117
+    }
+  ],
+  "changed_ast_nodes": [
+    "cpuset",
+    "assess_resources",
+    "discovery_preflight"
+  ],
+  "old_snapshot": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/red-v1-source/capture_bac_hardware_v1.py.txt",
+    "sha256": "d91d9a4eac393d1283de0fa2a894a6f7a837aa9e28aa854c4795462f5229a1bb",
+    "bytes": 64451,
+    "lines": 992
+  },
+  "rows": [
+    {
+      "case": "ASCII baseline with finite and unlimited values",
+      "boundary": "assessment",
+      "accepted": true,
+      "expected_rejection": false,
+      "reasons": [],
+      "pass": true
+    },
+    {
+      "case": "ASCII baseline with finite and unlimited values",
+      "boundary": "preflight",
+      "accepted": true,
+      "expected_rejection": false,
+      "reasons": [],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ cpu_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ cpu_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ cpuset",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ cpuset",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ memory_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory limit unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ memory_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory limit"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ memory_current",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory current unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ memory_current",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory current"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ meminfo",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "MemTotal/MemAvailable unavailable",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ٠١٢٣٤٥٦٧٨٩ meminfo",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight MemAvailable missing/ambiguous"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ cpu_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ cpu_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ cpuset",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ cpuset",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ memory_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory limit unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ memory_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory limit"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ memory_current",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory current unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ memory_current",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory current"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ meminfo",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "MemTotal/MemAvailable unavailable",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ０１２３４５６７８９ meminfo",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight MemAvailable missing/ambiguous"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ cpu_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ cpu_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ cpuset",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ cpuset",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ memory_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory limit unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ memory_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory limit"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ memory_current",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory current unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ memory_current",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory current"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ meminfo",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "MemTotal/MemAvailable unavailable",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "digits ०१२३४५६७८९ meminfo",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight MemAvailable missing/ambiguous"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' cpu_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' cpu_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' cpu_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' cpu_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' cpuset",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' cpuset",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' cpuset",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' cpuset",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpuset unavailable"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' memory_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory limit unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' memory_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory limit"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' memory_max",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory limit unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' memory_max",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory limit"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' memory_current",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory current unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\xa0' memory_current",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory current"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' memory_current",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "memory current unavailable or malformed",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode outer whitespace '\\u2003' memory_current",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight memory current"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode quota separator '\\xa0'",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode quota separator '\\xa0'",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode meminfo separator '\\xa0'",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "MemTotal/MemAvailable unavailable",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode meminfo separator '\\xa0'",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight MemAvailable missing/ambiguous"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode quota separator '\\u2003'",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode quota separator '\\u2003'",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode meminfo separator '\\u2003'",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "MemTotal/MemAvailable unavailable",
+        "ram_bytes insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode meminfo separator '\\u2003'",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight MemAvailable missing/ambiguous"
+      ],
+      "pass": true
+    },
+    {
+      "case": "mixed quota/period 350000 ١00000",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "mixed quota/period 350000 ١00000",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "mixed quota/period ٣50000 100000",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "mixed quota/period ٣50000 100000",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "mixed quota/period max ١00000",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "cpu controller unavailable",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "mixed quota/period max ١00000",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "discovery preflight CPU quota missing"
+      ],
+      "pass": true
+    },
+    {
+      "case": "Unicode paths retain ASCII arithmetic",
+      "boundary": "assessment",
+      "accepted": true,
+      "expected_rejection": false,
+      "reasons": [],
+      "pass": true
+    },
+    {
+      "case": "Unicode paths retain ASCII arithmetic",
+      "boundary": "preflight",
+      "accepted": true,
+      "expected_rejection": false,
+      "reasons": [],
+      "pass": true
+    },
+    {
+      "case": "ASCII meminfo spacing",
+      "boundary": "assessment",
+      "accepted": true,
+      "expected_rejection": false,
+      "reasons": [],
+      "pass": true
+    },
+    {
+      "case": "ASCII meminfo spacing",
+      "boundary": "preflight",
+      "accepted": true,
+      "expected_rejection": false,
+      "reasons": [],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 0-1,1-2",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "duplicate cpuset",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 0-1,1-2",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "duplicate cpuset"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 2-1",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset range",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 2-1",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset range"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 0,,1",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 0,,1",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 0-1048576",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset range",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 0-1048576",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset range"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset -1",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset -1",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 1.0",
+      "boundary": "assessment",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset",
+        "cpu_slots insufficient after reserve and concurrent job reservations"
+      ],
+      "pass": true
+    },
+    {
+      "case": "existing invalid cpuset 1.0",
+      "boundary": "preflight",
+      "accepted": false,
+      "expected_rejection": true,
+      "reasons": [
+        "invalid cpuset"
+      ],
+      "pass": true
+    }
+  ],
+  "scope": "Pure resource assessment/preflight, no actual capture/Git/APP/hardware. Old snapshot parsed only, never executed.",
+  "independent_pass": true,
+  "pytest_argv": [
+    "-q",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:cacheprovider",
+    "--noconftest",
+    "--tb=line",
+    "--rootdir=/workspace/bac-review-2026-11-01/qualification",
+    "--basetemp=/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/independent-astra-v1/pytest-fixtures",
+    "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+    "-k",
+    "ascii_resource_grammar"
+  ],
+  "pytest_exit_code": 0,
+  "end": "2026-11-14T13:41:10.924675+00:00",
+  "after": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/capture_bac_hardware_v1.py",
+      "sha256": "08c89f253231eaf67d2675e6e00b0ae137925456f8918651dbc4d0eab96526e7",
+      "bytes": 64708,
+      "lines": 992
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/test_capture_bac_hardware_v1.py",
+      "sha256": "bd605e3626e4fc169943d54a19857f7a92989a7bbd9092c47bbd9805d65c7907",
+      "bytes": 64111,
+      "lines": 979
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/bac_hardware_protocol_v1.py",
+      "sha256": "e4f31eacb0e4499655a19ec91a4f5618a7b2ad3f4090e7ed068816b311e00860",
+      "bytes": 34654,
+      "lines": 526
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/ascii-resource-repair-v1/independent-astra-v1/probe.py",
+      "sha256": "f8afe1e9f19bc07193519d95c50af8cc4ea9236ae4f7282e0cadf19b26dea280",
+      "bytes": 7068,
+      "lines": 117
+    }
+  ],
+  "unchanged": true,
+  "exit_code": 0
+}

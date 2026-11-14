@@ -1,0 +1,11 @@
+{
+  "candidate_tree": "f462ece6fc9b61ad1b68d9e5ccc933b5b825791e",
+  "identity_scope": "Checkpoint inclusion anchor only; tooling/design original source identities and status remain in actual records. Not R148 APP execution.",
+  "input": {
+    "bytes": 1628,
+    "path": "evidence-management/env-c2/restore-correlation/root-v3-design-adoption-v1.json",
+    "root": "W",
+    "sha256": "62c068b9c2739ed5e57fc6a3df5601f83ebb19f24c73edfbbb31aaace188c9d8"
+  },
+  "status": "C3 DESIGN ONLY; implementation UNRUN"
+}

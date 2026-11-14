@@ -1,0 +1,30 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r147-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r147-manual-first-positive-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "manual-first-positive",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_manual_physical_session.py::test_real_manual_step_uses_actual_roster_and_returns_owned_physical_state",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=line",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r147-manual-first-positive-attempt-1",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

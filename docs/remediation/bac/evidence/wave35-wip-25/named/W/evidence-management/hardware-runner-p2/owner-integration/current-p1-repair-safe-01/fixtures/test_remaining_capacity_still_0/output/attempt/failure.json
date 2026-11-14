@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-14T13:14:31.521141Z",
+  "error_type": "ValueError",
+  "reason": "current capacity below remaining reservation: scratch_bytes",
+  "schema": "bac-hardware-runner-failure-v1",
+  "spec": {
+    "bytes": 13682,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-01/fixtures/test_remaining_capacity_still_0/metadata/spec.json",
+    "sha256": "8b32a78167413a171cf98ad98a8f1ed63508ac5e0c8aba14fe1a7345f823e343"
+  }
+}

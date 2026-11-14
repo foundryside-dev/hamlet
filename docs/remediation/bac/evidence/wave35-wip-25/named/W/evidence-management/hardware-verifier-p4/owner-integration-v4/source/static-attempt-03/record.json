@@ -1,0 +1,34 @@
+{
+  "checks": [
+    {
+      "check": "black",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/black",
+        "--check",
+        "--line-length",
+        "140",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py"
+      ],
+      "pid": 242528,
+      "start": "2026-11-14T13:03:44.764003+00:00",
+      "end": "2026-11-14T13:03:45.682567+00:00",
+      "exit_code": 0
+    },
+    {
+      "check": "ruff",
+      "argv": [
+        "/workspace/hamlet/.venv/bin/ruff",
+        "check",
+        "/workspace/bac-review-2026-11-01/qualification/verify_bac_hardware_v1.py"
+      ],
+      "pid": 242529,
+      "start": "2026-11-14T13:03:45.682588+00:00",
+      "end": "2026-11-14T13:03:45.709905+00:00",
+      "exit_code": 0
+    }
+  ],
+  "sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe",
+  "lines": 2734,
+  "bytes": 140681,
+  "postflight_sha256": "bcba4418dea2de31b8be600922f0dfd22cf601de2063fa721fc67fa44bf701fe"
+}

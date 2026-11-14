@@ -1,0 +1,19 @@
+{
+  "status": "FROZEN REVIEW REPAIR CANDIDATE; awaiting tests, current P1 pin unchanged",
+  "at": "2026-11-14T13:34:03.057727+00:00",
+  "source": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/run_bac_hardware_v1.py",
+    "sha256": "8397ffcfd75454280ce7a4ea0ea6ea901a3889159a36f51a431027b4e32110ae",
+    "bytes": 148489,
+    "lines": 2898
+  },
+  "red": "current-p1-review-repair-red-01:15 expected assertion failures,6 controls pass",
+  "changes": [
+    "ASCII resource numeric grammar only; Unicode paths retained",
+    "MemTotal positive; MemAvailable <= MemTotal",
+    "Actual postcapture directory and exact ten files allocated blocks*512 and inodes bounded by overhead at all capture boundaries; common output/scratch/capture st_dev",
+    "Snapshot accepted file dev/inodes and refuse later replacement, extra names, symlinks or hardlinks"
+  ],
+  "static": "AST/Ruff passed; Black140 formatted",
+  "limits": "No runtime by source owner, no P1 body read/edit; d91d adoption/bootstrap unchanged pending root new P1 release"
+}

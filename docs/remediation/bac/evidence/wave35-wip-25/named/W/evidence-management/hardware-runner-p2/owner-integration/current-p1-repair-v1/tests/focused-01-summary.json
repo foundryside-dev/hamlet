@@ -1,0 +1,25 @@
+{
+  "status": "149PASS1FAIL; mandatory CUDA driver failure improperly accepted",
+  "execution": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-focused-01/execution.json",
+    "sha256": "de984fad64a45f0a1a0d1074f7556d113a6acec1dfb5965661b6ad780385b866",
+    "bytes": 3782
+  },
+  "log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-focused-01/output.log",
+    "sha256": "00cfac97ef0660c105e073d958863b67db74c233b405cd607657634fee282385",
+    "bytes": 708
+  },
+  "test": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/test_run_bac_hardware_v1.py",
+    "sha256": "64fe00f47d1f1235a9674c0e8b732df9015fe07672755707e2fcb4af44d7351e",
+    "bytes": 191579
+  },
+  "inert_test_text": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-v1/tests/focused-01-tests.py.txt",
+    "sha256": "64fe00f47d1f1235a9674c0e8b732df9015fe07672755707e2fcb4af44d7351e",
+    "bytes": 191579
+  },
+  "actual_hardware": "UNRUN",
+  "counts_nonadditive": true
+}

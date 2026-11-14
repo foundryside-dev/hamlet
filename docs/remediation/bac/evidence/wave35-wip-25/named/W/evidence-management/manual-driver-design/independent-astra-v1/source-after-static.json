@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-14T13:20:52.676437+00:00",
+  "unchanged": true,
+  "sources": [
+    {
+      "path": "src/townlet/environment/vectorized_env.py",
+      "sha256": "a517aa49c0bd76ae17c3d6bb3ae7b81e3f48e73a59cdd0cdb4d433424dd8be5a",
+      "bytes": 155117,
+      "lines": 3035
+    },
+    {
+      "path": "src/townlet/environment/manual_physical.py",
+      "sha256": "56f63aa121f18cb64493d84e01c709475ac4167b7db9a676560aa295ff40a77a",
+      "bytes": 13198,
+      "lines": 292
+    },
+    {
+      "path": "src/townlet/environment/reward_calculator.py",
+      "sha256": "1df0de89e29d9ce984847ce506fe551a919c27c68c1d473ac9b1e64a438718e6",
+      "bytes": 3037,
+      "lines": 76
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_manual_physical_session.py",
+      "sha256": "7810ef42e5768998e8addd36998a9728cad58c879738f2b3e4b37f81b46a1942",
+      "bytes": 35834,
+      "lines": 801
+    }
+  ]
+}

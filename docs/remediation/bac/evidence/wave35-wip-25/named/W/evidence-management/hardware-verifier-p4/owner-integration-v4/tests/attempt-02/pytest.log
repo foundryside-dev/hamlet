@@ -1,0 +1,83 @@
+........................................................................ [ 30%]
+........................................................................ [ 61%]
+...........................................FF.FFFFFFFFFFFFFFF.FFFFFFFFFF [ 91%]
+FFFFFFFFFF.F........                                                     [100%]
+=================================== FAILURES ===================================
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2476: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+/workspace/bac-review-2026-11-01/qualification/test_verify_bac_hardware_v1.py:2558: Failed: DID NOT RAISE <class 'ValueError'>
+=========================== short test summary info ============================
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[fact-value]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[fact-provenance]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[missing-ancestor]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[hidden-ancestor]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[zero-period]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[cpuset-overlap]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[affinity-bool]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[memory-headroom]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[reserve]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[overhead]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[capacity]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[host]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[authorized-cpus]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[allocation-start]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[allocation-end]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[grant-input-order]
+FAILED test_verify_bac_hardware_v1.py::test_capture_resource_joins_reject_resealed_invention[cpu-bound]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[missing-driver]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[duplicate-driver]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[driver-order]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[driver-argv]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[driver-error]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[driver-exit]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[driver-parent]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[driver-identity]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[driver-time]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[version]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[inventory-uuid]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[inventory-model]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[inventory-vram]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[inventory-mig]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[inventory-driver]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[workload]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[raw-driver]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[raw-build]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[raw-runtime]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[raw-origin]
+FAILED test_verify_bac_hardware_v1.py::test_capture_cuda_joins_reject_resealed_invention[environment-build]
+38 failed, 198 passed in 80.19s (0:01:20)

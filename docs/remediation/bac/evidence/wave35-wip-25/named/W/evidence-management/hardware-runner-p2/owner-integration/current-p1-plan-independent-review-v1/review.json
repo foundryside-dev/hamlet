@@ -1,0 +1,40 @@
+{
+  "schema": "bac-p2-current-p1-plan-independent-review-v1",
+  "at": "2026-11-14T12:50:38.391930+00:00",
+  "reviewer": "/root/bac_astra_p2_custody_plan_review",
+  "disposition": "CHANGES_REQUIRED",
+  "material_changes": [
+    "Freeze publication/namespace closed contracts and explicit root-orchestration assurance model",
+    "Retain new evidence closure and enforce custody/expiry at existing boundaries through P4"
+  ],
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-plan-independent-review-v1/review.md",
+    "sha256": "3a193ca5bb38ae6039616f801bf6410cd77c33a702de21edb04e9ebccbb28f07",
+    "bytes": 12168
+  },
+  "inputs": [
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-HARDWARE-P2-CURRENT-P1-CONSUMER-REPAIR-PLAN-v1.md",
+      "sha256": "f2e6cb835ac86853cef35e63ffda5b8c1104805aa12232972bebcf05c77cc507",
+      "bytes": 16442
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-consumer-repair-plan-freeze-v1.json",
+      "sha256": "fe309f3404b4c4e62310001ddc78901709848b68966ef5300734fbe97a8ac6e7",
+      "bytes": 1300
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/p1-native-git-consumer-gaps-v1.json",
+      "sha256": "dcc5441374e936c996b6859c099398d20f9277677f27acc868e5e7306f559804",
+      "bytes": 13904
+    },
+    {
+      "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-admission-p1/native-git-amendment/capture-consumer-custody-capsule-v2.json",
+      "sha256": "b79532047f10410aeb7c5c2fe6a6f60ae473d84239d225cd59061e2561b94c96",
+      "bytes": 26904
+    }
+  ],
+  "source_bodies_read": 0,
+  "runtime": "UNRUN; metadata-only review",
+  "implementation_authorized": false
+}

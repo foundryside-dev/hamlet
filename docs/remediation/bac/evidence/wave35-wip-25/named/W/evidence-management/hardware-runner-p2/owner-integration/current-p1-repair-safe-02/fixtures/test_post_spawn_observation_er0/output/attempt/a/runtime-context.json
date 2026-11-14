@@ -1,0 +1,35 @@
+{
+  "command": {
+    "bytes": 1642,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_post_spawn_observation_er0/output/attempt/a/command.json",
+    "sha256": "609a62a83d7463772a80595770c370d5158375c1e3eec7d3956b4a1e6bf91964"
+  },
+  "policy": {
+    "bytes": 927,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_post_spawn_observation_er0/support/identity-policy.json",
+    "sha256": "9e1b3f82874a37d52d4ef2619cd6656beac76cba84a76b36740235d3dbafea12"
+  },
+  "runner_identity": {
+    "boot_id": "fa9bab2b-f230-453d-8a02-4d65033427db",
+    "host": "51d55c80f0b0",
+    "pid": 244242,
+    "ppid": 244241,
+    "start_identity": "14145642"
+  },
+  "runner_source_start": {
+    "bytes": 3200,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_post_spawn_observation_er0/output/attempt/source-0002.json",
+    "sha256": "09188d1d1fe88bb1531352361e6246578fe7139ee04fe7b17c7db338f2595905"
+  },
+  "schema": "bac-hardware-identity-runtime-v1",
+  "spec": {
+    "bytes": 8945,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_post_spawn_observation_er0/metadata/spec.json",
+    "sha256": "df594632378e2aad5eb3527ca98577e5342060694fdb3e7bafb38fd631cb4c8a"
+  },
+  "trusted_grant": {
+    "bytes": 3356,
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/hardware-runner-p2/owner-integration/current-p1-repair-safe-02/fixtures/test_post_spawn_observation_er0/support/grant.json",
+    "sha256": "3be6376df944f38577571ab66ad65ef60ee6b20955aabe7cb77b8aff55c2a4b1"
+  }
+}

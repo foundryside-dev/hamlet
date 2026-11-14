@@ -1,0 +1,73 @@
+{
+  "schema": "p4-allocation-interface-v1",
+  "allocation": {
+    "schema": "bac-hardware-resource-allocation-v1",
+    "allocation_id": "allocation-1",
+    "pool_id": "pool-1",
+    "host": "MATCH raw.identity.host",
+    "boot_id": "MATCH raw.identity.boot_id",
+    "lease_root": "MATCH request.lease_root",
+    "capacity": {
+      "cpu_slots": 8,
+      "ram_bytes": 11,
+      "scratch_bytes": 10,
+      "scratch_inodes": 10
+    },
+    "overhead": {
+      "cpu_slots": 1,
+      "ram_bytes": 1,
+      "scratch_bytes": 0,
+      "scratch_inodes": 0
+    },
+    "partition_basis": "exclusive-pool",
+    "partition_evidence": [],
+    "authorized_cpu_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "authorized_devices": [],
+    "start": "2026-11-01T00:00:00.000000Z",
+    "end": null,
+    "authority": "root test authority",
+    "no_writer_barrier": true
+  },
+  "cpu_bound": {
+    "schema": "bac-hardware-cpu-bound-v1",
+    "basis": "MATCH role.cpu_reservation_basis",
+    "role_id": "MATCH role.id",
+    "role": "MATCH role.role",
+    "observer": "MATCH role.observer",
+    "intra_op": "MATCH role.intra_op exact type",
+    "inter_op": "MATCH role.inter_op exact type",
+    "debug": "MATCH role.debug exact bool",
+    "torch_policy": "MATCH role.torch_policy",
+    "cuda_policy": "MATCH role.cuda_policy",
+    "peak_cpu_slots": "MATCH role.peak_cpu_slots",
+    "argv": "MATCH job.argv",
+    "environment": "MATCH job.environment",
+    "required_cases": "MATCH job.required_collected_ids",
+    "head": "MATCH candidate.head",
+    "tree": "MATCH candidate.tree",
+    "inputs": "MATCH ordered grant.inputs",
+    "justification": [
+      "real inert reference (existing owner sampler policy reference required for owner roles)"
+    ],
+    "authority": "test authority",
+    "bound_statement": "accepted upper bound"
+  },
+  "notes": [
+    "Grant cpu_reservation_evidence must unique refs exactly used by every role across all jobs.",
+    "Allocation CPU capacity may be less than authorized CPU IDs cardinality; raw affinity must match exact authorized CPU ID set.",
+    "Full capture interval start.at through admission.at contained by grant/allocation start/end(nullable). Source freeze.start<=start.at; freeze.end P0 observed unavailable null accepted, or measured value>=admission.at.",
+    "Optional missing topology fact exact {state:unsupported,value:null,reason:KEY not observed,provenance:raw_ref}, where KEY cpu_topology/numa_topology/gpu_topology.",
+    "Empty topology string is possible in P1 raw but P0 measured text disallows it, so accepted positive optional-null or nonempty.",
+    "CUDA optional topology query failure may have identity null; valid row shape retained, stdout/stderr strings, exit exact int/errors string list; failure means exit_code!=0 or nonempty errors.",
+    "Capture/source/output/scratch/lease roots must be disjoint canonical existing directories; output/scratch/capture same st_dev."
+  ]
+}

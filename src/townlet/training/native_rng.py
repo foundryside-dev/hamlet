@@ -1,4 +1,4 @@
-"""Owned outer Torch RNG state for the native runner checkpoint boundary.
+"""Owned outer Python and Torch RNG state for the native runner boundary.
 
 Portable generator bytes are data, never current operation authority. Native
 installation additionally requires the actual POP plan and C finalizer.
@@ -6,7 +6,9 @@ installation additionally requires the actual POP plan and C finalizer.
 
 from __future__ import annotations
 
+import math
 import os
+import random
 import threading
 import weakref
 from dataclasses import dataclass
@@ -46,6 +48,23 @@ def _validate_state_tensor(value: Any) -> None:
         raise ValueError("Native RNG state requires an ordinary contiguous CPU uint8 vector")
 
 
+def _validate_python_state(value: Any) -> None:
+    """Reject behavior-bearing objects before detached generator validation."""
+    if type(value) is not tuple or len(value) != 3:
+        raise ValueError("Native Python RNG state requires an exact three-item tuple")
+    version, words, gaussian = value
+    if type(version) is not int or version != 3:
+        raise ValueError("Native Python RNG state requires version 3")
+    if type(words) is not tuple or len(words) != 625:
+        raise ValueError("Native Python RNG state requires 624 MT words and a cursor")
+    if any(type(word) is not int or not 0 <= word < 2**32 for word in words[:-1]):
+        raise ValueError("Native Python RNG words must be exact uint32 integers")
+    if type(words[-1]) is not int or not 0 <= words[-1] <= 624:
+        raise ValueError("Native Python RNG cursor must be an exact integer in [0, 624]")
+    if gaussian is not None and (type(gaussian) is not float or not math.isfinite(gaussian)):
+        raise ValueError("Native Python RNG Gaussian cache must be None or a finite float")
+
+
 def validate_native_rng_payload(payload: Any, *, cuda_devices: tuple[int, ...]) -> None:
     """Check the portable schema without admission, CUDA or generator mutation.
 
@@ -53,10 +72,11 @@ def validate_native_rng_payload(payload: Any, *, cuda_devices: tuple[int, ...]) 
     ``validate_payload`` or ``prepare`` before any live child publication.
     """
     _validate_devices(cuda_devices)
-    if type(payload) is not dict or set(payload) != {"schema", "torch_cpu", "torch_cuda"}:
+    if type(payload) is not dict or set(payload) != {"schema", "python", "torch_cpu", "torch_cuda"}:
         raise ValueError("Native RNG payload requires the exact current fields")
-    if type(payload["schema"]) is not str or payload["schema"] != "native-rng-v1":
-        raise ValueError("Native RNG payload requires native-rng-v1")
+    if type(payload["schema"]) is not str or payload["schema"] != "native-rng-v2":
+        raise ValueError("Native RNG payload requires native-rng-v2")
+    _validate_python_state(payload["python"])
     _validate_state_tensor(payload["torch_cpu"])
     states = payload["torch_cuda"]
     if type(states) is not dict or any(type(index) is not int for index in states) or set(states) != set(cuda_devices):
@@ -139,7 +159,8 @@ class NativeRNGState:
         """Return independent generator bytes without advancing any stream."""
         with self._invocation("capture"):
             payload = {
-                "schema": "native-rng-v1",
+                "schema": "native-rng-v2",
+                "python": random.getstate(),
                 "torch_cpu": torch.get_rng_state().clone(),
                 "torch_cuda": {index: torch.cuda.get_rng_state(index).clone() for index in self._cuda_devices},
             }
@@ -149,11 +170,14 @@ class NativeRNGState:
     def _owned_payload(self, payload: Any) -> dict[str, Any]:
         validate_native_rng_payload(payload, cuda_devices=self._cuda_devices)
         owned: dict[str, Any] = {
-            "schema": "native-rng-v1",
+            "schema": "native-rng-v2",
+            # Strictly validated tuples contain only immutable built-in values.
+            "python": payload["python"],
             "torch_cpu": torch.Tensor.clone(payload["torch_cpu"]),
             "torch_cuda": {index: torch.Tensor.clone(payload["torch_cuda"][index]) for index in self._cuda_devices},
         }
         try:
+            random.Random(0).setstate(owned["python"])
             torch.Generator(device="cpu").set_state(owned["torch_cpu"])
             for index in self._cuda_devices:
                 torch.Generator(device=torch.device("cuda", index)).set_state(owned["torch_cuda"][index])
@@ -208,6 +232,7 @@ class NativeRNGState:
                 record.consumed = True
                 self._revision += 1
                 try:
+                    random.setstate(record.payload["python"])
                     torch.set_rng_state(record.payload["torch_cpu"])
                     for index in self._cuda_devices:
                         torch.cuda.set_rng_state(record.payload["torch_cuda"][index], index)

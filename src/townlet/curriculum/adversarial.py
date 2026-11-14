@@ -443,7 +443,10 @@ class CompletionCurriculum(CurriculumManager):
     def _native_state_record(self, prepared: PreparedNativeCurriculum, parent_plan: Any) -> dict[str, Any]:
         from townlet.population.vectorized import validate_native_population_data
 
-        record = self._native_states.get(prepared) if type(prepared) is PreparedNativeCurriculum else None
+        if type(prepared) is PreparedNativeCurriculum:
+            record = self._native_states.get(prepared)
+        else:
+            record = None
         if (
             record is None
             or record["consumed"]

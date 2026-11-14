@@ -1,0 +1,165 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [5 items]
+
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+__ test_genuine_initial_sequence_data_stages_without_publication[prioritized] __
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+recurrent_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_genuine_initial_sequence_data_stages_without_publication(recurrent_compiled: Any) -> None:
+        _, target, plan, state = native_pair(recurrent_compiled)
+        replay = target.population.replay_buffer
+        before, ready, rng = replay.serialize(), replay.readiness(request_for(replay)), ambient()
+>       data = stage(target, plan, state)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f592e289950>, population=<townl...undary=<townlet.environment.vectorized_env.WorldBoundaryAuthority object at 0x7f592e266cf0>, release=None, record=None)
+plan = <townlet.population.vectorized.NativePopulationData object at 0x7f592e07db80>
+state = {'action_dim': 15, 'capacity': 100000, 'episodes': [], 'format_version': 7, ...}
+
+    def stage(target: Any, plan: Any, state: dict[str, Any]) -> StagedReplayData:
+>       return target.population.replay_buffer.stage_native_restore(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            state, expected_obs_dim=target.env.observation_dim, parent_plan=plan, lineage=None
+        )
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'stage_native_restore'
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:56: AttributeError
+____________ test_native_per_stages_real_parent_without_publication ____________
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+per_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_native_per_stages_real_parent_without_publication(per_compiled: Any) -> None:
+        target, plan, state = prepared_parent(per_compiled)
+        replay = target.population.replay_buffer
+        before = replay.serialize()
+>       data = stage(target, plan, state)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f019ad78f50>, population=<townl...undary=<townlet.environment.vectorized_env.WorldBoundaryAuthority object at 0x7f019ad59e80>, release=None, record=None)
+plan = <townlet.population.vectorized.NativePopulationData object at 0x7f019ab0c530>
+state = {'action_dim': None, 'actions': None, 'alpha': 0.6, 'beta': 0.4, ...}
+
+    def stage(target: Any, plan: Any, state: dict[str, Any]) -> StagedReplayData:
+>       return target.population.replay_buffer.stage_native_restore(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            state, expected_obs_dim=target.env.observation_dim, parent_plan=plan, lineage=None
+        )
+E       AttributeError: 'PrioritizedReplayBuffer' object has no attribute 'stage_native_restore'
+
+tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py:63: AttributeError
+___ test_nonempty_real_sequence_stage_preserves_source_and_receiver[uniform] ___
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+recurrent_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_nonempty_real_sequence_stage_preserves_source_and_receiver(recurrent_compiled: Any) -> None:
+        source, target, plan, state = native_pair(recurrent_compiled, populated=True)
+        source_replay, target_replay = source.population.replay_buffer, target.population.replay_buffer
+        request = request_for(source_replay)
+        assert source_replay.readiness(request).ready
+        assert state["num_transitions"] > 0 and state["episodes"]
+        for episode in state["episodes"]:
+            assert not bool(episode["dones"][:-1].any())
+            assert bool(episode["legality_recorded"].all())
+            assert episode["next_action_masks"].shape[-1] == source.population.action_dim
+            assert episode["transition_ids"].numel() == episode["actions"].numel()
+        before_source, before_target = source_replay.serialize(), target_replay.serialize()
+        ready, rng = target_replay.readiness(request_for(target_replay)), ambient()
+>       data = stage(target, plan, state)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f592dad79d0>, population=<townl...undary=<townlet.environment.vectorized_env.WorldBoundaryAuthority object at 0x7f592dd9c190>, release=None, record=None)
+plan = <townlet.population.vectorized.NativePopulationData object at 0x7f592da775f0>
+state = {'action_dim': 15, 'capacity': 100000, 'episodes': [{'actions': tensor([3, 2, 4]), 'dones': tensor([False, False, Fals...False, False]), 'episode_id': 5, 'legality_recorded': tensor([True, True, True]), ...}, ...], 'format_version': 6, ...}
+
+    def stage(target: Any, plan: Any, state: dict[str, Any]) -> StagedReplayData:
+>       return target.population.replay_buffer.stage_native_restore(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            state, expected_obs_dim=target.env.observation_dim, parent_plan=plan, lineage=None
+        )
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'stage_native_restore'
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:56: AttributeError
+____ test_genuine_initial_sequence_data_stages_without_publication[uniform] ____
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+recurrent_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_genuine_initial_sequence_data_stages_without_publication(recurrent_compiled: Any) -> None:
+        _, target, plan, state = native_pair(recurrent_compiled)
+        replay = target.population.replay_buffer
+        before, ready, rng = replay.serialize(), replay.readiness(request_for(replay)), ambient()
+>       data = stage(target, plan, state)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f01a6335a90>, population=<townl...undary=<townlet.environment.vectorized_env.WorldBoundaryAuthority object at 0x7f019a0bcb90>, release=None, record=None)
+plan = <townlet.population.vectorized.NativePopulationData object at 0x7f019a4a6a50>
+state = {'action_dim': 15, 'capacity': 100000, 'episodes': [], 'format_version': 6, ...}
+
+    def stage(target: Any, plan: Any, state: dict[str, Any]) -> StagedReplayData:
+>       return target.population.replay_buffer.stage_native_restore(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            state, expected_obs_dim=target.env.observation_dim, parent_plan=plan, lineage=None
+        )
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'stage_native_restore'
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:56: AttributeError
+_ test_nonempty_real_sequence_stage_preserves_source_and_receiver[prioritized] _
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+recurrent_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+
+    def test_nonempty_real_sequence_stage_preserves_source_and_receiver(recurrent_compiled: Any) -> None:
+        source, target, plan, state = native_pair(recurrent_compiled, populated=True)
+        source_replay, target_replay = source.population.replay_buffer, target.population.replay_buffer
+        request = request_for(source_replay)
+        assert source_replay.readiness(request).ready
+        assert state["num_transitions"] > 0 and state["episodes"]
+        for episode in state["episodes"]:
+            assert not bool(episode["dones"][:-1].any())
+            assert bool(episode["legality_recorded"].all())
+            assert episode["next_action_masks"].shape[-1] == source.population.action_dim
+            assert episode["transition_ids"].numel() == episode["actions"].numel()
+        before_source, before_target = source_replay.serialize(), target_replay.serialize()
+        ready, rng = target_replay.readiness(request_for(target_replay)), ambient()
+>       data = stage(target, plan, state)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+target = ParentFixture(env=<townlet.environment.vectorized_env.VectorizedHamletEnv object at 0x7f592e19df90>, population=<townl...undary=<townlet.environment.vectorized_env.WorldBoundaryAuthority object at 0x7f592dddd940>, release=None, record=None)
+plan = <townlet.population.vectorized.NativePopulationData object at 0x7f592c4e6600>
+state = {'action_dim': 15, 'capacity': 100000, 'episodes': [{'actions': tensor([10,  9,  3]), 'dones': tensor([False, False, F...False, False]), 'episode_id': 5, 'legality_recorded': tensor([True, True, True]), ...}, ...], 'format_version': 7, ...}
+
+    def stage(target: Any, plan: Any, state: dict[str, Any]) -> StagedReplayData:
+>       return target.population.replay_buffer.stage_native_restore(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            state, expected_obs_dim=target.env.observation_dim, parent_plan=plan, lineage=None
+        )
+E       AttributeError: 'SequentialReplayBuffer' object has no attribute 'stage_native_restore'
+
+tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py:56: AttributeError
+============================== 5 failed in 31.74s ==============================

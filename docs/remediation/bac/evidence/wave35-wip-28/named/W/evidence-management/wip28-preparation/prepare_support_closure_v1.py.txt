@@ -1,0 +1,119 @@
+"""Additive metadata-only support closure for an explicitly supplied WIP28 draft.
+
+No terminal inference, seal, runtime, Git, source reads/copies or document changes.
+Reads only evidence, named review/doc postimages and evidence-tool bytes.
+"""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import runpy
+
+P = Path(__file__).resolve().parent
+E = P.parent
+W = E.parent
+R = W.parent.parent.parent
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+ROOTS = {'W': W, 'Q': Q, 'R': R}
+
+
+def read(p):
+    return json.loads(p.read_text())
+
+
+def ref(p):
+    if p.is_symlink() or any(x.is_symlink() for x in p.parents):
+        raise ValueError('Symlink refused')
+    if not (p.is_relative_to(W) or p.is_relative_to(Q)):
+        raise ValueError('Only named W/Q evidence or tools may be read')
+    k = 'W' if p.is_relative_to(W) else 'Q'
+    b = p.read_bytes()
+    return dict(root=k,path=str(p.relative_to(ROOTS[k])),bytes=len(b),sha256=hashlib.sha256(b).hexdigest())
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--receipt',type=Path,required=True)
+    parser.add_argument('--closed-through',type=int,required=True)
+    parser.add_argument('--output',required=True)
+    parser.add_argument('--additional-support',type=Path,action='append',default=[])
+    args=parser.parse_args()
+    if args.closed_through < 169 or Path(args.output).name != args.output:
+        raise ValueError('Explicit finite interval/new direct output required')
+    receipt=read(args.receipt)
+    if receipt['interval_start'] != 169 or receipt['checkpoint_id'] != 'wave35-wip-28':
+        raise ValueError('Wrong checkpoint')
+    if max(e['round'] for e in receipt['interval_entries']) != args.closed_through:
+        raise ValueError('Receipt/explicit closed interval mismatch')
+    out=P/args.output
+    out.mkdir(exist_ok=False)
+    entries={}
+    checks={c['check']:c for c in receipt['attempt_index']}
+    gaps=[]
+    def add(p,role,required_by,reason):
+        r=ref(p);key=(r['root'],r['path'],r['sha256'])
+        row=entries.setdefault(key,dict(r,role=role,required_by=[],rationales=[]))
+        row['required_by']=sorted(set(row['required_by'])|set(required_by))
+        if reason not in row['rationales']:row['rationales'].append(reason)
+        return r
+    for c in checks.values():
+        for d in c.get('required_dependencies',[]):
+            actual=add(ROOTS[d['root']]/d['path'],'executed-check-helper',[c['check']],'Original draft check dependency; exact bytes rehashed')
+            if any(actual[k]!=d[k] for k in ('sha256','bytes')):raise ValueError('Dependency drift')
+        for a in c['attempts']:
+            if not a.get('result'):continue
+            result=read(ROOTS[a['result']['root']]/a['result']['path'])
+            launcher=add(Q/'run_bac_cold_checks_locked.py','executed-check-helper',[c['check']],'Actual result harness SHA checked')
+            if launcher['sha256']!=result['harness_sha256']:raise ValueError('Historical launcher alias required')
+            outer=E/'pop-standalone-step'/(a['path']+'-outer.json')
+            if outer.exists():
+                ob=read(outer)
+                wrapper=add(E/'pop-standalone-step/run-observed-spec-v1.py','outer-observation-helper',[c['check']],'Original wrapper script hash checked against its recorded outer observation')
+                if wrapper['sha256']!=ob['script_sha256']:raise ValueError('Historical outer wrapper alias required')
+                sp=Path(ob['spec']);sref=add(sp,'original-executed-spec',[c['check']],'Original outer recorded spec hash checked')
+                if sref['sha256']!=ob['spec_sha256']:raise ValueError('Executed spec drift')
+                for f in (outer,outer.with_suffix('.stdout'),outer.with_suffix('.stderr')):
+                    add(f,'outer-launcher-record',[c['check']],'Observed launcher facts; not inner-job timestamps')
+            if not a.get('verifier'):
+                gaps.append({'check':c['check'],'limitation':a.get('verifier_unavailable_reason','No verifier recorded')})
+    # A finite named closure only; do not recursively select old preparation trees.
+    named=[
+        W/'pw04-nr1-fixed-source-review.md', W/'pw04-nr1-proposal-review.md',
+        W/'pw04-native-replay-independent-review.md',W/'pw04-native-replay-nr2-fixed-review.md',
+        W/'pw04-rng-numpy-independent-review.md',W/'pw04-rng-numpy-document-review.md',
+        W/'bac-oracle-contract-astra.md',W/'bac-oracle-current-protocol-plan.md',
+        P/'CURRENT-RNG-CUSTODY-CORE-CONTRACT-postimage-v1.md',
+        E/'bac_checkpoint_contract.py',E/'wip24-preparation/inventory_closed_rounds_v1.py',
+        P/'prepare_draft_v1.py',Path(__file__),
+    ]
+    for p in named+args.additional_support:
+        if not p.exists():raise ValueError('Required named support absent: '+str(p))
+        add(p,'publication-component-support',checks,'Named supporting evidence; not claimed as executed by every linked check')
+    post=P/'CURRENT-RNG-CUSTODY-CORE-CONTRACT-postimage-v1.md'
+    if ref(post)['sha256']!='416b35935c60d7be293eb4f0600293a2cfc0e12dd90e7e6ac89333570a956e6f':
+        raise ValueError('Source-reviewed document postimage changed; fresh document review required')
+    for n in range(169,args.closed_through+1):
+        ids=[c['check'] for c in checks.values() if any(a['round']==n for a in c['attempts'])]
+        for p in (W/f'wave35/r{n}-candidate.json',W/f'wave35/r{n}-fixture-resource-preflight.json'):
+            add(p,'round-source-and-environment',ids,'Exact original round identity/preflight; no cross-round substitution')
+        manifest=read(W/f'wave35/r{n}-candidate.json')
+        for path,sha in manifest.get('auxiliary_harness',{}).items():
+            p=Path(path)
+            if p.is_relative_to(W) or p.is_relative_to(Q):
+                rr=add(p,'candidate-recorded-evidence-helper',ids,'Candidate auxiliary-harness SHA checked')
+                if rr['sha256']!=sha:raise ValueError('Auxiliary helper drift: '+path)
+            else:gaps.append({'round':n,'path':path,'limitation':'Outside authorized metadata/tool read roots; root must resolve original helper bytes'})
+    for d in receipt.get('support_references_pending_root_dependency_closure',[]):
+        p=ROOTS[d['root']]/d['path'];rr=add(p,'publication-component-support',checks,'Original draft explicitly named support')
+        if any(rr[k]!=d[k] for k in ('sha256','bytes')):raise ValueError('Prior draft support drift')
+    for row in entries.values():
+        if row['role']!='executed-check-helper':row['publication_dependency_only']=True
+    closure={'status':'PREPARED EXACT NAMED SUPPORT; ROOT SEMANTIC REVIEW REQUIRED','interval':[169,args.closed_through],'receipt':ref(args.receipt),'dependencies':list(entries.values()),'gaps':gaps,'limitations':['No independent terminal review, acceptance or seal supplied.','Cross-round review scopes remain original; later candidate/source changes are not qualified by earlier review bytes.','Generic draft classifies black as runtime: root must normalize black to static in new final components/receipt.','R174540-owner and separate1-poison results overlap other selections; no unique total.','R174 defaults601 and mypy6 remain FAILED regardless of subsequent targeted repair.']}
+    for row in entries.values():
+        actual=ref(ROOTS[row['root']]/row['path'])
+        assert all(actual[k]==row[k] for k in ('bytes','sha256'))
+    with (out/'NAMED-SUPPORT-CLOSURE-v1.json').open('x') as f:json.dump(closure,f,indent=2,sort_keys=True);f.write('\n')
+    print(json.dumps({'closure':ref(out/'NAMED-SUPPORT-CLOSURE-v1.json'),'entries':len(entries),'gaps':len(gaps)}))
+
+
+if __name__=='__main__':main()

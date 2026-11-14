@@ -1,0 +1,63 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 44 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_native_prioritized_replay_data.py>
+            <Function test_native_per_rejects_unissued_parent>
+            <Function test_native_per_stages_real_parent_without_publication>
+            <Function test_native_per_rejects_fabricated_data>
+            <Function test_native_per_rejects_ordinary_prepared_replay>
+            <Function test_native_per_data_survives_later_prepare_currency>
+            <Function test_native_per_data_owns_priority_ids_and_sampler>
+            <Function test_native_per_rejects_foreign_receiver>
+            <Function test_native_per_rejects_wrong_parent_plan>
+            <Function test_native_per_rejects_lawfully_changed_receiver>
+            <Function test_native_per_rejects_foreign_thread>
+            <Function test_native_per_rejects_malformed_transport[priorities]>
+            <Function test_native_per_rejects_malformed_transport[unit_ids]>
+            <Function test_native_per_rejects_malformed_transport[sampling_rng]>
+          <Module test_native_sequential_replay_data.py>
+            <Function test_genuine_initial_sequence_data_stages_without_publication[uniform]>
+            <Function test_genuine_initial_sequence_data_stages_without_publication[prioritized]>
+            <Function test_nonempty_real_sequence_stage_preserves_source_and_receiver[uniform]>
+            <Function test_nonempty_real_sequence_stage_preserves_source_and_receiver[prioritized]>
+            <Function test_sequence_native_stage_refuses_unissued_parent[uniform]>
+            <Function test_sequence_native_stage_refuses_unissued_parent[prioritized]>
+            <Function test_sequence_install_requires_native_data_and_actual_finalizer[uniform-fabricated]>
+            <Function test_sequence_install_requires_native_data_and_actual_finalizer[uniform-ordinary]>
+            <Function test_sequence_install_requires_native_data_and_actual_finalizer[uniform-genuine]>
+            <Function test_sequence_install_requires_native_data_and_actual_finalizer[prioritized-fabricated]>
+            <Function test_sequence_install_requires_native_data_and_actual_finalizer[prioritized-ordinary]>
+            <Function test_sequence_install_requires_native_data_and_actual_finalizer[prioritized-genuine]>
+            <Function test_malformed_nonempty_sequence_refuses_before_staging[uniform-mask]>
+            <Function test_malformed_nonempty_sequence_refuses_before_staging[uniform-boundary]>
+            <Function test_malformed_nonempty_sequence_refuses_before_staging[uniform-identity]>
+            <Function test_malformed_nonempty_sequence_refuses_before_staging[prioritized-mask]>
+            <Function test_malformed_nonempty_sequence_refuses_before_staging[prioritized-boundary]>
+            <Function test_malformed_nonempty_sequence_refuses_before_staging[prioritized-identity]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[uniform-owner]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[uniform-parent]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[uniform-revision]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[uniform-thread]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[prioritized-owner]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[prioritized-parent]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[prioritized-revision]>
+            <Function test_genuine_sequence_data_refuses_changed_custody[prioritized-thread]>
+          <Module test_pw_local_service.py>
+            <Function test_shared_runner_checkpoint_still_roundtrips[flat-uniform]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[flat-per]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[recurrent-uniform]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[recurrent-per]>
+          <Module test_population_recurrent_conversion.py>
+            <Function test_nonpristine_captured_uniform_to_per_preserves_rows_and_masks>
+
+========================= 44 tests collected in 0.33s ==========================

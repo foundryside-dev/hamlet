@@ -5,6 +5,7 @@ These component controls do not replace the fresh DemoRunner continuation proof.
 
 import copy
 import importlib
+import random
 
 import pytest
 import torch
@@ -16,7 +17,7 @@ from townlet.exploration.rng_custody import process_rng_domain
 
 def test_schema_validation_requires_no_domain_operation_or_rng_change():
     module = importlib.import_module("townlet.training.native_rng")
-    payload = {"schema": "native-rng-v1", "torch_cpu": torch.get_rng_state().clone(), "torch_cuda": {}}
+    payload = {"schema": "native-rng-v2", "python": random.getstate(), "torch_cpu": torch.get_rng_state().clone(), "torch_cuda": {}}
     domain = process_rng_domain()
     before = domain.status()
     state = torch.get_rng_state().clone()
@@ -39,8 +40,8 @@ def test_capture_preserves_ambient_stream_and_returns_owned_portable_state():
     before = torch.get_rng_state().clone()
     payload = owner.capture()
     assert torch.equal(torch.get_rng_state(), before)
-    assert set(payload) == {"schema", "torch_cpu", "torch_cuda"}
-    assert payload["schema"] == "native-rng-v1"
+    assert set(payload) == {"schema", "python", "torch_cpu", "torch_cuda"}
+    assert payload["schema"] == "native-rng-v2"
     assert payload["torch_cuda"] == {}
     assert torch.equal(payload["torch_cpu"], before)
     payload["torch_cpu"].zero_()

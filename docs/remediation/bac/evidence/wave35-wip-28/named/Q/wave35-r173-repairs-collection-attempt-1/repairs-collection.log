@@ -1,0 +1,111 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 89 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_native_prioritized_replay_data.py>
+            <Function test_native_per_rejects_valid_historical_transport[4]>
+            <Function test_native_per_rejects_valid_historical_transport[5]>
+          <Module test_native_python_rng.py>
+            <Function test_capture_and_validation_preserve_python_and_torch_and_own_payload>
+            <Function test_malformed_python_state_refused_without_live_mutation[None]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state1]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state2]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state3]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state4]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state5]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state6]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state7]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state8]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state9]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state10]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state11]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state12]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state13]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state14]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state15]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state16]>
+            <Function test_malformed_python_state_refused_without_live_mutation[bad_state17]>
+            <Function test_python_gaussian_cache_is_preserved_by_detached_validation>
+            <Function test_python_state_is_required_without_old_schema_fallback>
+          <Module test_native_numpy_boundary.py>
+            <Function test_nested_numpy_receipt_owns_inputs_and_each_public_read>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[strided-bool]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[strided-int64]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[strided-uint64]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[strided-float32]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[strided-complex128]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[scalar-bool]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[scalar-int64]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[scalar-uint64]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[scalar-float32]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[scalar-complex128]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[empty-bool]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[empty-int64]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[empty-uint64]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[empty-float32]>
+            <Function test_plain_numeric_array_copy_preserves_dtype_shape_and_values[empty-complex128]>
+            <Function test_numpy_equality_rejects_dtype_shape_content_and_type_mismatches[other0]>
+            <Function test_numpy_equality_rejects_dtype_shape_content_and_type_mismatches[other1]>
+            <Function test_numpy_equality_rejects_dtype_shape_content_and_type_mismatches[other2]>
+            <Function test_numpy_equality_rejects_dtype_shape_content_and_type_mismatches[other3]>
+            <Function test_numpy_equality_rejects_dtype_shape_content_and_type_mismatches[other4]>
+            <Function test_numpy_equality_rejects_dtype_shape_content_and_type_mismatches[1]>
+            <Function test_numpy_equality_rejects_dtype_shape_content_and_type_mismatches[None]>
+            <Function test_non_numeric_or_metadata_arrays_are_refused[value0]>
+            <Function test_non_numeric_or_metadata_arrays_are_refused[value1]>
+            <Function test_non_numeric_or_metadata_arrays_are_refused[value2]>
+            <Function test_non_numeric_or_metadata_arrays_are_refused[value3]>
+            <Function test_non_numeric_or_metadata_arrays_are_refused[value4]>
+            <Function test_non_numeric_or_metadata_arrays_are_refused[value5]>
+            <Function test_numpy_subclasses_are_refused_without_custom_hooks>
+          <Module test_native_rng_state.py>
+            <Function test_schema_validation_requires_no_domain_operation_or_rng_change>
+            <Function test_capture_preserves_ambient_stream_and_returns_owned_portable_state>
+            <Function test_validation_owns_bytes_and_does_not_rewind_the_process>
+            <Function test_bad_state_refuses_before_any_global_generator_changes[schema]>
+            <Function test_bad_state_refuses_before_any_global_generator_changes[extra]>
+            <Function test_bad_state_refuses_before_any_global_generator_changes[dtype]>
+            <Function test_bad_state_refuses_before_any_global_generator_changes[shape]>
+            <Function test_bad_state_refuses_before_any_global_generator_changes[state]>
+            <Function test_bad_state_refuses_before_any_global_generator_changes[devices]>
+            <Function test_bad_state_refuses_before_any_global_generator_changes[bool_device]>
+            <Function test_arbitrary_parent_cannot_turn_valid_bytes_into_restore_authority>
+            <Function test_device_inventory_is_exact_before_runtime_initialization[devices0]>
+            <Function test_device_inventory_is_exact_before_runtime_initialization[devices1]>
+            <Function test_device_inventory_is_exact_before_runtime_initialization[devices2]>
+            <Function test_device_inventory_is_exact_before_runtime_initialization[devices3]>
+            <Function test_device_inventory_is_exact_before_runtime_initialization[devices4]>
+            <Function test_real_parent_can_stage_without_rewinding_but_cannot_install_outside_finalizer>
+            <Function test_staged_data_cannot_be_reassociated_with_another_real_parent_plan>
+            <Function test_plain_tensor_instance_override_is_refused_without_running_callback[schema-clone]>
+            <Function test_plain_tensor_instance_override_is_refused_without_running_callback[schema-is_contiguous]>
+            <Function test_plain_tensor_instance_override_is_refused_without_running_callback[owned-clone]>
+            <Function test_plain_tensor_instance_override_is_refused_without_running_callback[owned-is_contiguous]>
+          <Module test_native_checkpoint_boundary.py>
+            <Function test_current_artifact_requires_native_boundary_field>
+            <Function test_native_boundary_outer_validation_is_observational>
+            <Function test_native_boundary_refuses_inconsistent_transport[missing]>
+            <Function test_native_boundary_refuses_inconsistent_transport[extra]>
+            <Function test_native_boundary_refuses_inconsistent_transport[kind]>
+            <Function test_native_boundary_refuses_inconsistent_transport[world_kind]>
+            <Function test_native_boundary_refuses_inconsistent_transport[rng_profile]>
+            <Function test_runtime_fields_accept_current_world_vfs_state>
+            <Function test_native_boundary_refuses_conflicting_outer_vfs_state>
+          <Module test_pw_local_service.py>
+            <Function test_shared_runner_checkpoint_still_roundtrips[flat-uniform]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[flat-per]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[recurrent-uniform]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[recurrent-per]>
+          <Module test_population_recurrent_conversion.py>
+            <Function test_nonpristine_captured_uniform_to_per_preserves_rows_and_masks>
+
+========================= 89 tests collected in 0.27s ==========================

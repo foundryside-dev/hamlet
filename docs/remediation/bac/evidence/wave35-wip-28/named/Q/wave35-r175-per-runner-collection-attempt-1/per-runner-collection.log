@@ -1,0 +1,36 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 19 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_native_prioritized_replay_data.py>
+            <Function test_native_per_rejects_unissued_parent>
+            <Function test_native_per_stages_real_parent_without_publication>
+            <Function test_native_per_rejects_fabricated_data>
+            <Function test_native_per_rejects_ordinary_prepared_replay>
+            <Function test_native_per_data_survives_later_prepare_currency>
+            <Function test_native_per_data_owns_priority_ids_and_sampler>
+            <Function test_native_per_rejects_foreign_receiver>
+            <Function test_native_per_rejects_wrong_parent_plan>
+            <Function test_native_per_rejects_lawfully_changed_receiver>
+            <Function test_native_per_rejects_foreign_thread>
+            <Function test_native_per_rejects_malformed_transport[priorities]>
+            <Function test_native_per_rejects_malformed_transport[unit_ids]>
+            <Function test_native_per_rejects_malformed_transport[sampling_rng]>
+            <Function test_native_per_rejects_valid_historical_transport[4]>
+            <Function test_native_per_rejects_valid_historical_transport[5]>
+          <Module test_pw_local_service.py>
+            <Function test_shared_runner_checkpoint_still_roundtrips[flat-uniform]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[flat-per]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[recurrent-uniform]>
+            <Function test_shared_runner_checkpoint_still_roundtrips[recurrent-per]>
+
+========================= 19 tests collected in 0.16s ==========================

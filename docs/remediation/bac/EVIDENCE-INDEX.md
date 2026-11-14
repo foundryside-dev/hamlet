@@ -1,6 +1,20 @@
 # BAC evidence index
 
-**ACTIVE — resumed by the user after the independent investigation.** PW04 real-runner checkpoint/restore/continued-learning is the controlling acceptance target. WIP25 remains a historical pause checkpoint; it is not the current authorization state.
+**PAUSED — user quota request after R175.** Finish only the in-flight WIP28 checkpoint; no further implementation or qualification until John resumes. PW04 and final acceptance gates remain open.
+
+## 2026-11-14 — WIP28: paused after learner history and native runner verification
+
+The [authoritative record](evidence/wave35-wip-28.json) and [selection plan](evidence/wave35-wip-28/selection-plan.json) retain R169–R175, including failures, preexecution capture/launcher attempts and unused specs. The terminal executed tree is `7333be02ae881c800884c52bb2bec71053fcae4c`, based on published WIP27 `af212f0b06041ee98ddf89c502e3c772c286c658`. Publication document postimages are separate from tested source.
+
+R175's targeted native PER and real runner selection passes19 on its own source. R174 separately records540 passing PW04/RND/native-owner cases and one passing isolated completion-poison case. Those earlier R174 results remain bound to tree `80b518716d7b49a4e0dde6bb40273ea8ea698cc0`; they do not become a broad final-source execution. These selections overlap earlier runs and are never summed as unique coverage.
+
+All four actual runner profiles—flat uniform, flat prioritized, recurrent uniform and recurrent prioritized—perform production training, checkpoint two, fresh actual-runner restoration and next-learning comparison to uninterrupted checkpoint three. R173's four profiles and genuine nonpristine uniform-to-prioritized conversion passed5. Learner Adam/scheduler history is validated against actual per-parameter successful updates; native PER/SEQ restore preserves receiving owners. Required Python RNG state and exact numeric NumPy receipt ownership repair the two R172 continuation failures. Independent NR2 review exposed native historical-format acceptance; two genuine-parent controls were RED at R173 before the exact-current-format guard. Original findings and both fixed-source addenda remain retained.
+
+Causal history stays explicit: R169 actual learner corruption5FAIL/1PASS, R170 runner7PASS and separate native119PASS, R171 missing-native-API5FAIL, R172 native39PASS and runner/conversion2PASS/3FAIL, R173 native82PASS/2 intentional NR2 FAIL. R172's failed-job verification-only view is not a new execution. R169's failed capture and missing-manifest launcher did not run tests; R173's initial capture failed before staging. Original outer times are not substituted for missing inner-job UTC facts.
+
+Terminal static outcomes: **black PASSED; defaults FAILED; mypy FAILED; ruff PASSED**. R174 mypy6 and defaults601 against600 remain original failures even if a later attempt repairs the cause. The oracle cross-version trace capability decision remains pending; no capability reduction is silently approved. Independent RNG/NumPy source and appended-document review are bounded; direct Python setter/later-Torch-setter quarantine fault evidence remains a P3 coverage obligation.
+
+**PAUSED at the user’s quota request. 28 qualified / 38 remaining / 66 original packages is unchanged; PW04 remains open.** No further implementation or qualification is authorized until John resumes the work. The final defaults failure remains601 against600: the PER `.get` causal guess was incorrect. Resume by diagnosing the actual violation inventory before any repair. Full/default suites, required coverage at least70%, slow/learning, remaining mode/fault and final package gates remain separate. CUDA is unavailable/unqualified and CI API lookup is blocked, not green. Root must independently approve final evidence and documents and verify exact eventual remote identity/CI; this checkpoint grants no merge or deployment authority.
 
 ## 2026-11-14 — WIP27: real runner checkpoint and continued learning
 

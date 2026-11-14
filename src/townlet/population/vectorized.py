@@ -52,12 +52,13 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
-POPULATION_CHECKPOINT_FORMAT_VERSION = 7
+POPULATION_CHECKPOINT_FORMAT_VERSION = 8
 POPULATION_CHECKPOINT_KEYS = frozenset(
     {
         "version",
         "q_network",
         "optimizer",
+        "optimizer_parameter_updates",
         "scheduler",
         "total_steps",
         "exploration_state",
@@ -101,7 +102,9 @@ def validate_native_population_data(*, plan: object, owner: object) -> None:
     if type(plan) is not NativePopulationData:
         raise ValueError("Foreign native population data")
     issuer_ref = _NATIVE_DATA_ISSUERS.get(plan)
-    issuer = issuer_ref() if issuer_ref is not None else None
+    if issuer_ref is None:
+        raise ValueError("Foreign or expired native population data")
+    issuer = issuer_ref()
     if not isinstance(issuer, VectorizedPopulation):
         raise ValueError("Foreign or expired native population data")
     VectorizedPopulation.validate_native_restore_plan(issuer, plan=plan, owner=owner)
@@ -435,6 +438,10 @@ class VectorizedPopulation(PopulationManager):
             config=brain_config.optimizer,
             parameters=self.q_network.parameters(),
         )
+        self._optimizer_parameter_updates = tuple(0 for group in self.optimizer.param_groups for _ in group["params"])
+        self._scheduler_initial_epoch: int | None = None
+        if self.scheduler is not None:
+            self._scheduler_initial_epoch = self.scheduler.last_epoch
 
         # Loss function from brain_config
         self.loss_fn = LossFactory.build(config=brain_config.loss)
@@ -725,11 +732,16 @@ class VectorizedPopulation(PopulationManager):
                 if "inspection_kind" in state:
                     transport = state["legacy_transport"]
                     if transport["num_transitions"]:
-                        sequential.load_prepared(sequential.prepare_serialized(transport, expected_obs_dim=self._obs_dim))
-                    sequential.load_prepared(sequential.prepare_archived_import(buffer.historical_archives, expected_obs_dim=self._obs_dim))
+                        sequential.load_prepared(
+                            sequential.prepare_serialized(transport, expected_obs_dim=self._obs_dim, lineage=None), lineage=None
+                        )
+                    sequential.load_prepared(
+                        sequential.prepare_archived_import(buffer.historical_archives, expected_obs_dim=self._obs_dim, lineage=None),
+                        lineage=None,
+                    )
                 else:
-                    prepared = sequential.prepare_serialized(state, expected_obs_dim=self._obs_dim)
-                    sequential.load_prepared(prepared)
+                    prepared = sequential.prepare_serialized(state, expected_obs_dim=self._obs_dim, lineage=None)
+                    sequential.load_prepared(prepared, lineage=None)
             buffer, state = candidate, candidate.serialize()
         elif pristine and self.use_per and not setup.preserve_global:
             candidate = self._new_replay(setup)
@@ -865,7 +877,12 @@ class VectorizedPopulation(PopulationManager):
         self.optimizer.zero_grad()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), max_norm=self.max_grad_norm)
+        parameters = (parameter for group in self.optimizer.param_groups for parameter in group["params"])
+        next_parameter_updates = tuple(
+            count + int(parameter.grad is not None) for count, parameter in zip(self._optimizer_parameter_updates, parameters, strict=True)
+        )
         self.optimizer.step()
+        self._optimizer_parameter_updates = next_parameter_updates
         self.training_step_counter += 1
         self._clock_ledger = self._clock_ledger.advance(optimizer_updates=1)
         if self.scheduler is not None:
@@ -2533,6 +2550,7 @@ class VectorizedPopulation(PopulationManager):
             "vector_step_progress": self.vector_step_progress,
             "q_network": self.q_network.state_dict(),
             "optimizer": self.optimizer.state_dict(),
+            "optimizer_parameter_updates": list(self._optimizer_parameter_updates),
             "scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
             "total_steps": self.total_steps,
             "exploration_state": self._checkpoint_exploration_state(failed_diagnostic=failed_diagnostic),
@@ -2858,7 +2876,42 @@ class VectorizedPopulation(PopulationManager):
                     f"scheduler={learning_rate}, optimizer={optimizer_value}."
                 )
 
-    def _validate_checkpoint_state(self, checkpoint: Mapping[str, object], *, validate_replay: bool = True) -> Any:
+    @classmethod
+    def _validate_optimizer_update_history(
+        cls, checkpoint: Mapping[str, Any], *, optimizer: torch.optim.Optimizer, scheduler_initial_epoch: int | None
+    ) -> None:
+        """Correlate source-recorded gradient participation with actual lazy optimizer state."""
+        updates = cls._require_nonnegative_int("training_step_counter", checkpoint["training_step_counter"])
+        counts = checkpoint["optimizer_parameter_updates"]
+        groups, state = checkpoint["optimizer"]["param_groups"], checkpoint["optimizer"]["state"]
+        if type(counts) is not list or len(counts) != sum(len(group["params"]) for group in groups):
+            raise ValueError("Optimizer parameter update history must match the configured topology")
+        for count in counts:
+            cls._require_nonnegative_int("optimizer parameter updates", count)
+            if count > updates:
+                raise ValueError("Parameter updates exceed the learner update ledger")
+        if sum(counts) < updates:
+            raise ValueError("Successful learner updates require actual optimized parameter participation")
+        offset = 0
+        for group in groups:
+            keys = cls._optimizer_parameter_state_keys(optimizer, group)
+            for parameter_id in group["params"]:
+                count = counts[offset]
+                offset += 1
+                if keys and ((count > 0) != (parameter_id in state)):
+                    raise ValueError("Optimizer lazy state disagrees with recorded parameter participation")
+                if count > 0 and "step" in keys:
+                    # Actual scalar float32 +1 counters saturate at 2**24; this
+                    # is repeated-add evolution, not a one-shot cast of count.
+                    if float(state[parameter_id]["step"].item()) != min(count, 2**24):
+                        raise ValueError("Optimizer step disagrees with recorded parameter participation")
+        if checkpoint["scheduler"] is not None:
+            if scheduler_initial_epoch is None:
+                raise RuntimeError("Scheduler is missing its genuine constructor baseline")
+            if checkpoint["scheduler"]["last_epoch"] != scheduler_initial_epoch + updates:
+                raise ValueError("Scheduler epoch disagrees with the learner update ledger")
+
+    def _validate_checkpoint_state(self, checkpoint: Mapping[str, object], *, validate_replay: bool) -> Any:
         """
         Validate a complete population checkpoint without mutating runtime state.
 
@@ -3022,6 +3075,7 @@ class VectorizedPopulation(PopulationManager):
         )
         if self.scheduler is not None:
             self._validate_scheduler_checkpoint_state("scheduler", scheduler_state, self.scheduler, optimizer_learning_rates)
+        self._validate_optimizer_update_history(checkpoint, optimizer=self.optimizer, scheduler_initial_epoch=self._scheduler_initial_epoch)
         if not validate_replay:
             return None
         return self._validate_checkpoint_replay(checkpoint, current_obs_dim=current_obs_dim)
@@ -3045,7 +3099,7 @@ class VectorizedPopulation(PopulationManager):
                 raise ValueError("Sequential replay vector tick must equal the restored population total_steps")
         return replay_target, validated_replay
 
-    def _checkpoint_clocks(self, checkpoint: Mapping[str, Any], *, world_ids: tuple[str, ...] | None = None) -> tuple[ClockLedger, Any]:
+    def _checkpoint_clocks(self, checkpoint: Mapping[str, Any], *, world_ids: tuple[str, ...]) -> tuple[ClockLedger, Any]:
         raw = self._require_exact_mapping("clock_ledger", checkpoint["clock_ledger"], frozenset(asdict(ClockLedger())))
         ledger = ClockLedger(**{key: self._require_nonnegative_int(f"clock_ledger.{key}", value) for key, value in raw.items()})
         if ledger.vector_ticks != checkpoint["total_steps"] or ledger.optimizer_updates != checkpoint["training_step_counter"]:
@@ -3072,7 +3126,7 @@ class VectorizedPopulation(PopulationManager):
             or len(ids) != self.num_agents
             or any(type(item) is not str for item in ids)
             or len(set(ids)) != len(ids)
-            or set(ids) != set(self.env.world_ids if world_ids is None else world_ids)
+            or set(ids) != set(world_ids)
         ):
             raise ValueError("Progress requires actual portable world membership")
         if type(seqs) is not list or len(seqs) != self.num_agents or any(type(item) is not int or item < 1 for item in seqs):
@@ -3145,7 +3199,9 @@ class VectorizedPopulation(PopulationManager):
 
     def validate_native_restore_plan(self, *, plan: NativePopulationData, owner: object) -> None:
         """Pure owner/data association check; C3 must separately authorize publication."""
-        record = self._native_population_data.get(plan) if type(plan) is NativePopulationData else None
+        if type(plan) is not NativePopulationData:
+            raise ValueError("Foreign native population data")
+        record = self._native_population_data.get(plan)
         if record is None or record["pid"] != os.getpid() or record["thread"] != threading.get_ident():
             raise ValueError("Foreign, consumed or cross-execution native population data")
         current = self._native_owner_identities()
@@ -3279,6 +3335,7 @@ class VectorizedPopulation(PopulationManager):
             "target_state": target.state_dict(),
             "optimizer_state": optimizer_state,
             "optimizer_groups": optimizer_groups,
+            "parameter_updates": tuple(owned["optimizer_parameter_updates"]),
             "scheduler_state": scheduler.state_dict() if scheduler is not None else None,
             "copies": tuple(zip(self.q_network.state_dict(keep_vars=True).values(), q.state_dict().values(), strict=True))
             + tuple(zip(self.target_network.state_dict(keep_vars=True).values(), target.state_dict().values(), strict=True)),
@@ -3354,6 +3411,7 @@ class VectorizedPopulation(PopulationManager):
                         for receiving, incoming in record["copies"]:
                             receiving.copy_(incoming)
                     self.optimizer.state, self.optimizer.param_groups = record["optimizer_state"], record["optimizer_groups"]
+                    self._optimizer_parameter_updates = record["parameter_updates"]
                     if self.scheduler is not None:
                         self.scheduler.load_state_dict(record["scheduler_state"])
                     self.current_epsilons = record["epsilons"]
@@ -3396,8 +3454,8 @@ class VectorizedPopulation(PopulationManager):
             raise ValueError("Bound component replacement requires the genuine outer stable-owner installation protocol")
         revision = self._checkpoint_revision
         owned = copy.deepcopy(checkpoint)
-        replay_target, validated_replay = self._validate_checkpoint_state(owned)
-        ledger, progress = self._checkpoint_clocks(owned)
+        replay_target, validated_replay = self._validate_checkpoint_state(owned, validate_replay=True)
+        ledger, progress = self._checkpoint_clocks(owned, world_ids=self.env.world_ids)
         if mode not in {"initial", "completed_boundary", "private_initialized"} or (mode == "initial") != (progress is None):
             raise ValueError("Healthy parent progress disagrees with requested boundary mode")
         if mode != "initial" and (parent_restore is None or not callable(validate_parent_restore)):
@@ -3457,6 +3515,7 @@ class VectorizedPopulation(PopulationManager):
             progress,
             correlation,
             cadence,
+            tuple(owned["optimizer_parameter_updates"]),
         )
         return handle
 
@@ -3468,9 +3527,9 @@ class VectorizedPopulation(PopulationManager):
             raise ValueError("Foreign, consumed or reentrant population restore")
         if self.env.world_phase != "fresh-unbound":
             raise ValueError("Bound component replacement requires the genuine outer stable-owner installation protocol")
-        revision, runtime, q, target, optimizer, scheduler, replay, ledger, progress, correlation, cadence = self._population_restores[
-            prepared
-        ]
+        revision, runtime, q, target, optimizer, scheduler, replay, ledger, progress, correlation, cadence, parameter_updates = (
+            self._population_restores[prepared]
+        )
         if revision != self._checkpoint_revision:
             raise ValueError("Stale population restore")
         # Preallocate all post-child publication state before the final runtime/BANK check.
@@ -3484,6 +3543,7 @@ class VectorizedPopulation(PopulationManager):
             self.replay_buffer = replay
             self.total_steps, self._clock_ledger = ledger.vector_ticks, ledger
             self.training_step_counter = ledger.optimizer_updates
+            self._optimizer_parameter_updates = parameter_updates
             self._vector_step_progress, self._parent_cadence = progress, cadence
             self._vector_steps, self._population_restores = empty_steps, empty_restores
             self._failed_step, self._clock_ledger_restore_unavailable = False, False

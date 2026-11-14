@@ -1,0 +1,32 @@
+{
+  "name": "replay-collection",
+  "exit_code": 0,
+  "seconds": 5.138281641004141,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py",
+    "tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+    "tests/test_townlet/regressions/bac/test_population_recurrent_conversion.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=long",
+    "-rs",
+    "--collect-only",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-replay-collection-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r172-replay-collection-attempt-1/replay-collection.log",
+  "sha256": "cb540e96e3d877f8326db0cf2f064d6637e79e9c1aeb3f71c46c164a068f8693",
+  "candidate_tree": "72dd33a5abb56616986732b85f7678123b072ff3",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "manifest_sha256": "7ff5afdf48ffc5a252bca181d5f30039b0c9150e919a857f7a7c69a2d07b18b4",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

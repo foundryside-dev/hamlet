@@ -1,0 +1,16 @@
+{
+  "name": "step-precision",
+  "exit_code": 0,
+  "seconds": 4.455760330980411,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-c",
+    "import json, os\nfrom pathlib import Path\nimport torch, townlet\ntorch.set_num_threads(1)\nassert Path(townlet.__file__).resolve() == Path('/workspace/hamlet/src/townlet/__init__.py')\nassert torch.get_default_dtype() == torch.float32\nrows=[]\nfor kind in (torch.optim.Adam, torch.optim.AdamW, torch.optim.RMSprop):\n    p=torch.nn.Parameter(torch.ones(1))\n    opt=kind([p], lr=0.0001)\n    p.grad=torch.ones_like(p)\n    opt.step()\n    step=opt.state[p]['step']\n    assert step.dtype == torch.float32 and step.device.type == 'cpu'\n    step.fill_(2**24-1)\n    values=[step.item()]\n    for _ in range(2):\n        p.grad=torch.ones_like(p)\n        opt.step()\n        values.append(step.item())\n    assert values == [2**24-1, 2**24, 2**24], (kind.__name__,values)\n    rows.append(dict(optimizer=kind.__name__, step_dtype=str(step.dtype), boundary_values=values))\nprint(json.dumps(dict(status='PASS CPU NUMERICAL PROBE',torch=torch.__version__,threads=torch.get_num_threads(),module=townlet.__file__,base=os.environ['BAC_QUAL_SHA'],candidate=os.environ['BAC_QUAL_TREE'],cases=rows,scope='Actual optimizer repeated-add representability near boundary; manually seeded step, not a 2**24-update training proof; CUDA unrun.')))\n"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r169-step-precision-attempt-1/step-precision.log",
+  "sha256": "116de20f04e63c2e253f66c094b08d2e74487794630012dceb41070495375723",
+  "candidate_tree": "2fe2ef1c7f9f48c5da30abfb1149e2994c6ee9cb",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "manifest_sha256": "a25a2fc6c8a458ba264d634e36007961abaa1859732136cb4bf5ec27bd668de2",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

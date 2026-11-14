@@ -410,7 +410,10 @@ class DemoRunner:
         release = self.boundary_release
         if release is None:
             raise ValueError("Native snapshot requires its installed boundary release")
-        mode = "initial" if kind == "INITIAL" else "completed_boundary"
+        if kind == "INITIAL":
+            mode = "initial"
+        else:
+            mode = "completed_boundary"
         population_state = population.capture_native_checkpoint_data(mode=mode)
         curriculum_state = copy.deepcopy(curriculum.checkpoint_state())
         curriculum.validate_checkpoint_state(curriculum_state)
@@ -437,7 +440,10 @@ class DemoRunner:
         if self.env is None or self.population is None or self.curriculum is None:
             raise RuntimeError("Native capture requires actual initialized owners")
         env, population = self.env, self.population
-        kind = "INITIAL" if env.world_phase == "bootstrap-ready" else "COMPLETED"
+        if env.world_phase == "bootstrap-ready":
+            kind = "INITIAL"
+        else:
+            kind = "COMPLETED"
         components = self._capture_native_component_data(kind=kind)
         initial = None
         if kind == "INITIAL":
@@ -514,7 +520,7 @@ class DemoRunner:
             Episode number of loaded checkpoint, or None if no checkpoint
             (or when force-new-VFS explicitly branches instead of resuming)
         """
-        if self.env is None or self.population is None or self.curriculum is None:
+        if self.env is None or self.population is None or self.curriculum is None or self.exploration is None:
             raise RuntimeError("Checkpoint load requires initialized env, population, and curriculum components.")
 
         env = self.env
@@ -562,7 +568,10 @@ class DemoRunner:
             or checkpoint["epsilon"] != checkpoint["population_state"]["exploration_state"]["selector"]["epsilon"]
         ):
             raise ValueError("Runner continuation fields disagree with the actual native population state")
-        mode = "initial" if native["kind"] == "INITIAL" else "completed_boundary"
+        if native["kind"] == "INITIAL":
+            mode = "initial"
+        else:
+            mode = "completed_boundary"
         self.exploration.validate_restore_data(state=checkpoint["population_state"]["exploration_state"], mode=mode)
         plan = population.prepare_native_checkpoint_data(checkpoint["population_state"], mode=mode)
         replay_data = population.replay_buffer.stage_native_restore(
@@ -782,7 +791,11 @@ class DemoRunner:
         cuda_index = device.index
         if device.type == "cuda" and cuda_index is None:
             raise ValueError("Native runner continuation requires an indexed CUDA device")
-        self.native_cuda_devices: tuple[int, ...] = () if cuda_index is None else (cuda_index,)
+        self.native_cuda_devices: tuple[int, ...]
+        if cuda_index is None:
+            self.native_cuda_devices = ()
+        else:
+            self.native_cuda_devices = (cuda_index,)
         self.native_rng = NativeRNGState(cuda_devices=self.native_cuda_devices)
         self._last_native_checkpoint = None
 

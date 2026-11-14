@@ -1,0 +1,95 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [84 items]
+
+........................................................................ [ 85%]
+..........FF                                                             [100%]
+=================================== FAILURES ===================================
+____________ test_native_per_rejects_valid_historical_transport[4] _____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+per_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+version = 4
+
+    @pytest.mark.parametrize("version", [4, 5])
+    def test_native_per_rejects_valid_historical_transport(per_compiled: Any, version: int) -> None:
+        target, plan, state = prepared_parent(per_compiled)
+        replay = target.population.replay_buffer
+        before = replay.serialize()
+        for field in (
+            "unit_ids",
+            "next_unit_id",
+            "sampling_mode",
+            "sampling_origin",
+            "sampling_objective_unit",
+            "sampling_weight_rule",
+            "sampling_rng",
+        ):
+            del state[field]
+        if version == 4:
+            for field in (
+                "action_dim",
+                "legality_mode",
+                "historical_archives",
+                "next_action_masks",
+                "legality_recorded",
+                "rewards_extrinsic_present",
+                "rewards_intrinsic_present",
+                "rewards_shaping_present",
+            ):
+                del state[field]
+        state["format_version"] = version
+        # The generic historical route accepts this transport; native resume must not.
+        replay.validate_serialized(state, expected_obs_dim=target.env.observation_dim)
+>       with pytest.raises(ValueError, match="current.*6|format.*6"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py:229: Failed
+____________ test_native_per_rejects_valid_historical_transport[5] _____________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+per_compiled = CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_l..._minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'})))
+version = 5
+
+    @pytest.mark.parametrize("version", [4, 5])
+    def test_native_per_rejects_valid_historical_transport(per_compiled: Any, version: int) -> None:
+        target, plan, state = prepared_parent(per_compiled)
+        replay = target.population.replay_buffer
+        before = replay.serialize()
+        for field in (
+            "unit_ids",
+            "next_unit_id",
+            "sampling_mode",
+            "sampling_origin",
+            "sampling_objective_unit",
+            "sampling_weight_rule",
+            "sampling_rng",
+        ):
+            del state[field]
+        if version == 4:
+            for field in (
+                "action_dim",
+                "legality_mode",
+                "historical_archives",
+                "next_action_masks",
+                "legality_recorded",
+                "rewards_extrinsic_present",
+                "rewards_intrinsic_present",
+                "rewards_shaping_present",
+            ):
+                del state[field]
+        state["format_version"] = version
+        # The generic historical route accepts this transport; native resume must not.
+        replay.validate_serialized(state, expected_obs_dim=target.env.observation_dim)
+>       with pytest.raises(ValueError, match="current.*6|format.*6"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py:229: Failed
+======================== 2 failed, 82 passed in 21.07s =========================

@@ -426,7 +426,9 @@ class CuriosityBank:
                 participant=self._rng_participant, operation_kind=kind, lineage=_lineage(self), cuda_devices=self._devices
             )
             entered = False
-            observation = self._installation_active if kind == "install" else None
+            observation = None
+            if kind == "install":
+                observation = self._installation_active
             try:
                 try:
                     with invocation as lineage:
@@ -444,7 +446,10 @@ class CuriosityBank:
                                 observation.refresh()
                             failed_completion = invocation.completion_failed()
                             if observation is not None:
-                                observation.completion = 2 if failed_completion else 1
+                                if failed_completion:
+                                    observation.completion = 2
+                                else:
+                                    observation.completion = 1
                                 observation.refresh()
                             if failed_completion:
                                 object.__setattr__(self, "_completion_uncertain", True)

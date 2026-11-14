@@ -1,0 +1,22 @@
+{
+  "job": "replay-collection",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "candidate_tree": "b1500cf0cf3f933b514a3af2fdd0752182ea450c",
+  "exit_code": 0,
+  "counts": {
+    "passed": 0,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 5.550465489999624,
+  "source_guards": 840,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

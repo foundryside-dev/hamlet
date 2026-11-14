@@ -1,0 +1,173 @@
+"""Metadata-only, exclusive-output BAC preparation; never imports APP or calls Git.
+
+An explicit closed interval is required. This does not select a checkpoint terminal,
+make a contract/receipt/seal, copy sources, or qualify application/tooling behavior.
+"""
+import argparse
+import hashlib
+import json
+import re
+import runpy
+from pathlib import Path
+
+R = Path('/workspace/hamlet')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+E = W / 'evidence-management'
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+PREP = E / 'wip24-preparation'
+ROOTS = {'W': W, 'Q': Q, 'R': R}
+
+
+def ref(path):
+    path = Path(path)
+    if not (path.is_relative_to(W) or path.is_relative_to(Q)):
+        raise ValueError('APP/body reads forbidden: ' + str(path))
+    if path.is_symlink() or any(p.is_symlink() for p in path.parents):
+        raise ValueError('Symlink refusal: ' + str(path))
+    data = path.read_bytes()
+    root = 'W' if path.is_relative_to(W) else 'Q'
+    return {'root': root, 'path': str(path.relative_to(ROOTS[root])),
+            'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+
+
+def dump(path, data):
+    with path.open('x') as stream:
+        json.dump(data, stream, indent=2, sort_keys=True)
+        stream.write('\n')
+    return ref(path)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--start', type=int, required=True)
+    parser.add_argument('--closed-through', type=int, required=True)
+    parser.add_argument('--output', required=True)
+    args = parser.parse_args()
+    if not 134 <= args.start <= args.closed_through:
+        raise ValueError('Explicit WIP24 closed interval required')
+    output = PREP / args.output
+    if output.parent != PREP or output.exists():
+        raise ValueError('Output must be a new direct preparation directory')
+    output.mkdir()
+    neutral = E / 'bac_checkpoint_contract.py'
+    api = runpy.run_path(str(neutral))
+    helpers = {name: ref(Q / name) for name in (
+        'run_bac_cold_checks_locked.py', 'bac_source_identity.py',
+        'verify_bac_run.py', 'verify_bac_failed_run.py')}
+    components, gaps, observations = [], [], []
+    expected_members = {}
+    for number in range(args.start, args.closed_through + 1):
+        candidate_path = W / f'wave35/r{number}-candidate.json'
+        candidate = json.loads(candidate_path.read_text())
+        candidate_ref = ref(candidate_path)
+        preflight = ref(W / f'wave35/r{number}-fixture-resource-preflight.json')
+        members = sorted(Q.glob(f'wave35-r{number}-*'))
+        expected_members[number] = [path.name for path in members]
+        inventories = {path.name: api['descendants'](Q, path.name) for path in members}
+        checks, entries = [], []
+        for top in members:
+            unrun = top.name in (f'wave35-r{number}-collection-spec.json', f'wave35-r{number}-owned-spec.json')
+            results = sorted(top.glob('*-result.json')) if top.is_dir() else []
+            if not results and not unrun:
+                entries.append({'round': number, 'path': top.name, 'kind': 'support', 'status': 'DIAGNOSTIC'})
+                if top.is_dir():
+                    gaps.append({'round': number, 'path': top.name, 'reason': 'Directory has no authoritative job result; retain all descendants for root classification.'})
+                continue
+            statuses = []
+            for result_path in results or [None]:
+                result = json.loads(result_path.read_text()) if result_path else {}
+                name = result.get('name', 'unrun')
+                attempt_id = top.name + '--' + name
+                status = 'UNRUN' if unrun else ('PASSED' if result['exit_code'] == 0 else 'FAILED')
+                statuses.append(status)
+                kind = 'collection' if (unrun and 'collection' in top.name) or '--collect-only' in result.get('command', []) else 'runtime'
+                attempt = {
+                    'id': attempt_id, 'record_id': name, 'path': top.name, 'round': number,
+                    'status': status, 'candidate_manifest': candidate_ref,
+                    'candidate_tree': candidate['candidate_tree'], 'base_commit': candidate['base_commit'],
+                    'execution_subtrees': None,
+                    'execution_subtrees_unavailable_reason': 'Root historical Git-object attestation pending; exact recorded source/config/artifact hashes remain in own candidate manifest.',
+                    'environment': preflight, 'hardware': {'profile': 'Recorded CPU preflight; actual CUDA unqualified'},
+                    'command': result.get('command'), 'exit_code': result.get('exit_code'),
+                    'duration_seconds': result.get('seconds'), 'counts': None,
+                    'started_at': None, 'ended_at': None, 'process_custody': [],
+                    'descendants': inventories[top.name],
+                }
+                dependencies = []
+                if unrun:
+                    attempt['unrun_reason'] = 'Unused automatic unrelated T21 template; actual named interval checks retained separately.'
+                else:
+                    if result['candidate_tree'] != candidate['candidate_tree'] or result['manifest_sha256'] != candidate_ref['sha256']:
+                        raise ValueError('Actual attempt/candidate mismatch: ' + attempt_id)
+                    attempt['record'] = attempt['result'] = ref(result_path)
+                    log = Path(result['log'])
+                    attempt['log_paths'] = [ref(log)]
+                    if ref(log)['sha256'] != result['sha256']:
+                        raise ValueError('Result/log mismatch: ' + attempt_id)
+                    attempt['absolute_time_unavailable_reason'] = 'Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.'
+                    attempt['custody_unavailable_reason'] = attempt['absolute_time_unavailable_reason']
+                    verifiers = sorted(top.glob(name + '*custody.json'))
+                    if len(verifiers) == 1:
+                        attempt['verifier'] = ref(verifiers[0])
+                        attempt['counts'] = json.loads(verifiers[0].read_text()).get('counts')
+                    else:
+                        attempt['verifier_unavailable_reason'] = 'No unique original named postflight report; original result/log retained, root classification required.'
+                        gaps.append({'round': number, 'check': attempt_id, 'reason': attempt['verifier_unavailable_reason']})
+                    for identity in sorted(top.glob('**/identity-*.json')):
+                        body = json.loads(identity.read_text())
+                        role = 'controller' if body.get('worker') == 'controller' else 'worker'
+                        witness = ref(identity)
+                        attempt['process_custody'].append(dict(witness, role=role))
+                        if role == 'controller' and body.get('module') and body.get('threads') is not None:
+                            attempt['process_custody'].append(dict(witness, role='import_thread_debug'))
+                    command = result['command']
+                    attempt['actual_worker_count'] = int(command[command.index('-n') + 1]) if '-n' in command else 0
+                    attempt['process_topology'] = 'xdist' if attempt['actual_worker_count'] else 'single_process'
+                    attempt['process_witness_limit'] = 'Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.'
+                    attempt['harness_sha256_recorded'] = result.get('harness_sha256')
+                    if helpers['run_bac_cold_checks_locked.py']['sha256'] != result.get('harness_sha256'):
+                        gaps.append({'round': number, 'check': attempt_id, 'reason': 'Current harness differs from recorded version; exact inert historical alias required.', 'sha256': result.get('harness_sha256')})
+                    else:
+                        dependencies.append(helpers['run_bac_cold_checks_locked.py'])
+                    dependencies.append(helpers['bac_source_identity.py'])
+                    if attempt.get('verifier'):
+                        dependencies.append(helpers['verify_bac_run.py' if status == 'PASSED' else 'verify_bac_failed_run.py'])
+                    outer = E / 'pop-standalone-step' / (top.name + '-outer.json')
+                    if outer.is_file():
+                        attempt['outer_launcher_observation'] = ref(outer)
+                    if kind == 'collection':
+                        match = re.search(r'(\d+) tests? collected', log.read_text())
+                        attempt['collected_count'] = int(match.group(1)) if match else None
+                    observations.append({'round': number, 'check': attempt_id, 'kind': kind, 'status': status,
+                                         'counts': attempt['counts'], 'collected': attempt.get('collected_count')})
+                checks.append({'check': attempt_id, 'check_kind': kind, 'status': status, 'qualifying': False,
+                               'terminal_attempt': attempt_id, 'required_dependencies': dependencies, 'attempts': [attempt],
+                               'scope': 'Closed observed history only; no terminal checkpoint or full C2/BAC qualification.'})
+            entries.append({'round': number, 'path': top.name, 'kind': 'attempt',
+                            'status': statuses[0] if len(set(statuses)) == 1 else 'MIXED'})
+        component = {
+            'schema': 'bac-closed-round-history-component-v1', 'round': number,
+            'status': 'CLOSED OBSERVED HISTORY; TERMINAL NOT CHOSEN',
+            'candidate_manifest': candidate_ref, 'candidate_tree': candidate['candidate_tree'],
+            'base_commit': candidate['base_commit'], 'fixture_preflight': preflight,
+            'interval_inventory': inventories, 'interval_entries': entries, 'attempt_index': checks,
+            'accounting': 'Every attempt retained separately; same-source retries and overlapping selections are never added as unique coverage.',
+        }
+        components.append(dump(output / f'r{number}-history-component-v1.json', component))
+    for number, names in expected_members.items():
+        if names != sorted(path.name for path in Q.glob(f'wave35-r{number}-*')):
+            raise ValueError('Top-level Q membership changed during observation')
+    result = {
+        'status': 'PREPARATION INVENTORY ONLY; TERMINAL NOT FROZEN',
+        'observed_closed_interval': [args.start, args.closed_through], 'terminal_round': None,
+        'components': components, 'observed_checks': observations, 'gaps': gaps,
+        'neutral_inventory_helper': ref(neutral), 'preparation_tool': ref(Path(__file__)),
+        'package_accounting': {'qualified': 28, 'remaining': 38, 'total': 66},
+        'exclusions': ['Q scratch', 'unnamed fixtures', 'future/live rounds', 'final contract/receipt/seal', 'publication/docs/Spaces'],
+    }
+    report = dump(output / 'PREPARATION-INVENTORY-v1.json', result)
+    print(json.dumps({'inventory': report, 'rounds': len(components), 'executed_checks': len(observations), 'gaps': len(gaps)}))
+
+
+if __name__ == '__main__':
+    main()

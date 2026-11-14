@@ -653,7 +653,10 @@ class VariableRegistry:
     def _native_persistent_record(self, prepared: PreparedNativePersistentState, env: Any, parent_plan: Any) -> dict[str, Any]:
         from townlet.population.vectorized import validate_native_population_data
 
-        record = self._native_persistent_states.get(prepared) if type(prepared) is PreparedNativePersistentState else None
+        if type(prepared) is PreparedNativePersistentState:
+            record = self._native_persistent_states.get(prepared)
+        else:
+            record = None
         if (
             record is None
             or record["consumed"]

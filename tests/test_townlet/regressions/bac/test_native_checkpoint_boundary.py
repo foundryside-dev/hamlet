@@ -1,5 +1,7 @@
 """The current runner artifact must bind one explicit native boundary."""
 
+import random
+
 import pytest
 import torch
 
@@ -12,7 +14,7 @@ def boundary():
     return {
         "kind": "INITIAL",
         "world_state": {"kind": "INITIAL", "vfs_random_context": VFSRandomness(context=context).state()},
-        "rng_state": {"schema": "native-rng-v1", "torch_cpu": torch.get_rng_state(), "torch_cuda": {}},
+        "rng_state": {"schema": "native-rng-v2", "python": random.getstate(), "torch_cpu": torch.get_rng_state(), "torch_cuda": {}},
     }
 
 

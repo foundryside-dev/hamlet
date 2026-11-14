@@ -463,7 +463,18 @@ def test_backend_losses_and_quotas_are_world_local(kind: str, overflow: str) -> 
     assert first_trace
 
 
-def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("architecture", "prioritized"),
+    (
+        pytest.param("feedforward", False, id="flat-uniform"),
+        pytest.param("feedforward", True, id="flat-per"),
+        pytest.param("recurrent", False, id="recurrent-uniform"),
+        pytest.param("recurrent", True, id="recurrent-per"),
+    ),
+)
+def test_shared_runner_checkpoint_still_roundtrips(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, architecture: str, prioritized: bool
+) -> None:
     """A completed checkpoint resumes the next real learning episode exactly."""
     import hashlib
     import shutil
@@ -474,7 +485,14 @@ def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
 
     root = Path(__file__).resolve().parents[4]
     pack = tmp_path / "pack"
-    shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+    shutil.copytree(root / "configs/test/bac_remediation" / architecture, pack, ignore=shutil.ignore_patterns(".compiled"))
+    brain_path = pack / "brain.yaml"
+    brain = yaml.safe_load(brain_path.read_text())
+    assert brain["architecture"]["type"] == architecture
+    brain["replay"]["prioritized"] = prioritized
+    if prioritized:
+        brain["replay"].update(priority_alpha=0.6, priority_beta=0.4, priority_beta_annealing=True)
+    brain_path.write_text(yaml.safe_dump(brain, sort_keys=False))
     training_path = pack / "levels/L0_0_minimal/training.yaml"
     document = yaml.safe_load(training_path.read_text())
     training = document["training"]
@@ -482,7 +500,12 @@ def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
     training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
     training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
     training["training_loop"]["checkpointing"]["interval"] = 1
-    training["bac_options"]["rnd"]["max_pending_rows"] = 6
+    # Hold the original shared-service witness constant across replay profiles;
+    # retain each authored pack's architecture and resolved replay policy.
+    training["bac_options"]["rnd"].update(
+        service_mode="paced_fifo", max_updates_per_tick=1, max_pending_rows=6, overflow_policy="service_before_admit"
+    )
+    training["bac_options"]["provider_parameter_source"] = "training"
     training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
     training_path.write_text(yaml.safe_dump(document, sort_keys=False))
     roster = WorldRosterDeclaration(("roundtrip-world-A", "roundtrip-world-B"))
@@ -529,6 +552,23 @@ def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
     artifact = uninterrupted / "checkpoints/checkpoint_ep00002.pt"
     for path in (artifact, artifact.with_suffix(".pt.sha256")):
         shutil.copy2(path, resumed / "checkpoints" / path.name)
+    original_load = DemoRunner.load_checkpoint
+    restored_owners: list[tuple[Any, ...]] = []
+
+    def owner_refs(current: DemoRunner) -> tuple[Any, ...]:
+        population = current.population
+        return (population, population.q_network, population.optimizer, population.replay_buffer, *population.q_network.parameters())
+
+    def observe_load(current: DemoRunner, *args: Any, **kwargs: Any) -> Any:
+        # Observe the actual fresh receiving owners; execute the production
+        # restore unchanged and never substitute state, authority, or results.
+        before = owner_refs(current)
+        result = original_load(current, *args, **kwargs)
+        assert all(old is new for old, new in zip(before, owner_refs(current), strict=True))
+        restored_owners.append(before)
+        return result
+
+    monkeypatch.setattr(DemoRunner, "load_checkpoint", observe_load)
     with DemoRunner(
         config_dir=pack,
         db_path=resumed / "run.db",
@@ -538,6 +578,9 @@ def test_shared_runner_checkpoint_still_roundtrips(tmp_path: Path) -> None:
         max_episodes=3,
     ) as fresh:
         fresh.run()
+        assert len(restored_owners) == 1
+        assert all(old is new for old, new in zip(restored_owners[0], owner_refs(fresh), strict=True))
+        assert fresh.population._bound_replay is fresh.population.replay_buffer
         actual = read_checkpoint(resumed, 3)
         assert fresh.completed_live_agent_steps == 18
 

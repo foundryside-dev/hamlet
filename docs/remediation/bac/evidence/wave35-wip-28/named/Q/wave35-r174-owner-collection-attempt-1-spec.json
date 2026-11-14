@@ -1,0 +1,43 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r174-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r174-owner-collection-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "owner-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_population_optimizer_history.py",
+        "tests/test_townlet/regressions/bac/test_native_rng_state.py",
+        "tests/test_townlet/regressions/bac/test_native_replay_data.py",
+        "tests/test_townlet/regressions/bac/test_native_aux_state.py",
+        "tests/test_townlet/regressions/bac/test_world_restore_attempt.py",
+        "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+        "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py",
+        "tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py",
+        "tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py",
+        "tests/test_townlet/regressions/bac/test_native_python_rng.py",
+        "tests/test_townlet/regressions/bac/test_native_numpy_boundary.py",
+        "tests/test_townlet/regressions/bac/test_population_recurrent_conversion.py",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py",
+        "tests/test_townlet/regressions/bac/test_rnd_service.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=long",
+        "-rs",
+        "-k",
+        "not poison",
+        "--collect-only",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r174-owner-collection-attempt-1"
+      ]
+    }
+  ]
+}

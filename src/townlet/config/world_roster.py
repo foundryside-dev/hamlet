@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any
 
+import numpy as np
 import torch
 
 
@@ -129,6 +130,10 @@ def owned_value(value: Any) -> Any:
     """Copy mutable values while preserving already-issued opaque capabilities."""
     if isinstance(value, (WorldRecord, WorldEpisodeReservation, WorldAcceptedEpisode)):
         return value
+    if isinstance(value, np.ndarray):
+        if type(value) is not np.ndarray or value.dtype.kind not in "biufc" or value.dtype.metadata is not None:
+            raise ValueError("world receipt arrays require plain numeric ndarrays without dtype metadata")
+        return np.ndarray.copy(value)
     if isinstance(value, torch.Tensor):
         return value.detach().clone()
     if isinstance(value, Mapping):
@@ -157,6 +162,18 @@ def frozen_value(value: Any) -> Any:
 
 
 def same_value(left: Any, right: Any) -> bool:
+    if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
+        return (
+            type(left) is np.ndarray
+            and type(right) is np.ndarray
+            and left.dtype.kind in "biufc"
+            and right.dtype.kind in "biufc"
+            and left.dtype.metadata is None
+            and right.dtype.metadata is None
+            and left.dtype == right.dtype
+            and left.shape == right.shape
+            and bool(np.array_equal(left, right))
+        )
     if isinstance(left, torch.Tensor):
         return (
             isinstance(right, torch.Tensor)

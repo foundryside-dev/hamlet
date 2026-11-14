@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py", line 93, in <module>
+    sys.exit(main(sys.argv[1]))
+             ~~~~^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/run_bac_cold_checks_locked.py", line 31, in main
+    manifest_bytes = manifest_path.read_bytes()
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 625, in read_bytes
+    with self.open(mode='rb') as f:
+         ~~~~~~~~~^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 539, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r169-candidate.json'

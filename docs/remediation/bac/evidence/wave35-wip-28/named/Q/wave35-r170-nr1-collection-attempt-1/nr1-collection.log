@@ -1,0 +1,64 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 46 items
+
+<Dir hamlet>
+  <Package tests>
+    <Package test_townlet>
+      <Dir regressions>
+        <Dir bac>
+          <Module test_population_optimizer_history.py>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[initial-adam]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[initial-adamw]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[initial-rmsprop]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[initial-sgd]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[initial-sgd_momentum]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[lazy_trained-adam]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[lazy_trained-adamw]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[lazy_trained-rmsprop]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[lazy_trained-sgd]>
+            <Function test_actual_optimizer_history_accepts_initial_and_lazy_parameters[lazy_trained-sgd_momentum]>
+            <Function test_stateless_sgd_accepts_explicit_empty_parameter_mappings>
+            <Function test_actual_adam_history_rejects_invalid_counts[bool]>
+            <Function test_actual_adam_history_rejects_invalid_counts[float]>
+            <Function test_actual_adam_history_rejects_invalid_counts[negative]>
+            <Function test_actual_adam_history_rejects_invalid_counts[short]>
+            <Function test_actual_adam_history_rejects_invalid_counts[long]>
+            <Function test_actual_adam_history_rejects_invalid_counts[tuple]>
+            <Function test_actual_adam_history_rejects_invalid_counts[above_global]>
+            <Function test_actual_adam_history_rejects_invalid_counts[no_participation]>
+            <Function test_actual_adam_history_rejects_invalid_counts[wrong_parameter]>
+            <Function test_lazy_state_must_agree_with_real_participation[missing_participant-adam]>
+            <Function test_lazy_state_must_agree_with_real_participation[missing_participant-adamw]>
+            <Function test_lazy_state_must_agree_with_real_participation[missing_participant-rmsprop]>
+            <Function test_lazy_state_must_agree_with_real_participation[missing_participant-sgd_momentum]>
+            <Function test_lazy_state_must_agree_with_real_participation[populated_never-adam]>
+            <Function test_lazy_state_must_agree_with_real_participation[populated_never-adamw]>
+            <Function test_lazy_state_must_agree_with_real_participation[populated_never-rmsprop]>
+            <Function test_lazy_state_must_agree_with_real_participation[populated_never-sgd_momentum]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[0.0-adam]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[0.0-adamw]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[0.0-rmsprop]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[1.5-adam]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[1.5-adamw]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[1.5-rmsprop]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[3.0-adam]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[3.0-adamw]>
+            <Function test_actual_adaptive_optimizer_rejects_invalid_step[3.0-rmsprop]>
+            <Function test_initial_history_cannot_claim_parameter_updates>
+            <Function test_scheduler_rewind_rejected_against_constructor_baseline>
+          <Module test_rnd_service.py>
+            <Function test_native_runner_checkpoint_retains_tail_and_rejects_corruption[rnd]>
+            <Function test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_missing]>
+            <Function test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_empty]>
+            <Function test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_reset_steps]>
+            <Function test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_shifted_steps]>
+            <Function test_native_runner_checkpoint_retains_tail_and_rejects_corruption[scheduler_rewind]>
+          <Module test_pw_local_service.py>
+            <Function test_shared_runner_checkpoint_still_roundtrips>
+
+========================= 46 tests collected in 0.17s ==========================

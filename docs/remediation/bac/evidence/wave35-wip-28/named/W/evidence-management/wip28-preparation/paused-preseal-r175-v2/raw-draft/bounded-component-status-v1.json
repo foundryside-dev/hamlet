@@ -1,0 +1,414 @@
+{
+  "closed_through": 175,
+  "failed_and_verifier_view_history": {
+    "bytes": 6359,
+    "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/preexecution-and-capture-history-v1.json",
+    "root": "W",
+    "sha256": "134cfc42cf050f9e07a6dadeb8ff01b9daf868e8023d32d8d09106454099dd79"
+  },
+  "interval_start": 169,
+  "observations": [
+    {
+      "check": "wave35-r169-defaults-inventory-attempt-1--defaults-inventory",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 169,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r169-nr1-collection-attempt-2--nr1-collection",
+      "collected": 6,
+      "counts": null,
+      "kind": "collection",
+      "round": 169,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r169-nr1-red-attempt-1--nr1-red",
+      "collected": null,
+      "counts": {
+        "errors": 0,
+        "failed": 5,
+        "passed": 1,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 169,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r169-step-precision-attempt-1--step-precision",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 169,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r170-native-green-attempt-1--native-green",
+      "collected": null,
+      "counts": {
+        "passed": 119,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 170,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r170-nr1-collection-attempt-1--nr1-collection",
+      "collected": 46,
+      "counts": null,
+      "kind": "collection",
+      "round": 170,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r170-nr1-green-attempt-1--nr1-green",
+      "collected": null,
+      "counts": {
+        "passed": 7,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 170,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r170-static-attempt-1--defaults",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 170,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r170-static-attempt-1--mypy",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 170,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r170-static-attempt-1--ruff",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 170,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r171-replay-collection-attempt-1--replay-collection",
+      "collected": 39,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "collection",
+      "round": 171,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r171-replay-red-attempt-1--replay-red",
+      "collected": null,
+      "counts": {
+        "errors": 0,
+        "failed": 5,
+        "passed": 0,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 171,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r172-replay-collection-attempt-1--replay-collection",
+      "collected": 44,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "collection",
+      "round": 172,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r172-replay-green-attempt-1--replay-components",
+      "collected": null,
+      "counts": {
+        "passed": 39,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 172,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r172-replay-green-attempt-1--runner-conversion",
+      "collected": null,
+      "counts": {
+        "errors": 0,
+        "failed": 3,
+        "passed": 2,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 172,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r173-repairs-attempt-1--nr2-controls",
+      "collected": null,
+      "counts": {
+        "errors": 0,
+        "failed": 2,
+        "passed": 82,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 173,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r173-repairs-attempt-1--runner-conversion",
+      "collected": null,
+      "counts": {
+        "passed": 5,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 173,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r173-repairs-collection-attempt-1--repairs-collection",
+      "collected": 89,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "collection",
+      "round": 173,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r174-owner-collection-attempt-1--owner-collection",
+      "collected": 541,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "collection",
+      "round": 174,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r174-owner-green-attempt-1--owner-green",
+      "collected": null,
+      "counts": {
+        "passed": 540,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 174,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r174-restore-poison-attempt-1--restore-poison",
+      "collected": null,
+      "counts": {
+        "passed": 1,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 174,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r174-static-attempt-1--black",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 174,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r174-static-attempt-1--defaults",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 174,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r174-static-attempt-1--mypy",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 174,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r174-static-attempt-1--ruff",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 174,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r175-per-runner-collection-attempt-1--per-runner-collection",
+      "collected": 19,
+      "counts": {
+        "passed": 0,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "collection",
+      "round": 175,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r175-per-runner-green-attempt-1--per-runner-green",
+      "collected": null,
+      "counts": {
+        "passed": 19,
+        "skipped": 0,
+        "warnings": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "kind": "runtime",
+      "round": 175,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r175-static-attempt-1--black",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 175,
+      "status": "PASSED"
+    },
+    {
+      "check": "wave35-r175-static-attempt-1--defaults",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 175,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r175-static-attempt-1--mypy",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 175,
+      "status": "FAILED"
+    },
+    {
+      "check": "wave35-r175-static-attempt-1--ruff",
+      "collected": null,
+      "counts": null,
+      "kind": "runtime",
+      "round": 175,
+      "status": "PASSED"
+    }
+  ],
+  "original_package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "original_review_bytes": [
+    {
+      "bytes": 11290,
+      "path": "pw04-nr1-fixed-source-review.md",
+      "root": "W",
+      "sha256": "e28c73a751e33177e847ac99f7483ef5ccbe5372a3228beb20780a645c9e903a"
+    },
+    {
+      "bytes": 7590,
+      "path": "pw04-native-replay-independent-review.md",
+      "root": "W",
+      "sha256": "fbc50ccf27e18f10ddbe949947fe1aa34c76417a47d483a7ac343d6f9f172b7e"
+    },
+    {
+      "bytes": 9049,
+      "path": "pw04-rng-numpy-independent-review.md",
+      "root": "W",
+      "sha256": "c489e726e8912dd673b0af02d397461959a6d299c9a4b207ab80196f69ee56b6"
+    },
+    {
+      "bytes": 12378,
+      "path": "bac-oracle-contract-astra.md",
+      "root": "W",
+      "sha256": "5167cca9516adca1049ec3e3298d01c16ba961decbf0fc59bb3072182f43ad58"
+    },
+    {
+      "bytes": 6401,
+      "path": "bac-oracle-current-protocol-plan.md",
+      "root": "W",
+      "sha256": "a37975acde917fdbf9321e14f979707669a58f03ea556beee4a4bb95c5cc194b"
+    }
+  ],
+  "overlap": "Repeated rounds, component suites and runner selections overlap; never sum them as unique coverage. R169\u2013R174 is six rounds.",
+  "required_next": [
+    "Root chooses exact finite terminal; freezes historical execution-subtree identities and terminal candidate. No inferred terminal.",
+    "Root reconciles actual interval inventory, preexecution failures, capture failures, source and process custody, and named dependency closure.",
+    "NR2 requires actual R174-or-later refusal GREEN and fixed-source independent disposition; original R173 two RED remain retained.",
+    "R173 four runner profiles and conversion PASS are bounded CPU evidence; subsequent changed source requires own-source qualification.",
+    "Retain RNG review P3: genuine Python setter and later Torch-setter failure quarantine evidence remains a separate coverage obligation.",
+    "Oracle historical cross-version capability decision remains explicit; latest global mypy6 reported by root requires exact result binding, not inferred from older mypy16.",
+    "PW04/full owner/package, coverage, slow/learning, required final review/static/CI gates remain open. Actual CUDA unavailable/unqualified; CI API blocked.",
+    "Root approves exact document postimages, seals contract then subject, obtains independent terminal review, and seals receipt before neutral selection/publication."
+  ],
+  "status": "DRAFT BOUNDED DURABILITY; PW04 OPEN",
+  "terminal_round": 175
+}

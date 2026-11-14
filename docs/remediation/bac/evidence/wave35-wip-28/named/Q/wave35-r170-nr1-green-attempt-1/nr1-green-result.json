@@ -1,0 +1,33 @@
+{
+  "name": "nr1-green",
+  "exit_code": 0,
+  "seconds": 91.320572600991,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=long",
+    "-rs",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r170-nr1-green-attempt-1",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r170-nr1-green-attempt-1/nr1-green.log",
+  "sha256": "29151628877b0898dee316dbad33576a338e52e6cd5803063b39b67697cc71b0",
+  "candidate_tree": "b1205b9caafebf8a796083b2ee2977ccd75fa4ec",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "manifest_sha256": "7135f837cccd8e774b06f935c94adf76bc6cafe44870d27b9b06303f7d94a01f",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

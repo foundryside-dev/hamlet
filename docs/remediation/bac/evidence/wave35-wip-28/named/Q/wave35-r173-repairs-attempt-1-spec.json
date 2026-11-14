@@ -1,0 +1,59 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r173-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r173-repairs-attempt-1",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "nr2-controls",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py::test_native_per_rejects_valid_historical_transport",
+        "tests/test_townlet/regressions/bac/test_native_python_rng.py",
+        "tests/test_townlet/regressions/bac/test_native_numpy_boundary.py",
+        "tests/test_townlet/regressions/bac/test_native_rng_state.py",
+        "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=long",
+        "-rs",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r173-nr2-controls-attempt-1"
+      ]
+    },
+    {
+      "name": "runner-conversion",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+        "tests/test_townlet/regressions/bac/test_population_recurrent_conversion.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=long",
+        "-rs",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r173-runner-conversion-attempt-1"
+      ]
+    }
+  ]
+}

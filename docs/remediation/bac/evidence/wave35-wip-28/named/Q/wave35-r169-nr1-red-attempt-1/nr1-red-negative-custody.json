@@ -1,0 +1,28 @@
+{
+  "status": "COMPLETED FAILED GATE; CUSTODY PASS; NO RELEASE",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "candidate_tree": "2fe2ef1c7f9f48c5da30abfb1149e2994c6ee9cb",
+  "exit_code": 1,
+  "counts": {
+    "failed": 5,
+    "passed": 1,
+    "skipped": 0,
+    "errors": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "summary": "=================== 5 failed, 1 passed in 110.23s (0:01:50) ====================",
+  "wall_seconds": 116.76974054300808,
+  "source_guards": 837,
+  "process_identities": 3,
+  "configs": 573,
+  "artifacts": 13,
+  "registry": 14,
+  "available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "unique_node_phase_failures": 5,
+  "affected_files": 1,
+  "signature_groups": 1,
+  "disposition": "Causally repair current caller/lifecycle/provider/curriculum/parent prerequisites and run intended affected assertions before any broad repeat. Failure is not waived or relabeled optional."
+}

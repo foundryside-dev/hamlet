@@ -6,7 +6,7 @@
     "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
   },
   "chain_semantics": "Natural publication-label order; links authenticate exact checkpoint bytes, not inferred Git ancestry or current-source equivalence. Missing wave labels are not synthesized.",
-  "current_local_candidate": "8b51496639637ad5d80005ea99167fb2fa39093f",
+  "current_local_candidate": "7333be02ae881c800884c52bb2bec71053fcae4c",
   "entries": [
     {
       "artifact_checks": {
@@ -2071,15 +2071,55 @@
         "bytes": 490121
       },
       "publication": "WIP checkpoint; exact remote/CI verification separate"
+    },
+    {
+      "id": "wave35-wip-28",
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-28.json",
+        "sha256": "5f8c6f62489fcbe33390ce71fe24c252d58202a20bb003cd47afc6dce60a52b3",
+        "bytes": 284714
+      },
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-27.json",
+        "sha256": "1cfd47ec73853d0e5c4401453f29e3e60bad06db09b0010c26e06bb59990294e"
+      },
+      "previous_catalog_entry": "wave35-wip-27",
+      "identity": {
+        "evidence_base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+        "evidence_candidate_tree": "7333be02ae881c800884c52bb2bec71053fcae4c",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+          "src": "ce6100d3d63f7b095bc67c5c11c0f009781c3781",
+          "tests": "3849bb9954bd8dee4fc758a219a30f7c09376e6b"
+        }
+      },
+      "status": "PAUSED; quota threshold reached, PW04 and final gates open",
+      "packet": "PAUSED at user quota threshold. R175 affected PER and four actual runner profiles19PASS; R174 owner540PASS and separatepoison1PASS retain their own source. NR1/NR2, native PER/SEQ, Python RNG and NumPy receipt repairs verified within stated scope. Mypy6FAIL and defaults601>600FAIL; Ruff/BlackPASS. Originalaccounting28/38/66 unchanged. No resume until John directs.",
+      "round": 175,
+      "receipt_pointer": "#/receipt",
+      "package_accounting": {
+        "qualified": 28,
+        "remaining": 38,
+        "total": 66
+      },
+      "qualified_progress": "28 qualified /38 remaining /66 original packages unchanged",
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-28/selection-plan.json",
+        "sha256": "7df717b9b5f31ece6e2060791cc96d48e7a0c79e3ab19cc9ba876e02b78ac975",
+        "bytes": 327500
+      },
+      "publication": "WIP checkpoint; exact remote/CI verification separate"
     }
   ],
-  "latest_verified_remote_publication_at_assembly": "wave35-wip-26",
+  "latest_verified_remote_publication_at_assembly": "wave35-wip-27",
   "current_checkpoint": {
-    "path": "docs/remediation/bac/evidence/wave35-wip-27.json",
-    "sha256": "1cfd47ec73853d0e5c4401453f29e3e60bad06db09b0010c26e06bb59990294e",
-    "bytes": 414668,
-    "candidate_tree": "8b51496639637ad5d80005ea99167fb2fa39093f",
+    "path": "docs/remediation/bac/evidence/wave35-wip-28.json",
+    "sha256": "5f8c6f62489fcbe33390ce71fe24c252d58202a20bb003cd47afc6dce60a52b3",
+    "bytes": 284714,
+    "candidate_tree": "7333be02ae881c800884c52bb2bec71053fcae4c",
     "publication": "WIP checkpoint; exact remote/CI verification separate"
   },
-  "latest_verified_remote_commit_at_assembly": "357cd0c0d1c86957cbd8e60df1b58c58fe4f8ab5"
+  "latest_verified_remote_commit_at_assembly": "af212f0b06041ee98ddf89c502e3c772c286c658"
 }

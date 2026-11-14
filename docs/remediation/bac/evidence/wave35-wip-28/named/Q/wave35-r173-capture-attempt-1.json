@@ -1,0 +1,8 @@
+{
+  "exit_code": 1,
+  "stage": "pre-staging write-path authorization assertion",
+  "error": "AssertionError: {'src/townlet/config/world_roster.py'}",
+  "cause": "Root added review scope but omitted authorized production path from capture maintenance_write_paths",
+  "runtime_started": false,
+  "repair": "Added actual authorized NumPy transport producer path; retry capture before qualification"
+}

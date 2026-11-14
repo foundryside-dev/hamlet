@@ -1,0 +1,172 @@
+"""Finite WIP28 metadata preparation. No Git, application imports, tests, seals or publication.
+
+Root supplies --closed-through explicitly. --terminal requires root to have chosen
+that exact round; output remains DRAFT and never asserts terminal qualification.
+Existing inventory and neutral descendants helpers are reused without modification.
+"""
+import argparse
+import copy
+import hashlib
+import json
+from pathlib import Path
+import re
+import runpy
+import sys
+
+R = Path('/workspace/hamlet')
+W = R / '.superpowers/sdd/2026-11-01-bac-remediation-upgrades'
+E = W / 'evidence-management'
+Q = Path('/workspace/bac-review-2026-11-01/qualification')
+P = E / 'wip28-preparation'
+ROOTS = {'R': R, 'W': W, 'Q': Q}
+
+
+def read(p):
+    return json.loads(p.read_text())
+
+
+def ref(p):
+    if p.is_symlink() or any(x.is_symlink() for x in p.parents):
+        raise ValueError('Symlink refused: ' + str(p))
+    key = next(k for k in ('W', 'Q', 'R') if p.is_relative_to(ROOTS[k]))
+    b = p.read_bytes()
+    return dict(root=key, path=str(p.relative_to(ROOTS[key])), bytes=len(b), sha256=hashlib.sha256(b).hexdigest())
+
+
+def save(p, value):
+    with p.open('x') as out:
+        json.dump(value, out, indent=2, sort_keys=True)
+        out.write('\n')
+    return ref(p)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--closed-through', type=int, required=True)
+    parser.add_argument('--terminal', type=int)
+    parser.add_argument('--output', required=True)
+    parser.add_argument('--subtree-attestation', type=Path)
+    args = parser.parse_args()
+    if args.closed_through < 169 or (args.terminal is not None and args.terminal != args.closed_through):
+        raise ValueError('Explicit contiguous interval from R169, terminal must equal closed-through')
+    if Path(args.output).name != args.output:
+        raise ValueError('Output must be a new direct preparation directory')
+    out = P / args.output
+    out.mkdir(exist_ok=False)
+    helper = E / 'wip24-preparation/inventory_closed_rounds_v1.py'
+    old = sys.argv
+    try:
+        api = runpy.run_path(str(helper))
+        api['main'].__globals__['PREP'] = out
+        sys.argv = [str(helper), '--start', '169', '--closed-through', str(args.closed_through), '--output', 'observed-history']
+        api['main']()
+    finally:
+        sys.argv = old
+    inventory = read(out / 'observed-history/PREPARATION-INVENTORY-v1.json')
+    neutral = runpy.run_path(str(E / 'bac_checkpoint_contract.py'))
+    att = read(args.subtree_attestation) if args.subtree_attestation else None
+    attestations = {x['round']: x for x in att['rounds']} if att else {}
+    checks, entries, components, outer, aliases = [], [], [], [], []
+    for n in range(169, args.closed_through + 1):
+        component = read(out / f'observed-history/r{n}-history-component-v1.json')
+        for c in component['attempt_index']:
+            a = c['attempts'][0]
+            if a['record_id'] in ('ruff', 'mypy', 'defaults', 'defaults-inventory'):
+                c['check_kind'] = 'static'
+            elif a['record_id'] == 'step-precision':
+                c['check_kind'] = 'diagnostic'
+            if n in attestations:
+                observed = attestations[n]
+                if observed['candidate_tree'] != a['candidate_tree']:
+                    raise ValueError('Attestation candidate mismatch')
+                a['execution_subtrees'] = observed['execution_subtrees']
+                a['historical_subtree_attestation'] = ref(args.subtree_attestation)
+                a.pop('execution_subtrees_unavailable_reason', None)
+            if c['check_kind'] != 'runtime':
+                a['custody_unavailable_reason'] = 'Nonqualifying collection/static/diagnostic record; no inferred runtime process qualification.'
+            c['check'] = re.sub(r'-attempt-\d+(?=--)', '', c['check'])
+            c['scope'] = 'Own-source bounded history; no package qualification or unique-count aggregation.'
+        checks.extend(component['attempt_index'])
+        entries.extend(component['interval_entries'])
+        component['status'] = 'DRAFT OWN-SOURCE HISTORY; ROOT SEAL REQUIRED'
+        cr = save(out / f'r{n}-history-component-v1.json', component)
+        components.append(dict(cr, candidate_tree=component['candidate_tree'], scope=f'R{n} complete actual Q inventory and original own-source attempts, including failures and unused specs'))
+        outer.extend(ref(p) for p in sorted((E / 'pop-standalone-step').glob(f'wave35-r{n}-*')) if p.is_file())
+        for p in sorted(Path('/tmp').glob(f'bac-r{n}-capture*.log')):
+            b = p.read_bytes()
+            target = out / (p.name + '.txt')
+            with target.open('xb') as f:
+                f.write(b)
+            aliases.append(dict(original_path=str(p), alias=ref(target), meaning='Original capture bytes only; empty log is not a successful capture claim'))
+    # The failed R169 launcher never opened a candidate or started pytest.
+    # Keep its real exit/time facts apart from the later successful collection.
+    failed_outer = E / 'pop-standalone-step/wave35-r169-nr1-collection-attempt-1-outer.json'
+    ob = read(failed_outer)
+    if ob['exit_code'] != 1:
+        raise ValueError('Unexpected original failed collection launcher status')
+    preexecution = {
+        'status': 'FAILED', 'kind': 'preexecution-launcher', 'round': 169,
+        'record': ref(failed_outer), 'spec': ref(Q / 'wave35-r169-nr1-collection-attempt-1-spec.json'),
+        'stderr': ref(failed_outer.with_suffix('.stderr')), 'stdout': ref(failed_outer.with_suffix('.stdout')),
+        'exit_code': ob['exit_code'], 'started_at': ob['start_utc'], 'ended_at': ob['end_utc'],
+        'duration_seconds': ob['elapsed_seconds'], 'runtime_started': False,
+        'candidate_manifest_at_execution': None,
+        'reason': 'Original stderr records FileNotFoundError for r169-candidate.json before job/test execution; no later manifest substituted as executed identity.'}
+    failures = save(out / 'preexecution-and-capture-history-v1.json', {
+        'status': 'DRAFT EVIDENCE JOIN; NO NEW EXECUTION', 'failed_launchers': [preexecution],
+        'capture_aliases': aliases, 'capture_records': [ref(p) for n in range(169, args.closed_through + 1) for p in sorted(Q.glob(f'wave35-r{n}-capture*.json'))],
+        'verification_only_views': [ref(p) for n in range(169, args.closed_through + 1) for p in sorted(Q.glob(f'wave35-r{n}-*verification-view.json'))],
+        'limitations': ['R169 failed capture exact traceback proves stale 717 cap versus754; exit/timestamps absent in raw log are not invented.', 'R173 failed capture has structured observed exit1; its empty raw log is retained.', 'R172 verification-only view selects original executed job1 for failed-result checking; it is neither a rerun nor a replacement executed spec.']})
+    review_names = ['pw04-nr1-fixed-source-review.md', 'pw04-native-replay-independent-review.md', 'pw04-rng-numpy-independent-review.md', 'bac-oracle-contract-astra.md', 'bac-oracle-current-protocol-plan.md']
+    review_refs = [ref(W / name) for name in review_names if (W / name).exists()]
+    required_next = [
+        'Root chooses exact finite terminal; freezes historical execution-subtree identities and terminal candidate. No inferred terminal.',
+        'Root reconciles actual interval inventory, preexecution failures, capture failures, source and process custody, and named dependency closure.',
+        'NR2 requires actual R174-or-later refusal GREEN and fixed-source independent disposition; original R173 two RED remain retained.',
+        'R173 four runner profiles and conversion PASS are bounded CPU evidence; subsequent changed source requires own-source qualification.',
+        'Retain RNG review P3: genuine Python setter and later Torch-setter failure quarantine evidence remains a separate coverage obligation.',
+        'Oracle historical cross-version capability decision remains explicit; latest global mypy6 reported by root requires exact result binding, not inferred from older mypy16.',
+        'PW04/full owner/package, coverage, slow/learning, required final review/static/CI gates remain open. Actual CUDA unavailable/unqualified; CI API blocked.',
+        'Root approves exact document postimages, seals contract then subject, obtains independent terminal review, and seals receipt before neutral selection/publication.',
+    ]
+    status = save(out / 'bounded-component-status-v1.json', {
+        'status': 'DRAFT BOUNDED DURABILITY; PW04 OPEN', 'interval_start':169,
+        'closed_through':args.closed_through, 'terminal_round':args.terminal,
+        'original_package_accounting': {'qualified':28,'remaining':38,'total':66},
+        'observations': inventory['observed_checks'], 'original_review_bytes':review_refs,
+        'failed_and_verifier_view_history': failures, 'required_next':required_next,
+        'overlap': 'Repeated rounds, component suites and runner selections overlap; never sum them as unique coverage. R169–R174 is six rounds.'})
+    candidate = read(W / f'wave35/r{args.closed_through}-candidate.json')
+    components.append(dict(status, candidate_tree=candidate['candidate_tree'], scope='Bounded evidence status, original failed attempts and review limits; terminal is not qualified'))
+    previous = read(E / 'wip27-preparation/terminal-r168-draft-v1/checkpoint-contract-draft-v2.json')
+    catalog = copy.deepcopy(previous['catalog'])
+    catalog.append({'checkpoint_id':'wave35-wip-27','format':'checkpoint-publication-v1','interval':[161,168], 'manifest':{k:v for k,v in ref(R/'docs/remediation/bac/evidence/wave35-wip-27.json').items() if k!='root'}, 'selection_plan':{k:v for k,v in ref(R/'docs/remediation/bac/evidence/wave35-wip-27/selection-plan.json').items() if k!='root'}})
+    contract = {'schema':'bac-checkpoint-selection-contract-v1', 'status':'DRAFT FOR ROOT SEAL', 'checkpoint_id':'wave35-wip-28','series':'wave35','interval_start':169,'terminal_round':args.terminal,'baseline_inventory':previous['baseline_inventory'],'catalog':catalog,'required_components':components}
+    contract_ref = save(out / 'checkpoint-contract-draft-v1.json',contract)
+    dependencies = {}
+    for c in checks:
+        for d in c['required_dependencies']:
+            key = (d['root'],d['path'],d['sha256'])
+            dependencies.setdefault(key,dict(d,role='executed-check-helper',required_by=[]))['required_by'].append(c['check'])
+    support = outer + review_refs + [failures,status,ref(helper),ref(Path(__file__)),ref(E/'bac_checkpoint_contract.py')]
+    if args.subtree_attestation:
+        support.append(ref(args.subtree_attestation))
+    subject = {'status':'DRAFT; NOT FROZEN', 'contract':contract_ref,'candidate_manifest':ref(W/f'wave35/r{args.closed_through}-candidate.json') if args.terminal else None,'candidate_tree':candidate['candidate_tree'] if args.terminal else None,'execution_subtrees':attestations.get(args.closed_through,{}).get('execution_subtrees') if args.terminal else None,'attempt_index':checks,'interval_entries':entries,'component_receipts':components,'original_review_bytes':review_refs,'documents':[], 'required_next':required_next}
+    sr = save(out/'qualification-subject-draft-v1.json',subject)
+    receipt = {'schema':'bac-checkpoint-terminal-receipt-v1','status':'DRAFT; ROOT SEAL AND INDEPENDENT TERMINAL REVIEW REQUIRED',**{k:contract[k] for k in ('checkpoint_id','series','interval_start','terminal_round')},'contract':contract_ref,'candidate_manifest':subject['candidate_manifest'],'candidate_tree':subject['candidate_tree'],'base_commit':candidate['base_commit'] if args.terminal else None,'execution_subtrees':subject['execution_subtrees'],'review_subject':sr,'attempt_index':checks,'interval_entries':entries,'component_receipts':components,'dependencies':list(dependencies.values()),'support_references_pending_root_dependency_closure':support,'outer_launcher_records':outer,'preexecution_and_capture_history':failures,'reviews':[],'documents':[],'package_accounting':{'qualified':28,'remaining':38,'total':66},'required_next':required_next,'retained_limitations':inventory['gaps'],'scope':'Finite own-source evidence draft. No test-total aggregation, package closure, terminal review, seal or publication.'}
+    rr = save(out/'terminal-receipt-draft-v1.json',receipt)
+    # Rehash every exact rooted reference supplied here; this is metadata integrity,
+    # not neutral acceptance or independent qualification.
+    for d in support + list(dependencies.values()) + components:
+        actual = ref(ROOTS[d['root']] / d['path'])
+        assert all(actual[k] == d[k] for k in ('bytes','sha256'))
+    for n in range(169,args.closed_through+1):
+        observed=read(out/f'observed-history/r{n}-history-component-v1.json')['interval_inventory']
+        assert sorted(observed)==sorted(p.name for p in Q.glob(f'wave35-r{n}-*'))
+        assert all(v == neutral['descendants'](Q,k) for k,v in observed.items())
+    save(out/'ROOT-HANDOFF-v1.json',{'status':'DRAFT ONLY; REFERENCES REHASHED, Q MEMBERSHIP/DESCENDANTS RECHECKED','receipt':rr,'contract':contract_ref,'subject':sr,'closed_interval':[169,args.closed_through],'round_count':args.closed_through-168,'terminal':args.terminal,'checks':len(checks),'executed_job_records':len(inventory['observed_checks']),'unused_automatic_specs':sum(c['status']=='UNRUN' for c in checks),'generic_inventory_gaps':inventory['gaps'],'pending':required_next})
+    print(json.dumps({'draft_receipt':rr,'terminal':args.terminal,'status':'DRAFT ONLY'}))
+
+
+if __name__ == '__main__':
+    main()

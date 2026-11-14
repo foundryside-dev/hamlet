@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "candidate_tree": "7333be02ae881c800884c52bb2bec71053fcae4c",
+  "approved_document_postimages": [
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "bytes": 46024,
+      "sha256": "b2e4ce6b341cfa4a9f85402f1c56c9f2d06aec78cc73fc81ebd22d256942932f"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/STATUS.md",
+      "bytes": 135001,
+      "sha256": "99f34cbf4a700f7930689801831c82f10568365345d2027a833b7a8e7805357e"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "bytes": 51381,
+      "sha256": "416b35935c60d7be293eb4f0600293a2cfc0e12dd90e7e6ac89333570a956e6f"
+    },
+    {
+      "root": "R",
+      "path": "docs/remediation/bac/PAUSED-HANDOFF-2026-11-14.md",
+      "bytes": 6412,
+      "sha256": "fa7b56bbb6776f9ecfdc9f642bc24c10c80a3209202a357d620e6f1270194c64"
+    }
+  ],
+  "scope": "All source/config/protected hashes equal execution candidate except exact independently reviewed document postimages."
+}

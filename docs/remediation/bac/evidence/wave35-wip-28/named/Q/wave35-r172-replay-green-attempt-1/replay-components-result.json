@@ -1,0 +1,33 @@
+{
+  "name": "replay-components",
+  "exit_code": 0,
+  "seconds": 110.2107940610149,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py",
+    "tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+    "--tb=long",
+    "-rs",
+    "-n",
+    "2",
+    "--dist",
+    "worksteal",
+    "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-replay-components-attempt-1"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r172-replay-green-attempt-1/replay-components.log",
+  "sha256": "6d8c3d337e90fd0c440767b0f5fac43b73aed890845f48759c19c26d7a68ab81",
+  "candidate_tree": "72dd33a5abb56616986732b85f7678123b072ff3",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "manifest_sha256": "7ff5afdf48ffc5a252bca181d5f30039b0c9150e919a857f7a7c69a2d07b18b4",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

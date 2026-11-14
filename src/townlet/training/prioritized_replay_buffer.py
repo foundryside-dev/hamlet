@@ -30,6 +30,7 @@ from townlet.training.replay_contract import (
     ReplayReadiness,
     ReplayRequest,
     SamplingReceipt,
+    StagedReplayData,
     replay_device_prepare,
     replay_device_sample,
     replay_local,
@@ -174,6 +175,13 @@ class _PrioritizedRestoreCandidate(_PrioritizedRows):
     sampler: _SamplerConfiguration
 
 
+@dataclass(frozen=True)
+class _NativePrioritizedPayload:
+    material: _PrioritizedRestoreCandidate
+    reverse: dict[int, int]
+    configuration: tuple[float, float, bool]
+
+
 class PrioritizedReplayBuffer(ReplayCustody):
     """Physical ring storage; archival priorities cannot address active rows."""
 
@@ -196,7 +204,7 @@ class PrioritizedReplayBuffer(ReplayCustody):
     )
 
     def _replay_children(self, value: object) -> tuple[object, ...]:
-        if isinstance(value, (_ValidatedPrioritizedState, _PrioritizedRestoreCandidate, _SamplerConfiguration)):
+        if isinstance(value, (_ValidatedPrioritizedState, _PrioritizedRestoreCandidate, _SamplerConfiguration, _NativePrioritizedPayload)):
             return tuple(getattr(value, field.name) for field in fields(value))
         if type(value) is history.HistoricalReplayArchive:
             return (object.__getattribute__(value, "original_state"),)
@@ -221,9 +229,12 @@ class PrioritizedReplayBuffer(ReplayCustody):
             return None, (self._historical_archives,)
         if route == "install_historical_archive":
             return None, (self._historical_archives, self._replay_argument(args, kwargs, 0, "archive"))
-        if route in ("validate_serialized", "prepare_serialized"):
+        if route in ("validate_serialized", "prepare_serialized", "stage_native_restore"):
             return self._transport_inventory(
-                self._replay_argument(args, kwargs, 0, "state"), route, kwargs.get("expected_obs_dim"), count_field="size_current"
+                self._replay_argument(args, kwargs, 0, "state"),
+                "prepare_serialized" if route == "stage_native_restore" else route,
+                kwargs.get("expected_obs_dim"),
+                count_field="size_current",
             )
         if route == "materialize_validated":
             state = self._replay_argument(args, kwargs, 0, "state")
@@ -1288,6 +1299,62 @@ class PrioritizedReplayBuffer(ReplayCustody):
 
             self._validate_replay(candidate, lease)
             self._publish_replay(candidate, publish)
+
+    def stage_native_restore(
+        self, state: Mapping[str, Any], *, expected_obs_dim: int, parent_plan: object, lineage: RNGOperation | None
+    ) -> StagedReplayData:
+        """Own complete PER storage and the reverse index before native publication."""
+        from townlet.population.vectorized import validate_native_population_data
+
+        validate_native_population_data(plan=parent_plan, owner=self)
+        with self._device_operation(
+            "prepare", lineage, "stage_native_restore", (state,), {"expected_obs_dim": expected_obs_dim}, mutation=False
+        ):
+            validate_native_population_data(plan=parent_plan, owner=self)
+            if (
+                not isinstance(state, Mapping)
+                or "format_version" not in state
+                or type(state["format_version"]) is not int
+                or state["format_version"] != PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION
+            ):
+                raise ValueError("Native PER restore requires current format_version 6")
+            material = self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+            payload = _NativePrioritizedPayload(
+                material,
+                {int(unit): slot for slot, unit in enumerate(material.unit_ids[: material.size_current])},
+                (self.alpha, self.beta_initial, self.beta_annealing),
+            )
+            data = self._issue_native_replay_data(payload, parent_plan=parent_plan)
+        return data
+
+    def install_native_restore(
+        self, data: object, *, parent_plan: object, attempt: object, restored: object, lineage: RNGOperation | None
+    ) -> None:
+        """Assign preallocated PER state under the actual source-entered C finalizer."""
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+
+        with self._owner_operation(mutation=False):
+            self._native_replay_payload(data, parent_plan=parent_plan)
+            validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+        with self._device_operation("install", lineage, "install_native_restore", (data,), {}, mutation=False):
+            payload = self._native_replay_payload(data, parent_plan=parent_plan)
+            validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+            if not isinstance(payload, _NativePrioritizedPayload) or not isinstance(data, StagedReplayData):
+                raise ValueError("Native PER installation requires its owned storage data")
+            if payload.configuration != (self.alpha, self.beta_initial, self.beta_annealing):
+                raise ValueError("Native PER configuration changed after staging")
+            material = payload.material
+
+            def publish() -> None:
+                for name in _STORAGE_FIELDS:
+                    setattr(self, name, getattr(material, name))
+                self.beta, self.priorities, self.max_priority = material.beta, material.priorities, material.max_priority
+                self.position, self.size_current = material.position, material.size_current
+                self.action_dim, self.legality_mode = material.action_dim, material.legality_mode
+                self.unit_ids, self.next_unit_id, self._id_to_slot = material.unit_ids, material.next_unit_id, payload.reverse
+                self._sampler, self._historical_archives = material.sampler, material.archives
+
+            self._publish_native_replay_data(data, publish)
 
     def load_for_mode(self, state: Mapping[str, Any], *, requested_mode: history.AccessMode, lineage: RNGOperation | None) -> None:
         if requested_mode not in ("auto", "recorded_full_resume", "archived_history_fresh_episode", "inference"):

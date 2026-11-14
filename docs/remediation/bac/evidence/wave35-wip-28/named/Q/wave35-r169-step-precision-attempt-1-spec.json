@@ -1,0 +1,15 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r169-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r169-step-precision-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "step-precision",
+      "args": [
+        "-c",
+        "import json, os\nfrom pathlib import Path\nimport torch, townlet\ntorch.set_num_threads(1)\nassert Path(townlet.__file__).resolve() == Path('/workspace/hamlet/src/townlet/__init__.py')\nassert torch.get_default_dtype() == torch.float32\nrows=[]\nfor kind in (torch.optim.Adam, torch.optim.AdamW, torch.optim.RMSprop):\n    p=torch.nn.Parameter(torch.ones(1))\n    opt=kind([p], lr=0.0001)\n    p.grad=torch.ones_like(p)\n    opt.step()\n    step=opt.state[p]['step']\n    assert step.dtype == torch.float32 and step.device.type == 'cpu'\n    step.fill_(2**24-1)\n    values=[step.item()]\n    for _ in range(2):\n        p.grad=torch.ones_like(p)\n        opt.step()\n        values.append(step.item())\n    assert values == [2**24-1, 2**24, 2**24], (kind.__name__,values)\n    rows.append(dict(optimizer=kind.__name__, step_dtype=str(step.dtype), boundary_values=values))\nprint(json.dumps(dict(status='PASS CPU NUMERICAL PROBE',torch=torch.__version__,threads=torch.get_num_threads(),module=townlet.__file__,base=os.environ['BAC_QUAL_SHA'],candidate=os.environ['BAC_QUAL_TREE'],cases=rows,scope='Actual optimizer repeated-add representability near boundary; manually seeded step, not a 2**24-update training proof; CUDA unrun.')))\n"
+      ]
+    }
+  ]
+}

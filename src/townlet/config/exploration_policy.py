@@ -775,6 +775,7 @@ def _runtime_operation(method: Callable[..., Any]) -> Callable[..., Any]:
                         cell = _begin_installation(publication.outcome, self)
                 overlay = self._world_restore_context
                 if overlay is not None:
+                    permitted: tuple[str, ...]
                     if overlay[1].operation == "prepare":
                         permitted = ("prepare_restore", "prepare_private_initialization")
                     else:

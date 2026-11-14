@@ -266,7 +266,11 @@ def test_configured_direct_operation_is_one_batch_and_update_adapter_advances_cl
     assert len(rnd.obs_buffer) == 0
 
 
-def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
+@pytest.mark.parametrize(
+    "corruption_group",
+    ["rnd", "pop_missing", "pop_empty", "pop_reset_steps", "pop_shifted_steps", "scheduler_rewind"],
+)
+def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path, corruption_group):
     import hashlib
     import random
     import shutil
@@ -283,6 +287,10 @@ def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
     root = Path(__file__).resolve().parents[4]
     pack = tmp_path / "pack"
     shutil.copytree(root / "configs/test/bac_remediation/feedforward", pack, ignore=shutil.ignore_patterns(".compiled"))
+    brain_path = pack / "brain.yaml"
+    brain = yaml.safe_load(brain_path.read_text())
+    brain["optimizer"]["schedule"] = {"type": "step_decay", "step_size": 1000, "gamma": 0.5}
+    brain_path.write_text(yaml.safe_dump(brain, sort_keys=False))
     training_path = pack / "levels/L0_0_minimal/training.yaml"
     doc = yaml.safe_load(training_path.read_text())
     training = doc["training"]
@@ -321,6 +329,12 @@ def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
         runner.run()
         saved = read_checkpoint(uninterrupted, 2)
         expected = read_checkpoint(uninterrupted, 3)
+    trained_optimizer = saved["population_state"]["optimizer"]
+    assert trained_optimizer["state"]
+    assert all(float(moment["step"].item()) > 0 for moment in trained_optimizer["state"].values())
+    scheduler_state = saved["population_state"]["scheduler"]
+    assert 0 < scheduler_state["last_epoch"] < scheduler_state["step_size"]
+    assert scheduler_state["_step_count"] == scheduler_state["last_epoch"] + 1
     state, next_state = rnd_state(saved), rnd_state(expected)
     service = state["predictor_service"]
     assert (service["admitted_rows"], service["consumed_rows"], service["optimizer_updates"]) == (12, 10, 2)
@@ -373,11 +387,34 @@ def test_native_runner_checkpoint_retains_tail_and_rejects_corruption(tmp_path):
                 self.refusal_observed = True
                 raise
 
-    for damage in ("tail_nan", "missing", "empty", "reset_steps", "capturable", "clock_position", "clock_unit"):
+    damages = (
+        ("tail_nan", "missing", "empty", "reset_steps", "capturable", "clock_position", "clock_unit")
+        if corruption_group == "rnd"
+        else (corruption_group,)
+    )
+    for damage in damages:
         bad = copy.deepcopy(saved)
         next(iter(bad["population_state"]["q_network"].values())).fill_(99)
         damaged_rnd = rnd_state(bad)
-        if damage == "tail_nan":
+        if damage.startswith("pop_"):
+            optimizer_state = bad["population_state"]["optimizer"]["state"]
+            if damage == "pop_missing":
+                del optimizer_state[next(iter(optimizer_state))]
+            elif damage == "pop_empty":
+                optimizer_state.clear()
+            elif damage == "pop_reset_steps":
+                for moment in optimizer_state.values():
+                    moment["step"].zero_()
+            else:
+                for moment in optimizer_state.values():
+                    moment["step"].add_(1)
+            reason = "optimizer|Optimizer|Adam|adam|update|step"
+        elif damage == "scheduler_rewind":
+            scheduler = bad["population_state"]["scheduler"]
+            scheduler["last_epoch"] -= 1
+            scheduler["_step_count"] -= 1
+            reason = "scheduler|Scheduler|update|step|epoch"
+        elif damage == "tail_nan":
             damaged_rnd["predictor_service"]["pending_observations"][0, 0] = float("nan")
             reason = "finite|NaN|nan"
         elif damage == "clock_position":

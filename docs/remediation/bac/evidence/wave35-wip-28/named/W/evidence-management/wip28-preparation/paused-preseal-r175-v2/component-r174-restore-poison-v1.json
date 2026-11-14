@@ -1,0 +1,175 @@
+{
+  "attempt": {
+    "absolute_time_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+    "actual_worker_count": 0,
+    "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+    "candidate_manifest": {
+      "bytes": 231496,
+      "path": "wave35/r174-candidate.json",
+      "root": "W",
+      "sha256": "488d016feed40b3747bdf1acb714b02d4cd625b3da0acb1d19c581534aae3ca0"
+    },
+    "candidate_tree": "80b518716d7b49a4e0dde6bb40273ea8ea698cc0",
+    "command": [
+      "/workspace/hamlet/.venv/bin/python",
+      "-m",
+      "pytest",
+      "tests/test_townlet/regressions/bac/test_restore_installation_outcomes.py::test_bank_completion_failure_retains_published_outcome_poison",
+      "--no-cov",
+      "-p",
+      "no:cacheprovider",
+      "-p",
+      "no:benchmark",
+      "-p",
+      "bac_source_identity",
+      "-q",
+      "--tb=line",
+      "-rs",
+      "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r174-restore-poison-attempt-1"
+    ],
+    "counts": {
+      "passed": 1,
+      "skipped": 0,
+      "warnings": 0,
+      "xfailed": 0,
+      "xpassed": 0
+    },
+    "custody_unavailable_reason": "Original job result lacks absolute UTC; outer launcher timestamps are retained separately, never substituted.",
+    "descendants": [
+      {
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison",
+        "type": "directory"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison/identity-controller.json",
+        "sha256": "d78696336b2c66ea04c8be38fd251fc4d446d75d05cb1f22808392ac3a130487",
+        "type": "file"
+      },
+      {
+        "bytes": 646,
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison-custody.json",
+        "sha256": "a45dbfe58ab54d3e9d188bea2d796e286c2a1ddd84cc365c839a1bfd3c359d11",
+        "type": "file"
+      },
+      {
+        "bytes": 1072,
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison-result.json",
+        "sha256": "38140225ed145293827b4e361bb7f1c4922addc4264c337cab5e5d3beb190789",
+        "type": "file"
+      },
+      {
+        "bytes": 580,
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison.log",
+        "sha256": "4a1df57651bf364edd316f7fb60955c9b92fb5745370d78a09b3c43267dc90ed",
+        "type": "file"
+      }
+    ],
+    "duration_seconds": 30.518681432993617,
+    "ended_at": null,
+    "environment": {
+      "bytes": 5908,
+      "path": "wave35/r174-fixture-resource-preflight.json",
+      "root": "W",
+      "sha256": "dab1d27f330af10fa6726969d87c8bf46b0523be58e8ec723b00aeffaba67312"
+    },
+    "execution_subtrees": {
+      ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+      "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+      "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+      "src": "ea16939b0ac75d2480ef4932c5c6375d4f5cd534",
+      "tests": "3849bb9954bd8dee4fc758a219a30f7c09376e6b"
+    },
+    "exit_code": 0,
+    "hardware": {
+      "profile": "Recorded CPU preflight; actual CUDA unqualified"
+    },
+    "harness_sha256_recorded": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2",
+    "historical_subtree_attestation": {
+      "bytes": 4930,
+      "path": "evidence-management/wip28-preparation/ROOT-HISTORICAL-SUBTREES-R169-R175-v1.json",
+      "root": "W",
+      "sha256": "2c127187fcb8fa1b51722d1628148f777dda341f489fe2c009f7ce32a6e705a5"
+    },
+    "id": "wave35-r174-restore-poison-attempt-1--restore-poison",
+    "log_paths": [
+      {
+        "bytes": 580,
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison.log",
+        "root": "Q",
+        "sha256": "4a1df57651bf364edd316f7fb60955c9b92fb5745370d78a09b3c43267dc90ed"
+      }
+    ],
+    "outer_launcher_observation": {
+      "bytes": 912,
+      "path": "evidence-management/pop-standalone-step/wave35-r174-restore-poison-attempt-1-outer.json",
+      "root": "W",
+      "sha256": "2e7b716dbb35fd5876f680ef923de218a12beb30ee2d5da8dfa078338f7529b0"
+    },
+    "path": "wave35-r174-restore-poison-attempt-1",
+    "process_custody": [
+      {
+        "bytes": 246,
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison/identity-controller.json",
+        "role": "controller",
+        "root": "Q",
+        "sha256": "d78696336b2c66ea04c8be38fd251fc4d446d75d05cb1f22808392ac3a130487"
+      },
+      {
+        "bytes": 246,
+        "path": "wave35-r174-restore-poison-attempt-1/restore-poison/identity-controller.json",
+        "role": "import_thread_debug",
+        "root": "Q",
+        "sha256": "d78696336b2c66ea04c8be38fd251fc4d446d75d05cb1f22808392ac3a130487"
+      }
+    ],
+    "process_topology": "single_process",
+    "process_witness_limit": "Original witnesses retain actual source/import/thread facts; absent literal attempt IDs/PIDs are not invented.",
+    "record": {
+      "bytes": 1072,
+      "path": "wave35-r174-restore-poison-attempt-1/restore-poison-result.json",
+      "root": "Q",
+      "sha256": "38140225ed145293827b4e361bb7f1c4922addc4264c337cab5e5d3beb190789"
+    },
+    "record_id": "restore-poison",
+    "result": {
+      "bytes": 1072,
+      "path": "wave35-r174-restore-poison-attempt-1/restore-poison-result.json",
+      "root": "Q",
+      "sha256": "38140225ed145293827b4e361bb7f1c4922addc4264c337cab5e5d3beb190789"
+    },
+    "round": 174,
+    "started_at": null,
+    "status": "PASSED",
+    "verifier": {
+      "bytes": 646,
+      "path": "wave35-r174-restore-poison-attempt-1/restore-poison-custody.json",
+      "root": "Q",
+      "sha256": "a45dbfe58ab54d3e9d188bea2d796e286c2a1ddd84cc365c839a1bfd3c359d11"
+    }
+  },
+  "attempt_id": "wave35-r174-restore-poison-attempt-1--restore-poison",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "candidate_manifest": {
+    "bytes": 231496,
+    "path": "wave35/r174-candidate.json",
+    "root": "W",
+    "sha256": "488d016feed40b3747bdf1acb714b02d4cd625b3da0acb1d19c581534aae3ca0"
+  },
+  "candidate_tree": "80b518716d7b49a4e0dde6bb40273ea8ea698cc0",
+  "check": "wave35-r174-restore-poison--restore-poison",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+    "src": "ea16939b0ac75d2480ef4932c5c6375d4f5cd534",
+    "tests": "3849bb9954bd8dee4fc758a219a30f7c09376e6b"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "qualification_scope": "Earlier R174 own-source evidence, not a final-source rerun",
+  "status": "BOUNDED OWN-SOURCE CPU COMPONENT PASS"
+}

@@ -1,0 +1,154 @@
+{
+  "capture_aliases": [
+    {
+      "alias": {
+        "bytes": 9390,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r169-capture-attempt-2.log.txt",
+        "root": "W",
+        "sha256": "3ecd5095394e5bfca42cd008cb33d766bfe61472210adc23259d73d839832562"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r169-capture-attempt-2.log"
+    },
+    {
+      "alias": {
+        "bytes": 367,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r169-capture.log.txt",
+        "root": "W",
+        "sha256": "c520611521c6524942ab88a70f1ab9f22c6f445bbe04dd6529fb93a6cc88b9fa"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r169-capture.log"
+    },
+    {
+      "alias": {
+        "bytes": 9462,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r170-capture.log.txt",
+        "root": "W",
+        "sha256": "e6533e63e025c3f6dadac09e52503742b840ff22b1be69cfec5328b2a5feb7b9"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r170-capture.log"
+    },
+    {
+      "alias": {
+        "bytes": 9602,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r171-capture.log.txt",
+        "root": "W",
+        "sha256": "fb39d4b2ebb8db8485e5d65955267c537595e90bf0bf4b80ea3e806fd03061c6"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r171-capture.log"
+    },
+    {
+      "alias": {
+        "bytes": 9764,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r172-capture.log.txt",
+        "root": "W",
+        "sha256": "0d442f63f0c59d4c333c433f3bf42665c8128c6bad6d9fd7f238d7141440763b"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r172-capture.log"
+    },
+    {
+      "alias": {
+        "bytes": 9908,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r173-capture-attempt-2.log.txt",
+        "root": "W",
+        "sha256": "3d28330aeb485dc87fc995962d185245ce407c6fe22f5f4a535895c10fce241e"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r173-capture-attempt-2.log"
+    },
+    {
+      "alias": {
+        "bytes": 0,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r173-capture.log.txt",
+        "root": "W",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r173-capture.log"
+    },
+    {
+      "alias": {
+        "bytes": 9908,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r174-capture.log.txt",
+        "root": "W",
+        "sha256": "43fc69f39a5f11558f4c8910900edc7ac623cb2313eef62d83568b6b08f36451"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r174-capture.log"
+    },
+    {
+      "alias": {
+        "bytes": 9908,
+        "path": "evidence-management/wip28-preparation/paused-preseal-r175-v2/raw-draft/bac-r175-capture.log.txt",
+        "root": "W",
+        "sha256": "aa04c4c578687c6dd53159da94a628eb3009703a2bdf1e2adb1835cdbaca50f4"
+      },
+      "meaning": "Original capture bytes only; empty log is not a successful capture claim",
+      "original_path": "/tmp/bac-r175-capture.log"
+    }
+  ],
+  "capture_records": [
+    {
+      "bytes": 398,
+      "path": "wave35-r173-capture-attempt-1.json",
+      "root": "Q",
+      "sha256": "501522e1a2deb838497af1ffca83763a887c74e7b27eafdd099327ecc830202a"
+    }
+  ],
+  "failed_launchers": [
+    {
+      "candidate_manifest_at_execution": null,
+      "duration_seconds": 0.07480219300487079,
+      "ended_at": "2026-11-14T20:09:40.665070+00:00",
+      "exit_code": 1,
+      "kind": "preexecution-launcher",
+      "reason": "Original stderr records FileNotFoundError for r169-candidate.json before job/test execution; no later manifest substituted as executed identity.",
+      "record": {
+        "bytes": 913,
+        "path": "evidence-management/pop-standalone-step/wave35-r169-nr1-collection-attempt-1-outer.json",
+        "root": "W",
+        "sha256": "6e127f3ee230cde47d026addf661c9bfc5adcd9ff4df4d064fc4f502a593e3df"
+      },
+      "round": 169,
+      "runtime_started": false,
+      "spec": {
+        "bytes": 848,
+        "path": "wave35-r169-nr1-collection-attempt-1-spec.json",
+        "root": "Q",
+        "sha256": "f1a5625395cbb39a508c64a03a81880e62b3060490a3a1114d3607f28752bc0a"
+      },
+      "started_at": "2026-11-14T20:09:40.590127+00:00",
+      "status": "FAILED",
+      "stderr": {
+        "bytes": 854,
+        "path": "evidence-management/pop-standalone-step/wave35-r169-nr1-collection-attempt-1-outer.stderr",
+        "root": "W",
+        "sha256": "a96f4e837e17950c983da193d39ae56decabe5feefb1534643d76414495bc054"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "evidence-management/pop-standalone-step/wave35-r169-nr1-collection-attempt-1-outer.stdout",
+        "root": "W",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "limitations": [
+    "R169 failed capture exact traceback proves stale 717 cap versus754; exit/timestamps absent in raw log are not invented.",
+    "R173 failed capture has structured observed exit1; its empty raw log is retained.",
+    "R172 verification-only view selects original executed job1 for failed-result checking; it is neither a rerun nor a replacement executed spec."
+  ],
+  "status": "DRAFT EVIDENCE JOIN; NO NEW EXECUTION",
+  "verification_only_views": [
+    {
+      "bytes": 1241,
+      "path": "wave35-r172-runner-conversion-verification-view.json",
+      "root": "Q",
+      "sha256": "15ab245b54ed4707316b320eda081499db3309c168258dc8b39bb64b28893ad2"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+src/townlet/recording/recorder.py:184: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/population/vectorized.py:735: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:735: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:735: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:735: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:736: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:736: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:736: error: Missing named argument "lineage" for "prepare_archived_import" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:736: note: "prepare_archived_import" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:738: error: Missing named argument "lineage" for "prepare_serialized" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:738: note: "prepare_serialized" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/population/vectorized.py:739: error: Missing named argument "lineage" for "load_prepared" of "SequentialReplayBuffer"  [call-arg]
+src/townlet/population/vectorized.py:739: note: "load_prepared" defined in "townlet.training.sequential_replay_buffer"
+src/townlet/oracle/driver.py:98: error: Missing named argument "world_roster" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: note: "VectorizedHamletEnv" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:98: error: Missing named argument "training_seed" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:98: error: Missing named argument "lane_world_ids" for "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: error: Missing named argument "reservation" for "reset" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:115: note: "reset" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Missing named argument "vector_step" for "step" of "VectorizedHamletEnv"  [call-arg]
+src/townlet/oracle/driver.py:128: note: "step" defined in "townlet.environment.vectorized_env"
+src/townlet/oracle/driver.py:128: error: Incompatible types in assignment (expression has type "Tensor", variable has type "WorldRecord")  [assignment]
+src/townlet/demo/runner.py:577: error: Item "SequentialReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "stage_native_restore"  [union-attr]
+src/townlet/demo/runner.py:577: error: Item "PrioritizedReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "stage_native_restore"  [union-attr]
+src/townlet/demo/runner.py:599: error: Item "SequentialReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "install_native_restore"  [union-attr]
+src/townlet/demo/runner.py:599: error: Item "PrioritizedReplayBuffer" of "ReplayBuffer | SequentialReplayBuffer | PrioritizedReplayBuffer" has no attribute "install_native_restore"  [union-attr]
+src/townlet/demo/runner.py:794: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:866: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:938: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+src/townlet/demo/runner.py:1061: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Found 16 errors in 3 files (checked 203 source files)

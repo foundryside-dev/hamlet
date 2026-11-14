@@ -1,0 +1,37 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "candidate_tree": "2fe2ef1c7f9f48c5da30abfb1149e2994c6ee9cb",
+  "unique_node_phase_failures": 5,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rnd_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "Failed: DID NOT RAISE <class 'ValueError'>",
+      "count": 5,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption[scheduler_rewind]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_missing]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_shifted_steps]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_reset_steps]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rnd_service.py::test_native_runner_checkpoint_retains_tail_and_rejects_corruption[pop_empty]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

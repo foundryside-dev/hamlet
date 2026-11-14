@@ -1,0 +1,126 @@
+{
+  "status": "ROOT GIT OBJECT ATTESTATION; NOT EXECUTION OR PACKAGE ACCEPTANCE",
+  "observed_at_utc": "2026-11-14T20:57:57.328670+00:00",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "rounds": [
+    {
+      "round": 169,
+      "candidate_tree": "2fe2ef1c7f9f48c5da30abfb1149e2994c6ee9cb",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r169-candidate.json",
+        "bytes": 223569,
+        "sha256": "a25a2fc6c8a458ba264d634e36007961abaa1859732136cb4bf5ec27bd668de2"
+      },
+      "execution_subtrees": {
+        "src": "de3d5f7db0abb623af601241c416c9330512b65c",
+        "tests": "c58e0c032a6c1d12d6722cab3ccd495c1291aeb3",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    },
+    {
+      "round": 170,
+      "candidate_tree": "b1205b9caafebf8a796083b2ee2977ccd75fa4ec",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r170-candidate.json",
+        "bytes": 224763,
+        "sha256": "7135f837cccd8e774b06f935c94adf76bc6cafe44870d27b9b06303f7d94a01f"
+      },
+      "execution_subtrees": {
+        "src": "f718bcfd256e999f9179cea2a39d31d5383587b3",
+        "tests": "90334549185b933f395aa151b4e079ca4827b822",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    },
+    {
+      "round": 171,
+      "candidate_tree": "b1500cf0cf3f933b514a3af2fdd0752182ea450c",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r171-candidate.json",
+        "bytes": 227343,
+        "sha256": "8a58d17bba318af2736a822fca7f6dfc1ed7a32b9b6cea69cf9464ab8e9b7b69"
+      },
+      "execution_subtrees": {
+        "src": "f718bcfd256e999f9179cea2a39d31d5383587b3",
+        "tests": "2c7d59d27d188bf2ffe3ef699a2cf87d1fcef729",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    },
+    {
+      "round": 172,
+      "candidate_tree": "72dd33a5abb56616986732b85f7678123b072ff3",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r172-candidate.json",
+        "bytes": 228820,
+        "sha256": "7ff5afdf48ffc5a252bca181d5f30039b0c9150e919a857f7a7c69a2d07b18b4"
+      },
+      "execution_subtrees": {
+        "src": "7aeaf81d33f8db25ef246dbea1a0127910324a2e",
+        "tests": "771333b33d7d7e8d9b55a9cc7ed0bcad09f1e4a1",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    },
+    {
+      "round": 173,
+      "candidate_tree": "f7aceb378449082a23162b3ad99913728f368e6f",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r173-candidate.json",
+        "bytes": 231495,
+        "sha256": "e03451bdb06854a7881933fba154eea21d123e01f92441e65153ddea4dc07206"
+      },
+      "execution_subtrees": {
+        "src": "e49eb428aff5def49537948480ef11f400e79be5",
+        "tests": "058f94c32f1e9647661c7bc94592e8c03e227ade",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    },
+    {
+      "round": 174,
+      "candidate_tree": "80b518716d7b49a4e0dde6bb40273ea8ea698cc0",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r174-candidate.json",
+        "bytes": 231496,
+        "sha256": "488d016feed40b3747bdf1acb714b02d4cd625b3da0acb1d19c581534aae3ca0"
+      },
+      "execution_subtrees": {
+        "src": "ea16939b0ac75d2480ef4932c5c6375d4f5cd534",
+        "tests": "3849bb9954bd8dee4fc758a219a30f7c09376e6b",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    },
+    {
+      "round": 175,
+      "candidate_tree": "7333be02ae881c800884c52bb2bec71053fcae4c",
+      "candidate_manifest": {
+        "root": "W",
+        "path": "wave35/r175-candidate.json",
+        "bytes": 231496,
+        "sha256": "226fb0f102c6bd56d5f1ad15572f9409c6bd4fb5cdb81e64d59b3d5d04b3acb3"
+      },
+      "execution_subtrees": {
+        "src": "ce6100d3d63f7b095bc67c5c11c0f009781c3781",
+        "tests": "3849bb9954bd8dee4fc758a219a30f7c09376e6b",
+        "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+        "scripts": "7c3f00836c927cccf10d319a3eb25c5c036d10bc",
+        ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347"
+      }
+    }
+  ]
+}

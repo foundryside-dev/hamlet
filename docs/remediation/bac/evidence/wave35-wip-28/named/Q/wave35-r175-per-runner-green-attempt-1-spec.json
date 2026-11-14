@@ -1,0 +1,32 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r175-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r175-per-runner-green-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "per-runner-green",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=long",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r175-per-runner-green-attempt-1",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

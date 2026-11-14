@@ -1,0 +1,33 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r171-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r171-replay-red-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "replay-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py::test_native_per_stages_real_parent_without_publication",
+        "tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py::test_genuine_initial_sequence_data_stages_without_publication",
+        "tests/test_townlet/regressions/bac/test_native_sequential_replay_data.py::test_nonempty_real_sequence_stage_preserves_source_and_receiver",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=long",
+        "-rs",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r171-replay-red-attempt-1",
+        "-n",
+        "2",
+        "--dist",
+        "worksteal"
+      ]
+    }
+  ]
+}

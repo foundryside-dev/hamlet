@@ -1,0 +1,22 @@
+{
+  "name": "defaults-inventory",
+  "exit_code": 1,
+  "seconds": 2.2209793789952528,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "scripts/no_defaults_lint.py",
+    "src/townlet/",
+    "--whitelist",
+    ".defaults-whitelist.txt",
+    "--ratchet",
+    ".defaults-ratchet",
+    "--show-whitelisted",
+    "--quiet"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r169-defaults-inventory-attempt-1/defaults-inventory.log",
+  "sha256": "4c485d834988c206bdba16902dd2803706f74e2212458817b672f14b151837cc",
+  "candidate_tree": "2fe2ef1c7f9f48c5da30abfb1149e2994c6ee9cb",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "manifest_sha256": "a25a2fc6c8a458ba264d634e36007961abaa1859732136cb4bf5ec27bd668de2",
+  "harness_sha256": "e84c648244050b4980728d2c64421473c3b21a21a0b5ee09826e97a3b40e78d2"
+}

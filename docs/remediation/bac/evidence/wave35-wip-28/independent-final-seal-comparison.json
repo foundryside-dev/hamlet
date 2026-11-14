@@ -1,0 +1,51 @@
+{
+  "schema": "bac-independent-final-seal-comparison-v1",
+  "reviewer": "/root/pw04_native_replay_astra_review",
+  "producer": "/root/bac_wip28_evidence_preparation",
+  "independent": true,
+  "disposition": "APPROVE BOUNDED PUBLICATION",
+  "status": "PASS; FINAL RECEIPT AGREES WITH FROZEN SUBJECT AND CONTRACT",
+  "final_receipt": {
+    "root": "W",
+    "path": "evidence-management/wip28-preparation/root-terminal-receipt-v1.json",
+    "bytes": 597290,
+    "sha256": "8d4a9aae7f820753ed3b7c65690eb973403d192f0f596f80ee8c125fc8518de8"
+  },
+  "pre_review_receipt": {
+    "root": "W",
+    "path": "wave35/WIP28-PRE-REVIEW-RECEIPT-v1.json",
+    "bytes": 595482,
+    "sha256": "e5668ad3d54864d0bcc3effe6b7d0d8c6ae47fd9f86185c221e6e3a8d5079e57"
+  },
+  "contract": {
+    "root": "W",
+    "path": "wave35/WIP28-CHECKPOINT-CONTRACT-v1.json",
+    "bytes": 10360,
+    "sha256": "226d8a186e51842a3013bb59c5c5d437cbd17fa0a55790df478cf446b935e110"
+  },
+  "reviewed_subject": {
+    "root": "W",
+    "path": "wave35/WIP28-QUALIFICATION-SUBJECT-v1.json",
+    "bytes": 595265,
+    "sha256": "c89a51d98d09cc126a3720a3a8b872559c10056f1a0a3a2f76c571cdff230d69"
+  },
+  "candidate_manifest": {
+    "bytes": 231496,
+    "path": "wave35/r175-candidate.json",
+    "root": "W",
+    "sha256": "226fb0f102c6bd56d5f1ad15572f9409c6bd4fb5cdb81e64d59b3d5d04b3acb3"
+  },
+  "candidate_tree": "7333be02ae881c800884c52bb2bec71053fcae4c",
+  "changed_fields": [
+    "status",
+    "reviews"
+  ],
+  "checks": [
+    "All fields other than status and reviews exactly equal frozen pre-review receipt.",
+    "Every frozen subject field except descriptive status equals final receipt; contract required components agree.",
+    "Actual inserted review Markdown and independence JSON hashes/sizes match original immutable review pair; reviewer, producer, scope and disposition agree.",
+    "Review binds exact candidate, contract, subject and pre-review receipt. Actual document hashes remain unchanged.",
+    "No attempts, results, dependencies, accounting, failures, pause instructions or remaining gates changed."
+  ],
+  "scope": "Final seal comparison only for already-in-flight paused durability checkpoint. Root may separately preserve unqualified working notes as publication-only artifacts; they are not qualification or sealed receipt inputs and were not reviewed here. No application source read/runtime/tests/Git performed; remain paused until John resumes."
+}

@@ -1,0 +1,737 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+created: 2/2 workers
+2 workers [5 items]
+
+.FFF.                                                                    [100%]
+=================================== FAILURES ===================================
+______ test_shared_runner_checkpoint_still_roundtrips[recurrent-uniform] _______
+[gw1] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-runner-conversion-attempt-1/popen-gw1/test_shared_runner_checkpoint_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f87a09fe190>
+architecture = 'recurrent', prioritized = False
+
+    @pytest.mark.parametrize(
+        ("architecture", "prioritized"),
+        (
+            pytest.param("feedforward", False, id="flat-uniform"),
+            pytest.param("feedforward", True, id="flat-per"),
+            pytest.param("recurrent", False, id="recurrent-uniform"),
+            pytest.param("recurrent", True, id="recurrent-per"),
+        ),
+    )
+    def test_shared_runner_checkpoint_still_roundtrips(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, architecture: str, prioritized: bool
+    ) -> None:
+        """A completed checkpoint resumes the next real learning episode exactly."""
+        import hashlib
+        import shutil
+    
+        from townlet.config.world_roster import WorldRosterDeclaration
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation" / architecture, pack, ignore=shutil.ignore_patterns(".compiled"))
+        brain_path = pack / "brain.yaml"
+        brain = yaml.safe_load(brain_path.read_text())
+        assert brain["architecture"]["type"] == architecture
+        brain["replay"]["prioritized"] = prioritized
+        if prioritized:
+            brain["replay"].update(priority_alpha=0.6, priority_beta=0.4, priority_beta_annealing=True)
+        brain_path.write_text(yaml.safe_dump(brain, sort_keys=False))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        document = yaml.safe_load(training_path.read_text())
+        training = document["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        # Hold the original shared-service witness constant across replay profiles;
+        # retain each authored pack's architecture and resolved replay policy.
+        training["bac_options"]["rnd"].update(
+            service_mode="paced_fifo", max_updates_per_tick=1, max_pending_rows=6, overflow_policy="service_before_admit"
+        )
+        training["bac_options"]["provider_parameter_source"] = "training"
+        training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
+        training_path.write_text(yaml.safe_dump(document, sort_keys=False))
+        roster = WorldRosterDeclaration(("roundtrip-world-A", "roundtrip-world-B"))
+        uninterrupted = tmp_path / "uninterrupted"
+    
+        def read_checkpoint(directory: Path, completed_episodes: int) -> dict[str, Any]:
+            artifact = directory / "checkpoints" / f"checkpoint_ep{completed_episodes:05d}.pt"
+            digest = artifact.with_suffix(".pt.sha256")
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+            payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
+            assert payload["episode"] == completed_episodes
+            assert payload["population_state"]["clock_ledger"]["completed_batch_episodes"] == completed_episodes
+            return payload
+    
+        with DemoRunner(
+            config_dir=pack,
+            db_path=uninterrupted / "run.db",
+            checkpoint_dir=uninterrupted / "checkpoints",
+            world_roster=roster,
+            level_name="L0_0_minimal",
+            max_episodes=3,
+        ) as runner:
+            runner.run()
+            saved = read_checkpoint(uninterrupted, 2)
+            expected = read_checkpoint(uninterrupted, 3)
+    
+        saved_population = saved["population_state"]
+        expected_population = expected["population_state"]
+        saved_backend = saved_population["exploration_state"]["bank"]["shared_backend"]["native"]
+        expected_backend = expected_population["exploration_state"]["bank"]["shared_backend"]["native"]
+        saved_service = _service_state(saved_backend)
+        assert (saved_service["admitted_rows"], saved_service["consumed_rows"], saved_service["optimizer_updates"]) == (12, 10, 2)
+        assert saved_service["pending_observations"].shape == (2, _inner(saved_backend)["obs_dim"])
+        _learned(saved_backend, expected_backend)
+        assert expected_population["training_step_counter"] > saved_population["training_step_counter"] > 0
+        assert any(
+            not torch.equal(saved_population["q_network"][key], expected_population["q_network"][key]) for key in saved_population["q_network"]
+        )
+        assert expected_population["optimizer"]["state"]
+    
+        resumed = tmp_path / "resumed"
+        (resumed / "checkpoints").mkdir(parents=True)
+        shutil.copy2(uninterrupted / "run-world-roster.json", resumed / "run-world-roster.json")
+        artifact = uninterrupted / "checkpoints/checkpoint_ep00002.pt"
+        for path in (artifact, artifact.with_suffix(".pt.sha256")):
+            shutil.copy2(path, resumed / "checkpoints" / path.name)
+        original_load = DemoRunner.load_checkpoint
+        restored_owners: list[tuple[Any, ...]] = []
+    
+        def owner_refs(current: DemoRunner) -> tuple[Any, ...]:
+            population = current.population
+            return (population, population.q_network, population.optimizer, population.replay_buffer, *population.q_network.parameters())
+    
+        def observe_load(current: DemoRunner, *args: Any, **kwargs: Any) -> Any:
+            # Observe the actual fresh receiving owners; execute the production
+            # restore unchanged and never substitute state, authority, or results.
+            before = owner_refs(current)
+            result = original_load(current, *args, **kwargs)
+            assert all(old is new for old, new in zip(before, owner_refs(current), strict=True))
+            restored_owners.append(before)
+            return result
+    
+        monkeypatch.setattr(DemoRunner, "load_checkpoint", observe_load)
+        with DemoRunner(
+            config_dir=pack,
+            db_path=resumed / "run.db",
+            checkpoint_dir=resumed / "checkpoints",
+            world_roster=roster,
+            level_name="L0_0_minimal",
+            max_episodes=3,
+        ) as fresh:
+            fresh.run()
+            assert len(restored_owners) == 1
+            assert all(old is new for old, new in zip(restored_owners[0], owner_refs(fresh), strict=True))
+            assert fresh.population._bound_replay is fresh.population.replay_buffer
+            actual = read_checkpoint(resumed, 3)
+            assert fresh.completed_live_agent_steps == 18
+    
+        # Timestamp and run paths describe publication, not learner continuation.
+        # Compare every current training/world field rather than model weights alone.
+        for key in (
+            "population_state",
+            "curriculum_state",
+            "affordance_layout",
+            "vfs_persistent_state",
+            "vfs_random_state",
+            "native_boundary",
+            "agent_ids",
+            "epsilon",
+            "completed_live_agent_steps",
+        ):
+>           _equal(expected[key], actual[key])
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:600: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = {'clock_ledger': {'completed_batch_episodes': 3, 'eligible_transitions': 18, 'optimizer_updates': 6, 'predictor_admitt...-09, 1.0694e-09, 8.0740e-10]), 'step': tensor(6.)}, ...}}, 'optimizer_parameter_updates': [6, 6, 6, 6, 6, 6, ...], ...}
+right = {'clock_ledger': {'completed_batch_episodes': 3, 'eligible_transitions': 18, 'optimizer_updates': 6, 'predictor_admitt...-09, 1.4971e-09, 7.9095e-10]), 'step': tensor(6.)}, ...}}, 'optimizer_parameter_updates': [6, 6, 6, 6, 6, 6, ...], ...}
+
+    def _equal(left: Any, right: Any) -> None:
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.device == right.device
+            torch.testing.assert_close(left, right, rtol=0, atol=0, equal_nan=True)
+        elif isinstance(left, np.ndarray):
+            assert isinstance(right, np.ndarray)
+            assert left.dtype == right.dtype
+            np.testing.assert_array_equal(left, right)
+        elif isinstance(left, dict):
+            assert isinstance(right, dict) and left.keys() == right.keys()
+            for key in left:
+>               _equal(left[key], right[key])
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = OrderedDict({'encoder.encoders.self.0.weight': tensor([[-0.1977,  0.0861, -0.0252,  0.1872,  0.2013,  0.2035, -0.1619,... -0.1944,  0.1680,  0.1713, -0.1812,  0.1979,
+        -0.1466, -0.1056,  0.0701, -0.1522,  0.1444, -0.1425,  0.1300])})
+right = OrderedDict({'encoder.encoders.self.0.weight': tensor([[-0.1976,  0.0862, -0.0252,  0.1872,  0.2013,  0.2035, -0.1619,... -0.1945,  0.1680,  0.1713, -0.1813,  0.1980,
+        -0.1466, -0.1058,  0.0702, -0.1522,  0.1444, -0.1425,  0.1300])})
+
+    def _equal(left: Any, right: Any) -> None:
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.device == right.device
+            torch.testing.assert_close(left, right, rtol=0, atol=0, equal_nan=True)
+        elif isinstance(left, np.ndarray):
+            assert isinstance(right, np.ndarray)
+            assert left.dtype == right.dtype
+            np.testing.assert_array_equal(left, right)
+        elif isinstance(left, dict):
+            assert isinstance(right, dict) and left.keys() == right.keys()
+            for key in left:
+>               _equal(left[key], right[key])
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+left = tensor([[-0.1977,  0.0861, -0.0252,  0.1872,  0.2013,  0.2035, -0.1619, -0.1175,
+         -0.0233,  0.2066,  0.2360,  ...  0.2169, -0.1167,
+          0.0578,  0.2295,  0.2099,  0.1777, -0.1074,  0.1177,  0.0240, -0.1030,
+         -0.2012]])
+right = tensor([[-0.1976,  0.0862, -0.0252,  0.1872,  0.2013,  0.2035, -0.1619, -0.1175,
+         -0.0232,  0.2066,  0.2361,  ...  0.2169, -0.1167,
+          0.0578,  0.2295,  0.2099,  0.1777, -0.1074,  0.1177,  0.0240, -0.1030,
+         -0.2012]])
+
+    def _equal(left: Any, right: Any) -> None:
+        if isinstance(left, torch.Tensor):
+            assert isinstance(right, torch.Tensor)
+            assert left.device == right.device
+>           torch.testing.assert_close(left, right, rtol=0, atol=0, equal_nan=True)
+E           AssertionError: Tensor-likes are not equal!
+E           
+E           Mismatched elements: 137 / 544 (25.2%)
+E           Greatest absolute difference: 0.0002708546817302704 at index (10, 1)
+E           Greatest relative difference: 0.06864630430936813 at index (28, 1)
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:42: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:774 Loading /workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-runner-conversion-attempt-1/popen-gw1/test_shared_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00002.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:774 Loading /workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-runner-conversion-attempt-1/popen-gw1/test_shared_runner_checkpoint_0/uninterrupted/checkpoints/checkpoint_ep00003.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:774 Loading /workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-runner-conversion-attempt-1/popen-gw1/test_shared_runner_checkpoint_0/resumed/checkpoints/checkpoint_ep00002.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+WARNING  townlet.training.checkpoint_utils:checkpoint_utils.py:774 Loading /workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-runner-conversion-attempt-1/popen-gw1/test_shared_runner_checkpoint_0/resumed/checkpoints/checkpoint_ep00003.pt with allow_unsafe_pickle=True (weights_only=False). This deserialises arbitrary Python objects from the checkpoint and is ONLY safe for trusted, locally-produced files.
+___________ test_shared_runner_checkpoint_still_roundtrips[flat-per] ___________
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+tmp_path = PosixPath('/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r172-runner-conversion-attempt-1/popen-gw0/test_shared_runner_checkpoint_1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fafcdb1a060>
+architecture = 'feedforward', prioritized = True
+
+    @pytest.mark.parametrize(
+        ("architecture", "prioritized"),
+        (
+            pytest.param("feedforward", False, id="flat-uniform"),
+            pytest.param("feedforward", True, id="flat-per"),
+            pytest.param("recurrent", False, id="recurrent-uniform"),
+            pytest.param("recurrent", True, id="recurrent-per"),
+        ),
+    )
+    def test_shared_runner_checkpoint_still_roundtrips(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, architecture: str, prioritized: bool
+    ) -> None:
+        """A completed checkpoint resumes the next real learning episode exactly."""
+        import hashlib
+        import shutil
+    
+        from townlet.config.world_roster import WorldRosterDeclaration
+        from townlet.demo.runner import DemoRunner
+        from townlet.training.checkpoint_utils import safe_torch_load
+    
+        root = Path(__file__).resolve().parents[4]
+        pack = tmp_path / "pack"
+        shutil.copytree(root / "configs/test/bac_remediation" / architecture, pack, ignore=shutil.ignore_patterns(".compiled"))
+        brain_path = pack / "brain.yaml"
+        brain = yaml.safe_load(brain_path.read_text())
+        assert brain["architecture"]["type"] == architecture
+        brain["replay"]["prioritized"] = prioritized
+        if prioritized:
+            brain["replay"].update(priority_alpha=0.6, priority_beta=0.4, priority_beta_annealing=True)
+        brain_path.write_text(yaml.safe_dump(brain, sort_keys=False))
+        training_path = pack / "levels/L0_0_minimal/training.yaml"
+        document = yaml.safe_load(training_path.read_text())
+        training = document["training"]
+        training["population"]["size"] = 2
+        training["replay_buffer"].update(capacity=64, batch_size=5, min_size=5)
+        training["training_loop"].update(max_episodes=3, max_steps_per_episode=3, train_frequency=1)
+        training["training_loop"]["checkpointing"]["interval"] = 1
+        # Hold the original shared-service witness constant across replay profiles;
+        # retain each authored pack's architecture and resolved replay policy.
+        training["bac_options"]["rnd"].update(
+            service_mode="paced_fifo", max_updates_per_tick=1, max_pending_rows=6, overflow_policy="service_before_admit"
+        )
+        training["bac_options"]["provider_parameter_source"] = "training"
+        training["bac_options"]["curiosity_scope"] = {"scope": "shared", "seed_policy": "legacy_shared_v1"}
+        training_path.write_text(yaml.safe_dump(document, sort_keys=False))
+        roster = WorldRosterDeclaration(("roundtrip-world-A", "roundtrip-world-B"))
+        uninterrupted = tmp_path / "uninterrupted"
+    
+        def read_checkpoint(directory: Path, completed_episodes: int) -> dict[str, Any]:
+            artifact = directory / "checkpoints" / f"checkpoint_ep{completed_episodes:05d}.pt"
+            digest = artifact.with_suffix(".pt.sha256")
+            assert hashlib.sha256(artifact.read_bytes()).hexdigest() == digest.read_text().strip()
+            payload = safe_torch_load(artifact, allow_unsafe_pickle=True)
+            assert payload["episode"] == completed_episodes
+            assert payload["population_state"]["clock_ledger"]["completed_batch_episodes"] == completed_episodes
+            return payload
+    
+        with DemoRunner(
+            config_dir=pack,
+            db_path=uninterrupted / "run.db",
+            checkpoint_dir=uninterrupted / "checkpoints",
+            world_roster=roster,
+            level_name="L0_0_minimal",
+            max_episodes=3,
+        ) as runner:
+>           runner.run()
+
+tests/test_townlet/regressions/bac/test_pw_local_service.py:531: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.demo.runner.DemoRunner object at 0x7fafc8700a50>
+
+    def run(self):
+        """Run demo training loop."""
+        self._validate_world_roster_manifest(canonical_bytes(self.world_roster.to_dict()) + b"\n")
+        logger.info(f"Starting demo runner: {self.max_episodes} episodes")
+        logger.info(f"Database: {self.db_path}")
+        logger.info(f"Checkpoints: {self.checkpoint_dir}")
+    
+        # PDR-002: No-defaults validation done automatically by config DTOs
+        # All required parameters validated at load time
+    
+        # Initialize training components
+        # v2.1: device is an infrastructure concern (no-defaults exemption).
+        if torch.cuda.is_available():
+            device = torch.device("cuda", torch.cuda.current_device())
+        else:
+            device = torch.device("cpu")
+    
+        # Per-level metadata
+        level_meta = self.compiled.get_level(self.level_name)
+        # Extract config parameters from DTOs (all required, validated at load time)
+        effective_training = self.effective_run.training
+        loop_cfg = effective_training.training_loop
+        num_agents = effective_training.population.size
+        grid_cells = self.compiled.metadata.grid_cells
+        partial_observability = level_meta.curriculum.curriculum.active_vision != "global"
+        vision_range = level_meta.curriculum.curriculum.vision_range
+        enable_temporal_mechanics = level_meta.curriculum.curriculum.active_temporal
+    
+        # Create environment from compiled universe
+        self.env = VectorizedHamletEnv.from_universe(
+            self.compiled,
+            level_name=self.level_name,
+            num_agents=num_agents,
+            device=device,
+            world_roster=self.world_roster,
+            training_seed=effective_training.seed,
+            lane_world_ids=self.world_roster.world_ids,
+        )
+    
+        # Dimensions sourced from compiled metadata
+        obs_dim = level_meta.token_spec.total_dims
+        action_dim = level_meta.action_metadata.total_actions
+    
+        # Create curriculum (all params required per PDR-002)
+        self.curriculum = build_curriculum(
+            effective_training,
+            curriculum_options=self.effective_run.options.curriculum,
+            static_policy=self.effective_run.static_policy,
+            device=device,
+        )
+    
+        # Resolved authoring selects the provider family and curiosity scope.
+        # Retain the actual BANK owner, distinct from its runtime facade.
+        def curiosity_issuer(bank: Any) -> WorldReceiptIssuer:
+            self.curiosity_bank = bank
+            return WorldReceiptIssuer(owner=bank)
+    
+        def validate_committed_batch(*, batch_episode: int, outcomes: tuple[Any, ...]) -> None:
+            if self.population is None:
+                raise RuntimeError("Exploration requires its constructed population owner")
+            self.population.validate_committed_batch(batch_episode=batch_episode, outcomes=outcomes)
+    
+        def validate_parent_cadence(*, cadence: Any, mode: str, accepted: Any, parent_restore: Any) -> None:
+            if self.population is None:
+                raise RuntimeError("Exploration requires its constructed population owner")
+            self.population.validate_parent_cadence(cadence=cadence, mode=mode, accepted=accepted, parent_restore=parent_restore)
+    
+        descriptor = WorldCuriosityDescriptor.from_policy(
+            self.effective_run.exploration,
+            world_ids=self.world_roster.world_ids,
+            observation_dim=obs_dim,
+            action_dim=action_dim,
+            training_seed=effective_training.seed,
+        )
+        self.exploration = build_exploration(
+            policy=self.effective_run.exploration,
+            descriptor=descriptor,
+            device=device,
+            validate_accepted_episode=self.env.validate_accepted_episode,
+            issuer_factory=curiosity_issuer,
+            report_allocation=lambda estimate: logger.info("Curiosity allocation estimate: %r", estimate),
+            validate_committed_batch=validate_committed_batch,
+            validate_parent_cadence=validate_parent_cadence,
+        )
+    
+        # Get training hyperparameters from config (all required per PDR-002)
+        train_frequency = loop_cfg.train_frequency
+        batch_size = effective_training.replay_buffer.batch_size
+        sequence_length = loop_cfg.sequence_length
+        max_grad_norm = loop_cfg.max_grad_norm
+    
+        # Create agent IDs
+        agent_ids = [f"agent_{i}" for i in range(num_agents)]
+    
+        base_brain_config = self.brain_config
+        logger.info(f"Brain config from brain.yaml: {base_brain_config.description}")
+    
+        # Consume the canonical resolved policy, including all five brain overrides.
+        effective_brain_config = self.effective_run.effective_brain
+        replay_options = self.effective_run.options.replay
+        assert replay_options is not None
+        if "max_episodes" in self.launch_overrides:
+            episode_limit_origin = f"launch_overrides.max_episodes({self.max_episodes})"
+        else:
+            episode_limit_origin = f"training.training_loop.max_episodes({self.max_episodes}) at {self.training_config_origin}"
+        beta_horizon_origin = (
+            f"{episode_limit_origin} * training.training_loop.max_steps_per_episode({loop_cfg.max_steps_per_episode}) "
+            f"at {self.training_config_origin}; upper-bound vector ticks"
+        )
+    
+        # Create population (effective_brain_config provides network/optimizer/Q-learning parameters)
+        self.population = VectorizedPopulation.for_training(
+            env=self.env,
+            curriculum=self.curriculum,
+            exploration=self.exploration,
+            agent_ids=agent_ids,
+            device=device,
+            obs_dim=obs_dim,
+            action_dim=action_dim,
+            tb_logger=self.tb_logger,
+            train_frequency=train_frequency,
+            batch_size=batch_size,
+            sequence_length=sequence_length,
+            max_grad_norm=max_grad_norm,
+            brain_config=effective_brain_config,
+            max_episodes=self.max_episodes,
+            max_steps_per_episode=loop_cfg.max_steps_per_episode,
+            replay_options=replay_options,
+            min_transitions=effective_training.replay_buffer.min_size,
+            replay_rng=np.random.Generator(np.random.PCG64(effective_training.seed)),
+            replay_origin="authored",
+            beta_vector_tick_horizon=self.max_episodes * loop_cfg.max_steps_per_episode,
+            beta_horizon_origin=beta_horizon_origin,
+            current_vector_tick=0,
+        )
+    
+        self.curriculum.initialize_population(num_agents)
+    
+        # Bind authentic live owners after POP has installed its ENV runtime hook.
+        # BANK owns curiosity; the facade owns selection and global exploration.
+        self.boundary_authority = self.env.bind_boundary_authority(
+            owner=self,
+            role_owners={
+                "population": self.population,
+                "curiosity": self.curiosity_bank,
+                "curriculum": self.curriculum,
+                "exploration": self.exploration,
+                "network": self.population.q_network,
+                "optimizer": self.population.optimizer,
+                "scheduler": self.population if self.population.scheduler is None else self.population.scheduler,
+                "replay": self.population.replay_buffer,
+                "selection": self.exploration,
+            },
+        )
+        self.boundary_release = None
+        cuda_index = device.index
+        if device.type == "cuda" and cuda_index is None:
+            raise ValueError("Native runner continuation requires an indexed CUDA device")
+        self.native_cuda_devices: tuple[int, ...]
+        if cuda_index is None:
+            self.native_cuda_devices = ()
+        else:
+            self.native_cuda_devices = (cuda_index,)
+        self.native_rng = NativeRNGState(cuda_devices=self.native_cuda_devices)
+        self._last_native_checkpoint = None
+    
+        # Initialize episode recorder if enabled
+        recording_cfg = self.training_config.recording
+        if recording_cfg and recording_cfg.enabled:
+            from townlet.recording.recorder import EpisodeRecorder
+    
+            recording_payload = recording_cfg.model_dump(exclude_none=True)
+            # Create recording output directory
+            recording_output_dir = self.checkpoint_dir / (recording_cfg.output_dir or "recordings")
+            recording_output_dir.mkdir(parents=True, exist_ok=True)
+    
+            self.recorder = EpisodeRecorder(
+                config=recording_payload,
+                output_dir=recording_output_dir,
+                database=self.db,
+                curriculum=self.curriculum,
+            )
+            logger.info(f"Episode recording enabled: {recording_output_dir}")
+        else:
+            logger.info("Episode recording disabled")
+    
+        # Try to resume from checkpoint
+        loaded_episode = self.load_checkpoint()
+        if loaded_episode is not None:
+            self.current_episode = loaded_episode
+        else:
+            # Receiving checkpoint controllers must remain fresh-bound during
+            # restore. Bootstrap only after establishing this is a fresh run.
+            self.boundary_release = self.boundary_authority.bootstrap(first_batch_episode=self.current_episode)
+            self.env.install_boundary_release(self.boundary_release)
+            self.population.sync_exploration_metrics()
+>           self._capture_native_boundary()
+
+src/townlet/demo/runner.py:832: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.demo.runner.DemoRunner object at 0x7fafc8700a50>
+
+    def _capture_native_boundary(self) -> None:
+        """Retain one fully owned lawful boundary, including its ambient RNG state."""
+        if self.env is None or self.population is None or self.curriculum is None:
+            raise RuntimeError("Native capture requires actual initialized owners")
+        env, population = self.env, self.population
+        if env.world_phase == "bootstrap-ready":
+            kind = "INITIAL"
+        else:
+            kind = "COMPLETED"
+        components = self._capture_native_component_data(kind=kind)
+        initial = None
+        if kind == "INITIAL":
+            state = components["population_state"]
+            common = dict(
+                semantic_execution_identity=env.semantic_execution_identity,
+                bootstrap_first_batch=self.boundary_release.next_batch_episode,
+                world_binding=env.world_ids,
+            )
+            readings = {
+                "population": (population, state),
+                "curriculum": (self.curriculum, components["curriculum_state"]),
+                "exploration": (self.exploration, state["exploration_state"]),
+                "network": (population.q_network, state["q_network"]),
+                "optimizer": (population.optimizer, state["optimizer"]),
+                "scheduler": (population if population.scheduler is None else population.scheduler, state["scheduler"]),
+                "replay": (population.replay_buffer, state["replay_buffer"]),
+                "selection": (self.exploration, state["exploration_state"]["selector"]),
+            }
+            children = {
+>               role: WorldReceiptIssuer(owner=owner).issue(kind="initial_owner", payload=dict(role=role, state=reading, **common))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                for role, (owner, reading) in readings.items()
+            }
+
+src/townlet/demo/runner.py:467: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.environment.vectorized_env.WorldReceiptIssuer object at 0x7fafc89c5190>
+
+    def issue(self, *, kind: str, payload: Mapping[str, Any]) -> WorldOwnerReceipt:
+        if not isinstance(kind, str) or not kind or not isinstance(payload, Mapping):
+            raise ValueError("owner receipts require a kind and owned field mapping")
+>       receipt = WorldOwnerReceipt(kind, self.owner, 0, frozen_value(payload), self)
+                                                         ^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/environment/vectorized_env.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'bootstrap_first_batch': 0, 'role': 'population', 'semantic_execution_identity': '2537419c3cdfd1f12595d61ac7004b18602...se, 'decoupled_weight_decay': False, ...}], 'state': {}}, 'optimizer_parameter_updates': [0, 0, 0, 0, 0, 0], ...}, ...}
+
+    def frozen_value(value: Any) -> Any:
+        if isinstance(value, Mapping):
+            if any(not isinstance(key, str) for key in value):
+                raise ValueError("receipt mappings require string keys")
+>           return MappingProxyType({key: frozen_value(item) for key, item in value.items()})
+                                          ^^^^^^^^^^^^^^^^^^
+
+src/townlet/config/world_roster.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'clock_ledger': {'completed_batch_episodes': 0, 'eligible_transitions': 0, 'optimizer_updates': 0, 'predictor_admitte...': False, 'decoupled_weight_decay': False, ...}], 'state': {}}, 'optimizer_parameter_updates': [0, 0, 0, 0, 0, 0], ...}
+
+    def frozen_value(value: Any) -> Any:
+        if isinstance(value, Mapping):
+            if any(not isinstance(key, str) for key in value):
+                raise ValueError("receipt mappings require string keys")
+>           return MappingProxyType({key: frozen_value(item) for key, item in value.items()})
+                                          ^^^^^^^^^^^^^^^^^^
+
+src/townlet/config/world_roster.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'action_dim': None, 'actions': None, 'alpha': 0.6, 'beta': 0.4, ...}
+
+    def frozen_value(value: Any) -> Any:
+        if isinstance(value, Mapping):
+            if any(not isinstance(key, str) for key in value):
+                raise ValueError("receipt mappings require string keys")
+>           return MappingProxyType({key: frozen_value(item) for key, item in value.items()})
+                                          ^^^^^^^^^^^^^^^^^^
+
+src/townlet/config/world_roster.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., ... 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)
+
+    def frozen_value(value: Any) -> Any:
+        if isinstance(value, Mapping):
+            if any(not isinstance(key, str) for key in value):
+                raise ValueError("receipt mappings require string keys")
+            return MappingProxyType({key: frozen_value(item) for key, item in value.items()})
+        if isinstance(value, list):
+            return _FrozenList(frozen_value(item) for item in value)
+        if isinstance(value, tuple):
+            return tuple(frozen_value(item) for item in value)
+>       return owned_value(value)
+               ^^^^^^^^^^^^^^^^^^
+
+src/townlet/config/world_roster.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., ... 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+       0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)
+
+    def owned_value(value: Any) -> Any:
+        """Copy mutable values while preserving already-issued opaque capabilities."""
+        if isinstance(value, (WorldRecord, WorldEpisodeReservation, WorldAcceptedEpisode)):
+            return value
+        if isinstance(value, torch.Tensor):
+            return value.detach().clone()
+        if isinstance(value, Mapping):
+            return {key: owned_value(item) for key, item in value.items()}
+        if isinstance(value, _FrozenList):
+            return [owned_value(item) for item in value]
+        if isinstance(value, tuple):
+            return tuple(owned_value(item) for item in value)
+        if isinstance(value, list):
+            return [owned_value(item) for item in value]
+        if value is None or type(value) in (str, int, float, bool):
+            return value
+>       raise ValueError(f"unsupported world receipt value: {type(value).__name__}")
+E       ValueError: unsupported world receipt value: ndarray
+
+src/townlet/config/world_roster.py:144: ValueError
+______ test_nonpristine_captured_uniform_to_per_preserves_rows_and_masks _______
+[gw0] linux -- Python 3.13.5 /workspace/hamlet/.venv/bin/python
+
+recurrent_packs = (CompiledUniverse(metadata=UniverseMetadata(universe_name='Complete Reference Example', schema_version='1.0', primary_...minimal:training', 'drive': 'level:L0_0_minimal:drive.intrinsic', 'capture_origin': 'current authored compilation'}))))
+
+    def test_nonpristine_captured_uniform_to_per_preserves_rows_and_masks(recurrent_packs: tuple[Any, Any]) -> None:
+        """Missing ordinary-operation lineage must not break POP's actual conversion branch."""
+        uniform, prioritized = recurrent_packs
+        source = make_parent(uniform)
+        source.enter()
+        for _ in range(3):
+            source.population.step_population(source.env)
+        source.complete()
+        source_replay = source.population.replay_buffer
+        captured = copy.deepcopy(source_replay.serialize())
+        assert captured["format_version"] == 6
+        assert captured["num_transitions"] == 3 * len(IDS)
+        assert all(episode["legality_recorded"].all() for episode in captured["episodes"])
+        assert all(episode["next_action_masks"].shape[1] == source.population.action_dim for episode in captured["episodes"])
+    
+        target = make_parent(prioritized)
+        pop = target.population
+        assert target.boundary is None
+        installed = SequentialReplayBuffer.for_replay(
+            source_replay.capacity,
+            source_replay.device,
+            options=source_replay.replay_options,
+            action_dim=source_replay.action_dim,
+            legality_mode=source_replay.legality_mode,
+        )
+        prepared = installed.prepare_serialized(captured, expected_obs_dim=pop.current_obs.shape[1], lineage=None)
+        installed.load_prepared(prepared, lineage=None)
+        equal(installed.serialize(), captured)
+        # This target has never bound ENV roles. Its ordinary replay is supplied before
+        # binding; no already-bound owner or restore credential is replaced.
+        pop.replay_buffer = installed
+>       pop._bind_training()
+
+tests/test_townlet/regressions/bac/test_population_recurrent_conversion.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.population.vectorized.VectorizedPopulation object at 0x7fafc8700410>
+
+    def _bind_training(self) -> None:
+        """Adopt installed state; only a genuinely pristine constructor buffer is fresh."""
+        if self.total_steps < self._last_beta_tick:
+            raise ValueError("Population vector tick cannot rewind during ordinary learning")
+        if self._bound_replay is self.replay_buffer:
+            return
+        compiled = self._replay_setup is None
+        if self._replay_setup is not None:
+            setup = replace(self._replay_setup, tick=self.total_steps)
+        else:
+            setup = self._compiled_replay_setup(self.total_steps)
+        buffer = self.replay_buffer
+        state = buffer.serialize()
+        pristine = (
+            buffer is self._constructor_replay
+            and not self._replay_was_loaded
+            and self.total_steps == 0
+            and self.training_step_counter == 0
+            and self._same_replay_state(state, self._constructor_replay_state)
+        )
+        adapt = self.is_recurrent and (state.get("format_version") not in (6, 7) or (self.use_per and state.get("format_version") == 6))
+        if (pristine and self.is_recurrent) or adapt:
+            candidate = self._new_replay(setup)
+            sequential = cast(SequentialReplayBuffer, candidate)
+            if not pristine:
+                if "inspection_kind" in state:
+                    transport = state["legacy_transport"]
+                    if transport["num_transitions"]:
+                        sequential.load_prepared(sequential.prepare_serialized(transport, expected_obs_dim=self._obs_dim))
+                    sequential.load_prepared(sequential.prepare_archived_import(buffer.historical_archives, expected_obs_dim=self._obs_dim))
+                else:
+>                   prepared = sequential.prepare_serialized(state, expected_obs_dim=self._obs_dim)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/population/vectorized.py:738: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.training.sequential_replay_buffer.SequentialReplayBuffer object at 0x7fafc8c58770>
+args = ({'action_dim': 15, 'capacity': 100000, 'episodes': [{'actions': tensor([10,  6,  5]), 'dones': tensor([False, False, ...lse, False]), 'episode_id': 5, 'legality_recorded': tensor([True, True, True]), ...}, ...], 'format_version': 6, ...},)
+kwargs = {'expected_obs_dim': 118}
+
+    @wraps(method)
+    def guarded(self: Owner, /, *args: Arguments.args, **kwargs: Arguments.kwargs) -> PreparedReplay:
+>       with self._domain_operation("prepare", _required_lineage(kwargs)) as lease:
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/townlet/training/replay_contract.py:741: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+arguments = {'expected_obs_dim': 118}
+
+    def _required_lineage(arguments: Mapping[str, object]) -> RNGOperation | None:
+        try:
+            lineage = arguments["lineage"]
+        except KeyError:
+>           raise TypeError("Missing required keyword-only argument: 'lineage'") from None
+E           TypeError: Missing required keyword-only argument: 'lineage'
+
+src/townlet/training/replay_contract.py:634: TypeError
+========================= 3 failed, 2 passed in 37.68s =========================

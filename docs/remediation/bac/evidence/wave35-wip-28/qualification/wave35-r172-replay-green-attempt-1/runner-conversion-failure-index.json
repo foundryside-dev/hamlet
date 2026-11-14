@@ -1,0 +1,42 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "candidate_tree": "72dd33a5abb56616986732b85f7678123b072ff3",
+  "unique_node_phase_failures": 3,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_population_recurrent_conversion.py",
+    "tests/test_townlet/regressions/bac/test_pw_local_service.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: unsupported world receipt value: ndarray",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips[flat-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "Greatest relative difference: 0.06864630430936813 at index (28, 1)",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips[recurrent-uniform]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "TypeError: Missing required keyword-only argument: 'lineage'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_population_recurrent_conversion.py::test_nonpristine_captured_uniform_to_per_preserves_rows_and_masks",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

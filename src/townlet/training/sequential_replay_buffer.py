@@ -36,6 +36,7 @@ from townlet.training.replay_contract import (
     ReplayReadiness,
     ReplayRequest,
     SamplingReceipt,
+    StagedReplayData,
     replay_mutation,
     replay_prepare,
     replay_read,
@@ -869,6 +870,95 @@ class SequentialReplayBuffer(ReplayCustody):
 
                 self._validate_replay(candidate, lease)
                 self._publish_replay(candidate, publish)
+
+    def _replay_children(self, value: object) -> tuple[object, ...]:
+        if isinstance(value, deque):
+            return tuple(value)
+        if isinstance(value, _PreparedSequenceState):
+            return value.episodes, value.archives
+        if isinstance(value, history.HistoricalReplayArchive):
+            return value.source_formats, value.original_state
+        return super()._replay_children(value)
+
+    def _replay_inventory(
+        self, route: str, args: tuple[object, ...], kwargs: Mapping[str, object]
+    ) -> tuple[torch.device | None, tuple[object, ...]]:
+        retained: tuple[object, ...] = (self.episodes, self._historical_archives)
+        if route == "stage_native_restore":
+            return self.device, (self._replay_argument(args, kwargs, 0, "state"), *retained)
+        if route in ("install_native_restore", "preflight"):
+            # Shared admitted planning also enumerates every retained staged payload.
+            return None, retained
+        raise ValueError("Unsupported sequential replay device route")
+
+    def stage_native_restore(
+        self,
+        state: Mapping[str, Any],
+        *,
+        expected_obs_dim: int,
+        parent_plan: object,
+        lineage: RNGOperation | None,
+    ) -> StagedReplayData:
+        """Own complete current sequence storage without publication permission."""
+        from townlet.population.vectorized import validate_native_population_data
+
+        validate_native_population_data(plan=parent_plan, owner=self)
+        with self._device_operation(
+            "prepare", lineage, "stage_native_restore", (state,), {"expected_obs_dim": expected_obs_dim}, mutation=False
+        ):
+            validate_native_population_data(plan=parent_plan, owner=self)
+            self._configuration()
+            version = (
+                SEQUENTIAL_REPLAY_BUFFER_FORMAT_VERSION if self._priority is None else SEQUENTIAL_PRIORITIZED_REPLAY_BUFFER_FORMAT_VERSION
+            )
+            if not isinstance(state, Mapping) or type(state.get("format_version")) is not int or state["format_version"] != version:
+                raise ValueError("Native sequence restore requires the receiving owner's current uniform/prioritized format")
+            material = self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+            if not isinstance(material, _PreparedSequenceState):
+                raise ValueError("Native sequence restore requires complete prepared sequence storage")
+            data = self._issue_native_replay_data(material, parent_plan=parent_plan)
+        return data
+
+    def install_native_restore(
+        self,
+        data: StagedReplayData,
+        *,
+        parent_plan: object,
+        attempt: object,
+        restored: object,
+        lineage: RNGOperation | None,
+    ) -> None:
+        """Publish staged sequence storage only inside the genuine C finalizer."""
+        from townlet.environment.restore_attempt import validate_restore_finalizer
+
+        with self._owner_operation(mutation=False):
+            self._native_replay_payload(data, parent_plan=parent_plan)
+            validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+        with self._device_operation("install", lineage, "install_native_restore", (data,), {}, mutation=False):
+            material = self._native_replay_payload(data, parent_plan=parent_plan)
+            validate_restore_finalizer(attempt=attempt, owner=self, restored=restored)
+            if not isinstance(material, _PreparedSequenceState) or material.capacity != self.capacity or material.device != self.device:
+                raise ValueError("Native sequence installation requires compatible staged storage")
+            if (
+                not self._configured
+                or not material.configured
+                or material.action_dim != self.action_dim
+                or material.legality_mode != self.legality_mode
+                or material.replay_options != self.replay_options
+                or (self._priority is None) != (material.priority is None)
+            ):
+                raise ValueError("Native sequence receiving configuration changed after staging")
+            if self._priority is not None and material.priority is not None and self._priority.config != material.priority.config:
+                raise ValueError("Native sequence receiving priority configuration changed after staging")
+
+            def publish() -> None:
+                self.num_transitions, self.episodes = material.num_transitions, material.episodes
+                self._configured, self.action_dim, self.legality_mode = material.configured, material.action_dim, material.legality_mode
+                self.replay_options = material.replay_options
+                self.next_episode_id, self.next_transition_id = material.next_episode_id, material.next_transition_id
+                self._historical_archives, self._priority = material.archives, material.priority
+
+            self._publish_native_replay_data(data, publish)
 
     def load_from_serialized(self, state: Mapping[str, Any], *, lineage: RNGOperation | None) -> None:
         """Restore only after the complete exact-current artifact validates."""

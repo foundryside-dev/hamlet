@@ -1,0 +1,21 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r169-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r169-defaults-inventory-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "defaults-inventory",
+      "args": [
+        "scripts/no_defaults_lint.py",
+        "src/townlet/",
+        "--whitelist",
+        ".defaults-whitelist.txt",
+        "--ratchet",
+        ".defaults-ratchet",
+        "--show-whitelisted",
+        "--quiet"
+      ]
+    }
+  ]
+}

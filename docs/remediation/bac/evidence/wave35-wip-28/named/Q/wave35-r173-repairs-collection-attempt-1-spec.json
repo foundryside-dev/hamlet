@@ -1,0 +1,34 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r173-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r173-repairs-collection-attempt-1",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "repairs-collection",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_native_prioritized_replay_data.py::test_native_per_rejects_valid_historical_transport",
+        "tests/test_townlet/regressions/bac/test_native_python_rng.py",
+        "tests/test_townlet/regressions/bac/test_native_numpy_boundary.py",
+        "tests/test_townlet/regressions/bac/test_native_rng_state.py",
+        "tests/test_townlet/regressions/bac/test_native_checkpoint_boundary.py",
+        "tests/test_townlet/regressions/bac/test_pw_local_service.py::test_shared_runner_checkpoint_still_roundtrips",
+        "tests/test_townlet/regressions/bac/test_population_recurrent_conversion.py",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+        "--tb=long",
+        "-rs",
+        "--collect-only",
+        "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r173-repairs-collection-attempt-1"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "job": "replay-components",
+  "base_commit": "af212f0b06041ee98ddf89c502e3c772c286c658",
+  "candidate_tree": "72dd33a5abb56616986732b85f7678123b072ff3",
+  "exit_code": 0,
+  "counts": {
+    "passed": 39,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 110.2107940610149,
+  "source_guards": 841,
+  "process_identities": 3,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

@@ -17,6 +17,7 @@ import signal
 import threading
 import time
 import weakref
+from collections.abc import Mapping
 from contextlib import AbstractContextManager
 from pathlib import Path
 from types import MappingProxyType, TracebackType
@@ -124,15 +125,37 @@ def register(domain: Any, owner: object, devices: tuple[int, ...]) -> Any:
 def contract_fixture(monkeypatch: pytest.MonkeyPatch, post_poison: bool) -> Any:
     """Private finite manifest fixture, never a production issuer/constant."""
     contract = object.__new__(custody.LocalCUDAContract)
-    record = custody._LocalCUDARecord(
-        owner_type=Owner,
+    descriptor = custody._LocalCUDADescriptor(
+        owner_kind="flat",
         route="test_cuda_leaf",
-        input_type=tuple,
+        input_kind="none",
         rationale="finite CPU seam, no production purity qualification",
         healthy=True,
         post_poison=post_poison,
     )
-    monkeypatch.setattr(custody, "_LOCAL_CUDA_CONTRACTS", MappingProxyType({contract: record}))
+    record = custody._LocalCUDARecord(
+        owner_type=Owner,
+        route="test_cuda_leaf",
+        input_type=type(None),
+        rationale="finite CPU seam, no production purity qualification",
+        healthy=True,
+        post_poison=post_poison,
+    )
+    domain = custody.process_rng_domain()
+    production = custody._LOCAL_CUDA_CONTRACTS
+    real_resolver = domain._resolve_local_cuda_record
+
+    def resolve(*, descriptor: Any) -> Any:
+        if descriptor is fixture_descriptor:
+            return record
+        if any(descriptor is item for item in production.values()):
+            return real_resolver(descriptor=descriptor)
+        raise ValueError("unexpected finite fixture descriptor")
+
+    fixture_descriptor = descriptor
+    monkeypatch.setattr(domain, "_local_cuda_policies", {})
+    monkeypatch.setattr(domain, "_resolve_local_cuda_record", resolve)
+    monkeypatch.setattr(custody, "_LOCAL_CUDA_CONTRACTS", MappingProxyType({**production, contract: descriptor}))
     return contract
 
 
@@ -187,7 +210,7 @@ def test_existing_nested_currency_distinguishes_sibling_from_open_prepare(domain
     domain.unregister(participant=participant)
 
 
-def test_public_required_signatures_and_empty_manifest() -> None:
+def test_public_required_signatures_and_empty_manifest(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
     expected = {
         "operation": ("participant", "operation_kind", "lineage"),
         "device_operation": ("participant", "operation_kind", "lineage", "cuda_devices"),
@@ -213,7 +236,133 @@ def test_public_required_signatures_and_empty_manifest() -> None:
         expected_kind = inspect.Parameter.POSITIONAL_OR_KEYWORD if name == "resolve_cuda" else inspect.Parameter.KEYWORD_ONLY
         assert all(parameter.kind is expected_kind for parameter in parameters)
     assert isinstance(custody._LOCAL_CUDA_CONTRACTS, MappingProxyType)
-    assert not custody._LOCAL_CUDA_CONTRACTS
+    # Preserve the historical node ID while replacing its stage-specific oracle.
+    descriptor_type = custody._LocalCUDADescriptor
+    policies = {
+        "REPLAY_BUFFER_PUSH_CUDA": ("flat", "push", "tensor"),
+        "REPLAY_BUFFER_PUSH_RECORDED_CUDA": ("flat", "push_recorded", "tensor"),
+        "REPLAY_BUFFER_READINESS_CUDA": ("flat", "readiness", "request"),
+        "REPLAY_BUFFER_SERIALIZE_CUDA": ("flat", "serialize", "none"),
+        "REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA": ("flat", "validate_serialized", "mapping"),
+        "REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA": ("flat", "load_for_mode", "mapping"),
+        "REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA": ("flat", "historical_archives", "none"),
+        "REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA": ("flat", "install_historical_archive", "archive"),
+        "PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA": ("per", "push", "tensor"),
+        "PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA": ("per", "push_recorded", "tensor"),
+        "PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA": ("per", "declare_unconstrained_action_dim", "integer"),
+        "PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA": ("per", "readiness", "request"),
+        "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA": ("per", "serialize", "none"),
+        "PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA": ("per", "validate_serialized", "mapping"),
+        "PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA": ("per", "historical_archives", "none"),
+        "PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA": ("per", "install_historical_archive", "archive"),
+        "PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA": ("per", "update_priorities", "indices"),
+        "PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA": ("per", "update_unit_priorities", "indices"),
+    }
+    contracts = [getattr(custody, name) for name in policies]
+    assert len({id(contract) for contract in contracts}) == 18
+    assert set(custody._LOCAL_CUDA_CONTRACTS) == set(contracts)
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    from townlet.training.historical_checkpoint import HistoricalReplayArchive
+    from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+    from townlet.training.replay_buffer import ReplayBuffer
+    from townlet.training.replay_contract import ReplayRequest
+
+    owners = {"flat": ReplayBuffer, "per": PrioritizedReplayBuffer}
+    inputs = {
+        "tensor": torch.Tensor,
+        "request": ReplayRequest,
+        "mapping": Mapping,
+        "archive": HistoricalReplayArchive,
+        "none": type(None),
+        "integer": int,
+        "indices": np.ndarray,
+    }
+    monkeypatch.setattr(domain, "_local_cuda_policies", {})
+    real_resolver = domain._resolve_local_cuda_record
+    resolutions: list[int] = []
+
+    def count_resolution(*, descriptor: Any) -> Any:
+        resolutions.append(id(descriptor))
+        return real_resolver(descriptor=descriptor)
+
+    monkeypatch.setattr(domain, "_resolve_local_cuda_record", count_resolution)
+    before = (domain.status(), domain._currency, domain._cuda_ready)
+    resolved = []
+    with domain._lock:
+        for name, (owner_kind, route, input_kind) in policies.items():
+            contract = getattr(custody, name)
+            assert type(contract) is custody.LocalCUDAContract
+            descriptor = custody._LOCAL_CUDA_CONTRACTS[contract]
+            assert type(descriptor) is descriptor_type
+            assert (descriptor.owner_kind, descriptor.route, descriptor.input_kind) == (owner_kind, route, input_kind)
+            assert type(descriptor.rationale) is str and descriptor.rationale
+            assert descriptor.healthy is True and descriptor.post_poison is False
+            with pytest.raises(AttributeError):
+                descriptor.route = "forged"
+            policy = domain._local_cuda_policy(contract=contract)
+            assert type(policy) is custody._LocalCUDARecord and policy.owner_type is owners[owner_kind]
+            assert policy.input_type is inputs[input_kind] and policy.route == route and policy.rationale == descriptor.rationale
+            assert policy.healthy is True and policy.post_poison is False
+            assert domain._local_cuda_policies[contract] == (descriptor, policy)
+            assert domain._local_cuda_policies[contract][0] is descriptor
+            assert domain._local_cuda_policies[contract][1] is policy
+            assert domain._local_cuda_policy(contract=contract) is policy
+            resolved.append(policy)
+        assert len(domain._local_cuda_policies) == len({id(policy) for policy in resolved}) == 18
+        assert len(resolutions) == len(set(resolutions)) == 18
+    assert (domain.status(), domain._currency, domain._cuda_ready) == before
+
+
+def test_local_descriptor_cache_keeps_active_gate_binding(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    contract = contract_fixture(monkeypatch, False)
+    canonical_contract = custody.REPLAY_BUFFER_SERIALIZE_CUDA
+    descriptor = custody._LOCAL_CUDA_CONTRACTS[canonical_contract]
+    raw_resolver = custody.AmbientRNGDomain._resolve_local_cuda_record
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    before = local_policy_state(domain)
+    for action in (lambda: domain._local_cuda_policy(contract=canonical_contract), lambda: raw_resolver(domain, descriptor=descriptor)):
+        with pytest.raises(RuntimeError):
+            action()
+    assert local_policy_state(domain) == before
+    owner = Owner()
+    participant = register(domain, owner, ())
+    try:
+        with domain.local_cuda_access(participant=participant, contract=contract) as gate:
+            cached = domain._local_cuda_policies[contract]
+            active = domain._gates[gate]
+            with pytest.raises(RuntimeError):
+                with domain.local_cuda_access(participant=participant, contract=contract):
+                    pytest.fail("nested public local gate admitted")
+            canonical = domain._local_cuda_policy(contract=canonical_contract)
+            assert canonical is domain._local_cuda_policies[canonical_contract][1] and canonical is not cached[1]
+            assert domain._local_cuda_policies[contract] is cached and active.policy is cached[1] and active.owner is owner
+
+            def no_resolution(*, descriptor: Any) -> Any:
+                raise AssertionError("live gate authentication resolved a policy")
+
+            with monkeypatch.context() as patch:
+                patch.setattr(domain, "_resolve_local_cuda_record", no_resolution)
+                for corruption in ("removed_descriptor", "replaced_descriptor", "replaced_policy"):
+                    with monkeypatch.context() as altered:
+                        if corruption == "replaced_policy":
+                            altered.setattr(
+                                domain, "_local_cuda_policies", {**domain._local_cuda_policies, contract: (cached[0], copy.copy(cached[1]))}
+                            )
+                        else:
+                            manifest = dict(custody._LOCAL_CUDA_CONTRACTS)
+                            if corruption == "removed_descriptor":
+                                del manifest[contract]
+                            else:
+                                manifest[contract] = copy.copy(cached[0])
+                            altered.setattr(custody, "_LOCAL_CUDA_CONTRACTS", MappingProxyType(manifest))
+                        with pytest.raises(ValueError):
+                            gate.completion_failed()
+                    assert gate.completion_failed() is False and active.policy is cached[1]
+                with gate.complete(cuda_devices=()):
+                    pass
+                assert gate.completion_failed() is False
+    finally:
+        domain.unregister(participant=participant)
 
 
 @pytest.mark.parametrize("name", ["RNGAdmission", "LocalCUDAGate", "LocalCUDAContract"])
@@ -702,6 +851,247 @@ def test_device_invocation_completed_handle_releases_execution_references(domain
     assert invocation_reference() is None
 
 
+def test_device_invocation_nonempty_completion_matches_existing_operation(
+    domain: Any, monkeypatch: pytest.MonkeyPatch, cuda: CUDASeam
+) -> None:
+    owner = Owner()
+    participant = register(domain, owner, (0, 1, 2))
+    probe = LockProbe(domain._lock)
+    monkeypatch.setattr(domain, "_lock", probe)
+    try:
+        observed: list[list[int]] = []
+        acquisitions: list[int] = []
+        for factory in (domain.device_operation, domain.device_invocation):
+            cuda.calls.clear()
+            context = factory(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=(0, 1, 2))
+            before = probe.calls[0]
+            with context as operation:
+                assert type(operation) is custody.RNGOperation
+            observed.append(syncs(cuda))
+            acquisitions.append(probe.calls[0] - before)
+            if type(context) is custody.RNGDeviceInvocation:
+                assert context.completion_failed() is False
+        assert observed == [[0, 1, 2], [0, 1, 2]]
+        assert acquisitions[0] == acquisitions[1] and acquisitions[0] > 0
+    finally:
+        domain.unregister(participant=participant)
+
+
+def test_device_invocation_nested_siblings_keep_lineage_and_receipts(domain: Any, cuda: CUDASeam) -> None:
+    owners = [Owner(), Owner(), Owner()]
+    members = [register(domain, owner, (0, 1, 2)) for owner in owners]
+    try:
+        parent = domain.device_invocation(participant=members[0], operation_kind="parent", lineage=None, cuda_devices=(0,))
+        with parent as operation:
+            children = []
+            for member, device in zip(members[1:], (1, 2)):
+                child = domain.device_invocation(participant=member, operation_kind="prepare", lineage=operation, cuda_devices=(device,))
+                with child as joined:
+                    assert joined is operation
+                    token = domain.current_token(participant=member, operation=joined)
+                    domain.validate_current(token=token, operation=operation)
+                assert child.completion_failed() is False
+                children.append(child)
+            assert len({id(parent), *(id(child) for child in children)}) == 3
+            assert syncs(cuda) == [1, 2]
+        assert syncs(cuda) == [1, 2, 0, 1, 2]
+        with domain.operation(participant=members[0], operation_kind="ordinary", lineage=None):
+            pass
+        for member in members:
+            domain.unregister(participant=member)
+        members.clear()
+        assert all(child.completion_failed() is False for child in [parent, *children])
+    finally:
+        for member in members:
+            domain.unregister(participant=member)
+
+
+@pytest.mark.parametrize("route", ["device_operation", "device_invocation"])
+def test_device_invocation_nested_currency_preserves_currentness_rules(domain: Any, monkeypatch: pytest.MonkeyPatch, route: str) -> None:
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    owner = Owner()
+    participant = register(domain, owner, ())
+    contexts = []
+
+    def scope(kind: str, lineage: Any) -> Any:
+        context = getattr(domain, route)(participant=participant, operation_kind=kind, lineage=lineage, cuda_devices=())
+        contexts.append(context)
+        return context
+
+    try:
+        with scope("parent", None) as parent:
+            with scope("prepare", parent):
+                token = domain.current_token(participant=participant, operation=parent)
+                with scope("ordinary", parent):
+                    pass
+                domain.validate_current(token=token, operation=parent)
+            with scope("ordinary", parent):
+                pass
+            with pytest.raises(ValueError, match="stale"):
+                domain.validate_current(token=token, operation=parent)
+        if route == "device_invocation":
+            assert all(context.completion_failed() is False for context in contexts)
+    finally:
+        domain.unregister(participant=participant)
+
+
+def test_device_invocation_thread_object_rejects_numeric_alias(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
+    owner = Owner()
+    participant = register(domain, owner, ())
+    domain_probe, owner_probe = LockProbe(domain._lock), LockProbe(owner.lock)
+    monkeypatch.setattr(domain, "_lock", domain_probe)
+    monkeypatch.setattr(owner, "lock", owner_probe)
+    handles: list[Any] = []
+    errors: list[BaseException] = []
+
+    def issue() -> None:
+        try:
+            invocation = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+            with invocation:
+                pass
+            handles.append(invocation)
+        except BaseException as error:
+            errors.append(error)
+
+    issuer = threading.Thread(target=issue)
+    issuer.start()
+    issuer.join(5)
+    assert not issuer.is_alive() and not errors
+    assert issuer.ident is not None and len(handles) == 1
+
+    class NumericAlias:
+        def get_ident(self) -> int:
+            assert issuer.ident is not None
+            return issuer.ident
+
+        def __getattr__(self, name: str) -> Any:
+            return getattr(threading, name)
+
+    done = threading.Event()
+
+    def refuse() -> None:
+        try:
+            assert threading.current_thread() is not issuer
+            assert custody.threading.current_thread() is threading.current_thread()
+            assert custody.threading.get_ident() == issuer.ident
+            for action in (handles[0].__enter__, lambda: handles[0].__exit__(None, None, None), handles[0].completion_failed):
+                with pytest.raises(ValueError):
+                    action()
+        except BaseException as error:
+            errors.append(error)
+        finally:
+            done.set()
+
+    receiver = threading.Thread(target=refuse)
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(custody, "threading", NumericAlias())
+            with domain._lock, owner.lock:
+                domain_probe.calls[0] = owner_probe.calls[0] = 0
+                receiver.start()
+                refused_before_unlock = done.wait(2)
+                assert domain_probe.calls == owner_probe.calls == [0]
+            receiver.join(5)
+        assert refused_before_unlock and not receiver.is_alive() and not errors
+    finally:
+        if receiver.ident is not None:
+            receiver.join(5)
+        domain.unregister(participant=participant)
+
+
+def test_device_invocation_registry_lifetime_and_lock_paths(domain: Any, monkeypatch: pytest.MonkeyPatch, cuda: CUDASeam) -> None:
+    owner = Owner()
+    participant = register(domain, owner, (0,))
+    domain_probe, owner_probe = LockProbe(domain._lock), LockProbe(owner.lock)
+    monkeypatch.setattr(domain, "_lock", domain_probe)
+    monkeypatch.setattr(owner, "lock", owner_probe)
+    phases: list[str] = []
+    invocation = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=(0,))
+    identity, reference = id(invocation), weakref.ref(invocation)
+    record = domain._invocations[invocation]
+    assert domain_probe.calls == owner_probe.calls == [0]
+    assert record.thread is threading.current_thread() and record.state == "issued"
+    assert record.participant is participant and record.operation_kind == "ordinary" and record.lineage is None
+    assert record.cuda_devices == (0,) and record.context is None and record.failed_completion is True
+    original_query = cuda.is_initialized
+
+    def entering() -> bool:
+        assert record.state == "entering" and record.context is not None
+        snapshot = invocation_state(domain)
+        row = next(row for row in snapshot if row[0] == identity)
+        assert row[10][2] == id(record)
+        counts = (domain_probe.calls[0], owner_probe.calls[0])
+        with pytest.raises(RuntimeError):
+            reference().completion_failed()
+        assert invocation_state(domain) == snapshot and counts == (domain_probe.calls[0], owner_probe.calls[0])
+        phases.append("entering")
+        return original_query()
+
+    def exiting(index: int) -> None:
+        assert index == 0 and record.state == "active" and record.context is None
+        before = invocation_state(domain)
+        counts = (domain_probe.calls[0], owner_probe.calls[0])
+        with pytest.raises(RuntimeError):
+            reference().completion_failed()
+        assert invocation_state(domain) == before and counts == (domain_probe.calls[0], owner_probe.calls[0])
+        phases.append("exiting")
+
+    monkeypatch.setattr(cuda, "is_initialized", entering)
+    cuda.sync_hook = exiting
+    try:
+        with owner.lock:
+            with invocation:
+                assert record.state == "active" and record.context is not None
+                phases.append("active")
+                before = invocation_state(domain)
+                counts = (domain_probe.calls[0], owner_probe.calls[0])
+                with pytest.raises(RuntimeError):
+                    invocation.completion_failed()
+                assert invocation_state(domain) == before and counts == (domain_probe.calls[0], owner_probe.calls[0])
+            domain_probe.calls[0] = owner_probe.calls[0] = 0
+            assert invocation.completion_failed() is False
+            assert invocation.completion_failed() is False
+            assert domain_probe.calls == owner_probe.calls == [0]
+        assert phases == ["entering", "active", "exiting"]
+        assert record.failed_completion is False
+        assert (record.state, record.participant, record.operation_kind, record.lineage, record.cuda_devices, record.context) == (
+            "exited",
+            None,
+            None,
+            None,
+            (),
+            None,
+        )
+        failed = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=(1,))
+        with pytest.raises(ValueError):
+            failed.__enter__()
+        failed_record = domain._invocations[failed]
+        assert failed_record.state == "entry_failed" and failed_record.failed_completion is True
+        assert (
+            failed_record.participant,
+            failed_record.operation_kind,
+            failed_record.lineage,
+            failed_record.cuda_devices,
+            failed_record.context,
+        ) == (None, None, None, (), None)
+        domain_probe.calls[0] = owner_probe.calls[0] = 0
+        before = invocation_state(domain)
+        for action in (invocation.__enter__, lambda: reference().__exit__(None, None, None), failed.completion_failed):
+            with pytest.raises(RuntimeError):
+                action()
+        del action
+        assert invocation_state(domain) == before and domain_probe.calls == owner_probe.calls == [0]
+        failed_reference = weakref.ref(failed)
+        ids = {id(invocation), id(failed)}
+        del invocation, failed
+        gc.collect()
+        assert reference() is failed_reference() is None
+        assert all(row[0] not in ids for row in invocation_state(domain))
+    finally:
+        domain.unregister(participant=participant)
+
+
 def test_actual_gate_blocks_other_thread_and_cross_thread_capability(domain: Any) -> None:
     started, entered = threading.Event(), threading.Event()
     errors: list[BaseException] = []
@@ -983,6 +1373,16 @@ def assert_ambient_unchanged(before: tuple[Any, Any, torch.Tensor]) -> None:
     assert torch.equal(torch.get_rng_state(), cpu)
 
 
+INVOCATION_CASES = (
+    "invocation_same_error",
+    "invocation_child_failure",
+    "invocation_parent_failure",
+    "invocation_reported_failure",
+    "invocation_phase_reference",
+    "invocation_phase_failure",
+)
+PHASE_CASES = ("invocation_phase_reference", "invocation_phase_failure")
+
 CHILD_CASES = (
     "bootstrap_failure",
     "runtime_query_failure",
@@ -993,7 +1393,7 @@ CHILD_CASES = (
     "poison_ready_qualified",
     "poison_ready_healthy_only",
     "operation_body_completion",
-)
+) + INVOCATION_CASES
 
 
 def child_identity(role: str) -> bool:
@@ -1012,7 +1412,155 @@ def child_identity(role: str) -> bool:
     return qualified
 
 
-def poison_case(case: str, domain: Any, cuda: CUDASeam, monkeypatch: pytest.MonkeyPatch) -> None:
+def invocation_case(case: str, domain: Any, cuda: CUDASeam) -> dict[str, Any] | None:
+    owners = [Owner(), Owner(), Owner()]
+    members = [register(domain, owner, (0, 1, 2)) for owner in owners]
+    primary, cleanup = RuntimeError(f"{case} body"), RuntimeError(f"{case} synchronization")
+    factory = domain.device_invocation
+    phase = None
+    if case == "invocation_same_error":
+        receipts = []
+        for failing in (False, True):
+            invocation = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(0,))
+            if failing:
+                cuda.sync_errors[0] = primary
+            with owners[0].lock:
+                with pytest.raises(RuntimeError) as raised:
+                    with invocation:
+                        raise primary
+                assert raised.value is primary and invocation.completion_failed() is failing
+                assert domain.status()[2] is failing
+                receipts.append(invocation)
+        assert syncs(cuda) == [0, 0]
+        assert [receipt.completion_failed() for receipt in receipts] == [False, True]
+    elif case == "invocation_child_failure":
+        failures = [0]
+
+        def fail_once(index: int) -> None:
+            if index == 1 and failures[0] == 0:
+                failures[0] += 1
+                raise cleanup
+
+        cuda.sync_hook = fail_once
+        parent = factory(participant=members[0], operation_kind="parent", lineage=None, cuda_devices=(0,))
+        with pytest.raises(RuntimeError) as raised:
+            with parent as lineage:
+                child = factory(participant=members[1], operation_kind="prepare", lineage=lineage, cuda_devices=(1,))
+                try:
+                    with child as joined:
+                        assert joined is lineage
+                except RuntimeError as error:
+                    assert error is cleanup and child.completion_failed() is True
+                    sibling = factory(participant=members[2], operation_kind="prepare", lineage=lineage, cuda_devices=(2,))
+                    with pytest.raises(RuntimeError, match="poisoned"):
+                        with sibling:
+                            pytest.fail("poisoned sibling reached body")
+                    with pytest.raises(RuntimeError):
+                        sibling.completion_failed()
+                    assert domain._invocations[sibling].state == "entry_failed"
+                    raise
+        assert raised.value is cleanup and failures == [1]
+        assert child is not parent and child.completion_failed() is True and parent.completion_failed() is False
+        assert syncs(cuda) == [1, 0, 1]
+    elif case == "invocation_parent_failure":
+        attempted, mutated = threading.Event(), threading.Event()
+        events: list[str] = []
+        errors: list[BaseException] = []
+        seen = [0]
+
+        def contend() -> None:
+            try:
+                attempted.set()
+                with owners[0].lock:
+                    events.append("competitor")
+                    mutated.set()
+            except BaseException as error:
+                errors.append(error)
+
+        def fail_parent(index: int) -> None:
+            if index == 2:
+                seen[0] += 1
+                if seen[0] == 2:
+                    assert attempted.wait(2) and not mutated.is_set()
+                    events.append("completion")
+                    raise cleanup
+
+        cuda.sync_hook = fail_parent
+        parent = factory(participant=members[0], operation_kind="parent", lineage=None, cuda_devices=(0,))
+        thread = threading.Thread(target=contend)
+        children = []
+        try:
+            with owners[0].lock:
+                with pytest.raises(RuntimeError) as raised:
+                    with parent as lineage:
+                        for member, index in zip(members[1:], (1, 2)):
+                            child = factory(participant=member, operation_kind="prepare", lineage=lineage, cuda_devices=(index,))
+                            with child as joined:
+                                assert joined is lineage
+                            assert child.completion_failed() is False
+                            children.append(child)
+                        thread.start()
+                        assert attempted.wait(2)
+                assert raised.value is cleanup and parent.completion_failed() is True
+                assert all(child.completion_failed() is False for child in children)
+                assert not mutated.is_set()
+                events.append("read")
+        finally:
+            if thread.ident is not None:
+                thread.join(5)
+        assert not thread.is_alive() and not errors and mutated.is_set()
+        assert events == ["completion", "read", "competitor"] and syncs(cuda) == [1, 2, 0, 1, 2]
+    elif case == "invocation_reported_failure":
+        invalid = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(3,))
+        with pytest.raises(ValueError):
+            with invalid:
+                pytest.fail("out-of-subset invocation entered")
+        with pytest.raises(RuntimeError):
+            invalid.completion_failed()
+        assert syncs(cuda) == [] and domain._invocations[invalid].state == "entry_failed"
+        invocation = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(0,))
+        with pytest.raises(RuntimeError) as raised:
+            with invocation as lineage:
+                with domain.admission(lineage=lineage) as gate:
+                    gate.report_failure(error=primary)
+                raise primary
+        assert raised.value is primary and invocation.completion_failed() is False and syncs(cuda) == [0]
+        refused = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=())
+        with pytest.raises(RuntimeError, match="poisoned"):
+            refused.__enter__()
+        with pytest.raises(RuntimeError):
+            refused.completion_failed()
+    else:
+        assert case in PHASE_CASES
+        cuda.sync_errors[1] = cleanup
+        factory = domain.device_operation if case == "invocation_phase_reference" else domain.device_invocation
+        invocation = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(0, 1, 2))
+        with pytest.raises(BaseExceptionGroup) as raised:
+            with invocation:
+                raise primary
+        assert len(raised.value.exceptions) == 2
+        assert raised.value.exceptions[0] is primary and raised.value.exceptions[1] is cleanup
+        outcome = invocation.completion_failed() if case == "invocation_phase_failure" else None
+        assert outcome is (True if case == "invocation_phase_failure" else None)
+        phase = {
+            "devices": [0, 1, 2],
+            "synchronize_events": syncs(cuda),
+            "exception_labels": ["body", "synchronization"],
+            "completion_failed": outcome,
+        }
+    assert domain.status()[2] is True
+    with pytest.raises(RuntimeError, match="poisoned"):
+        with domain.admission(lineage=None):
+            pytest.fail("poisoned invocation child admitted work")
+    with pytest.raises(RuntimeError, match="poisoned"):
+        with domain.operation(participant=members[0], operation_kind="ordinary", lineage=None):
+            pytest.fail("poisoned invocation child entered operation")
+    return phase
+
+
+def poison_case(case: str, domain: Any, cuda: CUDASeam, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any] | None:
+    if case in INVOCATION_CASES:
+        return invocation_case(case, domain, cuda)
     owner = Owner()
     participant = register(domain, owner, ())
     primary = RuntimeError(f"{case} primary")
@@ -1179,6 +1727,7 @@ def poison_case(case: str, domain: Any, cuda: CUDASeam, monkeypatch: pytest.Monk
     with owner.lock:
         owner.revision += 1
     assert domain.status()[2]
+    return None
 
 
 def cuda_core_child(queue: Any, case: str) -> None:
@@ -1189,7 +1738,29 @@ def cuda_core_child(queue: Any, case: str) -> None:
     with pytest.MonkeyPatch.context() as monkeypatch:
         cuda = CUDASeam(True)
         monkeypatch.setattr(custody.torch, "cuda", cuda)
-        poison_case(case, domain, cuda, monkeypatch)
+        phase = poison_case(case, domain, cuda, monkeypatch)
+        if phase is not None and qualified:
+            manifest_bytes = Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()
+            manifest = json.loads(manifest_bytes)
+            assert manifest["base_commit"] == os.environ["BAC_QUAL_SHA"]
+            assert manifest["candidate_tree"] == os.environ["BAC_QUAL_TREE"]
+            record = {
+                "schema": "cuda-core-invocation-phase-v1",
+                "role": role,
+                "case": case,
+                "pid": os.getpid(),
+                "ppid": os.getppid(),
+                "base_commit": manifest["base_commit"],
+                "candidate_tree": manifest["candidate_tree"],
+                "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+                "source_sha256": {
+                    "townlet.exploration.rng_custody": hashlib.sha256(Path(custody.__file__).read_bytes()).hexdigest(),
+                    "test_rng_cuda_admission": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                },
+                **phase,
+            }
+            with (Path(os.environ["BAC_QUAL_OUTPUT"]) / f"invocation-phase-{role}.json").open("x") as stream:
+                json.dump(record, stream, sort_keys=True)
     queue.put((f"cuda core {case} fail closed", os.getpid(), os.getppid(), qualified))
 
 
@@ -1215,6 +1786,11 @@ def test_isolated_poison_protocol(case: str) -> None:
         if qualified:
             output = Path(os.environ["BAC_QUAL_OUTPUT"])
             manifest_hash = hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest()
+            phase_binding = {}
+            if case in PHASE_CASES:
+                phase_binding["invocation_phase_sha256"] = hashlib.sha256(
+                    (output / f"invocation-phase-{role}.json").read_bytes()
+                ).hexdigest()
             with (output / f"spawn-observation-{role}.json").open("x") as stream:
                 json.dump(
                     {
@@ -1226,6 +1802,7 @@ def test_isolated_poison_protocol(case: str) -> None:
                         "qualified": qualified,
                         "message": message,
                         "manifest_sha256": manifest_hash,
+                        **phase_binding,
                     },
                     stream,
                     sort_keys=True,
@@ -1286,6 +1863,65 @@ class ForbiddenCUDA:
         raise AssertionError(f"fork guard reached forbidden CUDA accessor {name}")
 
 
+def invocation_state(domain: Any) -> tuple[Any, ...]:
+    rows = []
+    for key, record in domain._invocations.items():
+        generator = getattr(record.context, "gen", None)
+        frame = getattr(generator, "gi_frame", None)
+        execution = (id(generator), id(frame), id(frame.f_locals.get("completion")) if frame is not None else id(None))
+        rows.append(
+            (
+                id(key),
+                id(record),
+                id(record.thread),
+                record.state,
+                id(record.participant),
+                record.operation_kind,
+                id(record.lineage),
+                record.cuda_devices,
+                id(record.context),
+                record.failed_completion,
+                execution,
+            )
+        )
+    return tuple(rows)
+
+
+def local_policy_state(domain: Any) -> tuple[Any, ...]:
+    manifest = custody._LOCAL_CUDA_CONTRACTS
+    return (
+        tuple(
+            (
+                id(contract),
+                id(descriptor),
+                descriptor.owner_kind,
+                descriptor.route,
+                descriptor.input_kind,
+                descriptor.rationale,
+                descriptor.healthy,
+                descriptor.post_poison,
+            )
+            for contract, descriptor in manifest.items()
+        ),
+        tuple(
+            (
+                id(contract),
+                id(descriptor),
+                id(policy),
+                id(policy.owner_type),
+                policy.route,
+                id(policy.input_type),
+                policy.rationale,
+                policy.healthy,
+                policy.post_poison,
+                descriptor is manifest.get(contract),
+            )
+            for contract, (descriptor, policy) in domain._local_cuda_policies.items()
+        ),
+        tuple(id(contract) for contract in manifest if contract not in domain._local_cuda_policies),
+    )
+
+
 def guard_state(domain: Any) -> tuple[Any, ...]:
     return (
         domain._pid,
@@ -1344,6 +1980,8 @@ def guard_state(domain: Any) -> tuple[Any, ...]:
             )
             for key, gate in domain._gates.items()
         ),
+        invocation_state(domain),
+        local_policy_state(domain),
     )
 
 
@@ -1517,14 +2155,29 @@ def run_fork_trial(
             "report_failure": lambda: gate.report_failure(error=sentinel),
             "domain_admission": lambda: enter(domain.admission(lineage=None)),
         }
-    else:
-        assert trial == "local"
+    elif trial == "local":
+        descriptor = custody._LOCAL_CUDA_CONTRACTS[contract]
+        raw_resolver = custody.AmbientRNGDomain._resolve_local_cuda_record
         actions = {
             "resolve_cuda": lambda: gate.resolve_cuda(device=device),
             "complete": lambda: enter(gate.complete(cuda_devices=())),
             "completion_failed": gate.completion_failed,
             "report_failure": lambda: gate.report_failure(error=sentinel),
             "domain_local_cuda_access": lambda: enter(domain.local_cuda_access(participant=participant, contract=contract)),
+            "domain_local_cuda_policy": lambda: domain._local_cuda_policy(contract=contract),
+            "domain_resolve_local_cuda_record": lambda: raw_resolver(domain, descriptor=descriptor),
+        }
+    else:
+        assert trial == "invocation"
+        active, completed = gate
+        actions = {
+            "active_enter": active.__enter__,
+            "active_exit": lambda: active.__exit__(None, None, None),
+            "active_completion_failed": active.completion_failed,
+            "completed_completion_failed": completed.completion_failed,
+            "domain_device_invocation": lambda: domain.device_invocation(
+                participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=()
+            ),
         }
     identity_path = output / f"fork-identity-cuda_core_inherited_pid-{trial}.json"
     observation_path = output / f"fork-observation-cuda_core_inherited_pid-{trial}.json"
@@ -1624,9 +2277,35 @@ def inherited_pid_child(queue: Any, ordinary_output: str) -> None:
                 else domain.local_cuda_access(participant=participant, contract=contract)
             )
             with context as gate:
+                if trial == "admission":
+                    canonical_contract = custody.REPLAY_BUFFER_SERIALIZE_CUDA
+                    canonical = domain._local_cuda_policy(contract=canonical_contract)
+                    assert domain._local_cuda_policies[canonical_contract][1] is canonical
+                    assert any(item not in domain._local_cuda_policies for item in custody._LOCAL_CUDA_CONTRACTS)
                 run_fork_trial(trial, gate, domain, participant, contract, domain_lock, owner_lock, cuda_calls, metadata, modules, output)
             assert not domain.status()[2]
             assert_ambient_unchanged(before)
+        completed = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+        with completed:
+            pass
+        active = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
+        with owner.lock, active:
+            run_fork_trial(
+                "invocation",
+                (active, completed),
+                domain,
+                participant,
+                contract,
+                domain_lock,
+                owner_lock,
+                cuda_calls,
+                metadata,
+                modules,
+                output,
+            )
+        assert completed.completion_failed() is False and active.completion_failed() is False
+        assert not domain.status()[2]
+        assert_ambient_unchanged(before)
     domain.unregister(participant=participant)
     assert not domain.status()[2]
     assert_ambient_unchanged(before)

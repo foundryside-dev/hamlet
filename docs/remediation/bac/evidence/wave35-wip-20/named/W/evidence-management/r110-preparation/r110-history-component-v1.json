@@ -1,0 +1,2305 @@
+{
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Retained application result lacks absolute UTC timestamps.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205308,
+            "path": "wave35/r110-candidate.json",
+            "root": "W",
+            "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+          },
+          "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_source_fixture_preserves_real_values",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_archive_fixture_preserves_nonempty_per_rows",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_cuda_archive_fixture_has_verified_owned_rows",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 5,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 650,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures-custody.json",
+              "root": "Q",
+              "sha256": "5877d2dc620f2e54f435638172403bc6b1997875198e063a4685885a44b65fa7"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 246,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures/identity-controller.json",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures-custody.json",
+              "root": "Q",
+              "sha256": "5877d2dc620f2e54f435638172403bc6b1997875198e063a4685885a44b65fa7"
+            },
+            {
+              "bytes": 1457,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures-result.json",
+              "root": "Q",
+              "sha256": "3f93c0e683e40e39069edba203f2912742167a48910d8df504a01766e38e0495"
+            },
+            {
+              "bytes": 579,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures.log",
+              "root": "Q",
+              "sha256": "605cacc742cb9cfba132f7cd700e2b29d50980a951046f05681881d837f437f0"
+            }
+          ],
+          "duration_seconds": 5.658378601074219,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+            "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+          },
+          "exit_code": 0,
+          "id": "wave35-r110-activation-fixtures--activation-fixtures",
+          "log_paths": [
+            {
+              "bytes": 579,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures.log",
+              "root": "Q",
+              "sha256": "605cacc742cb9cfba132f7cd700e2b29d50980a951046f05681881d837f437f0"
+            }
+          ],
+          "path": "wave35-r110-activation-fixtures",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_source_fixture_preserves_real_values",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_archive_fixture_preserves_nonempty_per_rows",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_cuda_archive_fixture_has_verified_owned_rows",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r110-activation-fixtures/activation-fixtures-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "5877d2dc620f2e54f435638172403bc6b1997875198e063a4685885a44b65fa7"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1457,
+            "path": "wave35-r110-activation-fixtures/activation-fixtures-result.json",
+            "root": "Q",
+            "sha256": "3f93c0e683e40e39069edba203f2912742167a48910d8df504a01766e38e0495"
+          },
+          "record_id": "activation-fixtures",
+          "result": {
+            "bytes": 1457,
+            "path": "wave35-r110-activation-fixtures/activation-fixtures-result.json",
+            "root": "Q",
+            "sha256": "3f93c0e683e40e39069edba203f2912742167a48910d8df504a01766e38e0495"
+          },
+          "spec": {
+            "bytes": 1221,
+            "path": "wave35-r110-activation-fixtures-spec.json",
+            "root": "Q",
+            "sha256": "bda9ad9482a1e0acf832d91682ab0b2b4dd14e13c4b4519b755af25ec94254d4"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r110-activation-fixtures--activation-fixtures",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-first positive/causal-negative prerequisite evidence only; no production B acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r110-activation-fixtures--activation-fixtures"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r110-activation-fixtures--activation-fixtures"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r110-activation-fixtures--activation-fixtures"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "required_by": [
+            "wave35-r110-activation-fixtures--activation-fixtures"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r110-activation-fixtures--activation-fixtures"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Retained application result lacks absolute UTC timestamps.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205308,
+            "path": "wave35/r110-candidate.json",
+            "root": "W",
+            "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+          },
+          "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_exact_source_manifest_and_immutable_descriptors",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push_recorded]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-readiness]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-serialize]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-validate_serialized]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-load_for_mode]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-historical_archives]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-install_historical_archive]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push_recorded]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-declare_unconstrained_action_dim]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-readiness]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-serialize]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-validate_serialized]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-historical_archives]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-install_historical_archive]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_priorities]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_unit_priorities]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 19,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 961,
+              "path": "wave35-r110-activation-red/activation-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "c20a82abd13961127d171d60efd8c9545508e0df41136415db52c66762992934"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 1735,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-155df0f6d28f900e.json",
+              "root": "Q",
+              "sha256": "a2692fb53774c27a5ab33f4e9c28fc3e7cd18a9bd1ee5c2e4bd5896207044a2c"
+            },
+            {
+              "bytes": 1693,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-2438f6b37386d3fa.json",
+              "root": "Q",
+              "sha256": "f4ef516bc539a672fe491b9d690f953c0ff2026789b9a549a448e84c5ee4a9cf"
+            },
+            {
+              "bytes": 1609,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-262254579ebd3a74.json",
+              "root": "Q",
+              "sha256": "2cde32fce3d81e0fc7b7fc19e87c440e5a9db1836d1f115ba1355beaa61f824c"
+            },
+            {
+              "bytes": 1674,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-2bed0f1496d319dc.json",
+              "root": "Q",
+              "sha256": "4faf19321be9225ebf1f3d95512b22bf85aa36998c99346af8d8bef3d1dd4da2"
+            },
+            {
+              "bytes": 1679,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-3fb439a963d4f519.json",
+              "root": "Q",
+              "sha256": "c59a53c367b7d01f3a93624cf59469482b5dc5d9484a5b0746b9e62684f48f22"
+            },
+            {
+              "bytes": 1765,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-418723542dcedec4.json",
+              "root": "Q",
+              "sha256": "2f81d434a49948ec14a813decf319fe5a6d62366dac4f92d4991a6993d542cd6"
+            },
+            {
+              "bytes": 1739,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-42e04ac96c58dbd8.json",
+              "root": "Q",
+              "sha256": "81a3c03f6b60d92ac35b61d9843a2b9361b50505d10bb447166899d4adc33079"
+            },
+            {
+              "bytes": 1815,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-4a04dc7c08d01125.json",
+              "root": "Q",
+              "sha256": "953bcb4ccf3d35034277fd7e8af7382410f6d638dda24f06b99a33cc4b80e24f"
+            },
+            {
+              "bytes": 1663,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-6005ba48de48601d.json",
+              "root": "Q",
+              "sha256": "40435a68003d98517bf905f747c7e512f746ecf84fc57f6f1425caf520b73094"
+            },
+            {
+              "bytes": 1720,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-728483dd88d01bab.json",
+              "root": "Q",
+              "sha256": "c61f72607f278cf201e3043b2200ac5fffb885a7a7ab532084243395ef772a1e"
+            },
+            {
+              "bytes": 1838,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-a6f2647fa752c27d.json",
+              "root": "Q",
+              "sha256": "6accae6d7a63f630063f503087595b8474e716976051048537e9c55815a955ba"
+            },
+            {
+              "bytes": 1792,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-c1c92d128fef0fa0.json",
+              "root": "Q",
+              "sha256": "70341cd2a5abd57c4119a44065f2aa87119bdc488f1f7b0ab8fd8c61ae02e342"
+            },
+            {
+              "bytes": 1709,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-c3ec2c6626697028.json",
+              "root": "Q",
+              "sha256": "3915403cc81a099f0838c543b0b2441c4a14864ac2c740b48c4015a9119c5f83"
+            },
+            {
+              "bytes": 1719,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-cf061be496191c51.json",
+              "root": "Q",
+              "sha256": "a892c714ba85f8293d4cf787aae3211d15f7855b03b856006065f2034443befd"
+            },
+            {
+              "bytes": 1711,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-d23352f92a61c6dc.json",
+              "root": "Q",
+              "sha256": "1c03ec1786f2bb97417c3c08062c766b1f837557be6667f6642fd023e3e1f3e5"
+            },
+            {
+              "bytes": 1757,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-dc05bb9c241c1e9e.json",
+              "root": "Q",
+              "sha256": "5139c830704bd700c7bfd4d010075665570f80cbf881efe237a0698726936875"
+            },
+            {
+              "bytes": 1633,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-e5ed6455f9709437.json",
+              "root": "Q",
+              "sha256": "dfa8557950979a692802d94cbea97ad1c9cb45818a806aaad80f00936822a5bd"
+            },
+            {
+              "bytes": 1081,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-f025d547119e4e51.json",
+              "root": "Q",
+              "sha256": "8c748f6ef41c1897b2e86a72339297a741921ce8ea95ed65910ff24b48741dae"
+            },
+            {
+              "bytes": 1655,
+              "path": "wave35-r110-activation-red/activation-red/failure-controller-f53329b4c9625036.json",
+              "root": "Q",
+              "sha256": "f418ebc6d9627243ca63367aa27d6b347d31a2b2c670c2b93469feddc0fa380c"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r110-activation-red/activation-red/identity-controller.json",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 6998,
+              "path": "wave35-r110-activation-red/activation-red-failure-index.json",
+              "root": "Q",
+              "sha256": "c8952bb7533db63d607e8bd82bf62a07672d31ba1234c155ffc0c19b245f6b1a"
+            },
+            {
+              "bytes": 961,
+              "path": "wave35-r110-activation-red/activation-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "c20a82abd13961127d171d60efd8c9545508e0df41136415db52c66762992934"
+            },
+            {
+              "bytes": 3483,
+              "path": "wave35-r110-activation-red/activation-red-result.json",
+              "root": "Q",
+              "sha256": "6eb38caa3a58300ceacfee1b36f702de3b24731e88a7820aa3733f5aa2734854"
+            },
+            {
+              "bytes": 30825,
+              "path": "wave35-r110-activation-red/activation-red.log",
+              "root": "Q",
+              "sha256": "90c3379daff7664a058fa7fc39185286409158f748b6cd5da6c74a4b49c27c6b"
+            }
+          ],
+          "duration_seconds": 4.378917694091797,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+            "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+          },
+          "exit_code": 1,
+          "id": "wave35-r110-activation-red--activation-red",
+          "log_paths": [
+            {
+              "bytes": 30825,
+              "path": "wave35-r110-activation-red/activation-red.log",
+              "root": "Q",
+              "sha256": "90c3379daff7664a058fa7fc39185286409158f748b6cd5da6c74a4b49c27c6b"
+            }
+          ],
+          "path": "wave35-r110-activation-red",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_exact_source_manifest_and_immutable_descriptors",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push_recorded]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-readiness]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-serialize]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-validate_serialized]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-load_for_mode]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-historical_archives]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-install_historical_archive]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push_recorded]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-declare_unconstrained_action_dim]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-readiness]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-serialize]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-validate_serialized]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-historical_archives]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-install_historical_archive]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_priorities]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_unit_priorities]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r110-activation-red/activation-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 961,
+              "path": "wave35-r110-activation-red/activation-red-negative-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c20a82abd13961127d171d60efd8c9545508e0df41136415db52c66762992934"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 3483,
+            "path": "wave35-r110-activation-red/activation-red-result.json",
+            "root": "Q",
+            "sha256": "6eb38caa3a58300ceacfee1b36f702de3b24731e88a7820aa3733f5aa2734854"
+          },
+          "record_id": "activation-red",
+          "result": {
+            "bytes": 3483,
+            "path": "wave35-r110-activation-red/activation-red-result.json",
+            "root": "Q",
+            "sha256": "6eb38caa3a58300ceacfee1b36f702de3b24731e88a7820aa3733f5aa2734854"
+          },
+          "spec": {
+            "bytes": 3308,
+            "path": "wave35-r110-activation-red-spec.json",
+            "root": "Q",
+            "sha256": "1b075094e5195117355d1d81f83e67c25851ca0a96123b27185d49ee684e2fb3"
+          },
+          "started_at": null,
+          "status": "FAILED"
+        }
+      ],
+      "check": "wave35-r110-activation-red--activation-red",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-first positive/causal-negative prerequisite evidence only; no production B acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r110-activation-red--activation-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r110-activation-red--activation-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r110-activation-red--activation-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "required_by": [
+            "wave35-r110-activation-red--activation-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r110-activation-red--activation-red"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Retained application result lacks absolute UTC timestamps.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205308,
+            "path": "wave35/r110-candidate.json",
+            "root": "W",
+            "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+          },
+          "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 641,
+              "path": "wave35-r110-collection/collection-custody.json",
+              "root": "Q",
+              "sha256": "c827b35981d9051bc929c861b743b89cbaf2c634942767482fc3912461c1dad1"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 246,
+              "path": "wave35-r110-collection/collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 641,
+              "path": "wave35-r110-collection/collection-custody.json",
+              "root": "Q",
+              "sha256": "c827b35981d9051bc929c861b743b89cbaf2c634942767482fc3912461c1dad1"
+            },
+            {
+              "bytes": 932,
+              "path": "wave35-r110-collection/collection-result.json",
+              "root": "Q",
+              "sha256": "da117991c91d3db587831b2cd525a5e77f3f52f3a98149758be364ffdfd57bee"
+            },
+            {
+              "bytes": 13940,
+              "path": "wave35-r110-collection/collection.log",
+              "root": "Q",
+              "sha256": "cd884e5944812cca31731945a0f7fdb20eaa2965b5e5cdd612b4b91391479c16"
+            }
+          ],
+          "duration_seconds": 4.418740749359131,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+            "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+          },
+          "exit_code": 0,
+          "id": "wave35-r110-collection--collection",
+          "log_paths": [
+            {
+              "bytes": 13940,
+              "path": "wave35-r110-collection/collection.log",
+              "root": "Q",
+              "sha256": "cd884e5944812cca31731945a0f7fdb20eaa2965b5e5cdd612b4b91391479c16"
+            }
+          ],
+          "path": "wave35-r110-collection",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r110-collection/collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 641,
+              "path": "wave35-r110-collection/collection-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "c827b35981d9051bc929c861b743b89cbaf2c634942767482fc3912461c1dad1"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 932,
+            "path": "wave35-r110-collection/collection-result.json",
+            "root": "Q",
+            "sha256": "da117991c91d3db587831b2cd525a5e77f3f52f3a98149758be364ffdfd57bee"
+          },
+          "record_id": "collection",
+          "result": {
+            "bytes": 932,
+            "path": "wave35-r110-collection/collection-result.json",
+            "root": "Q",
+            "sha256": "da117991c91d3db587831b2cd525a5e77f3f52f3a98149758be364ffdfd57bee"
+          },
+          "spec": {
+            "bytes": 697,
+            "path": "wave35-r110-collection-spec.json",
+            "root": "Q",
+            "sha256": "4111e2a6390604eff41b8d4480717d89d2b4b9037f1b8640333e69572164d0c3"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r110-collection--collection",
+      "check_kind": "collection",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-first positive/causal-negative prerequisite evidence only; no production B acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r110-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r110-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r110-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "required_by": [
+            "wave35-r110-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r110-collection--collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Retained application result lacks absolute UTC timestamps.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205308,
+            "path": "wave35/r110-candidate.json",
+            "root": "W",
+            "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+          },
+          "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 1,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 958,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "64be3008c01471a25919ff2c908f9de8960b1e00ce55ff8ee1bf0fca6ac747b8"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 3127,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red/failure-controller-c5807472fde45eec.json",
+              "root": "Q",
+              "sha256": "129061054501cd63a4f46bc72fc838b91e6e5c255e85d822cdb1a4fb2accbd93"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red/identity-controller.json",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 694,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red-failure-index.json",
+              "root": "Q",
+              "sha256": "1b32bb95563c741f10a522871ad2e381a3e1eddde640cd95b9f81acbeb0508f4"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "64be3008c01471a25919ff2c908f9de8960b1e00ce55ff8ee1bf0fca6ac747b8"
+            },
+            {
+              "bytes": 910,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red-result.json",
+              "root": "Q",
+              "sha256": "e66f3e96a5fd88d359dc691d8f041c7c058f620c03afde24150ea46768ac71ec"
+            },
+            {
+              "bytes": 3699,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red.log",
+              "root": "Q",
+              "sha256": "b76a627b33732ae428ef24148085a94902ec4020bff58c700ce775b3303abc24"
+            }
+          ],
+          "duration_seconds": 5.575995922088623,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+            "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+          },
+          "exit_code": 1,
+          "id": "wave35-r110-core-manifest-red--core-manifest-red",
+          "log_paths": [
+            {
+              "bytes": 3699,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red.log",
+              "root": "Q",
+              "sha256": "b76a627b33732ae428ef24148085a94902ec4020bff58c700ce775b3303abc24"
+            }
+          ],
+          "path": "wave35-r110-core-manifest-red",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r110-core-manifest-red/core-manifest-red-negative-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "64be3008c01471a25919ff2c908f9de8960b1e00ce55ff8ee1bf0fca6ac747b8"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 910,
+            "path": "wave35-r110-core-manifest-red/core-manifest-red-result.json",
+            "root": "Q",
+            "sha256": "e66f3e96a5fd88d359dc691d8f041c7c058f620c03afde24150ea46768ac71ec"
+          },
+          "record_id": "core-manifest-red",
+          "result": {
+            "bytes": 910,
+            "path": "wave35-r110-core-manifest-red/core-manifest-red-result.json",
+            "root": "Q",
+            "sha256": "e66f3e96a5fd88d359dc691d8f041c7c058f620c03afde24150ea46768ac71ec"
+          },
+          "spec": {
+            "bytes": 660,
+            "path": "wave35-r110-core-manifest-red-spec.json",
+            "root": "Q",
+            "sha256": "425226a6873a1e76c97a7f31f66a9736046ffeb3af14616d489eb0466d4a0065"
+          },
+          "started_at": null,
+          "status": "FAILED"
+        }
+      ],
+      "check": "wave35-r110-core-manifest-red--core-manifest-red",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-first positive/causal-negative prerequisite evidence only; no production B acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r110-core-manifest-red--core-manifest-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r110-core-manifest-red--core-manifest-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r110-core-manifest-red--core-manifest-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "required_by": [
+            "wave35-r110-core-manifest-red--core-manifest-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r110-core-manifest-red--core-manifest-red"
+    },
+    {
+      "attempts": [
+        {
+          "ended_at": null,
+          "exit_code": null,
+          "id": "wave35-r110-owned-spec.json--unrun-template",
+          "path": "wave35-r110-owned-spec.json",
+          "planned_jobs": [
+            {
+              "args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "-q",
+                "-n",
+                "2",
+                "--dist",
+                "worksteal",
+                "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r110-owned"
+              ],
+              "name": "owned"
+            }
+          ],
+          "process_custody": [],
+          "reason": "Generated owned curriculum template remains unexecuted.",
+          "spec": {
+            "bytes": 707,
+            "path": "wave35-r110-owned-spec.json",
+            "root": "Q",
+            "sha256": "c6344a1b132bb93390a6e42545b16c144f600fcdc3621f11c1140364ad2da428"
+          },
+          "started_at": null,
+          "status": "UNRUN"
+        }
+      ],
+      "check": "wave35-r110-owned-spec.json--unrun-template",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "UNRUN",
+      "terminal_attempt": null
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Retained application result lacks absolute UTC timestamps.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205308,
+            "path": "wave35/r110-candidate.json",
+            "root": "W",
+            "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+          },
+          "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+          ],
+          "counts": null,
+          "custody_records": [],
+          "descendants": [
+            {
+              "bytes": 796,
+              "path": "wave35-r110-static/black-tests-result.json",
+              "root": "Q",
+              "sha256": "241d11929703021e22d3a6f6ed614c7ad4c35667c815a00d269b1a04764b9ff7"
+            },
+            {
+              "bytes": 56,
+              "path": "wave35-r110-static/black-tests.log",
+              "root": "Q",
+              "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+            },
+            {
+              "bytes": 792,
+              "path": "wave35-r110-static/ruff-tests-result.json",
+              "root": "Q",
+              "sha256": "23064659aba972c9c1daec67bd1f07073c42c29d08766e9dfa4a4ab8ff8c31f1"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r110-static/ruff-tests.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            },
+            {
+              "bytes": 998,
+              "path": "wave35-r110-static/static-custody.json",
+              "root": "Q",
+              "sha256": "b03255ef9330e918c0d2191029a029ea127280e96bbeac2e5d1e7019de74e829"
+            }
+          ],
+          "duration_seconds": 0.04490208625793457,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+            "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+          },
+          "exit_code": 0,
+          "id": "wave35-r110-static--ruff-tests",
+          "log_paths": [
+            {
+              "bytes": 19,
+              "path": "wave35-r110-static/ruff-tests.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            }
+          ],
+          "path": "wave35-r110-static",
+          "planned_args": [
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+          ],
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 792,
+            "path": "wave35-r110-static/ruff-tests-result.json",
+            "root": "Q",
+            "sha256": "23064659aba972c9c1daec67bd1f07073c42c29d08766e9dfa4a4ab8ff8c31f1"
+          },
+          "record_id": "ruff-tests",
+          "result": {
+            "bytes": 792,
+            "path": "wave35-r110-static/ruff-tests-result.json",
+            "root": "Q",
+            "sha256": "23064659aba972c9c1daec67bd1f07073c42c29d08766e9dfa4a4ab8ff8c31f1"
+          },
+          "spec": {
+            "bytes": 788,
+            "path": "wave35-r110-static-spec.json",
+            "root": "Q",
+            "sha256": "f862b02be4e88a0ba527d1c8721a33fe814de20ae0aa936aa778691795c3170f"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r110-static--ruff-tests",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-first positive/causal-negative prerequisite evidence only; no production B acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r110-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r110-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r110-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 2532,
+          "path": "verify_bac_static_run.py",
+          "required_by": [
+            "wave35-r110-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r110-static--ruff-tests"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "Retained application result lacks absolute UTC timestamps.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205308,
+            "path": "wave35/r110-candidate.json",
+            "root": "W",
+            "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+          },
+          "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+          ],
+          "counts": null,
+          "custody_records": [],
+          "descendants": [
+            {
+              "bytes": 796,
+              "path": "wave35-r110-static/black-tests-result.json",
+              "root": "Q",
+              "sha256": "241d11929703021e22d3a6f6ed614c7ad4c35667c815a00d269b1a04764b9ff7"
+            },
+            {
+              "bytes": 56,
+              "path": "wave35-r110-static/black-tests.log",
+              "root": "Q",
+              "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+            },
+            {
+              "bytes": 792,
+              "path": "wave35-r110-static/ruff-tests-result.json",
+              "root": "Q",
+              "sha256": "23064659aba972c9c1daec67bd1f07073c42c29d08766e9dfa4a4ab8ff8c31f1"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r110-static/ruff-tests.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            },
+            {
+              "bytes": 998,
+              "path": "wave35-r110-static/static-custody.json",
+              "root": "Q",
+              "sha256": "b03255ef9330e918c0d2191029a029ea127280e96bbeac2e5d1e7019de74e829"
+            }
+          ],
+          "duration_seconds": 0.8755223751068115,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+            "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+          },
+          "exit_code": 0,
+          "id": "wave35-r110-static--black-tests",
+          "log_paths": [
+            {
+              "bytes": 56,
+              "path": "wave35-r110-static/black-tests.log",
+              "root": "Q",
+              "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+            }
+          ],
+          "path": "wave35-r110-static",
+          "planned_args": [
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+          ],
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 796,
+            "path": "wave35-r110-static/black-tests-result.json",
+            "root": "Q",
+            "sha256": "241d11929703021e22d3a6f6ed614c7ad4c35667c815a00d269b1a04764b9ff7"
+          },
+          "record_id": "black-tests",
+          "result": {
+            "bytes": 796,
+            "path": "wave35-r110-static/black-tests-result.json",
+            "root": "Q",
+            "sha256": "241d11929703021e22d3a6f6ed614c7ad4c35667c815a00d269b1a04764b9ff7"
+          },
+          "spec": {
+            "bytes": 788,
+            "path": "wave35-r110-static-spec.json",
+            "root": "Q",
+            "sha256": "f862b02be4e88a0ba527d1c8721a33fe814de20ae0aa936aa778691795c3170f"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r110-static--black-tests",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Historical tests-first positive/causal-negative prerequisite evidence only; no production B acceptance.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r110-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r110-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r110-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 2532,
+          "path": "verify_bac_static_run.py",
+          "required_by": [
+            "wave35-r110-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r110-static--black-tests"
+    }
+  ],
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 205308,
+    "path": "wave35/r110-candidate.json",
+    "root": "W",
+    "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+  },
+  "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+  "component_id": "wave35-r110-tests-first-history-v1",
+  "dependencies": [
+    {
+      "bytes": 246,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures/identity-controller.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures-custody.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "5877d2dc620f2e54f435638172403bc6b1997875198e063a4685885a44b65fa7"
+    },
+    {
+      "bytes": 1457,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures-result.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "3f93c0e683e40e39069edba203f2912742167a48910d8df504a01766e38e0495"
+    },
+    {
+      "bytes": 579,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures.log",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "605cacc742cb9cfba132f7cd700e2b29d50980a951046f05681881d837f437f0"
+    },
+    {
+      "bytes": 2043,
+      "path": "run_bac_packet_checks_locked.py",
+      "required_by": [
+        "wave35-r110-activation-fixtures--activation-fixtures",
+        "wave35-r110-activation-red--activation-red",
+        "wave35-r110-collection--collection",
+        "wave35-r110-core-manifest-red--core-manifest-red",
+        "wave35-r110-static--ruff-tests",
+        "wave35-r110-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "bytes": 6277,
+      "path": "capture_wave14_round.py",
+      "required_by": [
+        "wave35-r110-activation-fixtures--activation-fixtures",
+        "wave35-r110-activation-red--activation-red",
+        "wave35-r110-collection--collection",
+        "wave35-r110-core-manifest-red--core-manifest-red",
+        "wave35-r110-static--ruff-tests",
+        "wave35-r110-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "bytes": 2917,
+      "path": "bac_source_identity.py",
+      "required_by": [
+        "wave35-r110-activation-fixtures--activation-fixtures",
+        "wave35-r110-activation-red--activation-red",
+        "wave35-r110-collection--collection",
+        "wave35-r110-core-manifest-red--core-manifest-red",
+        "wave35-r110-static--ruff-tests",
+        "wave35-r110-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 3032,
+      "path": "verify_bac_run.py",
+      "required_by": [
+        "wave35-r110-activation-fixtures--activation-fixtures",
+        "wave35-r110-collection--collection"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 1221,
+      "path": "wave35-r110-activation-fixtures-spec.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "bda9ad9482a1e0acf832d91682ab0b2b4dd14e13c4b4519b755af25ec94254d4"
+    },
+    {
+      "bytes": 1735,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-155df0f6d28f900e.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "a2692fb53774c27a5ab33f4e9c28fc3e7cd18a9bd1ee5c2e4bd5896207044a2c"
+    },
+    {
+      "bytes": 1693,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-2438f6b37386d3fa.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "f4ef516bc539a672fe491b9d690f953c0ff2026789b9a549a448e84c5ee4a9cf"
+    },
+    {
+      "bytes": 1609,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-262254579ebd3a74.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "2cde32fce3d81e0fc7b7fc19e87c440e5a9db1836d1f115ba1355beaa61f824c"
+    },
+    {
+      "bytes": 1674,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-2bed0f1496d319dc.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "4faf19321be9225ebf1f3d95512b22bf85aa36998c99346af8d8bef3d1dd4da2"
+    },
+    {
+      "bytes": 1679,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-3fb439a963d4f519.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "c59a53c367b7d01f3a93624cf59469482b5dc5d9484a5b0746b9e62684f48f22"
+    },
+    {
+      "bytes": 1765,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-418723542dcedec4.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "2f81d434a49948ec14a813decf319fe5a6d62366dac4f92d4991a6993d542cd6"
+    },
+    {
+      "bytes": 1739,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-42e04ac96c58dbd8.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "81a3c03f6b60d92ac35b61d9843a2b9361b50505d10bb447166899d4adc33079"
+    },
+    {
+      "bytes": 1815,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-4a04dc7c08d01125.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "953bcb4ccf3d35034277fd7e8af7382410f6d638dda24f06b99a33cc4b80e24f"
+    },
+    {
+      "bytes": 1663,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-6005ba48de48601d.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "40435a68003d98517bf905f747c7e512f746ecf84fc57f6f1425caf520b73094"
+    },
+    {
+      "bytes": 1720,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-728483dd88d01bab.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "c61f72607f278cf201e3043b2200ac5fffb885a7a7ab532084243395ef772a1e"
+    },
+    {
+      "bytes": 1838,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-a6f2647fa752c27d.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "6accae6d7a63f630063f503087595b8474e716976051048537e9c55815a955ba"
+    },
+    {
+      "bytes": 1792,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-c1c92d128fef0fa0.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "70341cd2a5abd57c4119a44065f2aa87119bdc488f1f7b0ab8fd8c61ae02e342"
+    },
+    {
+      "bytes": 1709,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-c3ec2c6626697028.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "3915403cc81a099f0838c543b0b2441c4a14864ac2c740b48c4015a9119c5f83"
+    },
+    {
+      "bytes": 1719,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-cf061be496191c51.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "a892c714ba85f8293d4cf787aae3211d15f7855b03b856006065f2034443befd"
+    },
+    {
+      "bytes": 1711,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-d23352f92a61c6dc.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "1c03ec1786f2bb97417c3c08062c766b1f837557be6667f6642fd023e3e1f3e5"
+    },
+    {
+      "bytes": 1757,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-dc05bb9c241c1e9e.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "5139c830704bd700c7bfd4d010075665570f80cbf881efe237a0698726936875"
+    },
+    {
+      "bytes": 1633,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-e5ed6455f9709437.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "dfa8557950979a692802d94cbea97ad1c9cb45818a806aaad80f00936822a5bd"
+    },
+    {
+      "bytes": 1081,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-f025d547119e4e51.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "8c748f6ef41c1897b2e86a72339297a741921ce8ea95ed65910ff24b48741dae"
+    },
+    {
+      "bytes": 1655,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-f53329b4c9625036.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "f418ebc6d9627243ca63367aa27d6b347d31a2b2c670c2b93469feddc0fa380c"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r110-activation-red/activation-red/identity-controller.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 6998,
+      "path": "wave35-r110-activation-red/activation-red-failure-index.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "c8952bb7533db63d607e8bd82bf62a07672d31ba1234c155ffc0c19b245f6b1a"
+    },
+    {
+      "bytes": 961,
+      "path": "wave35-r110-activation-red/activation-red-negative-custody.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "c20a82abd13961127d171d60efd8c9545508e0df41136415db52c66762992934"
+    },
+    {
+      "bytes": 3483,
+      "path": "wave35-r110-activation-red/activation-red-result.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "6eb38caa3a58300ceacfee1b36f702de3b24731e88a7820aa3733f5aa2734854"
+    },
+    {
+      "bytes": 30825,
+      "path": "wave35-r110-activation-red/activation-red.log",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "90c3379daff7664a058fa7fc39185286409158f748b6cd5da6c74a4b49c27c6b"
+    },
+    {
+      "bytes": 4596,
+      "path": "verify_bac_failed_run.py",
+      "required_by": [
+        "wave35-r110-activation-red--activation-red",
+        "wave35-r110-core-manifest-red--core-manifest-red"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+    },
+    {
+      "bytes": 3308,
+      "path": "wave35-r110-activation-red-spec.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "1b075094e5195117355d1d81f83e67c25851ca0a96123b27185d49ee684e2fb3"
+    },
+    {
+      "bytes": 5075,
+      "path": "wave35-r110-capture.log",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "414157de149442e0e63bdb682195c470f41aac6e9f9d75bf9863f2bbcd4b8775"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r110-collection/collection/identity-controller.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r110-collection/collection-custody.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "c827b35981d9051bc929c861b743b89cbaf2c634942767482fc3912461c1dad1"
+    },
+    {
+      "bytes": 932,
+      "path": "wave35-r110-collection/collection-result.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "da117991c91d3db587831b2cd525a5e77f3f52f3a98149758be364ffdfd57bee"
+    },
+    {
+      "bytes": 13940,
+      "path": "wave35-r110-collection/collection.log",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "cd884e5944812cca31731945a0f7fdb20eaa2965b5e5cdd612b4b91391479c16"
+    },
+    {
+      "bytes": 697,
+      "path": "wave35-r110-collection-spec.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "4111e2a6390604eff41b8d4480717d89d2b4b9037f1b8640333e69572164d0c3"
+    },
+    {
+      "bytes": 3127,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red/failure-controller-c5807472fde45eec.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "129061054501cd63a4f46bc72fc838b91e6e5c255e85d822cdb1a4fb2accbd93"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red/identity-controller.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 694,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-failure-index.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "1b32bb95563c741f10a522871ad2e381a3e1eddde640cd95b9f81acbeb0508f4"
+    },
+    {
+      "bytes": 958,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-negative-custody.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "64be3008c01471a25919ff2c908f9de8960b1e00ce55ff8ee1bf0fca6ac747b8"
+    },
+    {
+      "bytes": 910,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-result.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "e66f3e96a5fd88d359dc691d8f041c7c058f620c03afde24150ea46768ac71ec"
+    },
+    {
+      "bytes": 3699,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red.log",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "b76a627b33732ae428ef24148085a94902ec4020bff58c700ce775b3303abc24"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r110-core-manifest-red-spec.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "425226a6873a1e76c97a7f31f66a9736046ffeb3af14616d489eb0466d4a0065"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r110-owned-spec.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "c6344a1b132bb93390a6e42545b16c144f600fcdc3621f11c1140364ad2da428"
+    },
+    {
+      "bytes": 796,
+      "path": "wave35-r110-static/black-tests-result.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "241d11929703021e22d3a6f6ed614c7ad4c35667c815a00d269b1a04764b9ff7"
+    },
+    {
+      "bytes": 56,
+      "path": "wave35-r110-static/black-tests.log",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+    },
+    {
+      "bytes": 792,
+      "path": "wave35-r110-static/ruff-tests-result.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "23064659aba972c9c1daec67bd1f07073c42c29d08766e9dfa4a4ab8ff8c31f1"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r110-static/ruff-tests.log",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 998,
+      "path": "wave35-r110-static/static-custody.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "b03255ef9330e918c0d2191029a029ea127280e96bbeac2e5d1e7019de74e829"
+    },
+    {
+      "bytes": 2532,
+      "path": "verify_bac_static_run.py",
+      "required_by": [
+        "wave35-r110-static--ruff-tests",
+        "wave35-r110-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+    },
+    {
+      "bytes": 788,
+      "path": "wave35-r110-static-spec.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "f862b02be4e88a0ba527d1c8721a33fe814de20ae0aa936aa778691795c3170f"
+    },
+    {
+      "bytes": 42650,
+      "path": "wave35-r110-tests-first-selection.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "retained_closed_interval_evidence",
+      "root": "Q",
+      "sha256": "0612465d0aed4a7b1a596dad2aaab9b4f75746ec049c3f198744b31a67fe2282"
+    },
+    {
+      "bytes": 18121,
+      "path": "evidence-management/r110-preparation/r110-explicit-downstream-unrun-v1.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "explicit_unrun_inventory",
+      "root": "W",
+      "sha256": "3c8b79e04a23403eaf74dababa320b47da23b0a5babbaeeabd294dde7078c476"
+    },
+    {
+      "bytes": 205308,
+      "path": "wave35/r110-candidate.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+    },
+    {
+      "bytes": 3011,
+      "path": "wave35/r110-root-checks.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "8229193dd134acab770d9f799c30310db691aa534c058f16dfbe06a647694ce5"
+    },
+    {
+      "bytes": 1171,
+      "path": "wave35/r109-core-b-test-adaptation-grant.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "d9403029e9e56e2ab9998e6e7f324f2da874bacb54855110c0ce535168432881"
+    },
+    {
+      "bytes": 2343,
+      "path": "wave35/r109-producer-b-tests-grant.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "8324d9600c5a84c50682d524651e63ee6091799644157951e749cd10f73eec18"
+    },
+    {
+      "bytes": 1419,
+      "path": "wave35/r109-producer-b-plan-adoption.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "c01a6bad9e9f5a742465a7b01516c9d2cf03449e2ef83bec19d8092c7f523aae"
+    },
+    {
+      "bytes": 2059,
+      "path": "wave35/r109-core-prerequisite-adoption.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "f704a9fb2a28eadf16147f0bb65edeeabef94b97c8a8ef514ffdf6c3c034a218"
+    },
+    {
+      "bytes": 1022,
+      "path": "wave35/r109-b-fork-verifier-qualification-adoption.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "1ad7640546b5d1f30cf50842bed6880d2e1184509d45573e3efffa7211f21d49"
+    },
+    {
+      "bytes": 9995,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ACTIVATION-TEST-REVIEW.md",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "19dc12c8593767c0de0c2a5b18124ca5e0fcc98f51a92e8f99a8ad09ddd686bf"
+    },
+    {
+      "bytes": 3659,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ROUTE-COVERAGE-HANDOFF.md",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "23c56149112a32f44fbe1d0101d0199004a31ad809157474fae03fa7fcce4069"
+    },
+    {
+      "bytes": 159161,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ROUTE-COVERAGE-LEDGER.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "1184859fc6b747b768ae75003e892fb949c01c0e4dac227598b45b2107d573c9"
+    },
+    {
+      "bytes": 7605,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-CORE-SUPPLIER-CAPSULE.md",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "851d113a120c5fcd40d7f11cb7731c9fb67e6c2d8c5b74dd2670c367a0e73ad3"
+    },
+    {
+      "bytes": 20524,
+      "path": "evidence-management/r109-preparation/r109-postqualification-b-tool-supplement-v1.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "9b9479a4b00b37e3225170dc62da6922ac156398f76e1de53bb3d5a921ce92c3"
+    },
+    {
+      "bytes": 10863,
+      "path": "evidence-management/HARDWARE-RUNNER-HANDOFF-v1.md",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "5e0d358eece6126dec8ead7eefb69d4af8e430fb735fe7607aabd67b57d3917d"
+    },
+    {
+      "bytes": 10260,
+      "path": "evidence-management/hardware-runner-handoff-basis-v1.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "46aa71c4d309769d0b8aefc8f892fffb383a381b2c29853e60508d289f37f9b7"
+    },
+    {
+      "bytes": 71617,
+      "path": "evidence-management/r110-preparation/r110-full-base-candidate.patch",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "scoped_preparation_diagnostic",
+      "root": "W",
+      "sha256": "013041bb9e4e1bd1dd2e580a4bbd4a9068c1728931e694e15428263a3050c44d"
+    },
+    {
+      "bytes": 2043,
+      "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "authenticated_helper_version",
+      "root": "R",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "bytes": 6277,
+      "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "authenticated_helper_version",
+      "root": "R",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "bytes": 2917,
+      "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "authenticated_helper_version",
+      "root": "R",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 3032,
+      "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "authenticated_helper_version",
+      "root": "R",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 4596,
+      "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "authenticated_helper_version",
+      "root": "R",
+      "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+    },
+    {
+      "bytes": 2532,
+      "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "authenticated_helper_version",
+      "root": "R",
+      "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+    },
+    {
+      "bytes": 16103,
+      "path": "evidence-management/r110-preparation/r110-provenance-v1.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "provenance",
+      "root": "W",
+      "sha256": "3b0ff0b971c346da4002cf90e3976d7b0fcaf004d3e728fe54ae52e12e3ef044"
+    },
+    {
+      "bytes": 13012,
+      "path": "evidence-management/r110-preparation/r110-inventory-v1.json",
+      "required_by": [
+        "wave35-r110-tests-first-history-v1"
+      ],
+      "role": "inventory",
+      "root": "W",
+      "sha256": "87da413287c2ab69a704c10dd071f0d872c818d9afafe742ff0cbfdebe5bd5a6"
+    }
+  ],
+  "downstream_unrun": {
+    "bytes": 18121,
+    "path": "evidence-management/r110-preparation/r110-explicit-downstream-unrun-v1.json",
+    "root": "W",
+    "sha256": "3c8b79e04a23403eaf74dababa320b47da23b0a5babbaeeabd294dde7078c476"
+  },
+  "draft_metadata_only": true,
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-activation-fixtures",
+      "round": 110,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-activation-fixtures-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-activation-red",
+      "round": 110,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-activation-red-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-capture.log",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-collection",
+      "round": 110,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-collection-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-core-manifest-red",
+      "round": 110,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-core-manifest-red-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-owned-spec.json",
+      "round": 110,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-static",
+      "round": 110,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-static-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-tests-first-selection.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_start": 110,
+  "inventory": {
+    "bytes": 13012,
+    "path": "evidence-management/r110-preparation/r110-inventory-v1.json",
+    "root": "W",
+    "sha256": "87da413287c2ab69a704c10dd071f0d872c818d9afafe742ff0cbfdebe5bd5a6"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "postqualification_tool_supplement": {
+    "bytes": 20524,
+    "path": "evidence-management/r109-preparation/r109-postqualification-b-tool-supplement-v1.json",
+    "root": "W",
+    "sha256": "9b9479a4b00b37e3225170dc62da6922ac156398f76e1de53bb3d5a921ce92c3"
+  },
+  "provenance": {
+    "bytes": 16103,
+    "path": "evidence-management/r110-preparation/r110-provenance-v1.json",
+    "root": "W",
+    "sha256": "3b0ff0b971c346da4002cf90e3976d7b0fcaf004d3e728fe54ae52e12e3ef044"
+  },
+  "remaining_root_inputs": [
+    "Adopt closed R110 component",
+    "Finish and capture production B as a distinct candidate; reconcile source/tests and qualify actual affected routes/children",
+    "Select coherent finite checkpoint and terminal subject/review/publication under existing process"
+  ],
+  "retained_outcomes": {
+    "activation": 67,
+    "collected": 156,
+    "core": 89,
+    "custody": "PASS",
+    "downstream_unrun": 131,
+    "errors": 0,
+    "missing_constants_failed": 19,
+    "missing_descriptor_failed": 1,
+    "owned_template": "UNRUN additional to downstream131",
+    "positive_passed": 5,
+    "prior_core88_retained": true,
+    "skips": 0,
+    "style": "Ruff and Black PASS",
+    "warnings": 0
+  },
+  "reviews": [],
+  "root_disposition": {
+    "bytes": 3011,
+    "path": "wave35/r110-root-checks.json",
+    "root": "W",
+    "sha256": "8229193dd134acab770d9f799c30310db691aa534c058f16dfbe06a647694ce5"
+  },
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Tests-first evidence only. Five positives and twenty causal failures are not B implementation/hardware/global acceptance. Prior R10988 unchanged and not added. No selector/app execution or terminal seal.",
+  "series": "wave35",
+  "status": "CLOSED TESTS-FIRST HISTORY; FUTURE CHECKPOINT SELECTION PENDING",
+  "supporting_reviews": [
+    {
+      "bytes": 9995,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ACTIVATION-TEST-REVIEW.md",
+      "root": "W",
+      "sha256": "19dc12c8593767c0de0c2a5b18124ca5e0fcc98f51a92e8f99a8ad09ddd686bf"
+    }
+  ],
+  "terminal_historical_round": 110
+}

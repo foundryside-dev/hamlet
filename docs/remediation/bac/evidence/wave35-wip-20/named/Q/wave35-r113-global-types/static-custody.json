@@ -1,0 +1,19 @@
+{
+  "status": "STATIC EVIDENCE CUSTODY VERIFIED; actual exits retained",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "source_guards": 819,
+  "configs": 573,
+  "artifacts": 13,
+  "results": [
+    {
+      "name": "global-types",
+      "exit_code": 1,
+      "seconds": 6.359256982803345,
+      "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-global-types/global-types.log",
+      "sha256": "97b0acc6db53ae2cfe9037794211464b7dc01c75e6909adcf3c440a4dfa5a6e7"
+    }
+  ],
+  "all_passed": false,
+  "scope": "Explicit-path static commands and frozen-source custody; no pytest process/import identity or runtime behavior claimed."
+}

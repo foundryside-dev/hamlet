@@ -1,0 +1,183 @@
+{
+  "baseline_inventory": {
+    "bytes": 2755978,
+    "path": "evidence-management/inventory-v2.json",
+    "root": "W",
+    "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
+  },
+  "catalog": [
+    {
+      "checkpoint_id": "wave35-wip-13",
+      "format": "wip13-artifacts-v1",
+      "interval": [
+        55,
+        58
+      ],
+      "manifest": {
+        "bytes": 81982,
+        "path": "docs/remediation/bac/evidence/wave35-wip-13.json",
+        "sha256": "f05ca336a4c96c9c36c17ca2edd0c5778937f719f8bc4fadcfabfe2ea9c45cdb"
+      },
+      "selection_plan": {
+        "bytes": 146067,
+        "path": "docs/remediation/bac/evidence/wave35-wip-13/selection-plan.json",
+        "sha256": "53a9ba0d26a8b2bf95553d8684c4b3af0433bbede21eec71b828064e1c4a428b"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-14",
+      "format": "incremental-v2",
+      "interval": [
+        59,
+        72
+      ],
+      "manifest": {
+        "bytes": 619867,
+        "path": "docs/remediation/bac/evidence/wave35-wip-14.json",
+        "sha256": "c0e8fadafe6f3b4bd7d401c02eec4a645ee7f670fd0f7efcf35b0685f0b9201a"
+      },
+      "selection_plan": {
+        "bytes": 763830,
+        "path": "docs/remediation/bac/evidence/wave35-wip-14/selection-plan.json",
+        "sha256": "2195ce33e7a08039434f3018e5e426b3924a6564e1211181b249040c79ef8ea8"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-15",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        73,
+        81
+      ],
+      "manifest": {
+        "bytes": 372697,
+        "path": "docs/remediation/bac/evidence/wave35-wip-15.json",
+        "sha256": "fe3d07654f97441e88135c1c8c68a370e223fff1625178d2f38cffe2c9453890"
+      },
+      "selection_plan": {
+        "bytes": 442172,
+        "path": "docs/remediation/bac/evidence/wave35-wip-15/selection-plan.json",
+        "sha256": "8e3c5de089fdd68688b9dbd69133b0d05186294312acfbb398301ee42ecf6e15"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-16",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        82,
+        85
+      ],
+      "manifest": {
+        "bytes": 227482,
+        "path": "docs/remediation/bac/evidence/wave35-wip-16.json",
+        "sha256": "53106d24e0660e3f24c8cfa8d3a7fc095e39fc29c9466a4c807b5f55979883ec"
+      },
+      "selection_plan": {
+        "bytes": 270542,
+        "path": "docs/remediation/bac/evidence/wave35-wip-16/selection-plan.json",
+        "sha256": "81df9d15bc175cc9a52ed6b448ce165ae5c12eb1c4741146b7ad3e6c94e903cb"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-17",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        86,
+        89
+      ],
+      "manifest": {
+        "bytes": 527701,
+        "path": "docs/remediation/bac/evidence/wave35-wip-17.json",
+        "sha256": "200b1696604ce4f9388c99fec22b3afa8c0edcfb95ee438632a339530d0f9226"
+      },
+      "selection_plan": {
+        "bytes": 648628,
+        "path": "docs/remediation/bac/evidence/wave35-wip-17/selection-plan.json",
+        "sha256": "5a01cc361f55d978e7b3808095fc4a61a1ce6c4b0229b863caf9e5dc598b09e6"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-18",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        90,
+        98
+      ],
+      "manifest": {
+        "bytes": 361683,
+        "path": "docs/remediation/bac/evidence/wave35-wip-18.json",
+        "sha256": "4601cca3040c0c9fab0f79714bc58d2509d8144649464d0a2b2a2d13e667cfae"
+      },
+      "selection_plan": {
+        "bytes": 430051,
+        "path": "docs/remediation/bac/evidence/wave35-wip-18/selection-plan.json",
+        "sha256": "193ddece376797d277675a5190610c2f742b7da8a01425c37a9e1057372afac8"
+      }
+    },
+    {
+      "checkpoint_id": "wave35-wip-19",
+      "format": "checkpoint-publication-v1",
+      "interval": [
+        99,
+        108
+      ],
+      "manifest": {
+        "bytes": 998690,
+        "path": "docs/remediation/bac/evidence/wave35-wip-19.json",
+        "sha256": "7f03a92f589227f68ee87064fd153dac3d961a8bfe3e1565323ecf318076c24b"
+      },
+      "selection_plan": {
+        "bytes": 1269940,
+        "path": "docs/remediation/bac/evidence/wave35-wip-19/selection-plan.json",
+        "sha256": "9b470996d63ff2d5473188592d2a6cba74ab7f4897691cb1b54cd35d868763dc"
+      }
+    }
+  ],
+  "checkpoint_id": "wave35-wip-20",
+  "interval_start": 109,
+  "required_components": [
+    {
+      "bytes": 353924,
+      "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+      "path": "evidence-management/r109-preparation/r109-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed exact R109 candidate: bounded core source/design/execution approval and 88 distinct passing assertions. No B/package/full-programme/hardware acceptance; no backward compatibility or scope degradation.",
+      "sha256": "de3625e602b1cfb460b034b50bf9077da6694995e469f0f0c21461dc7ac448e4"
+    },
+    {
+      "bytes": 88328,
+      "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+      "path": "evidence-management/r110-preparation/r110-history-component-v1.json",
+      "root": "W",
+      "scope": "Tests-first evidence only. Five positives and twenty causal failures are not B implementation/hardware/global acceptance. Prior R10988 unchanged and not added. No selector/app execution or terminal seal.",
+      "sha256": "76fde5454be68479d87b2f28a9bc2a281f6b68d06c010c2c0913520fa606ac66"
+    },
+    {
+      "bytes": 822124,
+      "candidate_tree": "b0f4e769755ca6999bc03cd8a21cd88a274dc682",
+      "path": "evidence-management/r111-preparation/r111-history-component-v1.json",
+      "root": "W",
+      "scope": "Bounded B source/core review and passing checks preserved. All30failures remain unresolved in this candidate; no complete B/parent/recurrent/runner/hardware/programme acceptance. Repair plan verdict and future candidates excluded.",
+      "sha256": "193e5039ce1c609f5adb6dda363cdcec53cb60b358c3f65ec95b84f8437d3795"
+    },
+    {
+      "bytes": 71142,
+      "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+      "path": "evidence-management/r112-preparation/r112-history-component-v1.json",
+      "root": "W",
+      "scope": "Fixture prerequisite evidence only; retain originalR11130failures as historical. No production change/acceptance reduction or terminal seal; no earlier counts added.",
+      "sha256": "b17347bbfb1273075546f050b861c6c9b7489f150a82597d781e474319495bf2"
+    },
+    {
+      "bytes": 906628,
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "path": "evidence-management/r113-preparation/r113-terminal-component-v2.json",
+      "root": "W",
+      "scope": "Exact terminal R113 bounded evidence, including affected BANK/replay failures,31children and phase-pair; no complete B, original package or programme acceptance.",
+      "sha256": "4f8ed80a77f0037ab485b42ea98f43b02cbc64f5d0697f59a66984a791618034"
+    }
+  ],
+  "schema": "bac-checkpoint-selection-contract-v1",
+  "series": "wave35",
+  "terminal_round": 113
+}

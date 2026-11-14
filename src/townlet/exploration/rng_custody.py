@@ -136,9 +136,188 @@ class _LocalCUDARecord:
     post_poison: bool
 
 
-# Enabling any real producer route needs reviewed source and supplier evidence.
-# There is deliberately no public issuer or caller policy registration API.
-_LOCAL_CUDA_CONTRACTS: Mapping[LocalCUDAContract, _LocalCUDARecord] = MappingProxyType({})
+@dataclass(frozen=True)
+class _LocalCUDADescriptor:
+    owner_kind: Literal["flat", "per"]
+    route: str
+    input_kind: Literal["tensor", "request", "mapping", "archive", "none", "integer", "indices"]
+    rationale: str
+    healthy: bool
+    post_poison: bool
+
+
+# Fixed source-issued identities. Canonical classes resolve only under actual
+# custody after their producer modules initialize; importing core is CUDA-free.
+REPLAY_BUFFER_PUSH_CUDA = object.__new__(LocalCUDAContract)
+REPLAY_BUFFER_PUSH_RECORDED_CUDA = object.__new__(LocalCUDAContract)
+REPLAY_BUFFER_READINESS_CUDA = object.__new__(LocalCUDAContract)
+REPLAY_BUFFER_SERIALIZE_CUDA = object.__new__(LocalCUDAContract)
+REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA = object.__new__(LocalCUDAContract)
+REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA = object.__new__(LocalCUDAContract)
+REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA = object.__new__(LocalCUDAContract)
+REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA = object.__new__(LocalCUDAContract)
+PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA = object.__new__(LocalCUDAContract)
+
+# Ordinary dense tensors, builtin data containers and numeric NumPy values are
+# source-classified here. Input tags describe the primary argument, not a
+# runtime purity detector. GPU post-poison qualification remains separate.
+_LOCAL_CUDA_CONTRACTS: Mapping[LocalCUDAContract, _LocalCUDADescriptor] = MappingProxyType(
+    {
+        REPLAY_BUFFER_PUSH_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "push",
+            "tensor",
+            "Ordinary tensor/RewardTensor inputs and retained rows: validation, allocation and owned copies.",
+            True,
+            False,
+        ),
+        REPLAY_BUFFER_PUSH_RECORDED_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "push_recorded",
+            "tensor",
+            "Ordinary transition inputs, masks and retained rows: legality validation and owned copies.",
+            True,
+            False,
+        ),
+        REPLAY_BUFFER_READINESS_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "readiness",
+            "request",
+            "ReplayRequest and retained legality tensor: deterministic readiness reduction without draws.",
+            True,
+            False,
+        ),
+        REPLAY_BUFFER_SERIALIZE_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "serialize",
+            "none",
+            "Retained rows and ordinary canonical archives: chronological CPU copies and archive records.",
+            True,
+            False,
+        ),
+        REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "validate_serialized",
+            "mapping",
+            "Ordinary transport and expected width: reached tensor/archive validation and ownership copies.",
+            True,
+            False,
+        ),
+        REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "load_for_mode",
+            "mapping",
+            "Ordinary transport validation prelude only; materialization and publication require admission.",
+            True,
+            False,
+        ),
+        REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "historical_archives",
+            "none",
+            "Retained canonical archives with ordinary payloads: owned copies, validation and digest.",
+            True,
+            False,
+        ),
+        REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA: _LocalCUDADescriptor(
+            "flat",
+            "install_historical_archive",
+            "archive",
+            "Incoming and retained ordinary canonical archives: owned validation, digest and merge.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA: _LocalCUDADescriptor(
+            "per",
+            "push",
+            "tensor",
+            "Ordinary transition/RewardTensor inputs and rows: copies plus deterministic priority and stable-ID staging.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA: _LocalCUDADescriptor(
+            "per",
+            "push_recorded",
+            "tensor",
+            "Ordinary transition inputs, masks and rows: legality checks, copies and priority/ID staging.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA: _LocalCUDADescriptor(
+            "per",
+            "declare_unconstrained_action_dim",
+            "integer",
+            "Integer width and retained actions: deterministic legality checks and mask allocation.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA: _LocalCUDADescriptor(
+            "per",
+            "readiness",
+            "request",
+            "ReplayRequest, configured mode and retained legality tensor: readiness reduction without draws.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA: _LocalCUDADescriptor(
+            "per",
+            "serialize",
+            "none",
+            "Ordinary rows, archives, numeric priorities/IDs and sampler metadata: copies without RNG advancement.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA: _LocalCUDADescriptor(
+            "per",
+            "validate_serialized",
+            "mapping",
+            "Ordinary transport: tensor/archive/priority/ID checks and offside deterministic engine restore.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA: _LocalCUDADescriptor(
+            "per",
+            "historical_archives",
+            "none",
+            "Ordinary canonical archives: owned copies/digest and detached PER validation without enrollment.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA: _LocalCUDADescriptor(
+            "per",
+            "install_historical_archive",
+            "archive",
+            "Ordinary incoming/retained archives: owned digest/merge and detached PER validation.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA: _LocalCUDADescriptor(
+            "per",
+            "update_priorities",
+            "indices",
+            "Numeric NumPy physical indices and td_errors tensor: CPU conversion and staged duplicate-max updates.",
+            True,
+            False,
+        ),
+        PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA: _LocalCUDADescriptor(
+            "per",
+            "update_unit_priorities",
+            "indices",
+            "Numeric stable IDs, current ID map and td_errors tensor: CPU conversion and staged duplicate-max updates.",
+            True,
+            False,
+        ),
+    }
+)
 
 
 @dataclass
@@ -215,6 +394,7 @@ class AmbientRNGDomain:
         self._operations: dict[RNGOperation, _Operation] = {}
         self._invocations: weakref.WeakKeyDictionary[RNGDeviceInvocation, _Invocation] = weakref.WeakKeyDictionary()
         self._gates: dict[RNGAdmission | LocalCUDAGate, _Gate] = {}
+        self._local_cuda_policies: dict[LocalCUDAContract, tuple[_LocalCUDADescriptor, _LocalCUDARecord]] = {}
         self._retired: queue.SimpleQueue[RNGParticipant] = queue.SimpleQueue()
         self._generation = 0
         self._revision = 0
@@ -404,6 +584,72 @@ class AmbientRNGDomain:
         ):
             raise ValueError("RNG CUDA inventory must be explicit, sorted and unique")
 
+    def _resolve_local_cuda_record(self, *, descriptor: _LocalCUDADescriptor) -> _LocalCUDARecord:
+        self._check_pid()
+        if not cast(_OwnedRLock, self._lock)._is_owned():
+            raise RuntimeError("Local CUDA policy resolution requires its actual domain exclusion")
+        self._not_busy()
+        if type(descriptor) is not _LocalCUDADescriptor:
+            raise ValueError("Local CUDA contract has no immutable source descriptor")
+        owner_type: type[object]
+        if descriptor.owner_kind == "flat":
+            from townlet.training.replay_buffer import ReplayBuffer
+
+            owner_type = ReplayBuffer
+        elif descriptor.owner_kind == "per":
+            from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
+
+            owner_type = PrioritizedReplayBuffer
+        else:
+            raise ValueError("Local CUDA descriptor has no canonical owner")
+        input_type: type[object]
+        if descriptor.input_kind == "tensor":
+            input_type = torch.Tensor
+        elif descriptor.input_kind == "request":
+            from townlet.training.replay_contract import ReplayRequest
+
+            input_type = ReplayRequest
+        elif descriptor.input_kind == "mapping":
+            input_type = Mapping
+        elif descriptor.input_kind == "archive":
+            from townlet.training.historical_checkpoint import HistoricalReplayArchive
+
+            input_type = HistoricalReplayArchive
+        elif descriptor.input_kind == "none":
+            input_type = type(None)
+        elif descriptor.input_kind == "integer":
+            input_type = int
+        elif descriptor.input_kind == "indices":
+            from numpy import ndarray
+
+            input_type = ndarray
+        else:
+            raise ValueError("Local CUDA descriptor has no canonical input type")
+        if not isinstance(owner_type, type) or not isinstance(input_type, type):
+            raise ValueError("Local CUDA canonical classes are unavailable")
+        return _LocalCUDARecord(owner_type, descriptor.route, input_type, descriptor.rationale, descriptor.healthy, descriptor.post_poison)
+
+    def _local_cuda_policy(self, *, contract: LocalCUDAContract) -> _LocalCUDARecord:
+        self._check_pid()
+        if not cast(_OwnedRLock, self._lock)._is_owned():
+            raise RuntimeError("Local CUDA policy resolution requires its actual domain exclusion")
+        self._not_busy()
+        if type(contract) is not LocalCUDAContract or contract not in _LOCAL_CUDA_CONTRACTS:
+            raise ValueError("Local CUDA contract is not source-issued")
+        descriptor = _LOCAL_CUDA_CONTRACTS[contract]
+        if type(descriptor) is not _LocalCUDADescriptor:
+            raise ValueError("Local CUDA contract has no immutable source descriptor")
+        cached = self._local_cuda_policies.get(contract)
+        if cached is not None:
+            if cached[0] is not descriptor or type(cached[1]) is not _LocalCUDARecord:
+                raise ValueError("Local CUDA contract source policy changed")
+            return cached[1]
+        policy = self._resolve_local_cuda_record(descriptor=descriptor)
+        if type(policy) is not _LocalCUDARecord:
+            raise ValueError("Local CUDA contract has no immutable source policy")
+        self._local_cuda_policies[contract] = (descriptor, policy)
+        return policy
+
     def _gate_record(self, gate: RNGAdmission | LocalCUDAGate) -> _Gate:
         # Methods already hold the issuing scope's real lock. Authenticate before
         # any lock/owner/CUDA work, including wrong-thread and inherited callers.
@@ -421,9 +667,12 @@ class AmbientRNGDomain:
             if record.participant is None or record.contract is None or record.policy is None:
                 raise ValueError("Local CUDA gate has no authentic binding")
             member = self._member(record.participant)
+            cached = self._local_cuda_policies.get(record.contract)
             if (
                 member.owner() is not record.owner
-                or _LOCAL_CUDA_CONTRACTS.get(record.contract) is not record.policy
+                or cached is None
+                or cached[0] is not _LOCAL_CUDA_CONTRACTS.get(record.contract)
+                or cached[1] is not record.policy
                 or type(record.owner) is not record.policy.owner_type
             ):
                 raise ValueError("Local CUDA gate owner/route binding changed")
@@ -486,11 +735,9 @@ class AmbientRNGDomain:
             self._collect_retired()
             if type(contract) is not LocalCUDAContract or contract not in _LOCAL_CUDA_CONTRACTS:
                 raise ValueError("Local CUDA contract is not source-issued")
-            policy = _LOCAL_CUDA_CONTRACTS[contract]
-            if type(policy) is not _LocalCUDARecord:
-                raise ValueError("Local CUDA contract has no immutable source policy")
             member = self._member(participant)
             owner = member.owner()
+            policy = self._local_cuda_policy(contract=contract)
             if owner is None or type(owner) is not policy.owner_type:
                 raise ValueError("Local CUDA contract does not authorize this exact owner class")
             record = _Gate(threading.get_ident(), self._active(), participant, owner, contract, policy, [owner], "unused", False)

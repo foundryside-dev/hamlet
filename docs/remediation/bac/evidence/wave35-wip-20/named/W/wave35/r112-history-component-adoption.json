@@ -1,0 +1,9 @@
+{
+  "schema": "bac-root-historical-component-adoption-v1",
+  "status": "R112 CAUSAL FIXTURE HISTORY ADOPTED",
+  "recorded_at": "2026-11-13T21:56:49.747268+00:00",
+  "component_sha256": "b17347bbfb1273075546f050b861c6c9b7489f150a82597d781e474319495bf2",
+  "direct_references_rehashed": 59,
+  "scope": "838 collected:6 PASS,4 causal FAIL,828 UNRUN; generated owned template also UNRUN. No terminal or publication seal.",
+  "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f"
+}

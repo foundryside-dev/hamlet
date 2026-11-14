@@ -1,0 +1,30 @@
+{
+  "schema": "bac-exact-tool-execution-v1",
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-B",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/b-fork-verifier-qualification/independent-review-probes.py"
+  ],
+  "cwd": "/workspace/hamlet",
+  "started_at": "2026-11-13T21:27:17.521676+00:00",
+  "ended_at": "2026-11-13T21:27:18.180881+00:00",
+  "seconds": 0.6592176670092158,
+  "exit_code": 0,
+  "source_before": {
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/b-fork-verifier-qualification/independent-review-probes.py": "66fcddf4ea7850d021dd6e0a887d46d138616f8f03e5d42d4c6949f0ceb1c727",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+  },
+  "source_after": {
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/b-fork-verifier-qualification/independent-review-probes.py": "66fcddf4ea7850d021dd6e0a887d46d138616f8f03e5d42d4c6949f0ceb1c727",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+  },
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/b-fork-verifier-qualification/independent-review-probes-attempt-1.log",
+  "log_sha256": "4d5a56288e1a3f1546b0fdd11cc2d26cfd38d8d84ea5528dde1c01e64c4eea3d",
+  "scope": "Independent finite synthetic probes; no application, Git, actual child/fork or hardware execution"
+}

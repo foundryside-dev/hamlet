@@ -1,0 +1,28 @@
+{
+  "schema": "bac-causal-red-and-bounded-write-grant-v1",
+  "owner": "/root/bac_b_fork_verifier_impl",
+  "status": "EXPECTED RED VERIFIED; EXACT LOCAL ACTION SCHEMA IMPLEMENTATION GRANTED",
+  "result": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/b-fork-verifier-qualification/tests-first-red-attempt-1-result.json",
+    "sha256": "05ac206701a7e679b915c8bb999a105c5dfe7cc67853da6903586d2224c7199c"
+  },
+  "methods": 81,
+  "failure_events": 1,
+  "error_events": 1,
+  "causes": [
+    "Seven-action genuine synthetic positive rejected by old exact-five schema",
+    "Obsolete five-action negative accepted by old schema"
+  ],
+  "writable": [
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py"
+  ],
+  "tests_frozen": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08",
+  "change": "Add exactly domain_local_cuda_policy and domain_resolve_local_cuda_record to local trial. No legacy union or other schema relaxation.",
+  "budget": {
+    "verifier": 850,
+    "tests": 1650,
+    "files": 2,
+    "total": 2500
+  },
+  "qualification": "Root GREEN plus independent source/adversarial review owed; no actual app child or hardware qualification."
+}

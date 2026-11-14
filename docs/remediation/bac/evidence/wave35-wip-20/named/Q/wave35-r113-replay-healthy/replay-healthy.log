@@ -1,0 +1,148 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 53 items
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py .......FF. [ 18%]
+...........................................                              [100%]
+
+=================================== FAILURES ===================================
+__________ test_direct_ambient_sample_waits_for_registered_peer[flat] __________
+
+kind = 'flat'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcd79380770>
+
+    @pytest.mark.parametrize("kind", ["flat", "per", "recurrent"])
+    def test_direct_ambient_sample_waits_for_registered_peer(kind: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Prospective API RED: observe the real replay domain operation before acquisition.
+    
+        The original Stage A source at SHA 70cb5aa0 demonstrated actual bypass.
+        This stronger node requires the new replay participant and explicit lineage.
+        """
+        owner = _direct_owner(kind)
+        peer, participant = _peer()
+        replay_participant = owner.rng_participant
+        domain = process_rng_domain()
+        original_operation = domain.operation
+        reached, acquired, done = threading.Event(), threading.Event(), threading.Event()
+        observed: list[tuple[object, str, object]] = []
+        outcome: list[object] = []
+        worker: threading.Thread
+    
+        @contextmanager
+        def observed_operation(_domain: object, *, participant: object, operation_kind: str, lineage: object) -> Any:
+            selected = threading.current_thread() is worker and participant is replay_participant
+            if selected:
+                observed.append((participant, operation_kind, lineage))
+                reached.set()
+            with original_operation(participant=participant, operation_kind=operation_kind, lineage=lineage) as lease:
+                if selected:
+                    acquired.set()
+                yield lease
+    
+        monkeypatch.setattr(type(domain), "operation", observed_operation)
+    
+        def draw() -> None:
+            try:
+                if kind == "recurrent":
+                    assert isinstance(owner, SequentialReplayBuffer)
+                    outcome.append(owner.sample_sequences(1, 2, lineage=None))
+                else:
+                    assert isinstance(owner, (ReplayBuffer, PrioritizedReplayBuffer))
+                    outcome.append(owner.sample(1, lineage=None))
+            except BaseException as error:
+                outcome.append(error)
+            finally:
+                done.set()
+    
+        worker = threading.Thread(target=draw, name=f"replay-direct-{kind}", daemon=True)
+        live_before = owner.serialize()
+        if kind == "flat":
+            ambient_before: object = torch.get_rng_state().clone()
+        elif kind == "per":
+            ambient_before = pickle.dumps(np.random.get_state())
+        else:
+            ambient_before = random.getstate()
+        try:
+            with domain.operation(participant=participant, operation_kind="hold", lineage=None):
+                worker.start()
+>               assert reached.wait(3), "direct replay did not enter its genuine domain operation"
+E               AssertionError: direct replay did not enter its genuine domain operation
+E               assert False
+E                +  where False = wait(3)
+E                +    where wait = <threading.Event at 0x7fcd792f1310: unset>.wait
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:341: AssertionError
+__________ test_direct_ambient_sample_waits_for_registered_peer[per] ___________
+
+kind = 'per'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fcd792e6d70>
+
+    @pytest.mark.parametrize("kind", ["flat", "per", "recurrent"])
+    def test_direct_ambient_sample_waits_for_registered_peer(kind: str, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Prospective API RED: observe the real replay domain operation before acquisition.
+    
+        The original Stage A source at SHA 70cb5aa0 demonstrated actual bypass.
+        This stronger node requires the new replay participant and explicit lineage.
+        """
+        owner = _direct_owner(kind)
+        peer, participant = _peer()
+        replay_participant = owner.rng_participant
+        domain = process_rng_domain()
+        original_operation = domain.operation
+        reached, acquired, done = threading.Event(), threading.Event(), threading.Event()
+        observed: list[tuple[object, str, object]] = []
+        outcome: list[object] = []
+        worker: threading.Thread
+    
+        @contextmanager
+        def observed_operation(_domain: object, *, participant: object, operation_kind: str, lineage: object) -> Any:
+            selected = threading.current_thread() is worker and participant is replay_participant
+            if selected:
+                observed.append((participant, operation_kind, lineage))
+                reached.set()
+            with original_operation(participant=participant, operation_kind=operation_kind, lineage=lineage) as lease:
+                if selected:
+                    acquired.set()
+                yield lease
+    
+        monkeypatch.setattr(type(domain), "operation", observed_operation)
+    
+        def draw() -> None:
+            try:
+                if kind == "recurrent":
+                    assert isinstance(owner, SequentialReplayBuffer)
+                    outcome.append(owner.sample_sequences(1, 2, lineage=None))
+                else:
+                    assert isinstance(owner, (ReplayBuffer, PrioritizedReplayBuffer))
+                    outcome.append(owner.sample(1, lineage=None))
+            except BaseException as error:
+                outcome.append(error)
+            finally:
+                done.set()
+    
+        worker = threading.Thread(target=draw, name=f"replay-direct-{kind}", daemon=True)
+        live_before = owner.serialize()
+        if kind == "flat":
+            ambient_before: object = torch.get_rng_state().clone()
+        elif kind == "per":
+            ambient_before = pickle.dumps(np.random.get_state())
+        else:
+            ambient_before = random.getstate()
+        try:
+            with domain.operation(participant=participant, operation_kind="hold", lineage=None):
+                worker.start()
+>               assert reached.wait(3), "direct replay did not enter its genuine domain operation"
+E               AssertionError: direct replay did not enter its genuine domain operation
+E               assert False
+E                +  where False = wait(3)
+E                +    where wait = <threading.Event at 0x7fcd7912ed50: unset>.wait
+
+tests/test_townlet/regressions/bac/test_replay_rng_custody.py:341: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[per]
+========================= 2 failed, 51 passed in 7.75s =========================

@@ -1,0 +1,504 @@
+{
+  "additional_application_passes": 0,
+  "adoption": {
+    "bytes": 1022,
+    "path": "wave35/r109-b-fork-verifier-qualification-adoption.json",
+    "root": "W",
+    "sha256": "1ad7640546b5d1f30cf50842bed6880d2e1184509d45573e3efffa7211f21d49"
+  },
+  "application_grants": {
+    "activation_tests": {
+      "bytes": 2343,
+      "path": "wave35/r109-producer-b-tests-grant.json",
+      "root": "W",
+      "sha256": "8324d9600c5a84c50682d524651e63ee6091799644157951e749cd10f73eec18"
+    },
+    "core_tests": {
+      "bytes": 1171,
+      "path": "wave35/r109-core-b-test-adaptation-grant.json",
+      "root": "W",
+      "sha256": "d9403029e9e56e2ab9998e6e7f324f2da874bacb54855110c0ce535168432881"
+    },
+    "meaning": "Tests-only source-write grants, not app execution/results or production acceptance."
+  },
+  "attempts": [
+    {
+      "counts_unit": "methods",
+      "duration_seconds": 2.780633048998425,
+      "ended_at": "2026-11-13T21:24:40.937623+00:00",
+      "error_events": 1,
+      "exit_code": 1,
+      "failure_events": 1,
+      "id": "CAUSAL RED",
+      "log": {
+        "bytes": 3014,
+        "path": "evidence-management/b-fork-verifier-qualification/tests-first-red-attempt-1.log",
+        "root": "W",
+        "sha256": "5c27735600b5df5b2ceb002307fb7ec58dfcb366c6916d58ee89c0eace1306e5"
+      },
+      "methods_or_probes": 81,
+      "qualifying_application": false,
+      "record": {
+        "bytes": 1503,
+        "path": "evidence-management/b-fork-verifier-qualification/tests-first-red-attempt-1-result.json",
+        "root": "W",
+        "sha256": "05ac206701a7e679b915c8bb999a105c5dfe7cc67853da6903586d2224c7199c"
+      },
+      "scope": "Synthetic tool tests only; no application or hardware qualification",
+      "source_versions": [
+        {
+          "immutable_version": {
+            "bytes": 37963,
+            "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt",
+            "root": "W",
+            "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+          },
+          "recorded_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+          "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+        },
+        {
+          "immutable_version": {
+            "bytes": 68009,
+            "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-b-local7.py.txt",
+            "root": "W",
+            "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+          },
+          "recorded_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py",
+          "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+        }
+      ],
+      "started_at": "2026-11-13T21:24:38.157003+00:00",
+      "status": "FAILED"
+    },
+    {
+      "counts_unit": "methods",
+      "duration_seconds": 3.3461146769986954,
+      "ended_at": "2026-11-13T21:26:17.098645+00:00",
+      "error_events": 0,
+      "exit_code": 0,
+      "failure_events": 0,
+      "id": "GREEN",
+      "log": {
+        "bytes": 180,
+        "path": "evidence-management/b-fork-verifier-qualification/implementation-green-attempt-1.log",
+        "root": "W",
+        "sha256": "91a423bc6e4047de6b99611bda3dc6677931e1ce6c0a5d991c087c01739f94ed"
+      },
+      "methods_or_probes": 81,
+      "qualifying_application": false,
+      "record": {
+        "bytes": 1509,
+        "path": "evidence-management/b-fork-verifier-qualification/implementation-green-attempt-1-result.json",
+        "root": "W",
+        "sha256": "6ac2a43f1fe61af9099348536db1844768b1924f5cb2c2493087d8cee12e9a2f"
+      },
+      "scope": "Synthetic tool tests only; no application or hardware qualification",
+      "source_versions": [
+        {
+          "immutable_version": {
+            "bytes": 38090,
+            "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-b-local7.py.txt",
+            "root": "W",
+            "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+          },
+          "recorded_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        },
+        {
+          "immutable_version": {
+            "bytes": 68009,
+            "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-b-local7.py.txt",
+            "root": "W",
+            "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+          },
+          "recorded_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py",
+          "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+        }
+      ],
+      "started_at": "2026-11-13T21:26:13.752545+00:00",
+      "status": "PASSED"
+    },
+    {
+      "counts_unit": "fresh-fixture probes",
+      "duration_seconds": 0.6592176670092158,
+      "ended_at": "2026-11-13T21:27:18.180881+00:00",
+      "error_events": 0,
+      "exit_code": 0,
+      "failure_events": 0,
+      "id": "INDEPENDENT SYNTHETIC",
+      "log": {
+        "bytes": 27269,
+        "path": "evidence-management/b-fork-verifier-qualification/independent-review-probes-attempt-1.log",
+        "root": "W",
+        "sha256": "4d5a56288e1a3f1546b0fdd11cc2d26cfd38d8d84ea5528dde1c01e64c4eea3d"
+      },
+      "methods_or_probes": 147,
+      "qualifying_application": false,
+      "record": {
+        "bytes": 2933,
+        "path": "evidence-management/b-fork-verifier-qualification/independent-review-probes-attempt-1-result.json",
+        "root": "W",
+        "sha256": "1b9011e7da093b9e4942f33791786e8162a2ca041378ba8509777267196c7266"
+      },
+      "scope": "Independent finite synthetic probes; no application, Git, actual child/fork or hardware execution",
+      "source_versions": [
+        {
+          "immutable_version": {
+            "bytes": 38090,
+            "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-b-local7.py.txt",
+            "root": "W",
+            "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+          },
+          "recorded_path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        },
+        {
+          "immutable_version": {
+            "bytes": 68009,
+            "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-b-local7.py.txt",
+            "root": "W",
+            "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+          },
+          "recorded_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py",
+          "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+        },
+        {
+          "immutable_version": {
+            "bytes": 5705,
+            "path": "evidence-management/r109-preparation/b-local7-independent-review-probes.py.txt",
+            "root": "W",
+            "sha256": "66fcddf4ea7850d021dd6e0a887d46d138616f8f03e5d42d4c6949f0ceb1c727"
+          },
+          "recorded_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/b-fork-verifier-qualification/independent-review-probes.py",
+          "sha256": "66fcddf4ea7850d021dd6e0a887d46d138616f8f03e5d42d4c6949f0ceb1c727"
+        },
+        {
+          "immutable_version": {
+            "bytes": 37963,
+            "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt",
+            "root": "W",
+            "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+          },
+          "recorded_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt",
+          "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+        },
+        {
+          "immutable_version": {
+            "bytes": 63136,
+            "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt",
+            "root": "W",
+            "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+          },
+          "recorded_path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt",
+          "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+        }
+      ],
+      "started_at": "2026-11-13T21:27:17.521676+00:00",
+      "status": "PASSED"
+    }
+  ],
+  "dependencies": [
+    {
+      "bytes": 1022,
+      "path": "wave35/r109-b-fork-verifier-qualification-adoption.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "1ad7640546b5d1f30cf50842bed6880d2e1184509d45573e3efffa7211f21d49"
+    },
+    {
+      "bytes": 1235,
+      "path": "wave35/r109-b-fork-verifier-red-disposition.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "15b01c4429337cd041e0f1ffe150858d0ceb58689bdb64f639fbdae56b608400"
+    },
+    {
+      "bytes": 1171,
+      "path": "wave35/r109-core-b-test-adaptation-grant.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "d9403029e9e56e2ab9998e6e7f324f2da874bacb54855110c0ce535168432881"
+    },
+    {
+      "bytes": 2343,
+      "path": "wave35/r109-producer-b-tests-grant.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "8324d9600c5a84c50682d524651e63ee6091799644157951e749cd10f73eec18"
+    },
+    {
+      "bytes": 2059,
+      "path": "wave35/r109-core-prerequisite-adoption.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "f704a9fb2a28eadf16147f0bb65edeeabef94b97c8a8ef514ffdf6c3c034a218"
+    },
+    {
+      "bytes": 1419,
+      "path": "wave35/r109-producer-b-plan-adoption.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "c01a6bad9e9f5a742465a7b01516c9d2cf03449e2ef83bec19d8092c7f523aae"
+    },
+    {
+      "bytes": 755,
+      "path": "wave35/r109-history-component-adoption.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "907c8583f29973bd7b930392eb6a5ac1426835787f69b2443dc0eb3eb9f124b4"
+    },
+    {
+      "bytes": 4143,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FORK-VERIFIER-REVIEW.md",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "c8e6d1087a0115f45b6bf1fce2f9954e98c8ba54a7256b6142ee3c61c9079ec8"
+    },
+    {
+      "bytes": 4439,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FORK-VERIFIER-TEST-HANDOFF.md",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "545df21e2db756525f634ffc766d4e075a9cdee0f3504c8c5b5afe750f0d5539"
+    },
+    {
+      "bytes": 2204,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FORK-VERIFIER-IMPLEMENTATION-HANDOFF.md",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "c19aa56f853cda124072c13e53500b03f3011278cf58d7d9d9055a8cab474702"
+    },
+    {
+      "bytes": 7605,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-CORE-SUPPLIER-CAPSULE.md",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "851d113a120c5fcd40d7f11cb7731c9fb67e6c2d8c5b74dd2670c367a0e73ad3"
+    },
+    {
+      "bytes": 1503,
+      "path": "evidence-management/b-fork-verifier-qualification/tests-first-red-attempt-1-result.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "05ac206701a7e679b915c8bb999a105c5dfe7cc67853da6903586d2224c7199c"
+    },
+    {
+      "bytes": 3014,
+      "path": "evidence-management/b-fork-verifier-qualification/tests-first-red-attempt-1.log",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "5c27735600b5df5b2ceb002307fb7ec58dfcb366c6916d58ee89c0eace1306e5"
+    },
+    {
+      "bytes": 1509,
+      "path": "evidence-management/b-fork-verifier-qualification/implementation-green-attempt-1-result.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "6ac2a43f1fe61af9099348536db1844768b1924f5cb2c2493087d8cee12e9a2f"
+    },
+    {
+      "bytes": 180,
+      "path": "evidence-management/b-fork-verifier-qualification/implementation-green-attempt-1.log",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "91a423bc6e4047de6b99611bda3dc6677931e1ce6c0a5d991c087c01739f94ed"
+    },
+    {
+      "bytes": 2933,
+      "path": "evidence-management/b-fork-verifier-qualification/independent-review-probes-attempt-1-result.json",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "1b9011e7da093b9e4942f33791786e8162a2ca041378ba8509777267196c7266"
+    },
+    {
+      "bytes": 27269,
+      "path": "evidence-management/b-fork-verifier-qualification/independent-review-probes-attempt-1.log",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "4d5a56288e1a3f1546b0fdd11cc2d26cfd38d8d84ea5528dde1c01e64c4eea3d"
+    },
+    {
+      "bytes": 38090,
+      "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-b-local7.py.txt",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+    },
+    {
+      "bytes": 68009,
+      "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-b-local7.py.txt",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+    },
+    {
+      "bytes": 5705,
+      "path": "evidence-management/r109-preparation/b-local7-independent-review-probes.py.txt",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "66fcddf4ea7850d021dd6e0a887d46d138616f8f03e5d42d4c6949f0ceb1c727"
+    },
+    {
+      "bytes": 37963,
+      "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+    },
+    {
+      "bytes": 63136,
+      "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt",
+      "required_by": [
+        "r109-postqualification-b-tool-extension-v1"
+      ],
+      "role": "postqualification_tool_evidence_or_grant",
+      "root": "W",
+      "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+    }
+  ],
+  "helper_version_transition": {
+    "current_retained_versions": [
+      {
+        "historical_mutable_alias": {
+          "bytes": 38090,
+          "path": "verify_bac_replay_spawn_identity.py",
+          "root": "Q",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        },
+        "immutable_bytes": {
+          "bytes": 38090,
+          "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-b-local7.py.txt",
+          "root": "W",
+          "sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173"
+        }
+      },
+      {
+        "historical_mutable_alias": {
+          "bytes": 68009,
+          "path": "evidence-management/test_replay_spawn_verifier.py",
+          "root": "W",
+          "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+        },
+        "immutable_bytes": {
+          "bytes": 68009,
+          "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-b-local7.py.txt",
+          "root": "W",
+          "sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+        }
+      }
+    ],
+    "independent_probe_inert": {
+      "bytes": 5705,
+      "path": "evidence-management/r109-preparation/b-local7-independent-review-probes.py.txt",
+      "root": "W",
+      "sha256": "66fcddf4ea7850d021dd6e0a887d46d138616f8f03e5d42d4c6949f0ceb1c727"
+    },
+    "previous_tests": {
+      "bytes": 63136,
+      "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt",
+      "root": "W",
+      "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+    },
+    "previous_verifier": {
+      "bytes": 37963,
+      "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt",
+      "root": "W",
+      "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+    },
+    "protocol": "Exact local7/admission4/invocation5. Adds domain_local_cuda_policy and domain_resolve_local_cuda_record to local trial. No legacy union or relaxed schema; old local5 histories use old immutable311f verifier."
+  },
+  "historical_application_unique_passes": 88,
+  "historical_component": {
+    "bytes": 353924,
+    "path": "evidence-management/r109-preparation/r109-history-component-v1.json",
+    "root": "W",
+    "sha256": "de3625e602b1cfb460b034b50bf9077da6694995e469f0f0c21461dc7ac448e4"
+  },
+  "historical_retention": {
+    "bytes": 3150,
+    "path": "evidence-management/r109-preparation/r109-helper-retention-supplement-v1.json",
+    "root": "W",
+    "sha256": "25a9ff5f622640af0af71ebd838a7219aaddde679a2baacdce5ac000c235168f"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "reviews": [],
+  "schema": "bac-postqualification-preparation-supplement-v1",
+  "scope": "Separate post-R109-qualification tooling preparation. No R110 identity, interval classification, terminal review or publication seal. Root owns actual capture/checks and adoption. No implementation body inspected or helper/application/selector executed here.",
+  "status": "RETAINED TOOL QUALIFICATION AND TEST GRANTS; NO APPLICATION ROUND CLASSIFICATION",
+  "supplement_id": "r109-postqualification-b-tool-extension-v1",
+  "supporting_reviews": [
+    {
+      "bytes": 4143,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FORK-VERIFIER-REVIEW.md",
+      "root": "W",
+      "sha256": "c8e6d1087a0115f45b6bf1fce2f9954e98c8ba54a7256b6142ee3c61c9079ec8"
+    }
+  ]
+}

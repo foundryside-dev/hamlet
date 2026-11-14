@@ -1,0 +1,37 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r113-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-fixture-prerequisites",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "fixture-prerequisites",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_released_preparation_refuses_late_membership_enrollment[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_released_preparation_refuses_late_membership_enrollment[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_digest_operator_clone_preserves_rejection[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_digest_operator_clone_preserves_rejection[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-per]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

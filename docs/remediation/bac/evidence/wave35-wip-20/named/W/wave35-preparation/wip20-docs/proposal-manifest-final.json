@@ -1,0 +1,68 @@
+{
+  "status": "FINAL R113 MIXED-RESULT PROPOSALS; PENDING INDEPENDENT GROUND-TRUTH DOCUMENT REVIEW AND ROOT APPLICATION",
+  "source_read_bodies": 5,
+  "source_read_lines": 4799,
+  "root_runtime_record": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r113-root-checks.json",
+    "sha256": "743d10da55b9c5ffecb58b22c67000f6cf34cebc978b423e7d8f27be6ec7334f"
+  },
+  "peer_wait_diagnosis": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-FAILURE-DIAGNOSIS.md",
+    "sha256": "05329b1ef7df41821cea034b367dd76240be7c3b01b8020c15087c6bd8b47b2b"
+  },
+  "documents": [
+    {
+      "path": "README.md",
+      "current_sha256": "efed71def427225be84e0d6f9e67d6f87df4401df392907de2195d195d3e36a3",
+      "current_bytes": 32210,
+      "proposed_path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/wip20-docs/final-proposed/README.md",
+      "proposed_sha256": "3bfd2e19a18d5b6599d7a05e5b39c8fceb4b24129dac94181f08f5788d4d3b35",
+      "proposed_bytes": 32503
+    },
+    {
+      "path": "docs/remediation/bac/STATUS.md",
+      "current_sha256": "52d5261a3b7eb5f8f36286ab2c7e5aa5b13abcaf8764147dcfeb21fe32c4affe",
+      "current_bytes": 98514,
+      "proposed_path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/STATUS.md",
+      "proposed_sha256": "384255460e70dfdf97712b73e5d7ca6a4ea112f3eca19f9cd09f9e1fd6c490fa",
+      "proposed_bytes": 102002
+    },
+    {
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "current_sha256": "9646ff5b9672b505943d2a3c335b01d8662253f8b92358aee16ad0b050ef6fad",
+      "current_bytes": 8979,
+      "proposed_path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/EVIDENCE-INDEX.md",
+      "proposed_sha256": "e21c1c63b7dddc1bf01dd759d59aefff5ba5ae68780695518cfe24ea2373438c",
+      "proposed_bytes": 12599
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "current_sha256": "553a840a6b54c28763cec8a1e2e84f8161f9aa67832b2d3e1b07bf90c0eb7aab",
+      "current_bytes": 44999,
+      "proposed_path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "proposed_sha256": "8d2e1096bfdac94afc97691834e2418a4463de0d70c644ba14aa20ffa73fc99e",
+      "proposed_bytes": 47345
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+      "current_sha256": "00082f3cc8dfca251de21ae3e6a41e814f1698f4054aebce0a81ebf4cc57222b",
+      "current_bytes": 11552,
+      "proposed_path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+      "proposed_sha256": "8cd7b369e2e1ac35273680ab16e346c8f540b664586904c8b4b9985f630c2137",
+      "proposed_bytes": 18978
+    }
+  ],
+  "route_evidence_review": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-B-R113-ROUTE-EVIDENCE-REVIEW.md",
+    "sha256": "75eb423fe901244adaf35c0d84e6a729fb59945f967ee8e76429f286b3bfedef"
+  },
+  "route_evidence_ledger": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-B-R113-ROUTE-EVIDENCE.json",
+    "sha256": "1a68e332eefc1721cd029c96f7893da1df47e4a98cb578b82a701c22085ee6e9"
+  },
+  "patch": {
+    "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/wip20-docs/wip20-docs-final.patch",
+    "sha256": "604e9a44daada2f3d34ba119a329736215ee07a3b33bf1ac02edacd347637f8e",
+    "bytes": 34453
+  }
+}

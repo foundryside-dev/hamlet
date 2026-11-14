@@ -1,0 +1,22 @@
+{
+  "status": "GENUINE SPAWN CHILD IDENTITY AND PARENT PID CORRELATION VERIFIED",
+  "job": "bank-poison-cleanup",
+  "case": "bank_restore_poison_cleanup",
+  "expected_message": "bank restore poison cleanup fail closed",
+  "parent_job_exit_code": 0,
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+  "child_pid": 167717,
+  "torch": "2.11.0+cu130",
+  "threads": 1,
+  "interop_threads": 5,
+  "debug": true,
+  "source_guards": 819,
+  "configs": 573,
+  "artifacts": 13,
+  "child_receipt_sha256": "85515a7c893e00d4b81ee243a937b7de8f883b82f0e2af4ef1dbbce20937626a",
+  "parent_observation_sha256": "7f04c024e9f90ba9122cd1d410888ac64fcaf78cd800ec92b436f4203313a927",
+  "verifier_sha256": "8fd7638fca79d2479286821f55573445f1acb4fc28a5efd801cec8a40cb53209",
+  "scope": "This spawned poison child only; parent pytest result and other processes remain separate receipts."
+}

@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r110-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r110-static",
+  "workers": 2,
+  "jobs": [
+    {
+      "name": "ruff-tests",
+      "args": [
+        "-m",
+        "ruff",
+        "check",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+      ]
+    },
+    {
+      "name": "black-tests",
+      "args": [
+        "-m",
+        "black",
+        "--check",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+      ]
+    }
+  ]
+}

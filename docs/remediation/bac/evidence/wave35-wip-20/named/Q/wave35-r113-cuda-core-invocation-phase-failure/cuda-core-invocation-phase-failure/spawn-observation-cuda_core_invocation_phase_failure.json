@@ -1,0 +1,1 @@
+{"exitcode": 0, "invocation_phase_sha256": "ed528dc1cce2487751338a96f3ebe2f9d91d2c5227206b7b84054ed7547d4641", "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa", "message": "cuda core invocation_phase_failure fail closed", "parent_pid": 163440, "process_pid": 163542, "qualified": true, "queued_pid": 163542, "queued_ppid": 163440}

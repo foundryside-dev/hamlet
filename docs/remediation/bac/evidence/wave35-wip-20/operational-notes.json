@@ -1,0 +1,57 @@
+{
+  "schema": "bac-checkpoint-operational-notes-v1",
+  "actor": "/root",
+  "at": "2026-11-14T04:53:36.573802+00:00",
+  "finite_checkpoint": "R109\u2013R113, five components. Independent terminal PASS for bounded WIP durability; no full B or programme acceptance.",
+  "selection": {
+    "plan": {
+      "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+      "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe",
+      "bytes": 1691458
+    },
+    "status": "READY FOR ROOT PUBLICATION CHECKS",
+    "metrics": {
+      "input_paths": 2307,
+      "new_objects": 1045,
+      "reused_objects": 25,
+      "unique_objects": 1070
+    }
+  },
+  "assembly": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-20/assembly-report.json",
+    "sha256": "87378c9afd31f80fca4bd3d3897b4a9a7c2a05ca5940caf6d27e02884cd6b92a",
+    "bytes": 1530597
+  },
+  "root_final_seal_comparison": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-20/final-seal-comparison.json",
+    "sha256": "e20d1e676e5d82684b1eff86b63f0ea1b58f33d898d78cb741cae280adba90a4",
+    "bytes": 2482
+  },
+  "prepublication_remote_observation": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-20/prepublication-remote-observation.json",
+    "sha256": "d8c5f5d159eadbefa2525afc30a63db34479968af113d49f3f18903acb6df3b1",
+    "bytes": 649
+  },
+  "prior_ci_log_access_attempt": {
+    "path": "docs/remediation/bac/evidence/wave35-wip-20/prior-ci-log-access-attempt.json",
+    "sha256": "76c35bc74ef542e3af362f992ad81f571729ba92530776ea898dda2a1032928b",
+    "bytes": 623
+  },
+  "source_equivalence": {
+    "matching_execution_blobs": 1504,
+    "guard": {
+      "path": "docs/remediation/bac/evidence/wave35-wip-20/named/W/evidence-management/wip20-preparation/wip20-preassembly-source-equivalence-v1.json",
+      "sha256": "74f4e7e90e3079afe3f696af441ff5134216b203e676efefbd2f3306c8808635",
+      "bytes": 421197
+    }
+  },
+  "remaining": [
+    "Current two peer-wait failures and fresh cold-import proof",
+    "B6, parent outcome/owner-lock handoff, recurrent and ordinary runner integration",
+    "Global mypy15 errors and full/default/coverage>=70/slow/learning/final review",
+    "Actual CUDA remains UNRUN; server access and GPU topology unknown",
+    "Exact new remote SHA and CI after push"
+  ],
+  "private_backup_exclusion": "Original private-email bundle not selected or published.",
+  "authority": "Existing branch push authorized by user; no new branch/worktree, PR or merge."
+}

@@ -1,0 +1,62 @@
+{
+  "schema": "bac-root-tooling-red-disposition-v1",
+  "owner": "/root/bac_invocation_verifier_prep",
+  "status": "CAUSAL RED CONFIRMED; FINITE VERIFIER IMPLEMENTATION GRANTED",
+  "result": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/invocation-verifier-qualification/tests-first-red-result.json",
+    "sha256": "2295df9d830c1a18531a2d149f676591db03f634224dcddf8576ecb35d46e61b",
+    "bytes": 1620
+  },
+  "log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/invocation-verifier-qualification/tests-first-red.log",
+    "sha256": "b0165b1905b63f1546f133b298ad659decd3bb0d5c3a409daf7ebc12c4b6a46f",
+    "bytes": 31460
+  },
+  "observed": {
+    "methods": 75,
+    "failure_events": 2,
+    "error_events_including_subtests": 22,
+    "causes": {
+      "ValueError: unexpected fork record inventory: identity": 1,
+      "ValueError: unauthorized replay job": 21,
+      "AssertionError: (<class 'ValueError'>, <class 'KeyError'>, <class 'FileNotFoundError'>, <class 'FileExistsError'>) not raised": 2
+    }
+  },
+  "interpretation": "Old verifier refuses six new-role positives and phase-pair prerequisites, refuses actual third-trial inventory, and fails required misplaced-phase-marker rejection assertions. No unrelated fixture exception observed. Pair-specific assertions not reached yet; do not claim them qualified.",
+  "writable": [
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py"
+  ],
+  "read_only": [
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py"
+  ],
+  "frozen_test_sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b",
+  "budget": {
+    "verifier_ceiling": 900,
+    "test_ceiling": 1450,
+    "files": 2,
+    "total_ceiling": 2350
+  },
+  "actual_protocol": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-PROTOCOL.json",
+    "sha256": "57d2984443217a1f31ae468173bf4d21333d5828ee3cf1df550f9963cf3414c3",
+    "bytes": 5856
+  },
+  "source_protocol_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-REVIEW.md",
+    "sha256": "7aea3ba6b7fd450afa4c9de7146e0f41cdc0cd31c7fdfcefe6e0c8ca3d602bca",
+    "bytes": 11386
+  },
+  "pair_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r107-invocation-pair-interface-adoption.json",
+    "sha256": "a6b894198e2d823a899b8da62dc6a80965159568ff7a2d64657bcad36ac6d6f8",
+    "bytes": 1642
+  },
+  "requirements": [
+    "Implement exact finite protocol and side-effect-free explicit pair API; preserve prior identity/source/schema/exclusive-receipt invariants.",
+    "No broad unknown-role allowance, literal expected completion tail, fabricated witness, or writer invocation from pair revalidation.",
+    "No application/test implementation bodies beyond two admitted tool bodies; source capsule is independently verified.",
+    "Root owns green synthetic/adversarial execution and actual child qualification; no application/child execution by author.",
+    "Tests remain frozen; report any genuinely wrong fixture before editing. No branch/worktree/copy/Git actions."
+  ],
+  "scope": "Tooling repair only; no actual child/API/B/hardware qualification inferred."
+}

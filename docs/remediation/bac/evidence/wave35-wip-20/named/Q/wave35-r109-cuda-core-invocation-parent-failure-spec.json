@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-parent-failure",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "cuda-core-invocation-parent-failure",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[invocation_parent_failure]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"before": {"cuda": null, "domain": [1, 1, false], "numpy": ["MT19937", "1a26fe85dd429cd45789972cdce0f00eb81fd839ef6027840998a364ba8b0c89", 623, 0, 0.0], "python": "5f78e4c4cbcfa2ae4bcc8404e2fde1ac9e6037d6468b6fe59afb49a683db2e27", "torch": "8589279c9624d15cd5f0c82a68ba91ee4cbfa7bb8f29d84f036dc1ad7a2afd83"}, "case": "per_admitted_same", "parent_pid": 158161, "qualified": true}

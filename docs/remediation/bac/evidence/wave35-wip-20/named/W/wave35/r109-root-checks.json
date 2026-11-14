@@ -1,0 +1,118 @@
+{
+  "schema": "bac-root-bounded-checks-v1",
+  "status": "R109 HEALTHY QUALIFICATION PASS; ISOLATED PROTOCOLS HELD",
+  "candidate_manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-candidate.json",
+    "sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781",
+    "bytes": 203930
+  },
+  "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "collection": {
+    "count": 88,
+    "prior76_retained": true,
+    "result": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-collection/collection-result.json",
+      "sha256": "3c8bd1ccd81b873aeea4349cb174175a9abc7c8ce0d007f9b5237fa5eac19315",
+      "bytes": 859
+    },
+    "custody": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-collection-custody.json",
+      "sha256": "8f31094ccc236262c5ed75fe33e0122839c5d162f51e1651ac1c7f5fa4119658",
+      "bytes": 641
+    }
+  },
+  "runtime": {
+    "unique_passed": 72,
+    "groups": {
+      "prior-healthy": {
+        "passed": 66,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "new-phase": {
+        "passed": 4,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "new-thread-alias": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      },
+      "new-state-lifetime": {
+        "passed": 1,
+        "skipped": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+        "warnings": 0
+      }
+    },
+    "selection": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-healthy-selection.json",
+      "sha256": "771d388ec3337aa7840d507134ddc00e701fcc16bdf395e38adaeaa3a283ccc1",
+      "bytes": 9658
+    },
+    "custody": [
+      {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-prior-healthy-custody.json",
+        "sha256": "d48d4a656802cb50c0d264191d8583f24a8117451aea0ad21f41150a95ccea22",
+        "bytes": 645
+      },
+      {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-new-phase-custody.json",
+        "sha256": "0eb78492085618db65d7ac3c006324203fef9906dc0b258e19d15924fb2f1225",
+        "bytes": 641
+      },
+      {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-new-thread-alias-custody.json",
+        "sha256": "d8c3c35f56a9cd9ed7c2b1964b8be2c064eaeaab89110cedcfb77348c3dfcdb7",
+        "bytes": 647
+      },
+      {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-new-state-lifetime-custody.json",
+        "sha256": "3a8f1b0cc53bfe833c30c46eefe874ecce654fdd687ef4ed4c7a9f521385eca6",
+        "bytes": 649
+      }
+    ]
+  },
+  "static": {
+    "ruff": "PASS",
+    "black": "PASS",
+    "custody": {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-static-custody.json",
+      "sha256": "4c8d39d4bc0796059062751d22806537e1e43e03be6cfc71bd8a3a5e68922d8c",
+      "bytes": 998
+    }
+  },
+  "source_scope": {
+    "core_lines": 948,
+    "test_lines": 2166,
+    "total": 3114,
+    "files": 2
+  },
+  "unrun": {
+    "isolated_cases": 16,
+    "reason": "Strict verifier extension/independent review/synthetic qualification pending; includes six new roles and changed inherited-PID invocation trial.",
+    "generated_owned_curriculum_template": "UNRUN; outside current packet",
+    "real_CUDA": "UNRUN"
+  },
+  "remaining": [
+    "Independent second-phase source/test review",
+    "Strict-verifier tests-first implementation and independent qualification",
+    "Actual16 isolated jobs and explicit phase pair verification",
+    "B/producer/parent/recurrent/hardware/globalprogramme gates"
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "scope": "Only actual R109 healthy source-bound controls. No isolated outcome/fork/runtime, B or whole BAC acceptance."
+}

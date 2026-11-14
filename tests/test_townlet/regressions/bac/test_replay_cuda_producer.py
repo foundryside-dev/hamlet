@@ -576,14 +576,42 @@ def test_install_inventories_issuer_material_without_selector_migration(family: 
     _push(owner, _rows(), recorded=True)
     state = owner.serialize()
     owner.device = torch.device("cuda:1")
-    candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
-    owner.device = torch.device("cuda:2")
-    simulated_cuda.events.clear()
-    owner.load_prepared(candidate, lineage=None)
-    events = list(simulated_cuda.events)
+    with owner.cuda_preflight(anticipated_devices=(torch.device("cuda:0"), torch.device("cuda:1"))):
+        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+        owner.device = torch.device("cuda:2")
+        simulated_cuda.events.clear()
+        owner.load_prepared(candidate, lineage=None)
+        events = list(simulated_cuda.events)
     assert owner.observations is not None and owner.observations.device == torch.device("cuda:1")
     _assert_tree_equal(owner.serialize(), state)
     assert _syncs(events) == (0, 1)
+    assert not any(event[0] == "current" for event in events)
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+def test_released_preparation_refuses_late_membership_enrollment(family: str, simulated_cuda: _SimCUDA) -> None:
+    owner = _owner(family, torch.device("cuda:0"))
+    _push(owner, _rows(), recorded=True)
+    before = owner.serialize()
+    live_observations = owner.observations
+    owner.device = torch.device("cuda:1")
+    candidate = owner.prepare_serialized(before, expected_obs_dim=2, lineage=None)
+    # Local push/read did not enroll live0; prepare enrolled only candidate1.
+    # Expand real idle membership after issuance without changing owner revision
+    # or performing ordinary work that could mask the original-token diagnosis.
+    with process_rng_domain().admission(lineage=None) as gate:
+        gate.enroll(participant=owner.rng_participant, cuda_devices=(0,))
+    owner.device = torch.device("cuda:2")
+    simulated_cuda.events.clear()
+    with pytest.raises(ValueError, match="^RNG preparation membership changed$"):
+        owner.load_prepared(candidate, lineage=None)
+    events = list(simulated_cuda.events)
+    assert owner.observations is live_observations
+    assert owner.observations is not None and owner.observations.device == torch.device("cuda:0")
+    _assert_tree_equal(owner.serialize(), before)
+    assert _syncs(events) == (0, 1)
+    clones = [position for position, event in enumerate(events) if event[:3] == ("finished", "clone", (1,))]
+    assert clones and max(clones) < next(position for position, event in enumerate(events) if event[0] == "sync")
     assert not any(event[0] == "current" for event in events)
 
 
@@ -1951,8 +1979,38 @@ def test_archive_record_prefix_matrix(family: str, case: str, public: bool, simu
 class _ArchiveComparison(_CUDAData):
     """Supported nonplain semantic operand with observable real Tensor work."""
 
+    @classmethod
+    def __torch_function__(cls, func: Any, types: Any, args: tuple = (), kwargs: Any = None) -> Any:
+        result = super().__torch_function__(func, types, args, kwargs)
+        if func.__name__ in ("detach", "clone"):
+            return _map_values(result, lambda value: cls(value, value.index) if isinstance(value, _CUDAData) else value)
+        # Reduction/arithmetic results stay base tensors: preserving this class
+        # for sum would recursively re-enter its intentionally unusual __ne__.
+        return result
+
     def __ne__(self, other: object) -> torch.Tensor:
         return self.sum() != 0
+
+
+@pytest.mark.parametrize("family", ["flat", "per"])
+def test_archive_digest_operator_clone_preserves_rejection(family: str, simulated_cuda: _SimCUDA) -> None:
+    record = history._record(_family_archive(family, 2))
+    original = _ArchiveComparison(torch.tensor(1), 1)
+    record["source_digest"] = original
+    simulated_cuda.events.clear()
+    cloned = history._clone(record)
+    clone_events = list(simulated_cuda.events)
+    digest = cloned["source_digest"]
+    assert type(digest) is _ArchiveComparison and digest.device == torch.device("cuda:1")
+    assert torch.equal(digest.plain(), torch.tensor(1)) and torch.equal(original.plain(), torch.tensor(1))
+    assert digest.plain().data_ptr() != original.plain().data_ptr()
+    assert any(event[:3] == ("finished", "clone", (1,)) for event in clone_events)
+    simulated_cuda.events.clear()
+    with pytest.raises(ValueError, match="^archive source digest mismatch after owned cloning$"):
+        history._archive_from_state(cloned)
+    restore_events = list(simulated_cuda.events)
+    assert any(event[:3] == ("finished", "clone", (2,)) for event in restore_events)
+    assert any(event[:3] == ("work", "sum", (1,)) for event in restore_events)
 
 
 @pytest.mark.parametrize("family", ["flat", "per"])
@@ -2119,7 +2177,8 @@ def test_archive_declared_count_boundaries(family: str, kind: str, case: str, ro
     incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
     count = 0 if case == "zero" else 2 if case == "above" else 4
     record = _fix5_archive_record(kind, count, case)
-    accepted = case in ("match", "clone", "mapping")
+    count_accepted = case in ("match", "clone", "mapping")
+    compatible = kind == ("standard" if family == "flat" else "prioritized")
     continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
     devices = (2, 3) if continuation else ()
     records = [record]
@@ -2138,19 +2197,29 @@ def test_archive_declared_count_boundaries(family: str, kind: str, case: str, ro
     if route.endswith("-plan"):
         return
     arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
-    if accepted:
-        getattr(owner, method)(incoming, **arguments)
-    else:
+    if not count_accepted:
         with pytest.raises(ValueError, match="archive row count differs from original state"):
             getattr(owner, method)(incoming, **arguments)
+    elif not compatible:
+        message = (
+            "^historical archive replay kind differs from uniform storage$"
+            if family == "flat"
+            else "^historical archive replay kind differs from prioritized storage$"
+        )
+        with pytest.raises(ValueError, match=message):
+            getattr(owner, method)(incoming, **arguments)
+    else:
+        getattr(owner, method)(incoming, **arguments)
     events = list(simulated_cuda.events)
     assert _syncs(events) == ((*devices, 4) if selected is not None else devices)
     if count:
         assert any(event[:3] == ("finished", "clone", (2,)) for event in events)
     if case == "later":
         assert any(event[:3] == ("finished", "clone", (0,)) for event in events)
-    if not accepted:
+    if not count_accepted:
         assert not any(event[0] == "work" and any(index in event[2] for index in (1, 3, 4)) for event in events)
+    elif not compatible:
+        assert not any(event[0] == "work" and any(index in event[2] for index in (3, 4)) for event in events)
     _assert_tree_equal(owner.serialize(), before)
 
 
@@ -2254,8 +2323,8 @@ def _clone_repair_record(family: str, location: str, *, operator: bool) -> tuple
 @pytest.mark.parametrize("location", ["formats", "sibling"])
 @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
 def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
-    # Preparation records/clones/revalidates archives: its genuine canonical
-    # digest must survive that route, unlike the raw comparison-subclass probe.
+    # Both digest forms must survive real recording/revalidation ownership;
+    # public preparation also retains its genuine canonical digest control.
     operator = stage not in ("canonical-fixture", "prepare")
     record, calls, field = _clone_repair_record(family, location, operator=operator)
     state = record["original_state"]
@@ -2269,7 +2338,28 @@ def test_archive_clone_repairs_later_count(family: str, location: str, stage: st
         assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
         if not operator:
             assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
-            assert history._archive_from_state(history._record(restored)).archived_row_count == 4
+        simulated_cuda.events.clear()
+        owned_record = history._record(restored)
+        recording_events = list(simulated_cuda.events)
+        simulated_cuda.events.clear()
+        reowned = history._archive_from_state(owned_record)
+        second_restore_events = list(simulated_cuda.events)
+        assert reowned.archived_row_count == 4 and reowned.original_state[field] == 4
+        assert any(event[:3] == ("finished", "clone", (2,)) for event in second_restore_events)
+        assert any(event[:3] == ("work", "sum", (1,)) for event in second_restore_events) is operator
+        if operator:
+            assert any(event[:3] == ("finished", "clone", (1,)) for event in recording_events)
+            digest = reowned.source_digest
+            original_digest = restored.source_digest
+            assert type(digest) is type(original_digest) is _ArchiveComparison
+            assert digest.device == original_digest.device == torch.device("cuda:1")
+            plain_digest, plain_original = digest.plain(), original_digest.plain()
+            assert plain_digest.dtype == plain_original.dtype == torch.int64
+            assert plain_digest.shape == plain_original.shape == torch.Size([])
+            assert torch.equal(plain_digest, torch.tensor(0)) and torch.equal(plain_original, torch.tensor(0))
+            assert plain_digest.data_ptr() != plain_original.data_ptr()
+        else:
+            assert type(reowned.source_digest) is str and reowned.source_digest == record["source_digest"]
         return
     owner = _owner(family, torch.device("cpu"))
     _push(owner, _rows(), recorded=True)

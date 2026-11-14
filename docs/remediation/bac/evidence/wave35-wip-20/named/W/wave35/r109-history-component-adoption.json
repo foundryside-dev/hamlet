@@ -1,0 +1,10 @@
+{
+  "schema": "bac-root-historical-component-adoption-v1",
+  "recorded_at": "2026-11-13T21:22:08.229318+00:00",
+  "status": "R109 CLOSED HISTORICAL COMPONENT AND INERT HELPER RETENTION ADOPTED",
+  "component_sha256": "de3625e602b1cfb460b034b50bf9077da6694995e469f0f0c21461dc7ac448e4",
+  "retention_supplement_sha256": "25a9ff5f622640af0af71ebd838a7219aaddde679a2baacdce5ac000c235168f",
+  "direct_references_rehashed": 269,
+  "scope": "R109 bounded CPU prerequisite: 88 unique cases; future checkpoint selection/terminal review/publication remain required. This is not full BAC or CUDA qualification.",
+  "helper_policy": "Exact retained inert .py.txt versions preserve historical references before mutable tools change; no execution copies authorized."
+}

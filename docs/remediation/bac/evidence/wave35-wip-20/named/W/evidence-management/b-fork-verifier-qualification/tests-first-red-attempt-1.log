@@ -1,0 +1,39 @@
+.E.........F.....................................................................
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='inherited_pid')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 531, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 684, in verify
+    receipt, destination, _ = _validated_subject(spec_path, job_index)
+                              ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 623, in _validated_subject
+    fork_guards = check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash) if config.get("fork", False) else None
+                  ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 235, in check_fork_guards
+    require(type(results) is dict and set(results) == actions, "fork guard actions mismatch")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 393, in require
+    raise ValueError(message)
+ValueError: fork guard actions mismatch
+
+======================================================================
+FAIL: test_legacy_five_action_local_trial_refused (__main__.CudaVerifierTests.test_legacy_five_action_local_trial_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 719, in test_legacy_five_action_local_trial_refused
+    f.refuse()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 147, in refuse
+    with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'KeyError'>, <class 'FileNotFoundError'>, <class 'FileExistsError'>) not raised
+
+----------------------------------------------------------------------
+Ran 81 tests in 2.627s
+
+FAILED (failures=1, errors=1)

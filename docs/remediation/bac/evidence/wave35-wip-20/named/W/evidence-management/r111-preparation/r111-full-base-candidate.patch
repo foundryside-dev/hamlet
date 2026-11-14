@@ -1,0 +1,1736 @@
+diff --git a/src/townlet/exploration/rng_custody.py b/src/townlet/exploration/rng_custody.py
+index 6eb0f33b69a2873e2a45af45dcedfcc2e83e7335..ba0215e4ad623c2f9f97943481c3b907ac6b0938 100644
+--- a/src/townlet/exploration/rng_custody.py
++++ b/src/townlet/exploration/rng_custody.py
+@@ -136,9 +136,188 @@ class _LocalCUDARecord:
+     post_poison: bool
+ 
+ 
+-# Enabling any real producer route needs reviewed source and supplier evidence.
+-# There is deliberately no public issuer or caller policy registration API.
+-_LOCAL_CUDA_CONTRACTS: Mapping[LocalCUDAContract, _LocalCUDARecord] = MappingProxyType({})
++@dataclass(frozen=True)
++class _LocalCUDADescriptor:
++    owner_kind: Literal["flat", "per"]
++    route: str
++    input_kind: Literal["tensor", "request", "mapping", "archive", "none", "integer", "indices"]
++    rationale: str
++    healthy: bool
++    post_poison: bool
++
++
++# Fixed source-issued identities. Canonical classes resolve only under actual
++# custody after their producer modules initialize; importing core is CUDA-free.
++REPLAY_BUFFER_PUSH_CUDA = object.__new__(LocalCUDAContract)
++REPLAY_BUFFER_PUSH_RECORDED_CUDA = object.__new__(LocalCUDAContract)
++REPLAY_BUFFER_READINESS_CUDA = object.__new__(LocalCUDAContract)
++REPLAY_BUFFER_SERIALIZE_CUDA = object.__new__(LocalCUDAContract)
++REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA = object.__new__(LocalCUDAContract)
++REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA = object.__new__(LocalCUDAContract)
++REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA = object.__new__(LocalCUDAContract)
++REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA = object.__new__(LocalCUDAContract)
++PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA = object.__new__(LocalCUDAContract)
++
++# Ordinary dense tensors, builtin data containers and numeric NumPy values are
++# source-classified here. Input tags describe the primary argument, not a
++# runtime purity detector. GPU post-poison qualification remains separate.
++_LOCAL_CUDA_CONTRACTS: Mapping[LocalCUDAContract, _LocalCUDADescriptor] = MappingProxyType(
++    {
++        REPLAY_BUFFER_PUSH_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "push",
++            "tensor",
++            "Ordinary tensor/RewardTensor inputs and retained rows: validation, allocation and owned copies.",
++            True,
++            False,
++        ),
++        REPLAY_BUFFER_PUSH_RECORDED_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "push_recorded",
++            "tensor",
++            "Ordinary transition inputs, masks and retained rows: legality validation and owned copies.",
++            True,
++            False,
++        ),
++        REPLAY_BUFFER_READINESS_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "readiness",
++            "request",
++            "ReplayRequest and retained legality tensor: deterministic readiness reduction without draws.",
++            True,
++            False,
++        ),
++        REPLAY_BUFFER_SERIALIZE_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "serialize",
++            "none",
++            "Retained rows and ordinary canonical archives: chronological CPU copies and archive records.",
++            True,
++            False,
++        ),
++        REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "validate_serialized",
++            "mapping",
++            "Ordinary transport and expected width: reached tensor/archive validation and ownership copies.",
++            True,
++            False,
++        ),
++        REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "load_for_mode",
++            "mapping",
++            "Ordinary transport validation prelude only; materialization and publication require admission.",
++            True,
++            False,
++        ),
++        REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "historical_archives",
++            "none",
++            "Retained canonical archives with ordinary payloads: owned copies, validation and digest.",
++            True,
++            False,
++        ),
++        REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA: _LocalCUDADescriptor(
++            "flat",
++            "install_historical_archive",
++            "archive",
++            "Incoming and retained ordinary canonical archives: owned validation, digest and merge.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA: _LocalCUDADescriptor(
++            "per",
++            "push",
++            "tensor",
++            "Ordinary transition/RewardTensor inputs and rows: copies plus deterministic priority and stable-ID staging.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA: _LocalCUDADescriptor(
++            "per",
++            "push_recorded",
++            "tensor",
++            "Ordinary transition inputs, masks and rows: legality checks, copies and priority/ID staging.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA: _LocalCUDADescriptor(
++            "per",
++            "declare_unconstrained_action_dim",
++            "integer",
++            "Integer width and retained actions: deterministic legality checks and mask allocation.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA: _LocalCUDADescriptor(
++            "per",
++            "readiness",
++            "request",
++            "ReplayRequest, configured mode and retained legality tensor: readiness reduction without draws.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA: _LocalCUDADescriptor(
++            "per",
++            "serialize",
++            "none",
++            "Ordinary rows, archives, numeric priorities/IDs and sampler metadata: copies without RNG advancement.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA: _LocalCUDADescriptor(
++            "per",
++            "validate_serialized",
++            "mapping",
++            "Ordinary transport: tensor/archive/priority/ID checks and offside deterministic engine restore.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA: _LocalCUDADescriptor(
++            "per",
++            "historical_archives",
++            "none",
++            "Ordinary canonical archives: owned copies/digest and detached PER validation without enrollment.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA: _LocalCUDADescriptor(
++            "per",
++            "install_historical_archive",
++            "archive",
++            "Ordinary incoming/retained archives: owned digest/merge and detached PER validation.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA: _LocalCUDADescriptor(
++            "per",
++            "update_priorities",
++            "indices",
++            "Numeric NumPy physical indices and td_errors tensor: CPU conversion and staged duplicate-max updates.",
++            True,
++            False,
++        ),
++        PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA: _LocalCUDADescriptor(
++            "per",
++            "update_unit_priorities",
++            "indices",
++            "Numeric stable IDs, current ID map and td_errors tensor: CPU conversion and staged duplicate-max updates.",
++            True,
++            False,
++        ),
++    }
++)
+ 
+ 
+ @dataclass
+@@ -215,6 +394,7 @@ class AmbientRNGDomain:
+         self._operations: dict[RNGOperation, _Operation] = {}
+         self._invocations: weakref.WeakKeyDictionary[RNGDeviceInvocation, _Invocation] = weakref.WeakKeyDictionary()
+         self._gates: dict[RNGAdmission | LocalCUDAGate, _Gate] = {}
++        self._local_cuda_policies: dict[LocalCUDAContract, tuple[_LocalCUDADescriptor, _LocalCUDARecord]] = {}
+         self._retired: queue.SimpleQueue[RNGParticipant] = queue.SimpleQueue()
+         self._generation = 0
+         self._revision = 0
+@@ -404,6 +584,72 @@ class AmbientRNGDomain:
+         ):
+             raise ValueError("RNG CUDA inventory must be explicit, sorted and unique")
+ 
++    def _resolve_local_cuda_record(self, *, descriptor: _LocalCUDADescriptor) -> _LocalCUDARecord:
++        self._check_pid()
++        if not cast(_OwnedRLock, self._lock)._is_owned():
++            raise RuntimeError("Local CUDA policy resolution requires its actual domain exclusion")
++        self._not_busy()
++        if type(descriptor) is not _LocalCUDADescriptor:
++            raise ValueError("Local CUDA contract has no immutable source descriptor")
++        owner_type: type[object]
++        if descriptor.owner_kind == "flat":
++            from townlet.training.replay_buffer import ReplayBuffer
++
++            owner_type = ReplayBuffer
++        elif descriptor.owner_kind == "per":
++            from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
++
++            owner_type = PrioritizedReplayBuffer
++        else:
++            raise ValueError("Local CUDA descriptor has no canonical owner")
++        input_type: type[object]
++        if descriptor.input_kind == "tensor":
++            input_type = torch.Tensor
++        elif descriptor.input_kind == "request":
++            from townlet.training.replay_contract import ReplayRequest
++
++            input_type = ReplayRequest
++        elif descriptor.input_kind == "mapping":
++            input_type = Mapping
++        elif descriptor.input_kind == "archive":
++            from townlet.training.historical_checkpoint import HistoricalReplayArchive
++
++            input_type = HistoricalReplayArchive
++        elif descriptor.input_kind == "none":
++            input_type = type(None)
++        elif descriptor.input_kind == "integer":
++            input_type = int
++        elif descriptor.input_kind == "indices":
++            from numpy import ndarray
++
++            input_type = ndarray
++        else:
++            raise ValueError("Local CUDA descriptor has no canonical input type")
++        if not isinstance(owner_type, type) or not isinstance(input_type, type):
++            raise ValueError("Local CUDA canonical classes are unavailable")
++        return _LocalCUDARecord(owner_type, descriptor.route, input_type, descriptor.rationale, descriptor.healthy, descriptor.post_poison)
++
++    def _local_cuda_policy(self, *, contract: LocalCUDAContract) -> _LocalCUDARecord:
++        self._check_pid()
++        if not cast(_OwnedRLock, self._lock)._is_owned():
++            raise RuntimeError("Local CUDA policy resolution requires its actual domain exclusion")
++        self._not_busy()
++        if type(contract) is not LocalCUDAContract or contract not in _LOCAL_CUDA_CONTRACTS:
++            raise ValueError("Local CUDA contract is not source-issued")
++        descriptor = _LOCAL_CUDA_CONTRACTS[contract]
++        if type(descriptor) is not _LocalCUDADescriptor:
++            raise ValueError("Local CUDA contract has no immutable source descriptor")
++        cached = self._local_cuda_policies.get(contract)
++        if cached is not None:
++            if cached[0] is not descriptor or type(cached[1]) is not _LocalCUDARecord:
++                raise ValueError("Local CUDA contract source policy changed")
++            return cached[1]
++        policy = self._resolve_local_cuda_record(descriptor=descriptor)
++        if type(policy) is not _LocalCUDARecord:
++            raise ValueError("Local CUDA contract has no immutable source policy")
++        self._local_cuda_policies[contract] = (descriptor, policy)
++        return policy
++
+     def _gate_record(self, gate: RNGAdmission | LocalCUDAGate) -> _Gate:
+         # Methods already hold the issuing scope's real lock. Authenticate before
+         # any lock/owner/CUDA work, including wrong-thread and inherited callers.
+@@ -421,9 +667,12 @@ class AmbientRNGDomain:
+             if record.participant is None or record.contract is None or record.policy is None:
+                 raise ValueError("Local CUDA gate has no authentic binding")
+             member = self._member(record.participant)
++            cached = self._local_cuda_policies.get(record.contract)
+             if (
+                 member.owner() is not record.owner
+-                or _LOCAL_CUDA_CONTRACTS.get(record.contract) is not record.policy
++                or cached is None
++                or cached[0] is not _LOCAL_CUDA_CONTRACTS.get(record.contract)
++                or cached[1] is not record.policy
+                 or type(record.owner) is not record.policy.owner_type
+             ):
+                 raise ValueError("Local CUDA gate owner/route binding changed")
+@@ -486,11 +735,9 @@ class AmbientRNGDomain:
+             self._collect_retired()
+             if type(contract) is not LocalCUDAContract or contract not in _LOCAL_CUDA_CONTRACTS:
+                 raise ValueError("Local CUDA contract is not source-issued")
+-            policy = _LOCAL_CUDA_CONTRACTS[contract]
+-            if type(policy) is not _LocalCUDARecord:
+-                raise ValueError("Local CUDA contract has no immutable source policy")
+             member = self._member(participant)
+             owner = member.owner()
++            policy = self._local_cuda_policy(contract=contract)
+             if owner is None or type(owner) is not policy.owner_type:
+                 raise ValueError("Local CUDA contract does not authorize this exact owner class")
+             record = _Gate(threading.get_ident(), self._active(), participant, owner, contract, policy, [owner], "unused", False)
+diff --git a/tests/test_townlet/regressions/bac/test_replay_cuda_activation.py b/tests/test_townlet/regressions/bac/test_replay_cuda_activation.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..979c505320a3b200cf3ff50f5751cbb70690c597
+--- /dev/null
++++ b/tests/test_townlet/regressions/bac/test_replay_cuda_activation.py
+@@ -0,0 +1,597 @@
++"""Canonical flat/PER contract activation; CPU protocol evidence only.
++
++These controls use real producer membership and source-issued constants. No
++production manifest is replaced. Import/fork/poison children and the existing
++producer completion matrix belong to their separately qualified packets.
++"""
++
++import gc
++import weakref
++from collections.abc import Iterator, Mapping
++from contextlib import contextmanager
++from dataclasses import FrozenInstanceError
++from types import MappingProxyType
++from typing import Any
++
++import numpy as np
++import pytest
++import torch
++
++from townlet.exploration import rng_custody as custody
++from townlet.training import prioritized_replay_buffer, replay_buffer
++from townlet.training.historical_checkpoint import HistoricalReplayArchive, archive_standalone_replay
++from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
++from townlet.training.replay_buffer import ReplayBuffer
++from townlet.training.replay_contract import ReplayRequest
++from townlet.training.state import RewardTensor
++
++# Each row names one actual source route, including flat's distinct validation
++# prelude. PER load_for_mode calls its existing validate_serialized route.
++_ROUTES = (
++    ("flat", "push", "REPLAY_BUFFER_PUSH_CUDA", "tensor", torch.Tensor),
++    ("flat", "push_recorded", "REPLAY_BUFFER_PUSH_RECORDED_CUDA", "tensor", torch.Tensor),
++    ("flat", "readiness", "REPLAY_BUFFER_READINESS_CUDA", "request", ReplayRequest),
++    ("flat", "serialize", "REPLAY_BUFFER_SERIALIZE_CUDA", "none", type(None)),
++    ("flat", "validate_serialized", "REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA", "mapping", Mapping),
++    ("flat", "load_for_mode", "REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA", "mapping", Mapping),
++    ("flat", "historical_archives", "REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA", "none", type(None)),
++    ("flat", "install_historical_archive", "REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA", "archive", HistoricalReplayArchive),
++    ("per", "push", "PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA", "tensor", torch.Tensor),
++    ("per", "push_recorded", "PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA", "tensor", torch.Tensor),
++    ("per", "declare_unconstrained_action_dim", "PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA", "integer", int),
++    ("per", "readiness", "PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA", "request", ReplayRequest),
++    ("per", "serialize", "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA", "none", type(None)),
++    ("per", "validate_serialized", "PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA", "mapping", Mapping),
++    ("per", "historical_archives", "PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA", "none", type(None)),
++    ("per", "install_historical_archive", "PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA", "archive", HistoricalReplayArchive),
++    ("per", "update_priorities", "PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA", "indices", np.ndarray),
++    ("per", "update_unit_priorities", "PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA", "indices", np.ndarray),
++)
++_ROUTE_IDS = tuple(f"{row[0]}-{row[1]}" for row in _ROUTES)
++_CLASSES = {"flat": ReplayBuffer, "per": PrioritizedReplayBuffer}
++
++
++def _contract(name: str) -> custody.LocalCUDAContract:
++    assert hasattr(custody, name), f"B activation missing source-issued constant: {name}"
++    contract = getattr(custody, name)
++    assert type(contract) is custody.LocalCUDAContract
++    return contract
++
++
++def _name(family: str, route: str) -> str:
++    return next(row[2] for row in _ROUTES if row[:2] == (family, route))
++
++
++class _NoCUDA:
++    def __getattr__(self, name: str) -> Any:
++        raise AssertionError(f"activation binding unexpectedly accessed CUDA: {name}")
++
++
++@pytest.fixture
++def owners() -> Iterator[Any]:
++    domain = custody.process_rng_domain()
++    retained: list[object] = []
++    participants: list[custody.RNGParticipant] = []
++
++    def make(family: str, *, owner_type: type | None = None) -> Any:
++        cls = _CLASSES[family] if owner_type is None else owner_type
++        if family == "flat":
++            owner = cls(4, torch.device("cpu"))
++        else:
++            owner = cls(4, 1.0, 0.0, False, torch.device("cpu"))
++        retained.append(owner)
++        participants.append(owner.rng_participant)
++        return owner
++
++    def unrelated(cls: type) -> tuple[object, custody.RNGParticipant]:
++        owner = cls()
++        participant = domain.register(owner=owner, cuda_devices=(), entrypoints=frozenset({"sample"}))
++        retained.append(owner)
++        participants.append(participant)
++        return owner, participant
++
++    yield make, unrelated
++    for participant in reversed(participants):
++        domain.unregister(participant=participant)
++
++
++def test_exact_source_manifest_and_immutable_descriptors() -> None:
++    constants = [_contract(row[2]) for row in _ROUTES]
++    assert len(constants) == len(set(constants)) == 18
++    manifest = custody._LOCAL_CUDA_CONTRACTS
++    assert type(manifest) is MappingProxyType
++    assert set(manifest) == set(constants)
++    descriptor_type = getattr(custody, "_LocalCUDADescriptor")
++    for row, contract in zip(_ROUTES, constants, strict=True):
++        family, route, _, input_kind, _ = row
++        descriptor = manifest[contract]
++        assert type(descriptor) is descriptor_type
++        assert (descriptor.owner_kind, descriptor.route, descriptor.input_kind) == (family, route, input_kind)
++        assert descriptor.healthy is True and descriptor.post_poison is False
++        assert type(descriptor.rationale) is str and descriptor.rationale.strip()
++        with pytest.raises(FrozenInstanceError):
++            descriptor.route = "unreviewed"
++    with pytest.raises(TypeError):
++        manifest[constants[0]] = manifest[constants[0]]
++
++
++@pytest.mark.parametrize("family,route,name,input_kind,input_type", _ROUTES, ids=_ROUTE_IDS)
++def test_every_contract_binds_real_canonical_owner(
++    family: str, route: str, name: str, input_kind: str, input_type: type, owners: Any, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    contract = _contract(name)
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    make, _ = owners
++    owner = make(family)
++    domain = custody.process_rng_domain()
++    before = domain.status()
++    with domain.local_cuda_access(participant=owner.rng_participant, contract=contract) as gate:
++        descriptor, policy = domain._local_cuda_policies[contract]
++        assert descriptor is custody._LOCAL_CUDA_CONTRACTS[contract]
++        assert descriptor.input_kind == input_kind
++        assert type(policy) is custody._LocalCUDARecord
++        assert policy.owner_type is type(owner) is _CLASSES[family]
++        assert policy.input_type is input_type
++        assert policy.route == route
++        assert policy.healthy is True and policy.post_poison is False
++        with gate.complete(cuda_devices=()):
++            pass
++        assert gate.completion_failed() is False
++    assert domain.status() == before
++    with pytest.raises(ValueError, match="foreign or expired"):
++        gate.completion_failed()
++
++
++@pytest.mark.parametrize("family,route,name,input_kind,input_type", _ROUTES, ids=_ROUTE_IDS)
++def test_every_contract_refuses_other_real_family(
++    family: str, route: str, name: str, input_kind: str, input_type: type, owners: Any, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    contract = _contract(name)
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    make, _ = owners
++    owner = make("per" if family == "flat" else "flat")
++    domain = custody.process_rng_domain()
++    before = domain.status()
++    with pytest.raises(ValueError, match="exact owner class"):
++        with domain.local_cuda_access(participant=owner.rng_participant, contract=contract):
++            pytest.fail("wrong-family producer entered a local gate")
++    assert domain.status() == before
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++@pytest.mark.parametrize("case", ("subclass", "name_spoof", "unknown_participant", "unknown_contract"))
++def test_unlisted_identity_refuses_before_cuda(family: str, case: str, owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    contract = _contract(_name(family, "serialize"))
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    make, unrelated = owners
++    canonical = _CLASSES[family]
++    if case == "subclass":
++        owner = make(family, owner_type=type("Unlisted", (canonical,), {}))
++        participant = owner.rng_participant
++    elif case == "name_spoof":
++        spoof = type(canonical.__name__, (), {"__module__": canonical.__module__})
++        _, participant = unrelated(spoof)
++    else:
++        owner = make(family)
++        participant = owner.rng_participant
++        if case == "unknown_participant":
++            participant = object()
++        else:
++            contract = object()
++    with pytest.raises(ValueError):
++        with custody.process_rng_domain().local_cuda_access(participant=participant, contract=contract):
++            pytest.fail("unlisted identity entered a local gate")
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++def test_second_public_local_gate_still_refuses(family: str, owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    first = _contract(_name(family, "serialize"))
++    second = _contract(_name(family, "readiness"))
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    make, _ = owners
++    owner = make(family)
++    domain = custody.process_rng_domain()
++    with domain.local_cuda_access(participant=owner.rng_participant, contract=first) as gate:
++        before = dict(domain._local_cuda_policies)
++        with pytest.raises(RuntimeError, match="reuse their producer's existing scope"):
++            with domain.local_cuda_access(participant=owner.rng_participant, contract=second):
++                pytest.fail("nested public local gate was admitted")
++        assert domain._local_cuda_policies == before
++        with gate.complete(cuda_devices=()):
++            pass
++        assert gate.completion_failed() is False
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++def test_resolved_policy_identity_survives_sequential_instances(family: str, owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    contract = _contract(_name(family, "serialize"))
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    make, _ = owners
++    first, second = make(family), make(family)
++    domain = custody.process_rng_domain()
++    records = []
++    for owner in (first, second, first):
++        with domain.local_cuda_access(participant=owner.rng_participant, contract=contract) as gate:
++            records.append(domain._local_cuda_policies[contract])
++            with gate.complete(cuda_devices=()):
++                pass
++    assert all(record is records[0] for record in records)
++    assert records[0][1].owner_type is _CLASSES[family]
++    assert first.rng_participant is not second.rng_participant
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++def test_resolved_policy_does_not_pin_retired_canonical_owner(family: str, monkeypatch: pytest.MonkeyPatch) -> None:
++    contract = _contract(_name(family, "serialize"))
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    if family == "flat":
++        owner = ReplayBuffer(4, torch.device("cpu"))
++    else:
++        owner = PrioritizedReplayBuffer(4, 1.0, 0.0, False, torch.device("cpu"))
++    domain = custody.process_rng_domain()
++    participant = owner.rng_participant
++    reference = weakref.ref(owner)
++    try:
++        with domain.local_cuda_access(participant=participant, contract=contract) as gate:
++            resolved = domain._local_cuda_policies[contract]
++            with gate.complete(cuda_devices=()):
++                pass
++    finally:
++        domain.unregister(participant=participant)
++    del owner
++    gc.collect()
++    assert reference() is None
++    assert domain._local_cuda_policies[contract] is resolved
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++def test_failed_canonical_lookup_does_not_cache_success(family: str, owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    contract = _contract(_name(family, "serialize"))
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    make, _ = owners
++    owner = make(family)
++    domain = custody.process_rng_domain()
++    module = replay_buffer if family == "flat" else prioritized_replay_buffer
++    canonical = _CLASSES[family]
++    # Establish a cold entry without altering any descriptor or authority. All
++    # fixture changes occur under real idle exclusion, with no live local gate.
++    with domain.admission(lineage=None):
++        cache = dict(domain._local_cuda_policies)
++        cache.pop(contract, None)
++        monkeypatch.setattr(domain, "_local_cuda_policies", cache)
++    before = domain.status()
++    with monkeypatch.context() as missing:
++        missing.delattr(module, canonical.__name__)
++        with pytest.raises((ImportError, AttributeError, ValueError, RuntimeError)):
++            with domain.local_cuda_access(participant=owner.rng_participant, contract=contract):
++                pytest.fail("missing canonical class was admitted")
++        assert contract not in cache
++    with domain.local_cuda_access(participant=owner.rng_participant, contract=contract) as gate:
++        assert cache[contract][1].owner_type is canonical
++        with gate.complete(cuda_devices=()):
++            pass
++    assert domain.status() == before
++
++
++class _SourceOnCUDA(torch.Tensor):
++    """CPU-backed source metadata seam; real numeric/copy work remains CPU."""
++
++    events: list[object]
++
++    @staticmethod
++    def __new__(cls: type, value: torch.Tensor) -> "_SourceOnCUDA":
++        return torch.Tensor._make_subclass(cls, value, False)
++
++    @property
++    def device(self) -> torch.device:
++        return torch.device("cuda", 1)
++
++    def cpu(self, *args: Any, **kwargs: Any) -> torch.Tensor:
++        self.events.append("copy-to-cpu")
++        return self.as_subclass(torch.Tensor).cpu(*args, **kwargs)
++
++    def to(self, *args: Any, **kwargs: Any) -> torch.Tensor:
++        self.events.append("convert-to-cpu")
++        destination = args[0] if args else kwargs.get("device")
++        assert torch.device(destination).type == "cpu", "source seam must retain the actual CPU destination"
++        return self.as_subclass(torch.Tensor).to(*args, **kwargs)
++
++    def clone(self, *args: Any, **kwargs: Any) -> torch.Tensor:
++        self.events.append("clone-source")
++        return torch.Tensor.clone(self, *args, **kwargs)
++
++
++def test_cpu_backed_source_fixture_preserves_real_values(monkeypatch: pytest.MonkeyPatch) -> None:
++    events: list[object] = []
++    monkeypatch.setattr(_SourceOnCUDA, "events", events, raising=False)
++    ordinary = torch.tensor([-2.0, 4.0], dtype=torch.float32)
++    source = _SourceOnCUDA(ordinary)
++    assert source.device == torch.device("cuda", 1)
++    copied = source[:1].detach().cpu().clone()
++    converted = source.detach().to(device="cpu", dtype=torch.float64)
++    assert type(copied) is type(converted) is torch.Tensor
++    assert copied.device.type == converted.device.type == "cpu"
++    assert torch.equal(copied, ordinary[:1])
++    assert np.array_equal(converted.numpy(), np.array([-2.0, 4.0], dtype=np.float64))
++    copied.fill_(99)
++    assert torch.equal(ordinary, torch.tensor([-2.0, 4.0], dtype=torch.float32))
++    assert torch.equal(source.as_subclass(torch.Tensor), ordinary)
++    assert events == ["copy-to-cpu", "convert-to-cpu"]
++
++
++def _rows(owner: Any) -> None:
++    observations = torch.tensor([[1.0, 2.0], [3.0, 4.0]], dtype=torch.float32)
++    owner.push_recorded(
++        observations,
++        torch.tensor([0, 1], dtype=torch.int64),
++        RewardTensor(torch.tensor([1.0, 2.0], dtype=torch.float32)),
++        observations + 1,
++        torch.tensor([False, True]),
++        torch.tensor([[True, False], [False, False]]),
++    )
++
++
++def _observe_real_local_route(monkeypatch: pytest.MonkeyPatch, owner: Any, name: str, events: list[object]) -> None:
++    expected = _contract(name)
++    domain = custody.process_rng_domain()
++    original = domain.local_cuda_access
++
++    @contextmanager
++    def observe(*, participant: custody.RNGParticipant, contract: custody.LocalCUDAContract) -> Iterator[custody.LocalCUDAGate]:
++        assert participant is owner.rng_participant and contract is expected
++        with original(participant=participant, contract=contract) as gate:
++            events.append("gate-enter")
++            yield gate
++        events.append("gate-exit")
++
++    def no_init() -> None:
++        pytest.fail("already initialized source-only operation attempted CUDA initialization")
++
++    def no_current() -> int:
++        pytest.fail("source-only operation queried an unused allocation selector")
++
++    monkeypatch.setattr(domain, "local_cuda_access", observe)
++    monkeypatch.setattr(torch.cuda, "is_initialized", lambda: True)
++    monkeypatch.setattr(torch.cuda, "device_count", lambda: 3)
++    monkeypatch.setattr(torch.cuda, "init", no_init)
++    monkeypatch.setattr(torch.cuda, "current_device", no_current)
++    monkeypatch.setattr(torch.cuda, "synchronize", lambda index: events.append(("complete", index)))
++    monkeypatch.setattr(_SourceOnCUDA, "events", events, raising=False)
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++def test_real_serialize_dispatch_owns_rows_and_completes_only_source(family: str, owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    _contract(_name(family, "serialize"))
++    make, _ = owners
++    owner = make(family)
++    _rows(owner)
++    expected = owner.serialize()
++    owner.observations = _SourceOnCUDA(owner.observations)
++    events: list[object] = []
++    _observe_real_local_route(monkeypatch, owner, _name(family, "serialize"), events)
++    result = owner.serialize()
++    assert events == ["gate-enter", "copy-to-cpu", ("complete", 1), "gate-exit"]
++    assert set(result) == set(expected)
++    for key, value in expected.items():
++        if isinstance(value, torch.Tensor):
++            assert type(result[key]) is torch.Tensor and result[key].device.type == "cpu"
++            assert torch.equal(result[key], value)
++        elif isinstance(value, np.ndarray):
++            assert np.array_equal(result[key], value)
++        else:
++            assert result[key] == value
++    result["observations"].fill_(99)
++    assert torch.equal(owner.observations.as_subclass(torch.Tensor)[:2], expected["observations"])
++    assert owner.device == torch.device("cpu")
++
++
++@pytest.mark.parametrize("stable", (False, True), ids=("physical", "stable"))
++def test_real_priority_dispatch_preserves_algorithm_and_source_completion(
++    stable: bool, owners: Any, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    route = "update_unit_priorities" if stable else "update_priorities"
++    _contract(_name("per", route))
++    make, _ = owners
++    owner = make("per")
++    _rows(owner)
++    if stable:
++        _rows(owner)
++        _rows(owner)
++        assert np.array_equal(owner.unit_ids, np.array([4, 5, 2, 3], dtype=np.int64))
++    before_revision = owner._replay_revision
++    expected = owner.priorities.copy()
++    if stable:
++        errors = _SourceOnCUDA(torch.tensor([-3.0, 4.0, 2.0], dtype=torch.float32))
++        indices = np.array([4, 2, 4], dtype=np.int64)
++        expected[[0, 2]] = np.array([3.0 + 1e-6, 4.0 + 1e-6], dtype=np.float32)
++    else:
++        errors = _SourceOnCUDA(torch.tensor([-2.0, 4.0], dtype=torch.float32))
++        indices = np.array([0, 1], dtype=np.int64)
++        expected[:2] = np.array([2.0 + 1e-6, 4.0 + 1e-6], dtype=np.float32)
++    events: list[object] = []
++    _observe_real_local_route(monkeypatch, owner, _name("per", route), events)
++    getattr(owner, route)(indices, errors)
++    assert events == ["gate-enter", "convert-to-cpu", ("complete", 1), "gate-exit"]
++    assert np.array_equal(owner.priorities, expected)
++    assert owner.max_priority == float(expected.max())
++    assert owner._replay_revision == before_revision + 1
++    assert owner.device == torch.device("cpu")
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++def test_cpu_local_data_work_does_not_resolve_cuda_contracts(family: str, owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    make, _ = owners
++    owner = make(family)
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++
++    def forbidden_gate(*, participant: object, contract: object) -> Any:
++        pytest.fail("CPU-only local data work attempted a CUDA contract gate")
++
++    monkeypatch.setattr(custody.process_rng_domain(), "local_cuda_access", forbidden_gate)
++    _rows(owner)
++    state = owner.serialize()
++    assert state["observations"].shape == (2, 2)
++    assert state["observations"].device.type == "cpu"
++    owner.clear()
++    assert len(owner) == 0
++
++
++@pytest.mark.parametrize("family", ("flat", "per"))
++def test_real_plain_push_owns_numeric_rows_and_declares_legal_masks(family: str, owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    _contract(_name(family, "push"))
++    make, _ = owners
++    owner = make(family)
++    _rows(owner)
++    incoming = torch.tensor([[5.0, 6.0], [7.0, 8.0]], dtype=torch.float32)
++    source = _SourceOnCUDA(incoming)
++    events: list[object] = []
++    _observe_real_local_route(monkeypatch, owner, _name(family, "push"), events)
++    owner.push(
++        source,
++        torch.tensor([1, 0], dtype=torch.int64),
++        RewardTensor(torch.tensor([9.0, 10.0]), extrinsic=torch.tensor([3.0, 4.0])),
++        incoming + 1,
++        torch.tensor([False, True]),
++    )
++    assert events == ["gate-enter", "convert-to-cpu", ("complete", 1), "gate-exit"]
++    source.fill_(99)
++    result = owner.serialize()
++    assert len(owner) == 4 and owner.device == torch.device("cpu")
++    assert torch.equal(result["observations"][2:], torch.tensor([[5.0, 6.0], [7.0, 8.0]]))
++    assert torch.equal(result["next_observations"][2:], torch.tensor([[6.0, 7.0], [8.0, 9.0]]))
++    assert torch.equal(result["actions"][2:], torch.tensor([1, 0], dtype=torch.int64))
++    assert torch.equal(result["rewards"][2:], torch.tensor([9.0, 10.0]))
++    assert torch.equal(result["rewards_extrinsic"][2:], torch.tensor([3.0, 4.0]))
++    assert torch.equal(result["rewards_extrinsic_present"], torch.tensor([False, False, True, True]))
++    assert torch.equal(result["next_action_masks"][2:], torch.ones((2, 2), dtype=torch.bool))
++    assert bool(result["legality_recorded"].all())
++
++
++def test_real_flat_load_for_mode_completes_validation_before_install(owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    _contract(_name("flat", "load_for_mode"))
++    make, _ = owners
++    source, target = make("flat"), make("flat")
++    _rows(source)
++    expected = source.serialize()
++    supplied = {key: _SourceOnCUDA(value) if isinstance(value, torch.Tensor) else value for key, value in expected.items()}
++    events: list[object] = []
++    _observe_real_local_route(monkeypatch, target, _name("flat", "load_for_mode"), events)
++    target.load_for_mode(supplied, requested_mode="auto", lineage=None)
++    first_completion = events.index(("complete", 1))
++    assert events[0] == "gate-enter" and events[first_completion + 1] == "gate-exit"
++    tensor_count = sum(isinstance(value, torch.Tensor) for value in expected.values())
++    assert events[1:first_completion].count("clone-source") >= tensor_count
++    assert events.count("gate-enter") == events.count("gate-exit") == 1
++    assert [event for event in events if isinstance(event, tuple)] == [("complete", 1), ("complete", 1)]
++    assert "convert-to-cpu" in events[first_completion + 2 :]
++    result = target.serialize()
++    for key, value in expected.items():
++        if isinstance(value, torch.Tensor):
++            assert type(result[key]) is torch.Tensor and result[key].device.type == "cpu"
++            assert torch.equal(result[key], value)
++        else:
++            assert result[key] == value
++    supplied["observations"].fill_(99)
++    assert torch.equal(target.observations[:2], torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++    assert len(target) == 2 and target.device == torch.device("cpu")
++
++
++def _nonempty_per_archive(owner: PrioritizedReplayBuffer, *, cuda_source: bool) -> HistoricalReplayArchive:
++    state = owner.serialize()
++    legacy = {key: state[key] for key in prioritized_replay_buffer._LEGACY_STATE_KEYS}
++    legacy["format_version"] = 4
++    for field in ("rewards_extrinsic", "rewards_intrinsic", "rewards_shaping"):
++        if legacy[field] is None:
++            legacy[field] = torch.zeros_like(legacy["rewards"])
++    if cuda_source:
++        legacy = {key: _SourceOnCUDA(value) if isinstance(value, torch.Tensor) else value for key, value in legacy.items()}
++    return archive_standalone_replay(legacy)
++
++
++def test_cpu_archive_fixture_preserves_nonempty_per_rows(owners: Any) -> None:
++    make, _ = owners
++    source, target = make("per"), make("per")
++    _rows(source)
++    archive = _nonempty_per_archive(source, cuda_source=False)
++    target.install_historical_archive(archive)
++    returned = target.historical_archives
++    assert len(returned) == 1 and returned[0].archived_row_count == 2 and len(target) == 0
++    rows = returned[0].original_state
++    assert torch.equal(rows["observations"], torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++    rows["observations"].fill_(99)
++    assert torch.equal(target.historical_archives[0].original_state["observations"], torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++
++
++def test_cpu_backed_cuda_archive_fixture_has_verified_owned_rows(owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    make, _ = owners
++    source = make("per")
++    _rows(source)
++    monkeypatch.setattr(torch, "cuda", _NoCUDA())
++    monkeypatch.setattr(_SourceOnCUDA, "events", [], raising=False)
++    archive = _nonempty_per_archive(source, cuda_source=True)
++    assert type(archive) is HistoricalReplayArchive and archive.archived_row_count == 2
++    rows = archive.original_state
++    assert rows["observations"].device == torch.device("cuda", 1)
++    assert torch.equal(rows["observations"].as_subclass(torch.Tensor), torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++    rows["observations"].fill_(99)
++    assert torch.equal(archive.original_state["observations"].as_subclass(torch.Tensor), torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++
++
++def test_real_per_historical_property_clones_nonempty_cuda_archive(owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    _contract(_name("per", "historical_archives"))
++    _contract(_name("per", "install_historical_archive"))
++    make, _ = owners
++    source, target = make("per"), make("per")
++    _rows(source)
++    monkeypatch.setattr(_SourceOnCUDA, "events", [], raising=False)
++    # Public archive construction computes and validates the real digest over
++    # the CPU-backed source; no digest or canonical archive is fabricated.
++    archive = _nonempty_per_archive(source, cuda_source=True)
++    install_events: list[object] = []
++    with monkeypatch.context() as installing:
++        _observe_real_local_route(installing, target, _name("per", "install_historical_archive"), install_events)
++        target.install_historical_archive(archive)
++    assert install_events[0] == "gate-enter" and install_events[-2:] == [("complete", 1), "gate-exit"]
++    assert [event for event in install_events if isinstance(event, tuple)] == [("complete", 1)]
++    assert "clone-source" in install_events[1:-2] and "copy-to-cpu" in install_events[1:-2]
++    installed = target._historical_archives[0]
++    assert installed is not archive and installed.source_digest == archive.source_digest
++    retained = object.__getattribute__(installed, "original_state")
++    incoming = object.__getattribute__(archive, "original_state")
++    incoming["observations"].fill_(77)
++    assert torch.equal(retained["observations"].as_subclass(torch.Tensor), torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++    events: list[object] = []
++    _observe_real_local_route(monkeypatch, target, _name("per", "historical_archives"), events)
++    returned = target.historical_archives
++    assert events[0] == "gate-enter" and events[-2:] == [("complete", 1), "gate-exit"]
++    assert events.count("gate-enter") == events.count("gate-exit") == 1
++    assert [event for event in events if isinstance(event, tuple)] == [("complete", 1)]
++    assert "clone-source" in events[1:-2] and "copy-to-cpu" in events[1:-2]
++    assert len(returned) == 1 and type(returned[0]) is HistoricalReplayArchive
++    assert returned[0] is not installed and returned[0].source_digest == archive.source_digest
++    assert returned[0].archived_row_count == 2 and len(target) == 0
++    owned = object.__getattribute__(returned[0], "original_state")
++    assert torch.equal(owned["observations"].as_subclass(torch.Tensor), torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++    owned["observations"].fill_(99)
++    assert torch.equal(retained["observations"].as_subclass(torch.Tensor), torch.tensor([[1.0, 2.0], [3.0, 4.0]]))
++
++
++def test_real_stale_unit_priority_refusal_preserves_numeric_state(owners: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    _contract(_name("per", "update_unit_priorities"))
++    make, _ = owners
++    owner = make("per")
++    for _ in range(3):
++        _rows(owner)
++    assert np.array_equal(owner.unit_ids, np.array([4, 5, 2, 3], dtype=np.int64))
++    priorities, ids = owner.priorities.copy(), owner.unit_ids.copy()
++    maximum, revision = owner.max_priority, owner._replay_revision
++    before = custody.process_rng_domain().status()
++    events: list[object] = []
++    _observe_real_local_route(monkeypatch, owner, _name("per", "update_unit_priorities"), events)
++    with pytest.raises(ValueError, match="stale or unknown unit ID 0"):
++        owner.update_unit_priorities(np.array([4, 0], dtype=np.int64), _SourceOnCUDA(torch.tensor([8.0, 9.0])))
++    assert events == ["gate-enter", "convert-to-cpu", ("complete", 1)]
++    assert np.array_equal(owner.priorities, priorities) and np.array_equal(owner.unit_ids, ids)
++    assert owner.max_priority == maximum and owner._replay_revision == revision + 1
++    assert custody.process_rng_domain().status() == before
++    owner._check_custody()
+diff --git a/tests/test_townlet/regressions/bac/test_rng_cuda_admission.py b/tests/test_townlet/regressions/bac/test_rng_cuda_admission.py
+index 1500e5d8880728d90d6206abd06aeba2116f847e..922717d18994cba79cd40c42e47e58d030aed22e 100644
+--- a/tests/test_townlet/regressions/bac/test_rng_cuda_admission.py
++++ b/tests/test_townlet/regressions/bac/test_rng_cuda_admission.py
+@@ -17,6 +17,7 @@ import signal
+ import threading
+ import time
+ import weakref
++from collections.abc import Mapping
+ from contextlib import AbstractContextManager
+ from pathlib import Path
+ from types import MappingProxyType, TracebackType
+@@ -124,15 +125,37 @@ def register(domain: Any, owner: object, devices: tuple[int, ...]) -> Any:
+ def contract_fixture(monkeypatch: pytest.MonkeyPatch, post_poison: bool) -> Any:
+     """Private finite manifest fixture, never a production issuer/constant."""
+     contract = object.__new__(custody.LocalCUDAContract)
++    descriptor = custody._LocalCUDADescriptor(
++        owner_kind="flat",
++        route="test_cuda_leaf",
++        input_kind="none",
++        rationale="finite CPU seam, no production purity qualification",
++        healthy=True,
++        post_poison=post_poison,
++    )
+     record = custody._LocalCUDARecord(
+         owner_type=Owner,
+         route="test_cuda_leaf",
+-        input_type=tuple,
++        input_type=type(None),
+         rationale="finite CPU seam, no production purity qualification",
+         healthy=True,
+         post_poison=post_poison,
+     )
+-    monkeypatch.setattr(custody, "_LOCAL_CUDA_CONTRACTS", MappingProxyType({contract: record}))
++    domain = custody.process_rng_domain()
++    production = custody._LOCAL_CUDA_CONTRACTS
++    real_resolver = domain._resolve_local_cuda_record
++
++    def resolve(*, descriptor: Any) -> Any:
++        if descriptor is fixture_descriptor:
++            return record
++        if any(descriptor is item for item in production.values()):
++            return real_resolver(descriptor=descriptor)
++        raise ValueError("unexpected finite fixture descriptor")
++
++    fixture_descriptor = descriptor
++    monkeypatch.setattr(domain, "_local_cuda_policies", {})
++    monkeypatch.setattr(domain, "_resolve_local_cuda_record", resolve)
++    monkeypatch.setattr(custody, "_LOCAL_CUDA_CONTRACTS", MappingProxyType({**production, contract: descriptor}))
+     return contract
+ 
+ 
+@@ -187,7 +210,7 @@ def test_existing_nested_currency_distinguishes_sibling_from_open_prepare(domain
+     domain.unregister(participant=participant)
+ 
+ 
+-def test_public_required_signatures_and_empty_manifest() -> None:
++def test_public_required_signatures_and_empty_manifest(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+     expected = {
+         "operation": ("participant", "operation_kind", "lineage"),
+         "device_operation": ("participant", "operation_kind", "lineage", "cuda_devices"),
+@@ -213,7 +236,133 @@ def test_public_required_signatures_and_empty_manifest() -> None:
+         expected_kind = inspect.Parameter.POSITIONAL_OR_KEYWORD if name == "resolve_cuda" else inspect.Parameter.KEYWORD_ONLY
+         assert all(parameter.kind is expected_kind for parameter in parameters)
+     assert isinstance(custody._LOCAL_CUDA_CONTRACTS, MappingProxyType)
+-    assert not custody._LOCAL_CUDA_CONTRACTS
++    # Preserve the historical node ID while replacing its stage-specific oracle.
++    descriptor_type = custody._LocalCUDADescriptor
++    policies = {
++        "REPLAY_BUFFER_PUSH_CUDA": ("flat", "push", "tensor"),
++        "REPLAY_BUFFER_PUSH_RECORDED_CUDA": ("flat", "push_recorded", "tensor"),
++        "REPLAY_BUFFER_READINESS_CUDA": ("flat", "readiness", "request"),
++        "REPLAY_BUFFER_SERIALIZE_CUDA": ("flat", "serialize", "none"),
++        "REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA": ("flat", "validate_serialized", "mapping"),
++        "REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA": ("flat", "load_for_mode", "mapping"),
++        "REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA": ("flat", "historical_archives", "none"),
++        "REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA": ("flat", "install_historical_archive", "archive"),
++        "PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA": ("per", "push", "tensor"),
++        "PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA": ("per", "push_recorded", "tensor"),
++        "PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA": ("per", "declare_unconstrained_action_dim", "integer"),
++        "PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA": ("per", "readiness", "request"),
++        "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA": ("per", "serialize", "none"),
++        "PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA": ("per", "validate_serialized", "mapping"),
++        "PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA": ("per", "historical_archives", "none"),
++        "PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA": ("per", "install_historical_archive", "archive"),
++        "PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA": ("per", "update_priorities", "indices"),
++        "PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA": ("per", "update_unit_priorities", "indices"),
++    }
++    contracts = [getattr(custody, name) for name in policies]
++    assert len({id(contract) for contract in contracts}) == 18
++    assert set(custody._LOCAL_CUDA_CONTRACTS) == set(contracts)
++    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
++    from townlet.training.historical_checkpoint import HistoricalReplayArchive
++    from townlet.training.prioritized_replay_buffer import PrioritizedReplayBuffer
++    from townlet.training.replay_buffer import ReplayBuffer
++    from townlet.training.replay_contract import ReplayRequest
++
++    owners = {"flat": ReplayBuffer, "per": PrioritizedReplayBuffer}
++    inputs = {
++        "tensor": torch.Tensor,
++        "request": ReplayRequest,
++        "mapping": Mapping,
++        "archive": HistoricalReplayArchive,
++        "none": type(None),
++        "integer": int,
++        "indices": np.ndarray,
++    }
++    monkeypatch.setattr(domain, "_local_cuda_policies", {})
++    real_resolver = domain._resolve_local_cuda_record
++    resolutions: list[int] = []
++
++    def count_resolution(*, descriptor: Any) -> Any:
++        resolutions.append(id(descriptor))
++        return real_resolver(descriptor=descriptor)
++
++    monkeypatch.setattr(domain, "_resolve_local_cuda_record", count_resolution)
++    before = (domain.status(), domain._currency, domain._cuda_ready)
++    resolved = []
++    with domain._lock:
++        for name, (owner_kind, route, input_kind) in policies.items():
++            contract = getattr(custody, name)
++            assert type(contract) is custody.LocalCUDAContract
++            descriptor = custody._LOCAL_CUDA_CONTRACTS[contract]
++            assert type(descriptor) is descriptor_type
++            assert (descriptor.owner_kind, descriptor.route, descriptor.input_kind) == (owner_kind, route, input_kind)
++            assert type(descriptor.rationale) is str and descriptor.rationale
++            assert descriptor.healthy is True and descriptor.post_poison is False
++            with pytest.raises(AttributeError):
++                descriptor.route = "forged"
++            policy = domain._local_cuda_policy(contract=contract)
++            assert type(policy) is custody._LocalCUDARecord and policy.owner_type is owners[owner_kind]
++            assert policy.input_type is inputs[input_kind] and policy.route == route and policy.rationale == descriptor.rationale
++            assert policy.healthy is True and policy.post_poison is False
++            assert domain._local_cuda_policies[contract] == (descriptor, policy)
++            assert domain._local_cuda_policies[contract][0] is descriptor
++            assert domain._local_cuda_policies[contract][1] is policy
++            assert domain._local_cuda_policy(contract=contract) is policy
++            resolved.append(policy)
++        assert len(domain._local_cuda_policies) == len({id(policy) for policy in resolved}) == 18
++        assert len(resolutions) == len(set(resolutions)) == 18
++    assert (domain.status(), domain._currency, domain._cuda_ready) == before
++
++
++def test_local_descriptor_cache_keeps_active_gate_binding(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    contract = contract_fixture(monkeypatch, False)
++    canonical_contract = custody.REPLAY_BUFFER_SERIALIZE_CUDA
++    descriptor = custody._LOCAL_CUDA_CONTRACTS[canonical_contract]
++    raw_resolver = custody.AmbientRNGDomain._resolve_local_cuda_record
++    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
++    before = local_policy_state(domain)
++    for action in (lambda: domain._local_cuda_policy(contract=canonical_contract), lambda: raw_resolver(domain, descriptor=descriptor)):
++        with pytest.raises(RuntimeError):
++            action()
++    assert local_policy_state(domain) == before
++    owner = Owner()
++    participant = register(domain, owner, ())
++    try:
++        with domain.local_cuda_access(participant=participant, contract=contract) as gate:
++            cached = domain._local_cuda_policies[contract]
++            active = domain._gates[gate]
++            with pytest.raises(RuntimeError):
++                with domain.local_cuda_access(participant=participant, contract=contract):
++                    pytest.fail("nested public local gate admitted")
++            canonical = domain._local_cuda_policy(contract=canonical_contract)
++            assert canonical is domain._local_cuda_policies[canonical_contract][1] and canonical is not cached[1]
++            assert domain._local_cuda_policies[contract] is cached and active.policy is cached[1] and active.owner is owner
++
++            def no_resolution(*, descriptor: Any) -> Any:
++                raise AssertionError("live gate authentication resolved a policy")
++
++            with monkeypatch.context() as patch:
++                patch.setattr(domain, "_resolve_local_cuda_record", no_resolution)
++                for corruption in ("removed_descriptor", "replaced_descriptor", "replaced_policy"):
++                    with monkeypatch.context() as altered:
++                        if corruption == "replaced_policy":
++                            altered.setattr(
++                                domain, "_local_cuda_policies", {**domain._local_cuda_policies, contract: (cached[0], copy.copy(cached[1]))}
++                            )
++                        else:
++                            manifest = dict(custody._LOCAL_CUDA_CONTRACTS)
++                            if corruption == "removed_descriptor":
++                                del manifest[contract]
++                            else:
++                                manifest[contract] = copy.copy(cached[0])
++                            altered.setattr(custody, "_LOCAL_CUDA_CONTRACTS", MappingProxyType(manifest))
++                        with pytest.raises(ValueError):
++                            gate.completion_failed()
++                    assert gate.completion_failed() is False and active.policy is cached[1]
++                with gate.complete(cuda_devices=()):
++                    pass
++                assert gate.completion_failed() is False
++    finally:
++        domain.unregister(participant=participant)
+ 
+ 
+ @pytest.mark.parametrize("name", ["RNGAdmission", "LocalCUDAGate", "LocalCUDAContract"])
+@@ -702,6 +851,247 @@ def test_device_invocation_completed_handle_releases_execution_references(domain
+     assert invocation_reference() is None
+ 
+ 
++def test_device_invocation_nonempty_completion_matches_existing_operation(
++    domain: Any, monkeypatch: pytest.MonkeyPatch, cuda: CUDASeam
++) -> None:
++    owner = Owner()
++    participant = register(domain, owner, (0, 1, 2))
++    probe = LockProbe(domain._lock)
++    monkeypatch.setattr(domain, "_lock", probe)
++    try:
++        observed: list[list[int]] = []
++        acquisitions: list[int] = []
++        for factory in (domain.device_operation, domain.device_invocation):
++            cuda.calls.clear()
++            context = factory(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=(0, 1, 2))
++            before = probe.calls[0]
++            with context as operation:
++                assert type(operation) is custody.RNGOperation
++            observed.append(syncs(cuda))
++            acquisitions.append(probe.calls[0] - before)
++            if type(context) is custody.RNGDeviceInvocation:
++                assert context.completion_failed() is False
++        assert observed == [[0, 1, 2], [0, 1, 2]]
++        assert acquisitions[0] == acquisitions[1] and acquisitions[0] > 0
++    finally:
++        domain.unregister(participant=participant)
++
++
++def test_device_invocation_nested_siblings_keep_lineage_and_receipts(domain: Any, cuda: CUDASeam) -> None:
++    owners = [Owner(), Owner(), Owner()]
++    members = [register(domain, owner, (0, 1, 2)) for owner in owners]
++    try:
++        parent = domain.device_invocation(participant=members[0], operation_kind="parent", lineage=None, cuda_devices=(0,))
++        with parent as operation:
++            children = []
++            for member, device in zip(members[1:], (1, 2)):
++                child = domain.device_invocation(participant=member, operation_kind="prepare", lineage=operation, cuda_devices=(device,))
++                with child as joined:
++                    assert joined is operation
++                    token = domain.current_token(participant=member, operation=joined)
++                    domain.validate_current(token=token, operation=operation)
++                assert child.completion_failed() is False
++                children.append(child)
++            assert len({id(parent), *(id(child) for child in children)}) == 3
++            assert syncs(cuda) == [1, 2]
++        assert syncs(cuda) == [1, 2, 0, 1, 2]
++        with domain.operation(participant=members[0], operation_kind="ordinary", lineage=None):
++            pass
++        for member in members:
++            domain.unregister(participant=member)
++        members.clear()
++        assert all(child.completion_failed() is False for child in [parent, *children])
++    finally:
++        for member in members:
++            domain.unregister(participant=member)
++
++
++@pytest.mark.parametrize("route", ["device_operation", "device_invocation"])
++def test_device_invocation_nested_currency_preserves_currentness_rules(domain: Any, monkeypatch: pytest.MonkeyPatch, route: str) -> None:
++    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
++    owner = Owner()
++    participant = register(domain, owner, ())
++    contexts = []
++
++    def scope(kind: str, lineage: Any) -> Any:
++        context = getattr(domain, route)(participant=participant, operation_kind=kind, lineage=lineage, cuda_devices=())
++        contexts.append(context)
++        return context
++
++    try:
++        with scope("parent", None) as parent:
++            with scope("prepare", parent):
++                token = domain.current_token(participant=participant, operation=parent)
++                with scope("ordinary", parent):
++                    pass
++                domain.validate_current(token=token, operation=parent)
++            with scope("ordinary", parent):
++                pass
++            with pytest.raises(ValueError, match="stale"):
++                domain.validate_current(token=token, operation=parent)
++        if route == "device_invocation":
++            assert all(context.completion_failed() is False for context in contexts)
++    finally:
++        domain.unregister(participant=participant)
++
++
++def test_device_invocation_thread_object_rejects_numeric_alias(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
++    monkeypatch.setattr(custody.torch, "cuda", NoCUDA())
++    owner = Owner()
++    participant = register(domain, owner, ())
++    domain_probe, owner_probe = LockProbe(domain._lock), LockProbe(owner.lock)
++    monkeypatch.setattr(domain, "_lock", domain_probe)
++    monkeypatch.setattr(owner, "lock", owner_probe)
++    handles: list[Any] = []
++    errors: list[BaseException] = []
++
++    def issue() -> None:
++        try:
++            invocation = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
++            with invocation:
++                pass
++            handles.append(invocation)
++        except BaseException as error:
++            errors.append(error)
++
++    issuer = threading.Thread(target=issue)
++    issuer.start()
++    issuer.join(5)
++    assert not issuer.is_alive() and not errors
++    assert issuer.ident is not None and len(handles) == 1
++
++    class NumericAlias:
++        def get_ident(self) -> int:
++            assert issuer.ident is not None
++            return issuer.ident
++
++        def __getattr__(self, name: str) -> Any:
++            return getattr(threading, name)
++
++    done = threading.Event()
++
++    def refuse() -> None:
++        try:
++            assert threading.current_thread() is not issuer
++            assert custody.threading.current_thread() is threading.current_thread()
++            assert custody.threading.get_ident() == issuer.ident
++            for action in (handles[0].__enter__, lambda: handles[0].__exit__(None, None, None), handles[0].completion_failed):
++                with pytest.raises(ValueError):
++                    action()
++        except BaseException as error:
++            errors.append(error)
++        finally:
++            done.set()
++
++    receiver = threading.Thread(target=refuse)
++    try:
++        with monkeypatch.context() as patch:
++            patch.setattr(custody, "threading", NumericAlias())
++            with domain._lock, owner.lock:
++                domain_probe.calls[0] = owner_probe.calls[0] = 0
++                receiver.start()
++                refused_before_unlock = done.wait(2)
++                assert domain_probe.calls == owner_probe.calls == [0]
++            receiver.join(5)
++        assert refused_before_unlock and not receiver.is_alive() and not errors
++    finally:
++        if receiver.ident is not None:
++            receiver.join(5)
++        domain.unregister(participant=participant)
++
++
++def test_device_invocation_registry_lifetime_and_lock_paths(domain: Any, monkeypatch: pytest.MonkeyPatch, cuda: CUDASeam) -> None:
++    owner = Owner()
++    participant = register(domain, owner, (0,))
++    domain_probe, owner_probe = LockProbe(domain._lock), LockProbe(owner.lock)
++    monkeypatch.setattr(domain, "_lock", domain_probe)
++    monkeypatch.setattr(owner, "lock", owner_probe)
++    phases: list[str] = []
++    invocation = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=(0,))
++    identity, reference = id(invocation), weakref.ref(invocation)
++    record = domain._invocations[invocation]
++    assert domain_probe.calls == owner_probe.calls == [0]
++    assert record.thread is threading.current_thread() and record.state == "issued"
++    assert record.participant is participant and record.operation_kind == "ordinary" and record.lineage is None
++    assert record.cuda_devices == (0,) and record.context is None and record.failed_completion is True
++    original_query = cuda.is_initialized
++
++    def entering() -> bool:
++        assert record.state == "entering" and record.context is not None
++        snapshot = invocation_state(domain)
++        row = next(row for row in snapshot if row[0] == identity)
++        assert row[10][2] == id(record)
++        counts = (domain_probe.calls[0], owner_probe.calls[0])
++        with pytest.raises(RuntimeError):
++            reference().completion_failed()
++        assert invocation_state(domain) == snapshot and counts == (domain_probe.calls[0], owner_probe.calls[0])
++        phases.append("entering")
++        return original_query()
++
++    def exiting(index: int) -> None:
++        assert index == 0 and record.state == "active" and record.context is None
++        before = invocation_state(domain)
++        counts = (domain_probe.calls[0], owner_probe.calls[0])
++        with pytest.raises(RuntimeError):
++            reference().completion_failed()
++        assert invocation_state(domain) == before and counts == (domain_probe.calls[0], owner_probe.calls[0])
++        phases.append("exiting")
++
++    monkeypatch.setattr(cuda, "is_initialized", entering)
++    cuda.sync_hook = exiting
++    try:
++        with owner.lock:
++            with invocation:
++                assert record.state == "active" and record.context is not None
++                phases.append("active")
++                before = invocation_state(domain)
++                counts = (domain_probe.calls[0], owner_probe.calls[0])
++                with pytest.raises(RuntimeError):
++                    invocation.completion_failed()
++                assert invocation_state(domain) == before and counts == (domain_probe.calls[0], owner_probe.calls[0])
++            domain_probe.calls[0] = owner_probe.calls[0] = 0
++            assert invocation.completion_failed() is False
++            assert invocation.completion_failed() is False
++            assert domain_probe.calls == owner_probe.calls == [0]
++        assert phases == ["entering", "active", "exiting"]
++        assert record.failed_completion is False
++        assert (record.state, record.participant, record.operation_kind, record.lineage, record.cuda_devices, record.context) == (
++            "exited",
++            None,
++            None,
++            None,
++            (),
++            None,
++        )
++        failed = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=(1,))
++        with pytest.raises(ValueError):
++            failed.__enter__()
++        failed_record = domain._invocations[failed]
++        assert failed_record.state == "entry_failed" and failed_record.failed_completion is True
++        assert (
++            failed_record.participant,
++            failed_record.operation_kind,
++            failed_record.lineage,
++            failed_record.cuda_devices,
++            failed_record.context,
++        ) == (None, None, None, (), None)
++        domain_probe.calls[0] = owner_probe.calls[0] = 0
++        before = invocation_state(domain)
++        for action in (invocation.__enter__, lambda: reference().__exit__(None, None, None), failed.completion_failed):
++            with pytest.raises(RuntimeError):
++                action()
++        del action
++        assert invocation_state(domain) == before and domain_probe.calls == owner_probe.calls == [0]
++        failed_reference = weakref.ref(failed)
++        ids = {id(invocation), id(failed)}
++        del invocation, failed
++        gc.collect()
++        assert reference() is failed_reference() is None
++        assert all(row[0] not in ids for row in invocation_state(domain))
++    finally:
++        domain.unregister(participant=participant)
++
++
+ def test_actual_gate_blocks_other_thread_and_cross_thread_capability(domain: Any) -> None:
+     started, entered = threading.Event(), threading.Event()
+     errors: list[BaseException] = []
+@@ -983,6 +1373,16 @@ def assert_ambient_unchanged(before: tuple[Any, Any, torch.Tensor]) -> None:
+     assert torch.equal(torch.get_rng_state(), cpu)
+ 
+ 
++INVOCATION_CASES = (
++    "invocation_same_error",
++    "invocation_child_failure",
++    "invocation_parent_failure",
++    "invocation_reported_failure",
++    "invocation_phase_reference",
++    "invocation_phase_failure",
++)
++PHASE_CASES = ("invocation_phase_reference", "invocation_phase_failure")
++
+ CHILD_CASES = (
+     "bootstrap_failure",
+     "runtime_query_failure",
+@@ -993,7 +1393,7 @@ CHILD_CASES = (
+     "poison_ready_qualified",
+     "poison_ready_healthy_only",
+     "operation_body_completion",
+-)
++) + INVOCATION_CASES
+ 
+ 
+ def child_identity(role: str) -> bool:
+@@ -1012,7 +1412,155 @@ def child_identity(role: str) -> bool:
+     return qualified
+ 
+ 
+-def poison_case(case: str, domain: Any, cuda: CUDASeam, monkeypatch: pytest.MonkeyPatch) -> None:
++def invocation_case(case: str, domain: Any, cuda: CUDASeam) -> dict[str, Any] | None:
++    owners = [Owner(), Owner(), Owner()]
++    members = [register(domain, owner, (0, 1, 2)) for owner in owners]
++    primary, cleanup = RuntimeError(f"{case} body"), RuntimeError(f"{case} synchronization")
++    factory = domain.device_invocation
++    phase = None
++    if case == "invocation_same_error":
++        receipts = []
++        for failing in (False, True):
++            invocation = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(0,))
++            if failing:
++                cuda.sync_errors[0] = primary
++            with owners[0].lock:
++                with pytest.raises(RuntimeError) as raised:
++                    with invocation:
++                        raise primary
++                assert raised.value is primary and invocation.completion_failed() is failing
++                assert domain.status()[2] is failing
++                receipts.append(invocation)
++        assert syncs(cuda) == [0, 0]
++        assert [receipt.completion_failed() for receipt in receipts] == [False, True]
++    elif case == "invocation_child_failure":
++        failures = [0]
++
++        def fail_once(index: int) -> None:
++            if index == 1 and failures[0] == 0:
++                failures[0] += 1
++                raise cleanup
++
++        cuda.sync_hook = fail_once
++        parent = factory(participant=members[0], operation_kind="parent", lineage=None, cuda_devices=(0,))
++        with pytest.raises(RuntimeError) as raised:
++            with parent as lineage:
++                child = factory(participant=members[1], operation_kind="prepare", lineage=lineage, cuda_devices=(1,))
++                try:
++                    with child as joined:
++                        assert joined is lineage
++                except RuntimeError as error:
++                    assert error is cleanup and child.completion_failed() is True
++                    sibling = factory(participant=members[2], operation_kind="prepare", lineage=lineage, cuda_devices=(2,))
++                    with pytest.raises(RuntimeError, match="poisoned"):
++                        with sibling:
++                            pytest.fail("poisoned sibling reached body")
++                    with pytest.raises(RuntimeError):
++                        sibling.completion_failed()
++                    assert domain._invocations[sibling].state == "entry_failed"
++                    raise
++        assert raised.value is cleanup and failures == [1]
++        assert child is not parent and child.completion_failed() is True and parent.completion_failed() is False
++        assert syncs(cuda) == [1, 0, 1]
++    elif case == "invocation_parent_failure":
++        attempted, mutated = threading.Event(), threading.Event()
++        events: list[str] = []
++        errors: list[BaseException] = []
++        seen = [0]
++
++        def contend() -> None:
++            try:
++                attempted.set()
++                with owners[0].lock:
++                    events.append("competitor")
++                    mutated.set()
++            except BaseException as error:
++                errors.append(error)
++
++        def fail_parent(index: int) -> None:
++            if index == 2:
++                seen[0] += 1
++                if seen[0] == 2:
++                    assert attempted.wait(2) and not mutated.is_set()
++                    events.append("completion")
++                    raise cleanup
++
++        cuda.sync_hook = fail_parent
++        parent = factory(participant=members[0], operation_kind="parent", lineage=None, cuda_devices=(0,))
++        thread = threading.Thread(target=contend)
++        children = []
++        try:
++            with owners[0].lock:
++                with pytest.raises(RuntimeError) as raised:
++                    with parent as lineage:
++                        for member, index in zip(members[1:], (1, 2)):
++                            child = factory(participant=member, operation_kind="prepare", lineage=lineage, cuda_devices=(index,))
++                            with child as joined:
++                                assert joined is lineage
++                            assert child.completion_failed() is False
++                            children.append(child)
++                        thread.start()
++                        assert attempted.wait(2)
++                assert raised.value is cleanup and parent.completion_failed() is True
++                assert all(child.completion_failed() is False for child in children)
++                assert not mutated.is_set()
++                events.append("read")
++        finally:
++            if thread.ident is not None:
++                thread.join(5)
++        assert not thread.is_alive() and not errors and mutated.is_set()
++        assert events == ["completion", "read", "competitor"] and syncs(cuda) == [1, 2, 0, 1, 2]
++    elif case == "invocation_reported_failure":
++        invalid = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(3,))
++        with pytest.raises(ValueError):
++            with invalid:
++                pytest.fail("out-of-subset invocation entered")
++        with pytest.raises(RuntimeError):
++            invalid.completion_failed()
++        assert syncs(cuda) == [] and domain._invocations[invalid].state == "entry_failed"
++        invocation = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(0,))
++        with pytest.raises(RuntimeError) as raised:
++            with invocation as lineage:
++                with domain.admission(lineage=lineage) as gate:
++                    gate.report_failure(error=primary)
++                raise primary
++        assert raised.value is primary and invocation.completion_failed() is False and syncs(cuda) == [0]
++        refused = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=())
++        with pytest.raises(RuntimeError, match="poisoned"):
++            refused.__enter__()
++        with pytest.raises(RuntimeError):
++            refused.completion_failed()
++    else:
++        assert case in PHASE_CASES
++        cuda.sync_errors[1] = cleanup
++        factory = domain.device_operation if case == "invocation_phase_reference" else domain.device_invocation
++        invocation = factory(participant=members[0], operation_kind="ordinary", lineage=None, cuda_devices=(0, 1, 2))
++        with pytest.raises(BaseExceptionGroup) as raised:
++            with invocation:
++                raise primary
++        assert len(raised.value.exceptions) == 2
++        assert raised.value.exceptions[0] is primary and raised.value.exceptions[1] is cleanup
++        outcome = invocation.completion_failed() if case == "invocation_phase_failure" else None
++        assert outcome is (True if case == "invocation_phase_failure" else None)
++        phase = {
++            "devices": [0, 1, 2],
++            "synchronize_events": syncs(cuda),
++            "exception_labels": ["body", "synchronization"],
++            "completion_failed": outcome,
++        }
++    assert domain.status()[2] is True
++    with pytest.raises(RuntimeError, match="poisoned"):
++        with domain.admission(lineage=None):
++            pytest.fail("poisoned invocation child admitted work")
++    with pytest.raises(RuntimeError, match="poisoned"):
++        with domain.operation(participant=members[0], operation_kind="ordinary", lineage=None):
++            pytest.fail("poisoned invocation child entered operation")
++    return phase
++
++
++def poison_case(case: str, domain: Any, cuda: CUDASeam, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any] | None:
++    if case in INVOCATION_CASES:
++        return invocation_case(case, domain, cuda)
+     owner = Owner()
+     participant = register(domain, owner, ())
+     primary = RuntimeError(f"{case} primary")
+@@ -1179,6 +1727,7 @@ def poison_case(case: str, domain: Any, cuda: CUDASeam, monkeypatch: pytest.Monk
+     with owner.lock:
+         owner.revision += 1
+     assert domain.status()[2]
++    return None
+ 
+ 
+ def cuda_core_child(queue: Any, case: str) -> None:
+@@ -1189,7 +1738,29 @@ def cuda_core_child(queue: Any, case: str) -> None:
+     with pytest.MonkeyPatch.context() as monkeypatch:
+         cuda = CUDASeam(True)
+         monkeypatch.setattr(custody.torch, "cuda", cuda)
+-        poison_case(case, domain, cuda, monkeypatch)
++        phase = poison_case(case, domain, cuda, monkeypatch)
++        if phase is not None and qualified:
++            manifest_bytes = Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()
++            manifest = json.loads(manifest_bytes)
++            assert manifest["base_commit"] == os.environ["BAC_QUAL_SHA"]
++            assert manifest["candidate_tree"] == os.environ["BAC_QUAL_TREE"]
++            record = {
++                "schema": "cuda-core-invocation-phase-v1",
++                "role": role,
++                "case": case,
++                "pid": os.getpid(),
++                "ppid": os.getppid(),
++                "base_commit": manifest["base_commit"],
++                "candidate_tree": manifest["candidate_tree"],
++                "manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
++                "source_sha256": {
++                    "townlet.exploration.rng_custody": hashlib.sha256(Path(custody.__file__).read_bytes()).hexdigest(),
++                    "test_rng_cuda_admission": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
++                },
++                **phase,
++            }
++            with (Path(os.environ["BAC_QUAL_OUTPUT"]) / f"invocation-phase-{role}.json").open("x") as stream:
++                json.dump(record, stream, sort_keys=True)
+     queue.put((f"cuda core {case} fail closed", os.getpid(), os.getppid(), qualified))
+ 
+ 
+@@ -1215,6 +1786,11 @@ def test_isolated_poison_protocol(case: str) -> None:
+         if qualified:
+             output = Path(os.environ["BAC_QUAL_OUTPUT"])
+             manifest_hash = hashlib.sha256(Path(os.environ["BAC_QUAL_MANIFEST"]).read_bytes()).hexdigest()
++            phase_binding = {}
++            if case in PHASE_CASES:
++                phase_binding["invocation_phase_sha256"] = hashlib.sha256(
++                    (output / f"invocation-phase-{role}.json").read_bytes()
++                ).hexdigest()
+             with (output / f"spawn-observation-{role}.json").open("x") as stream:
+                 json.dump(
+                     {
+@@ -1226,6 +1802,7 @@ def test_isolated_poison_protocol(case: str) -> None:
+                         "qualified": qualified,
+                         "message": message,
+                         "manifest_sha256": manifest_hash,
++                        **phase_binding,
+                     },
+                     stream,
+                     sort_keys=True,
+@@ -1286,6 +1863,65 @@ class ForbiddenCUDA:
+         raise AssertionError(f"fork guard reached forbidden CUDA accessor {name}")
+ 
+ 
++def invocation_state(domain: Any) -> tuple[Any, ...]:
++    rows = []
++    for key, record in domain._invocations.items():
++        generator = getattr(record.context, "gen", None)
++        frame = getattr(generator, "gi_frame", None)
++        execution = (id(generator), id(frame), id(frame.f_locals.get("completion")) if frame is not None else id(None))
++        rows.append(
++            (
++                id(key),
++                id(record),
++                id(record.thread),
++                record.state,
++                id(record.participant),
++                record.operation_kind,
++                id(record.lineage),
++                record.cuda_devices,
++                id(record.context),
++                record.failed_completion,
++                execution,
++            )
++        )
++    return tuple(rows)
++
++
++def local_policy_state(domain: Any) -> tuple[Any, ...]:
++    manifest = custody._LOCAL_CUDA_CONTRACTS
++    return (
++        tuple(
++            (
++                id(contract),
++                id(descriptor),
++                descriptor.owner_kind,
++                descriptor.route,
++                descriptor.input_kind,
++                descriptor.rationale,
++                descriptor.healthy,
++                descriptor.post_poison,
++            )
++            for contract, descriptor in manifest.items()
++        ),
++        tuple(
++            (
++                id(contract),
++                id(descriptor),
++                id(policy),
++                id(policy.owner_type),
++                policy.route,
++                id(policy.input_type),
++                policy.rationale,
++                policy.healthy,
++                policy.post_poison,
++                descriptor is manifest.get(contract),
++            )
++            for contract, (descriptor, policy) in domain._local_cuda_policies.items()
++        ),
++        tuple(id(contract) for contract in manifest if contract not in domain._local_cuda_policies),
++    )
++
++
+ def guard_state(domain: Any) -> tuple[Any, ...]:
+     return (
+         domain._pid,
+@@ -1344,6 +1980,8 @@ def guard_state(domain: Any) -> tuple[Any, ...]:
+             )
+             for key, gate in domain._gates.items()
+         ),
++        invocation_state(domain),
++        local_policy_state(domain),
+     )
+ 
+ 
+@@ -1517,14 +2155,29 @@ def run_fork_trial(
+             "report_failure": lambda: gate.report_failure(error=sentinel),
+             "domain_admission": lambda: enter(domain.admission(lineage=None)),
+         }
+-    else:
+-        assert trial == "local"
++    elif trial == "local":
++        descriptor = custody._LOCAL_CUDA_CONTRACTS[contract]
++        raw_resolver = custody.AmbientRNGDomain._resolve_local_cuda_record
+         actions = {
+             "resolve_cuda": lambda: gate.resolve_cuda(device=device),
+             "complete": lambda: enter(gate.complete(cuda_devices=())),
+             "completion_failed": gate.completion_failed,
+             "report_failure": lambda: gate.report_failure(error=sentinel),
+             "domain_local_cuda_access": lambda: enter(domain.local_cuda_access(participant=participant, contract=contract)),
++            "domain_local_cuda_policy": lambda: domain._local_cuda_policy(contract=contract),
++            "domain_resolve_local_cuda_record": lambda: raw_resolver(domain, descriptor=descriptor),
++        }
++    else:
++        assert trial == "invocation"
++        active, completed = gate
++        actions = {
++            "active_enter": active.__enter__,
++            "active_exit": lambda: active.__exit__(None, None, None),
++            "active_completion_failed": active.completion_failed,
++            "completed_completion_failed": completed.completion_failed,
++            "domain_device_invocation": lambda: domain.device_invocation(
++                participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=()
++            ),
+         }
+     identity_path = output / f"fork-identity-cuda_core_inherited_pid-{trial}.json"
+     observation_path = output / f"fork-observation-cuda_core_inherited_pid-{trial}.json"
+@@ -1624,9 +2277,35 @@ def inherited_pid_child(queue: Any, ordinary_output: str) -> None:
+                 else domain.local_cuda_access(participant=participant, contract=contract)
+             )
+             with context as gate:
++                if trial == "admission":
++                    canonical_contract = custody.REPLAY_BUFFER_SERIALIZE_CUDA
++                    canonical = domain._local_cuda_policy(contract=canonical_contract)
++                    assert domain._local_cuda_policies[canonical_contract][1] is canonical
++                    assert any(item not in domain._local_cuda_policies for item in custody._LOCAL_CUDA_CONTRACTS)
+                 run_fork_trial(trial, gate, domain, participant, contract, domain_lock, owner_lock, cuda_calls, metadata, modules, output)
+             assert not domain.status()[2]
+             assert_ambient_unchanged(before)
++        completed = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
++        with completed:
++            pass
++        active = domain.device_invocation(participant=participant, operation_kind="ordinary", lineage=None, cuda_devices=())
++        with owner.lock, active:
++            run_fork_trial(
++                "invocation",
++                (active, completed),
++                domain,
++                participant,
++                contract,
++                domain_lock,
++                owner_lock,
++                cuda_calls,
++                metadata,
++                modules,
++                output,
++            )
++        assert completed.completion_failed() is False and active.completion_failed() is False
++        assert not domain.status()[2]
++        assert_ambient_unchanged(before)
+     domain.unregister(participant=participant)
+     assert not domain.status()[2]
+     assert_ambient_unchanged(before)

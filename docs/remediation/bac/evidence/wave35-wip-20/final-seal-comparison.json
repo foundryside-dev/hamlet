@@ -1,0 +1,80 @@
+{
+  "schema": "bac-final-seal-comparison-v1",
+  "producer": "/root",
+  "input": {
+    "root": "W",
+    "path": "evidence-management/wip20-preparation/wip20-r109-r113-complete-receipt-input-v4.json",
+    "sha256": "1c2ea4865cf25e2810608a7b1916f4d40870b02f2751c0ad6607a510d8c306ae",
+    "bytes": 5631513
+  },
+  "subject": {
+    "root": "W",
+    "path": "evidence-management/wip20-preparation/wip20-r113-qualification-subject-v1.json",
+    "sha256": "519fdc98da7cf36fe58fce0617152b06f015af393a59a9c609ba5d330c6c6197",
+    "bytes": 71820
+  },
+  "attestation": {
+    "root": "W",
+    "path": "evidence-management/wip20-preparation/wip20-r113-independent-terminal-review-attestation-v1.json",
+    "sha256": "b56129c38704f03d95b6886556c13532955a3bf810fc4601e46e970a3d69a60f",
+    "bytes": 9656
+  },
+  "proposal": {
+    "root": "W",
+    "path": "evidence-management/wip20-preparation/wip20-r113-terminal-receipt-final-proposal-v1.json",
+    "sha256": "2d2767c4ac9d912e883f4e95df54f04426b4d1e23e29cb48627fdda809fa4a8e",
+    "bytes": 5633981
+  },
+  "receipt": {
+    "root": "W",
+    "path": "evidence-management/wip20-preparation/wip20-r113-terminal-receipt-final-v1.json",
+    "sha256": "c4fe0a328441ba7a4753734b4e43f4a24a397498a3d34e549fe5c21c78148f82",
+    "bytes": 5634004
+  },
+  "unchanged_fields": [
+    "attempt_index",
+    "base_commit",
+    "candidate_manifest",
+    "candidate_tree",
+    "checkpoint_id",
+    "component_receipts",
+    "contract",
+    "contract_adoption",
+    "dependencies",
+    "document_aliases",
+    "document_application",
+    "document_review_status",
+    "documents",
+    "draft_metadata_only",
+    "execution_subtrees",
+    "hardware_status",
+    "historical_helper_alias_reconciliation",
+    "interval_entries",
+    "interval_start",
+    "overlap_accounting",
+    "package_accounting",
+    "preassembly_source_equivalence",
+    "publication_boundary",
+    "required_next",
+    "round_source_bindings",
+    "schema",
+    "scope",
+    "series",
+    "source_delta",
+    "supersedes",
+    "supersedes_reason",
+    "supporting_reviews",
+    "terminal_round"
+  ],
+  "proposal_delta": [
+    "remaining_root_inputs",
+    "review_subject",
+    "review_subject_pending_reason",
+    "reviews",
+    "root_seal_pending",
+    "status",
+    "terminal_review_attestation",
+    "terminal_review_input"
+  ],
+  "root_seal": "Only final status/root-seal note changed from proposal. Semantics and named dependency closure unchanged; independent bounded terminal review PASS."
+}

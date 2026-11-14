@@ -1,0 +1,22 @@
+{
+  "schema": "bac-root-fixture-prerequisite-checks-v1",
+  "recorded_at": "2026-11-13T21:54:23.694472+00:00",
+  "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+  "manifest_sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8",
+  "collection": 838,
+  "all_prior_836_retained": true,
+  "actual": {
+    "canonical_roundtrip_passed": 4,
+    "late_membership_refusal_passed": 2,
+    "operator_roundtrip_expected_failed": 4,
+    "errors": 0,
+    "skips": 0,
+    "warnings": 0
+  },
+  "cause": "All four custom accepting digest operands lose their behavior during genuine ownership record/second restoration, producing exact digest mismatch.",
+  "static": "Ruff/Black PASS",
+  "custody": "Collection, three runtime selections and static checks verified",
+  "unrun_collected": 828,
+  "generated_owned_template": "UNRUN",
+  "scope": "Causal fixture prerequisite; no production or acceptance reduction."
+}

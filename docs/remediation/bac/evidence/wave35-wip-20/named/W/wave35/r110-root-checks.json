@@ -1,0 +1,85 @@
+{
+  "schema": "bac-root-tests-first-checks-v1",
+  "recorded_at": "2026-11-13T21:35:41.405703+00:00",
+  "candidate": {
+    "root": "W",
+    "path": "wave35/r110-candidate.json",
+    "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d",
+    "bytes": 205308
+  },
+  "tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+  "collection": {
+    "total": 156,
+    "core": 89,
+    "activation": 67,
+    "prior_core88_preserved": true
+  },
+  "actual": {
+    "fixtures_passed": 5,
+    "activation_missing_constant_failures": 19,
+    "core_missing_descriptor_failures": 1,
+    "errors": 0,
+    "skips": 0,
+    "warnings": 0
+  },
+  "causes": [
+    "All18 authentic source-issued constants absent; exact manifest prerequisite also fails",
+    "Core descriptor type absent"
+  ],
+  "static": "Ruff/Black both changed tests PASS",
+  "custody": "All source/index/import/thread/fixtures verified; static custody verified",
+  "unrun": 131,
+  "unrun_reason": "Downstream assertions await B activation; no repetitive broad prerequisite failures. Generated owned template remains UNRUN.",
+  "runtime_resources": "Three independent one-thread processes ran concurrently under measured4CPU/16GiB. Capture/custody index operations serialized.",
+  "references": [
+    {
+      "root": "W",
+      "path": "wave35/r110-candidate.json",
+      "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d",
+      "bytes": 205308
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r110-tests-first-selection.json",
+      "sha256": "0612465d0aed4a7b1a596dad2aaab9b4f75746ec049c3f198744b31a67fe2282",
+      "bytes": 42650
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r110-collection/collection-custody.json",
+      "sha256": "c827b35981d9051bc929c861b743b89cbaf2c634942767482fc3912461c1dad1",
+      "bytes": 641
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r110-activation-fixtures/activation-fixtures-custody.json",
+      "sha256": "5877d2dc620f2e54f435638172403bc6b1997875198e063a4685885a44b65fa7",
+      "bytes": 650
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r110-activation-red/activation-red-negative-custody.json",
+      "sha256": "c20a82abd13961127d171d60efd8c9545508e0df41136415db52c66762992934",
+      "bytes": 961
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r110-activation-red/activation-red-failure-index.json",
+      "sha256": "c8952bb7533db63d607e8bd82bf62a07672d31ba1234c155ffc0c19b245f6b1a",
+      "bytes": 6998
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-negative-custody.json",
+      "sha256": "64be3008c01471a25919ff2c908f9de8960b1e00ce55ff8ee1bf0fca6ac747b8",
+      "bytes": 958
+    },
+    {
+      "root": "Q",
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-failure-index.json",
+      "sha256": "1b32bb95563c741f10a522871ad2e381a3e1eddde640cd95b9f81acbeb0508f4",
+      "bytes": 694
+    }
+  ],
+  "scope": "Tests-first evidence only, no production B/hardware/global acceptance."
+}

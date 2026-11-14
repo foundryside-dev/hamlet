@@ -1,0 +1,36 @@
+{
+  "schema": "bac-remote-publication-verification-v1",
+  "commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "tree": "29ff44bc50ab1c207b840db41c57db43da764d3b",
+  "branch": "project-recovery-bac-2026-11-01",
+  "push_exit_code": 0,
+  "ls_remote_exact_match": true,
+  "tracked_worktree_clean": true,
+  "workflow_observation": [
+    {
+      "id": 43501097897,
+      "name": "Tests",
+      "sha": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/43501097897"
+    },
+    {
+      "id": 43501098001,
+      "name": "Config Validation",
+      "sha": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/43501098001"
+    },
+    {
+      "id": 43501097800,
+      "name": "Lint",
+      "sha": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/foundryside-dev/hamlet/actions/runs/43501097800"
+    }
+  ],
+  "qualification": "Publication verified; CI pending, not whole BAC acceptance."
+}

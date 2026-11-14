@@ -1,0 +1,315 @@
+{
+  "additional_named_file_availability": [
+    {
+      "path": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_pw_private_support_matrix.py",
+      "present": false
+    }
+  ],
+  "availability_limit": "Filesystem presence only, no implementation body read or collection. Planned node IDs are not certified executable.",
+  "hardware": {
+    "access_verified": false,
+    "cpu_topology": null,
+    "gpu_count": null,
+    "gpu_topology": null,
+    "reported": "16 workers plus CUDA later tonight"
+  },
+  "ledger_test_file_availability": [
+    {
+      "path": "tests/test_townlet/regressions/bac/test_action_probabilities.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_artifact_coherence.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_artifact_transfer.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_checkpoint_boundary.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_checkpoint_contract.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_count_provider.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_curriculum_events.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_curriculum_routing.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_discovery.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_effective_run.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_effective_telemetry.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_evaluation_entry.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_exploration_factory.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_exploration_policy.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_exploration_routing.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_historical_dispatch.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_icm_provider.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_intrinsic_composition.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_joint_learning.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_joint_outputs.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_joint_restart_serving.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_launch_transport.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_learner_legality.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_learning_comparison.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_numerics.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_options.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_outcome_clocks.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_partial_transfer.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_per_estimator.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_per_history.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_per_native_learner.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_per_world_dynamics.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_population_restore.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_public_loaders.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_recording_cleanup.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_recording_drain.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_recurrent_per.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_rnd_service.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_runner_readiness.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_sequence_history.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_serving_isolation.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_serving_modes.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_sidecars.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_sink_units.py",
+      "present": false
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_successor_producer.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_token_binding.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_transition_contract.py",
+      "present": true
+    },
+    {
+      "path": "tests/test_townlet/regressions/bac/test_uniform_history.py",
+      "present": true
+    }
+  ],
+  "schema": "bac-hardware-runner-handoff-basis-v1",
+  "scope": "Planning handoff only; no execution/new authority/acceptance.",
+  "sources": [
+    {
+      "bytes": 41457,
+      "path": "docs/remediation/bac/2026-11-01-design-baseline.md",
+      "sha256": "74a5f9ece62cc8ea59cfdc3b93c49400db08535e68c8cbadb3cb8b48c07271d5"
+    },
+    {
+      "bytes": 357726,
+      "path": "docs/remediation/bac/acceptance-ledger.json",
+      "sha256": "557ac591127ae18afc6e9d978cd17fec3e98876ed476f1d0724995f64ddba614"
+    },
+    {
+      "bytes": 18085,
+      "path": "docs/remediation/bac/EXECUTION-ADDENDUM.md",
+      "sha256": "2b73403fcd9d139e46009c2f49add6dbe6f99310ce37018ffcf839230845d370"
+    },
+    {
+      "bytes": 16941,
+      "path": "docs/remediation/bac/X03-EXECUTION-ADDENDUM.md",
+      "sha256": "8a024fff8eb8094baee7aaeedf2ed4e6b1cab5bbbbf3afd0e1b316e5741d08c6"
+    },
+    {
+      "bytes": 14570,
+      "path": "docs/remediation/bac/EVIDENCE-PROCESS.md",
+      "sha256": "409d31fd8fecc91237d90f3424447cb812258f3b42699faca0d121008461ef75"
+    },
+    {
+      "bytes": 3223254,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/tasks.json",
+      "sha256": "c39fb7f7d99b33462933c8ab52b3bcd25af52e7f7d7807140528b42be7a517a5"
+    },
+    {
+      "bytes": 62488,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/per-world-curiosity-addendum.md",
+      "sha256": "3b82ecc340b936cd5672f248b85508f75136ab76cb994ac54723673989906871"
+    },
+    {
+      "bytes": 1843,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-RUNNER-HANDOFF.md",
+      "sha256": "3bbb84640de25ed44b1b906b1694230eef8ff5a63473c58850f8779990abed4a"
+    },
+    {
+      "bytes": 6568,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/CUDA-RUNNER-TOOLING-READINESS.md",
+      "sha256": "45f5c02a41b863aa43a6e17d7a5607dff8ebf1e47eda7647fcd3c0f26bfef715"
+    },
+    {
+      "bytes": 21830,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-CUDA-ADDITIVE-DESIGN.md",
+      "sha256": "97755650bf2a1ea6c7381e35a75fca31bf8afe643f7166cac6fa67d0f60bc8a3"
+    },
+    {
+      "bytes": 16696,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-CUDA-ADDITIVE-DESIGN-FIX1.md",
+      "sha256": "c8a899fdf6b4d8bbd83e44f97e1f7d4ff228f76782861e8f87532bf47bdc2870"
+    },
+    {
+      "bytes": 7308,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-REPLAY-CUDA-LOCAL-GATE-PROTOCOL-FIX1.md",
+      "sha256": "72c4ed52f729bbaef7659e17fc585fb7cd4a144170a1ac1289ea83d53454feb4"
+    },
+    {
+      "bytes": 22480,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ACTIVATION-PREPARATION.md",
+      "sha256": "a1c6b789046d60089fe4f852f7935ca6d8a48c8e808ab193ac062d315ca6f719"
+    },
+    {
+      "bytes": 5856,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-PROTOCOL.json",
+      "sha256": "57d2984443217a1f31ae468173bf4d21333d5828ee3cf1df550f9963cf3414c3"
+    },
+    {
+      "bytes": 755,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-history-component-adoption.json",
+      "sha256": "907c8583f29973bd7b930392eb6a5ac1426835787f69b2443dc0eb3eb9f124b4"
+    },
+    {
+      "bytes": 4027,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-root-checks.json",
+      "sha256": "87320230075f8299f55d974be77b5057f679fcc922c9ee6e06d7681228407903"
+    },
+    {
+      "bytes": 22429,
+      "path": ".superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-isolated-and-phase-pair-checks.json",
+      "sha256": "906231432c0f1950ae5e2650726ca6c35c0cca2fea1c93aa6ad96f6022dfb97d"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "bac-root-historical-component-adoption-v1",
+  "status": "R110 TESTS-FIRST HISTORICAL COMPONENT ADOPTED",
+  "recorded_at": "2026-11-13T21:37:53.490531+00:00",
+  "component_sha256": "76fde5454be68479d87b2f28a9bc2a281f6b68d06c010c2c0913520fa606ac66",
+  "direct_references_rehashed": 81,
+  "scope": "156 collected,5positivePASS,20causalFAIL,131downstreamUNRUN and generatedownedtemplateUNRUN retained. Preparation only; no terminal/publication seal.",
+  "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+  "later_mutable_source": "Production B writer active; historical patch binds captured Git tree."
+}

@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-14T04:49:16.332757+00:00",
+  "command": [
+    "git",
+    "-C",
+    "/workspace/hamlet",
+    "ls-remote",
+    "origin",
+    "refs/heads/project-recovery-bac-2026-11-01"
+  ],
+  "exit_code": 0,
+  "remote_sha": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "branch": "project-recovery-bac-2026-11-01",
+  "network_profile": "with_additional_permissions network enabled",
+  "preceding_default_network_attempt": {
+    "exit_code": 128,
+    "reason": "Could not connect to proxy port 8080 under default network profile; no remote operation performed."
+  },
+  "scope": "Read-only remote observation; no publication or CI success claim."
+}

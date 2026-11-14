@@ -1,0 +1,30 @@
+{
+  "schema": "bac-root-plan-adoption-v1",
+  "status": "BOUNDED B PLAN ADOPTED; WRITE BATON NOT GRANTED",
+  "proposal": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ACTIVATION-PREPARATION.md",
+    "sha256": "a1c6b789046d60089fe4f852f7935ca6d8a48c8e808ab193ac062d315ca6f719",
+    "bytes": 22480
+  },
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ACTIVATION-PREPARATION-REVIEW.md",
+    "sha256": "fe137ca2b9bf39fbc280e48ac86812c7bb182b3f98f7a8b441ca1736fbb37443",
+    "bytes": 10416
+  },
+  "source_scope": {
+    "current_files": 4,
+    "current_lines": 3955,
+    "future_activation_test_ceiling": 650,
+    "hard_files": 5,
+    "hard_lines": 5000
+  },
+  "clarification": "Cache identity testing must preserve refusal of a second public local gate while one is open. Exercise private resolver/cache state under separately admitted core-test packet; do not weaken _has_local_gate.",
+  "prerequisites": [
+    "Complete core invocation isolated outcome/fork/phase qualification.",
+    "Root remeasure bounded implementation packet before tests-first grant.",
+    "Separate core-test manifest/cache/fork-state update packet; producer owner may not read sixth body."
+  ],
+  "remaining": "No B/public producer, parent outcome/lineage, post-poison GPU purity or hardware acceptance inferred. Healthy-only activation policy follows adopted reviewed design."
+}

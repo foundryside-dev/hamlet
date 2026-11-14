@@ -1,0 +1,22 @@
+{
+  "job": "cuda-producer-poison-per_local_single",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "b0f4e769755ca6999bc03cd8a21cd88a274dc682",
+  "exit_code": 0,
+  "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 8.39090609550476,
+  "source_guards": 819,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

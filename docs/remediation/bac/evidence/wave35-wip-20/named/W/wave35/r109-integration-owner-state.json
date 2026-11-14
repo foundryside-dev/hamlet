@@ -1,0 +1,64 @@
+{
+  "schema": "bac-integration-owner-state-v1",
+  "remote_checkpoint": {
+    "commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+    "tree": "29ff44bc50ab1c207b840db41c57db43da764d3b",
+    "manifest": "docs/remediation/bac/evidence/wave35-wip-19.json",
+    "status": "Published and exact remote verified; do not redo WIP19 sealing."
+  },
+  "current_candidate": {
+    "round": 109,
+    "tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+    "manifest_sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781",
+    "core_sha256": "ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e",
+    "test_sha256": "780b1464c258d0a0162f9f0983be079b869c3868b4d24fbbc029afa154218b36",
+    "collection": 88,
+    "healthy_unique_passed": 72,
+    "isolated_unrun": 16,
+    "source_review": "7aea3ba6b7fd450afa4c9de7146e0f41cdc0cd31c7fdfcefe6e0c8ca3d602bca"
+  },
+  "current_writer": {
+    "agent": "/root/bac_invocation_verifier_prep",
+    "scope": "Synthetic verifier tests only; strict verifier read-only until root causal RED disposition. Application source/test frozen."
+  },
+  "next": [
+    "Receive frozen synthetic tests; root exact-hash RED execution against unchanged strict verifier.",
+    "Grant finite verifier implementation after causal RED, independently review and qualify synthetic/adversarial checks.",
+    "Run16 isolated core jobs, each own worker1 process, parallel within4CPU resources; generic/strict custody sequential; explicit reference/failure phase-pair receipt.",
+    "Repair actual material findings, reverify, then grant adopted B activation and separate core-test updates."
+  ],
+  "prepared_future": {
+    "B_plan": "wave35/r109-producer-b-plan-adoption.json",
+    "B_owner": "/root/bac_producer_activation_prep",
+    "oracle_prep": "wave35-preparation/T18e-R0-ORACLE-INTEGRATION-PREPARATION.md",
+    "oracle_scope": "Required existing design, not reviewed implementation grant."
+  },
+  "CI": {
+    "exact_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+    "Config": {
+      "run": 43501098001,
+      "status": "success"
+    },
+    "Lint": {
+      "run": 43501097800,
+      "status": "failure",
+      "mypy": 15,
+      "oracle": 6,
+      "population": 9,
+      "ruff": "pass",
+      "black": "pass",
+      "defaults": "skipped"
+    },
+    "Tests": {
+      "run": 43501097897,
+      "status": "in_progress"
+    }
+  },
+  "Spaces": {
+    "page": "page_6ffffcb967fc8191a354fbe3661e4cb8",
+    "sequence": 45,
+    "accounting": "28 qualified /38 remaining /66"
+  },
+  "resources": "Current CPUquota4 affinity5 RAM16GiB; user offered16-worker CUDA server later, no access/GPUcount yet. No new checkout/branch/worktree authorized.",
+  "scope": "Continue implementation after checkpoint; no routine go-ahead required and no whole BAC closure claimed."
+}

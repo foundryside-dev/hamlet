@@ -1,0 +1,21 @@
+{
+  "schema": "bac-root-checkpoint-contract-adoption-v1",
+  "producer": "/root",
+  "status": "SEALED FINITE SELECTION CONTRACT",
+  "at": "2026-11-14T04:45:04.855642+00:00",
+  "contract": {
+    "root": "W",
+    "path": "wave35/wip20-checkpoint-contract.json",
+    "sha256": "75f5b65b97d18e02ff62bccf6cf0ee81f37a72fbca8d6396e56fbef0e036d026",
+    "bytes": 7003
+  },
+  "proposal": {
+    "root": "W",
+    "path": "evidence-management/wip20-preparation/wip20-checkpoint-contract-proposal-v2.json",
+    "sha256": "75f5b65b97d18e02ff62bccf6cf0ee81f37a72fbca8d6396e56fbef0e036d026",
+    "bytes": 7003
+  },
+  "verified_reference_count": 20,
+  "scope": "R109\u2013R113 evidence interval only; five required components and contiguous WIP13\u2013WIP19 catalog. No complete B/package/programme acceptance, test waiver, branch/worktree creation, merge or CI success.",
+  "private_backup_exclusion": "Original private-email history bundle must not be selected or published."
+}

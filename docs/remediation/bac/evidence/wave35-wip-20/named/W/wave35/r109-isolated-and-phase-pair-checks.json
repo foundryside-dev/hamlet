@@ -1,0 +1,436 @@
+{
+  "schema": "bac-root-isolated-qualification-v1",
+  "status": "R109 ALL16 ISOLATED CPU CASES AND PHASE PAIR VERIFIED",
+  "candidate_manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-candidate.json",
+    "sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781",
+    "bytes": 203930
+  },
+  "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "tool_adoption": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-invocation-verifier-qualification-and-runtime-grant.json",
+    "sha256": "eaecc6674e385612813ba036711d7952d74048bcfcbdac71d74317faffb747e7",
+    "bytes": 2612
+  },
+  "isolated_unique_passed": 16,
+  "jobs": [
+    {
+      "case": "bootstrap_failure",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-bootstrap-failure-spec.json",
+        "sha256": "6adec253a1431bd15b5905a7af692d9f0c38b23753a377fabd32959b2e1f074c",
+        "bytes": 678
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+        "sha256": "f647d63d78bfa7136c283daf252d03aa9f67ae7dcd922e33e4fc10651d6bfd9a",
+        "bytes": 939
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-bootstrap-failure-custody.json",
+        "sha256": "18b4dd4869319d7dc6e52ae443029ba365384dd64ccd75beaafaac6acafe1b05",
+        "bytes": 659
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-bootstrap-failure-spawn-custody.json",
+        "sha256": "0d4331dfc51d478e0740d33e0fd87405df25bca3002106d27a09e765a685ca6c",
+        "bytes": 1558
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "runtime_query_failure",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-runtime-query-failure-spec.json",
+        "sha256": "18c484c5bc4baae13ae0ab759b92744eda22c630f52742faf2aa7d7d15cd7b3c",
+        "bytes": 690
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+        "sha256": "1c4443416d49851e1f19d208e3dec516cae293e5768c2f1da54d90416cb83148",
+        "bytes": 955
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-runtime-query-failure-custody.json",
+        "sha256": "707de458895ad462c4e59a13f7d0107579a33a0e8d3ca50478541c0d43bc69a9",
+        "bytes": 663
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-runtime-query-failure-spawn-custody.json",
+        "sha256": "13835afec88fbca771f1285c283b5399e33ca7735e775fa8f34574899f970532",
+        "bytes": 1570
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "local_completion_single",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-single-spec.json",
+        "sha256": "4148e2dda5ca14a481a6a417e74608c9025808be5c4316023ad694a3ed25b7e6",
+        "bytes": 696
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+        "sha256": "c5788c9ae565c2a21f03c97ee76cabd61910ea64dc59a5f566b237099de9d857",
+        "bytes": 963
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-single-custody.json",
+        "sha256": "2efb1d533f907662a1e390829e324d02aa48e7a33be14ec8452c93a2c5b05630",
+        "bytes": 665
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-single-spawn-custody.json",
+        "sha256": "f66b5996712882f687ca8a41acc679cc3d73c7fe3b866d400e91cf338caee2b4",
+        "bytes": 1576
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "local_completion_multiple_body",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-multiple-body-spec.json",
+        "sha256": "9b31bcec8e227dd949dbef06115f320b00f6c3b08946fd48c9ae84ed98f9aab8",
+        "bytes": 717
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+        "sha256": "ed4edf81fa23bb19b788f9306ac1ddc267790b4e8f14cc1aacae21b984642bbd",
+        "bytes": 991
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-multiple-body-custody.json",
+        "sha256": "6bde8e0c38ef55f7a984af735d3b5c5ec6258669ea0456e5d709c9923054639a",
+        "bytes": 672
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-multiple-body-spawn-custody.json",
+        "sha256": "04a1163b7645b86bb0f0c7f9f07b16b7b339182189747266aed27a9c7e9a1d57",
+        "bytes": 1597
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "local_completion_duplicate_parent",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-duplicate-parent-spec.json",
+        "sha256": "04e7f4fd90d6ba5f97fc9cc2b9bf4e0fe7645f0f466eb051deeef2a8cf2a4d63",
+        "bytes": 726
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+        "sha256": "31c6c9a05b799e84e60295887ac3dcb415e2c6dfe5e71296a992b36d0ecc18fc",
+        "bytes": 1002
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-duplicate-parent-custody.json",
+        "sha256": "75cc069f6c34af550374dae0fade84665a5661afc67e40ab794fee621a0c9a3d",
+        "bytes": 674
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-local-completion-duplicate-parent-spawn-custody.json",
+        "sha256": "fe7e7cd1d8c47c4d32ee4cee68122478dea8c6f40c638039e645d220641c1e32",
+        "bytes": 1606
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "poison_unknown_ready",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-unknown-ready-spec.json",
+        "sha256": "a2bbaaf22d4275f7cd44b06993ede3f84d3155ade87986087b14e35b2dae7415",
+        "bytes": 687
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+        "sha256": "cba4c983af9d8835898285a6f595d696de078fef0597cbc937837398e8b46071",
+        "bytes": 949
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-unknown-ready-custody.json",
+        "sha256": "dca183a22588a402c49f385a7e6bcb2f71c2833c112e06eff961093251a1a094",
+        "bytes": 660
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-unknown-ready-spawn-custody.json",
+        "sha256": "b0a213841799d441f72065cdfd4b3750d0ff58ddb869667be9f83b27a95a5586",
+        "bytes": 1567
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "poison_ready_qualified",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-qualified-spec.json",
+        "sha256": "0e5a2e2ae29a587fab008e54dc7f8ced4ff0c1d8c7f48926e86140f53611f8f6",
+        "bytes": 693
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+        "sha256": "702ccecbf757428262e3e37d52e7b464b91bfea7c4f1aaf277e6d3044048999e",
+        "bytes": 959
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-qualified-custody.json",
+        "sha256": "62c7a18142833e3f8f217f3fbfb4dca5ecf06bf33c61734cfcf98f799730c1c7",
+        "bytes": 664
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-qualified-spawn-custody.json",
+        "sha256": "5179142b3155be69811c26faad1f025c5a38e58998ea6ad37441e3c85f6d6ff3",
+        "bytes": 1573
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "poison_ready_healthy_only",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-healthy-only-spec.json",
+        "sha256": "a3328ec349bd8ff8aa28200b6a9d6bdcf9dd91e7835e33fa162f66f6140b2717",
+        "bytes": 702
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+        "sha256": "d71548714a79f03dd3a126a756b31c4c47ad5976a21acc7cf563e764deb80b72",
+        "bytes": 970
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-healthy-only-custody.json",
+        "sha256": "10d8a916e4c20152a599dbd4f3e7ca5701b39006255b86de4b408956c6ee85ba",
+        "bytes": 666
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-poison-ready-healthy-only-spawn-custody.json",
+        "sha256": "710ead59d2a92d3ae40c9124b03977571d9cf126fd720c1161a676d4a73dccd7",
+        "bytes": 1582
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "operation_body_completion",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-operation-body-completion-spec.json",
+        "sha256": "c173344704ed6ec050bbe140abcad59a2653a3570741554f0c68a94835c13815",
+        "bytes": 702
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+        "sha256": "8b3c8f04a9b337ab296cba4719b9e325808b758d132bf827b5c2c3c2095f52ae",
+        "bytes": 970
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-operation-body-completion-custody.json",
+        "sha256": "04dc2f1b6a6ef5d10027507d1836d01c647f842de0ee4fe58e9903c6f5366c41",
+        "bytes": 666
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-operation-body-completion-spawn-custody.json",
+        "sha256": "8e0b5a5eb96e0998a5c3f036f98b5865d729b2f3d53e3f9e5bac9097f33970c7",
+        "bytes": 1582
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "invocation_same_error",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-same-error-spec.json",
+        "sha256": "66ab6db176b4e5619d335a38b0715a2e2eb81bad47a8f0e7864721b6d6ccd9f2",
+        "bytes": 690
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error-result.json",
+        "sha256": "fd840562190d084e7a3bec1355ff95124359d94eb7afa8b1352f7fd167327c81",
+        "bytes": 954
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-same-error-custody.json",
+        "sha256": "6ecb1e56e35d5394d81cc00fa553437fdc735b07f3659178f9ed96056a6d2686",
+        "bytes": 662
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-same-error-spawn-custody.json",
+        "sha256": "bad9f1cc372b2e4786e7fbe3e429d0c87ffe853c4ad6851ccf3f3c34d3b079fa",
+        "bytes": 1570
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "invocation_child_failure",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-child-failure-spec.json",
+        "sha256": "99a44b25af84149418540ecd3045356731e624257069af8d999badaa194ffe8a",
+        "bytes": 699
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-result.json",
+        "sha256": "a06741385aa6a3fcfc8cdd33b90755273e0f061721437d0830e23ae944030c88",
+        "bytes": 966
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-child-failure-custody.json",
+        "sha256": "d89ba2786ecfa9d9461c59a3c95fc8b00e4232edf4a03a490d9c8b6a415dec23",
+        "bytes": 665
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-child-failure-spawn-custody.json",
+        "sha256": "a6db862c6552e3b246edda37ef92307974d281be738967398e2e9b39b0cccbaa",
+        "bytes": 1579
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "invocation_parent_failure",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-parent-failure-spec.json",
+        "sha256": "bb3b355d64daf29abeb44c0bf59a106913685992338ba12cbc522a9f6530301f",
+        "bytes": 702
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-result.json",
+        "sha256": "83be2abc55fd55cb882f8dda295ffca72c51faa24913a08980e02a1195028057",
+        "bytes": 970
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-parent-failure-custody.json",
+        "sha256": "09d9492cfcf664d0259d8433210b986bfe91961c75a80e391b7a0b1b47032ac0",
+        "bytes": 666
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-parent-failure-spawn-custody.json",
+        "sha256": "fcb278b0649c04626af6f28326132a3cd4e24091de848403701686db2f454bb6",
+        "bytes": 1582
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "invocation_reported_failure",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-reported-failure-spec.json",
+        "sha256": "a599d1b58bb576cdb95300d9081b04ea971b08a2424498bf145d04ededdfdeb7",
+        "bytes": 708
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-result.json",
+        "sha256": "020669f7c32e437d9a9f3f943a707002cb182e1431dc188008854cfa9c05136c",
+        "bytes": 978
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-reported-failure-custody.json",
+        "sha256": "e22eb06dfd56446998cb9cc5ae52dfda4b7785bae11de1f9bc58b172f8d9d3ac",
+        "bytes": 668
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-reported-failure-spawn-custody.json",
+        "sha256": "322d81b761415f5914b490250fb07afa63f79deff68a5feeab759a834027f514",
+        "bytes": 1588
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "invocation_phase_reference",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference-spec.json",
+        "sha256": "9a0b03f6d6ac0be2091d8a577c8e069389f112ab3ff9a0f6f1b1f6fb08efb4a4",
+        "bytes": 705
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-result.json",
+        "sha256": "fbe8a8630dc96e97cacd6afee12c77663347dbb5765cc7ab3af79ca8ba4c9bb7",
+        "bytes": 974
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference-custody.json",
+        "sha256": "20622ed4cbbab8d3293628d25dc9dbe108c6d40c862657b8579dae8d502b9d83",
+        "bytes": 667
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference-spawn-custody.json",
+        "sha256": "77b7fa9522075861e82bb73f4ead58b8b396f8ca56dacfff9ba0bb4bbe2d9264",
+        "bytes": 1682
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "invocation_phase_failure",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure-spec.json",
+        "sha256": "06881fdc87d51d081f2ce87ea98fd48ed336ac52d1e6ceec4d8be44192eb475f",
+        "bytes": 699
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-result.json",
+        "sha256": "7e95f58d56fb103a5524570184e9f666f649bb3455115df4a2afe4d18f4d122d",
+        "bytes": 966
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure-custody.json",
+        "sha256": "8371b5cc2d796c8badef6e8947e89da94ccde9704fc486a3db0823e155d30966",
+        "bytes": 665
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure-spawn-custody.json",
+        "sha256": "ff59f1ddf1359e67bcbf5874b5e848fe780cec738cdaaa388e7b283af140f90e",
+        "bytes": 1676
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    },
+    {
+      "case": "inherited_pid",
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-inherited-pid-spec.json",
+        "sha256": "8977f50c03da9541cf01123853bbeb6366ff77edbc8983798e030d1877a3ea2b",
+        "bytes": 662
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+        "sha256": "7b5a0940bf1bd51760f7a6dc0755983737f60a0945791367a12e2ced01033d5e",
+        "bytes": 918
+      },
+      "generic_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-inherited-pid-custody.json",
+        "sha256": "56c6b1b3b6c01cb3f60cd0ba93a53a7fa4fce45a6ad70581716d4c15f3d217c5",
+        "bytes": 654
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-inherited-pid-spawn-custody.json",
+        "sha256": "53262ff1be484d0a2d1657d38563d94e762d6cfb559caab268d81c0323f35405",
+        "bytes": 2805
+      },
+      "strict_status": "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+    }
+  ],
+  "phase_pair": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-invocation-phase-pair-custody.json",
+    "sha256": "7072ea4b2648a2a4f2c1a7519afe50f77db2636b99dd4492c3beca8936539b6e",
+    "bytes": 6573
+  },
+  "phase_pair_execution": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-invocation-phase-pair-execution.json",
+    "sha256": "c066b66cee768a0aab1c88dcd29f7bb3d968617db56b468514aee1738e40f84b",
+    "bytes": 1042
+  },
+  "healthy_checks": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-root-checks.json",
+    "sha256": "87320230075f8299f55d974be77b5057f679fcc922c9ee6e06d7681228407903",
+    "bytes": 4027
+  },
+  "current_core_total": {
+    "unique_passed": 88,
+    "healthy": 72,
+    "isolated": 16,
+    "disjoint": "Actual88 collected node IDs; separate16 isolated nodes do not overlap72 healthy selection. No R106/R108 counts added."
+  },
+  "orchestration_attempt": "Initial V8 orchestration text had a missing parenthesis and was rejected before dispatch; corrected orchestration executed each of16 jobs once. No application failure/retry or cancellation.",
+  "verification_serialization": "Runtime jobs used four independent slots under actual4CPUquota. Index/custody verifiers ran sequentially because they share the repository index/guard checks.",
+  "limits": [
+    "Real CUDA remainsUNRUN.",
+    "Production local-contract manifest activation, actual replay/B/parent/recurrent integration and globalprogramme gates remainopen.",
+    "Final bounded source/design/execution reconciliation requested; no whole BAC acceptance."
+  ],
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  }
+}

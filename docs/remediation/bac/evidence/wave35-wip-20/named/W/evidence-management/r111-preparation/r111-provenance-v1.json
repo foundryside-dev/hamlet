@@ -1,0 +1,282 @@
+{
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 205356,
+    "path": "wave35/r111-candidate.json",
+    "root": "W",
+    "sha256": "0c73808322f6ada13a5af53b475b4eaec6f18ee19df3873ff61b4d16b4869c5f"
+  },
+  "candidate_tree": "b0f4e769755ca6999bc03cd8a21cd88a274dc682",
+  "changed_paths": [
+    "src/townlet/exploration/rng_custody.py",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "execution_records": [
+    {
+      "actual_job_exits": [
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-local-completion-single",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-runtime-query-failure",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-bootstrap-failure",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-local-completion-multiple-body",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-poison-unknown-ready",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-poison-ready-qualified",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-poison-ready-healthy-only",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-operation-body-completion",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-inherited-pid",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-local-completion-duplicate-parent",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-invocation-child-failure",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-invocation-same-error",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-invocation-parent-failure",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-invocation-phase-failure",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-invocation-phase-reference",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-core-invocation-reported-failure",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-flat_local_single",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-flat_admitted_single",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-flat_local_distinct",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-flat_local_same",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-flat_admitted_same",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-per_local_single",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-per_local_distinct",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-per_local_same",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-per_admitted_single",
+          "orchestration_exit": 0
+        },
+        {
+          "actual_exit": 0,
+          "job": "cuda-producer-poison-per_admitted_same",
+          "orchestration_exit": 0
+        }
+      ],
+      "additional_pytest_count": 0,
+      "duration_seconds": 53.75854867599264,
+      "ended_at": "2026-11-13T21:44:53.614166+00:00",
+      "record": {
+        "bytes": 21919,
+        "path": "wave35-r111-isolated-dispatch.json",
+        "root": "Q",
+        "sha256": "7780734429f1303c8aafb16f24f146e6c1303a47da48cc62bd33ded5c7fee0b4"
+      },
+      "role": "dispatch",
+      "started_at": "2026-11-13T21:43:59.855680+00:00",
+      "status_basis": "Recorded PASS/actual underlying zero exits; pair process exit remains explicitly unavailable."
+    },
+    {
+      "additional_pytest_count": 0,
+      "duration_seconds": 24.475560676000896,
+      "ended_at": "2026-11-13T21:46:27.240641+00:00",
+      "record": {
+        "bytes": 92755,
+        "path": "wave35-r111-isolated-custody-verification.json",
+        "root": "Q",
+        "sha256": "6085969529a6f313d2364f21df4b91096643aafcc87bc6cd10a9f32d60522995"
+      },
+      "recorded_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "role": "custody",
+      "started_at": "2026-11-13T21:46:02.765080+00:00",
+      "status_basis": "Recorded PASS/actual underlying zero exits; pair process exit remains explicitly unavailable."
+    },
+    {
+      "additional_pytest_count": 0,
+      "duration_seconds": 0.34409481300099287,
+      "ended_at": "2026-11-13T21:47:07.986211+00:00",
+      "exit_code": null,
+      "exit_code_unavailable_reason": "Explicit function execution record reports PASS but records no process exit code.",
+      "observed_status": "PASS",
+      "pair_receipt": {
+        "bytes": 6573,
+        "path": "wave35-r111-invocation-phase-pair-custody.json",
+        "root": "Q",
+        "sha256": "04469482814bab2ee83645e47b50060af301dfd6ee2e5652edb97e8936225124"
+      },
+      "record": {
+        "bytes": 883,
+        "path": "wave35-r111-invocation-phase-pair-execution.json",
+        "root": "Q",
+        "sha256": "99147bc0f6683e2e6df3a176c15e74b53dda52701a93b05e8712e0b5a9bcd2cf"
+      },
+      "role": "phase_pair",
+      "started_at": "2026-11-13T21:47:07.642119+00:00",
+      "status_basis": "Recorded PASS/actual underlying zero exits; pair process exit remains explicitly unavailable."
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+  },
+  "historical_report_alias": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-B-IMPLEMENTATION-REPORT.md",
+  "limitations": [
+    "No terminal acceptance or fixture repair verdict inferred.",
+    "Unknown per-job absolute times and phase-pair process exit remain null."
+  ],
+  "parallelism": "26isolated actualdispatch4parallel; generic/strict52 checks sequential.",
+  "patch": {
+    "bytes": 86189,
+    "path": "evidence-management/r111-preparation/r111-full-base-candidate.patch",
+    "root": "W",
+    "sha256": "00babba6a5deec61e0e8363e919aba61d1008709252660cb66ac2840471c4294"
+  },
+  "patch_scope": "Exact captured tree full-index binary patch; inert, never applied/executed.",
+  "private_backup_exclusion": true,
+  "report_snapshot": {
+    "bytes": 5531,
+    "path": "evidence-management/r111-preparation/R111-IMPLEMENTATION-REPORT-SNAPSHOT.txt",
+    "root": "W",
+    "sha256": "73906ec1f600cf285c960de34f3ef012b2ff962dbea4ecedc9abc45bf6a05d09"
+  },
+  "schema": "bac-closed-candidate-provenance-v1"
+}

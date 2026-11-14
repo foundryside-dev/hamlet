@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-14T04:50:38.115095+00:00",
+  "method": "authenticated gh api alternative to failed connector log transport",
+  "command": [
+    "gh",
+    "api",
+    "repos/foundryside-dev/hamlet/actions/jobs/132146767779/logs"
+  ],
+  "exit_code": 1,
+  "error": "Get https://api.github.com/repos/foundryside-dev/hamlet/actions/jobs/132146767779/logs: Forbidden",
+  "stdout_bytes": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "disposition": "LOG ACCESS BLOCKED; test failure cause remains unclassified. Not an automatic approval review rejection. No test result changed."
+}

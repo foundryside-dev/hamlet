@@ -1,0 +1,25 @@
+{
+  "name": "new-state-lifetime",
+  "exit_code": 0,
+  "seconds": 5.172613859176636,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_registry_lifetime_and_lock_paths",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-new-state-lifetime/new-state-lifetime.log",
+  "sha256": "096c02a7d2b19fca8fe310c15931f55fc8f4372b98e16d5b7064a5eccde24e86",
+  "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "manifest_sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,27 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-new-phase",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "new-phase",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_nonempty_completion_matches_existing_operation",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_nested_siblings_keep_lineage_and_receipts",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_nested_currency_preserves_currentness_rules[device_operation]",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_device_invocation_nested_currency_preserves_currentness_rules[device_invocation]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "bac-producer-b-core-test-protocol-v1",
+  "status": "TESTS FROZEN AGAINST INTENDED B INTERFACE; PRODUCTION RECONCILIATION AND EXECUTION OWED",
+  "source": {
+    "src/townlet/exploration/rng_custody.py": {
+      "lines": 948,
+      "sha256": "ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e",
+      "changed": false
+    },
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py": {
+      "lines": 2360,
+      "sha256": "6ec962f9c0b3d467375528b26de39bac154b46e4d5c6435ffcc289960f063085",
+      "previous_sha256": "780b1464c258d0a0162f9f0983be079b869c3868b4d24fbbc029afa154218b36",
+      "previous_lines": 2166
+    }
+  },
+  "node_prefix": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::",
+  "retained_node_ids": 88,
+  "modified_manifest_node_suffix": "test_public_required_signatures_and_empty_manifest",
+  "new_node_suffix": "test_local_descriptor_cache_keeps_active_gate_binding",
+  "authored_expected_total_nodes": 89,
+  "counts_scope": "Source-derived arithmetic only; root collection unexecuted by worker",
+  "canonical_input_paths": {
+    "request": "townlet.training.replay_contract.ReplayRequest",
+    "archive": "townlet.training.historical_checkpoint.HistoricalReplayArchive"
+  },
+  "manifest": {
+    "production_entries": 18,
+    "flat_entries": 8,
+    "per_entries": 10,
+    "descriptor_type": "_LocalCUDADescriptor",
+    "descriptor_fields": ["owner_kind", "route", "input_kind", "rationale", "healthy", "post_poison"],
+    "healthy": true,
+    "post_poison": false,
+    "cache_field": "_local_cuda_policies",
+    "cache_value": ["exact_manifest_descriptor", "exact_frozen_resolved_record"],
+    "fixture": "One private exact-identity descriptor/record added only in scoped test manifest; production descriptors explicitly delegate to real resolver; fresh scoped cache; no old-record production fallback"
+  },
+  "guard_state_delta": {
+    "helper": "local_policy_state",
+    "manifest_row": ["contract_id", "descriptor_id", "owner_kind", "route", "input_kind", "rationale", "healthy", "post_poison"],
+    "cache_row": ["contract_id", "descriptor_id", "policy_id", "owner_type_id", "route", "input_type_id", "rationale", "healthy", "post_poison", "descriptor_is_manifest_value"],
+    "unresolved": "Exact tuple of manifest contract IDs absent from cache",
+    "observation": "Scalar read only; no resolver/import/queue drain/CUDA in fork child",
+    "parent_preparation": "Resolve real REPLAY_BUFFER_SERIALIZE_CUDA under actual admission lock before first fork; retain unresolved entries; local fixture gate later adds its authentic finite cached tuple"
+  },
+  "fork": {
+    "node_suffix": "test_isolated_inherited_pid_gate_refusal",
+    "spawn_role": "cuda_core_inherited_pid",
+    "target": "test_rng_cuda_admission.inherited_pid_child",
+    "final_message": "cuda core inherited pid gates fail closed",
+    "trials": ["admission", "local", "invocation"],
+    "changed_trial": "local",
+    "exact_local_action_keys": [
+      "resolve_cuda", "complete", "completion_failed", "report_failure", "domain_local_cuda_access",
+      "domain_local_cuda_policy", "domain_resolve_local_cuda_record"
+    ],
+    "new_actions": {
+      "domain_local_cuda_policy": "Actual domain._local_cuda_policy(contract=authentic_fixture_contract)",
+      "domain_resolve_local_cuda_record": "Unpatched AmbientRNGDomain._resolve_local_cuda_record(domain, descriptor=actual_manifest_descriptor), bypassing instance fixture seam"
+    },
+    "other_trial_actions": "Admission four and invocation five unchanged",
+    "identity_schema": "cuda-core-fork-guard-identity-v1",
+    "observation_schema": "cuda-core-fork-guard-observation-v1",
+    "profile": "linux-fork-inherited-guard-only-v1",
+    "local_acknowledgement_message": "cuda core inherited pid local fail closed",
+    "exception_class": "builtins.RuntimeError",
+    "diagnostic": "RNG custody cannot be inherited by another process",
+    "counters": "All existing domain/owner/CUDA/body counters remain exactly zero",
+    "state_unchanged": true,
+    "inventory_policy": "Exact local five-to-seven action extension only; no broad unknown-action allowance"
+  },
+  "preserved": "All six invocation child cases/roles/messages, queue tuples, phase artifacts and parent hash bindings; existing admission/local/invocation trials and old controls",
+  "hold": "Reconcile actual B core fields/guard order after production freeze; root capture and separately reviewed strict fork schema before child execution"
+}

@@ -1,0 +1,21 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+  "unique_node_phase_failures": 1,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "signatures": [
+    {
+      "error": "AttributeError: module 'townlet.exploration.rng_custody' has no attribute '_LocalCUDADescriptor'",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

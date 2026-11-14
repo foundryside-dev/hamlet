@@ -1,0 +1,40 @@
+{
+  "schema": "bac-root-core-prerequisite-adoption-v1",
+  "status": "CORE CPU PRE-B PREREQUISITE QUALIFIED",
+  "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "root": "W",
+    "path": "wave35/r109-candidate.json",
+    "sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781",
+    "bytes": 203930
+  },
+  "healthy": {
+    "root": "W",
+    "path": "wave35/r109-root-checks.json",
+    "sha256": "87320230075f8299f55d974be77b5057f679fcc922c9ee6e06d7681228407903",
+    "bytes": 4027
+  },
+  "isolated_and_pair": {
+    "root": "W",
+    "path": "wave35/r109-isolated-and-phase-pair-checks.json",
+    "sha256": "906231432c0f1950ae5e2650726ca6c35c0cca2fea1c93aa6ad96f6022dfb97d",
+    "bytes": 22429
+  },
+  "final_independent_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-FINAL-REVIEW.md",
+    "sha256": "82773010f376603ddff6168eedbb3c8ef45a4c870343f348ef7f2588ab921faa",
+    "bytes": 10917
+  },
+  "tool_qualification": {
+    "root": "W",
+    "path": "wave35/r109-invocation-verifier-qualification-and-runtime-grant.json",
+    "sha256": "eaecc6674e385612813ba036711d7952d74048bcfcbdac71d74317faffb747e7",
+    "bytes": 2612
+  },
+  "outcome": "88 unique current-source CPU cases passed; all16 owned children and fixed third fork trial qualified; separate phase pair verified. Fresh source/design/execution reconciliation found no material bounded core gap.",
+  "permission": "Root may grant the adopted B tests-first implementation slices; this record does not itself assign a writer.",
+  "remaining": "Actual B/producer/parent/recurrent integration, real CUDA, current globaltype15 failures and remaining runner/full/coverage/slow/finaldesign/CI gates remain required.",
+  "workspace_restart": "After all R109 tests/verifiers completed, environment restarted; HEAD and exactcore/test/tool/evidence/finalreview hashes verified unchanged. No cancelled or repeated application execution."
+}

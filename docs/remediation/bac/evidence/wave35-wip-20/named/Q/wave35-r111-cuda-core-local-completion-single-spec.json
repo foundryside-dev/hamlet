@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r111-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-single",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "cuda-core-local-completion-single",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[local_completion_single]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

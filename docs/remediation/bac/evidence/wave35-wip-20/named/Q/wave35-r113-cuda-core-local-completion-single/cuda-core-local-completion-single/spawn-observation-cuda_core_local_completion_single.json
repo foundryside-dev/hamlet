@@ -1,0 +1,1 @@
+{"exitcode": 0, "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa", "message": "cuda core local_completion_single fail closed", "parent_pid": 162226, "process_pid": 162350, "qualified": true, "queued_pid": 162350, "queued_ppid": 162226}

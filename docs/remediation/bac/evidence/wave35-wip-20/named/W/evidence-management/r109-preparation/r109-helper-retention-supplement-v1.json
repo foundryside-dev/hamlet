@@ -1,0 +1,82 @@
+{
+  "component": {
+    "bytes": 353924,
+    "path": "evidence-management/r109-preparation/r109-history-component-v1.json",
+    "root": "W",
+    "sha256": "de3625e602b1cfb460b034b50bf9077da6694995e469f0f0c21461dc7ac448e4"
+  },
+  "dependencies": [
+    {
+      "bytes": 37963,
+      "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt",
+      "required_by": [
+        "wave35-r109-history-v1"
+      ],
+      "role": "inert_historical_tool_version",
+      "root": "W",
+      "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+    },
+    {
+      "bytes": 63136,
+      "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt",
+      "required_by": [
+        "wave35-r109-history-v1"
+      ],
+      "role": "inert_historical_tool_version",
+      "root": "W",
+      "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+    }
+  ],
+  "hardware_scope": "Future CUDA server availability is not qualification evidence; no current hardware acceptance inferred.",
+  "links": [
+    {
+      "execution_permitted": false,
+      "historical_mutable_path": {
+        "bytes": 37963,
+        "path": "verify_bac_replay_spawn_identity.py",
+        "root": "Q",
+        "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+      },
+      "immutable_evidence": {
+        "bytes": 37963,
+        "path": "evidence-management/r109-preparation/verify_bac_replay_spawn_identity-r109.py.txt",
+        "root": "W",
+        "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+      },
+      "required_by": [
+        "wave35-r109-history-v1"
+      ],
+      "role": "inert_historical_tool_version"
+    },
+    {
+      "execution_permitted": false,
+      "historical_mutable_path": {
+        "bytes": 63136,
+        "path": "evidence-management/test_replay_spawn_verifier.py",
+        "root": "W",
+        "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+      },
+      "immutable_evidence": {
+        "bytes": 63136,
+        "path": "evidence-management/r109-preparation/test_replay_spawn_verifier-r109.py.txt",
+        "root": "W",
+        "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+      },
+      "required_by": [
+        "wave35-r109-history-v1"
+      ],
+      "role": "inert_historical_tool_version"
+    }
+  ],
+  "schema": "bac-inert-helper-retention-supplement-v1",
+  "scope": "Exact R109 helper and synthetic test versions only. Existing component, attempts and historical paths preserved. These .py.txt files are inert evidence, never execution copies.",
+  "selection_instruction": "For future selection, retain these immutable objects and resolve historical mutable helper paths by exact SHA-256 through this supplement; do not require later mutable paths to remain unchanged.",
+  "status": "EXACT BYTES RETAINED; ROOT ADOPTION PENDING",
+  "validation": {
+    "application_execution": false,
+    "destination_byte_equality": true,
+    "selector_execution": false,
+    "source_body_displayed": false,
+    "source_expected_hashes_match": true
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "ruff-owned",
+  "exit_code": 0,
+  "seconds": 0.07191157341003418,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "ruff",
+    "check",
+    "src/townlet/exploration/rng_custody.py",
+    "src/townlet/training/replay_contract.py",
+    "src/townlet/training/replay_buffer.py",
+    "src/townlet/training/prioritized_replay_buffer.py",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-static/ruff-owned.log",
+  "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+  "candidate_tree": "b0f4e769755ca6999bc03cd8a21cd88a274dc682",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "manifest_sha256": "0c73808322f6ada13a5af53b475b4eaec6f18ee19df3873ff61b4d16b4869c5f",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "bac-hosted-ci-classification-v1",
+  "commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "run_id": 43501097800,
+  "job_id": 132146767700,
+  "conclusion": "failure",
+  "ruff": "success",
+  "black": "success",
+  "mypy": {
+    "status": "failure",
+    "errors": 15,
+    "files": 2,
+    "checked_source_files": 198,
+    "oracle_driver": 6,
+    "population_vectorized": 9,
+    "owned_invocation_missing_api_error": 0
+  },
+  "no_defaults": "skipped",
+  "log_sha256": "17521246c475a473412b5a749d3cacb8807f0818fe0aeb22fb95c7be98c877f7",
+  "scope": "Actual hosted final Lint result at exact WIP19 SHA. Other CI and whole BAC qualification separate."
+}

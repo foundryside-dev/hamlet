@@ -1,0 +1,28 @@
+{
+  "name": "canonical-roundtrip",
+  "exit_code": 0,
+  "seconds": 3.851477861404419,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-per]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r112-canonical-roundtrip/canonical-roundtrip.log",
+  "sha256": "b604a2d39799f77cb3e0d89d95d5e8c38fdf7104458f5c6723c6509ab051f5e3",
+  "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "manifest_sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

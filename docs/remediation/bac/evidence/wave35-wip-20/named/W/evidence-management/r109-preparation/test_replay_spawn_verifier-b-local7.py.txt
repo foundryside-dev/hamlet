@@ -1,0 +1,1536 @@
+"""Synthetic data tests only; root runs after tooling freeze and review."""
+
+import importlib.util
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+VERIFIER = Path("/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py")
+spec = importlib.util.spec_from_file_location("replay_verifier_under_test", VERIFIER)
+verifier = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(verifier)
+
+
+class ReplayVerifierTests(unittest.TestCase):
+    job_name = "replay-poison"
+    role = "replay_poison"
+    message = "replay poison fail closed"
+    args = verifier.REPLAY_ARGS
+    module_paths = {"townlet.training." + n: "src/townlet/training/" + n + ".py" for n in verifier.REPLAY_MODULES}
+
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix="replay-verifier-data-")
+        self.addCleanup(self.temporary.cleanup)
+        self.base = Path(self.temporary.name)
+        self.root = self.base / "synthetic-data-root"
+        (self.root / ".superpowers").mkdir(parents=True)
+        self.output = self.base / "evidence"
+        self.job_dir = self.output / self.job_name
+        self.job_dir.mkdir(parents=True)
+        self.paths = {
+            "manifest": self.base / "manifest.json",
+            "spec": self.base / "spec.json",
+            "result": self.output / (self.job_name + "-result.json"),
+            "controller": self.job_dir / "identity-controller.json",
+            "child": self.job_dir / ("spawn-identity-" + self.role + ".json"),
+            "observed": self.job_dir / ("spawn-observation-" + self.role + ".json"),
+        }
+        imports = {n: str(self.root / "src/townlet/exploration" / (n + ".py")) for n in verifier.BOOTSTRAP_MODULES}
+        replay = {n: str(self.root / path) for n, path in self.module_paths.items()}
+        source_files = {}
+        for item in [str(self.root / "src/townlet/__init__.py"), *imports.values(), *replay.values()]:
+            path = Path(item)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b"SYNTHETIC DATA; NEVER IMPORT OR EXECUTE\n")
+            source_files[str(path.relative_to(self.root))] = verifier.digest(path.read_bytes())
+        for name in ("config-data", "artifact-data"):
+            (self.root / name).write_bytes(b"synthetic fixture data")
+        self.manifest = {
+            "base_commit": "a" * 40,
+            "candidate_tree": "b" * 40,
+            "worktree_registry": "synthetic registry\n",
+            "source_files": source_files,
+            "configs": {"config-data": verifier.digest(b"synthetic fixture data")},
+            "artifacts": {"artifact-data": verifier.digest(b"synthetic fixture data")},
+        }
+        self.write("manifest", self.manifest)
+        manifest_hash = verifier.digest(self.paths["manifest"].read_bytes())
+        self.spec_data = {
+            "root": str(self.root),
+            "manifest": str(self.paths["manifest"]),
+            "output": str(self.output),
+            "workers": 1,
+            "jobs": [{"name": self.job_name, "args": list(self.args)}],
+        }
+        self.write("spec", self.spec_data)
+        log = self.output / (self.job_name + ".log")
+        log.write_bytes(b"synthetic success log\n")
+        self.result = {
+            "name": self.job_name,
+            "exit_code": 0,
+            "seconds": 1.0,
+            "command": [str(self.root / ".venv/bin/python"), *self.spec_data["jobs"][0]["args"]],
+            "log": str(log),
+            "sha256": verifier.digest(log.read_bytes()),
+            "base_commit": self.manifest["base_commit"],
+            "candidate_tree": self.manifest["candidate_tree"],
+            "manifest_sha256": manifest_hash,
+            "harness_sha256": verifier.HARNESS_SHA256,
+        }
+        self.write("result", self.result)
+        self.controller = {
+            "sha": self.manifest["base_commit"],
+            "candidate_tree": self.manifest["candidate_tree"],
+            "module": str(self.root / "src/townlet/__init__.py"),
+            "worker": "controller",
+            "torch": "synthetic-version",
+            "threads": 1,
+        }
+        self.write("controller", self.controller)
+        self.child = {
+            **self.controller,
+            "worker": self.role,
+            "pid": 102,
+            "ppid": 101,
+            "manifest_sha256": manifest_hash,
+            "debug": True,
+            "interop_threads": 5,
+            "imports": imports,
+            "replay_imports": replay,
+        }
+        self.write("child", self.child)
+        self.observed = {
+            "process_pid": 102,
+            "queued_pid": 102,
+            "parent_pid": 101,
+            "exitcode": 0,
+            "qualified": True,
+            "message": self.message,
+            "manifest_sha256": manifest_hash,
+        }
+        self.write("observed", self.observed)
+        self.git_values = {
+            "HEAD": self.manifest["base_commit"],
+            "tree": self.manifest["candidate_tree"],
+            "registry": self.manifest["worktree_registry"],
+        }
+        self.start_patch("subprocess.check_output", side_effect=self.metadata)
+        self.start_patch("subprocess.run", return_value=SimpleNamespace(returncode=0))
+        self.start_patch("fcntl.flock", return_value=None)
+
+    def start_patch(self, name, **kwargs):
+        mocker = patch.object(verifier.subprocess if name.startswith("subprocess") else verifier.fcntl, name.split(".")[1], **kwargs)
+        result = mocker.start()
+        self.addCleanup(mocker.stop)
+        return result
+
+    def metadata(self, args, **kwargs):
+        self.assertEqual(kwargs["cwd"], self.root)
+        commands = {
+            ("git", "rev-parse", "HEAD"): "HEAD",
+            ("git", "write-tree"): "tree",
+            ("git", "worktree", "list", "--porcelain"): "registry",
+        }
+        self.assertIn(tuple(args), commands)
+        return self.git_values[commands[tuple(args)]]
+
+    def write(self, name, value):
+        self.paths[name].write_text(json.dumps(value))
+
+    def invoke(self):
+        return verifier.verify(self.paths["spec"])
+
+    def refuse(self):
+        with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
+            self.invoke()
+        self.assertFalse((self.job_dir / ("replay-spawn-custody-" + self.role + ".json")).exists())
+
+    def test_positive_and_exclusive_destination(self):
+        receipt = self.invoke()
+        self.assertEqual(receipt["case"], self.role)
+        self.assertEqual(receipt["expected_message"], self.message)
+        self.assertEqual(receipt["child_pid"], 102)
+        self.assertEqual(receipt["parent_pid"], receipt["child_ppid"])
+        self.assertEqual(receipt["spec_sha256"], verifier.digest(self.paths["spec"].read_bytes()))
+        self.assertEqual(receipt["verifier_sha256"], verifier.digest(VERIFIER.read_bytes()))
+        destination = self.job_dir / ("replay-spawn-custody-" + self.role + ".json")
+        original = destination.read_bytes()
+        with self.assertRaises(ValueError):
+            self.invoke()
+        self.assertEqual(destination.read_bytes(), original)
+
+    def test_identity_and_observation_controls(self):
+        controls = [
+            ("child", "worker", "bank_install_poison_completion"),
+            ("observed", "message", "other success"),
+            ("child", "pid", 103),
+            ("observed", "process_pid", 103),
+            ("observed", "queued_pid", 103),
+            ("child", "ppid", 100),
+            ("observed", "parent_pid", 100),
+            ("child", "pid", True),
+            ("observed", "process_pid", 102.0),
+            ("observed", "parent_pid", 0),
+            ("observed", "exitcode", 1),
+            ("observed", "qualified", False),
+            ("child", "debug", False),
+            ("child", "interop_threads", 1),
+            ("controller", "threads", True),
+            ("child", "manifest_sha256", "wrong"),
+            ("child", "candidate_tree", "wrong"),
+        ]
+        for record, field, bad in controls:
+            with self.subTest(record=record, field=field, bad=bad):
+                data = getattr(self, record)
+                original = data[field]
+                data[field] = bad
+                self.write(record, data)
+                self.refuse()
+                data[field] = original
+                self.write(record, data)
+
+    def test_import_maps(self):
+        for field in ("imports", "replay_imports"):
+            original = self.child[field].copy()
+            for mode in ("missing", "wrong", "extra"):
+                with self.subTest(field=field, mode=mode):
+                    changed = original.copy()
+                    key = next(iter(changed))
+                    if mode == "missing":
+                        del changed[key]
+                    elif mode == "wrong":
+                        changed[key] += ".wrong"
+                    else:
+                        changed["unexpected"] = "unexpected"
+                    self.child[field] = changed
+                    self.write("child", self.child)
+                    self.refuse()
+            self.child[field] = original
+            self.write("child", self.child)
+
+    def test_parent_result_controls(self):
+        for field, value in [
+            ("exit_code", 1),
+            ("exit_code", False),
+            ("harness_sha256", "wrong"),
+            ("manifest_sha256", "wrong"),
+            ("candidate_tree", "wrong"),
+            ("base_commit", "wrong"),
+            ("command", ["unrelated"]),
+            ("sha256", "wrong"),
+        ]:
+            with self.subTest(field=field, value=value):
+                original = self.result[field]
+                self.result[field] = value
+                self.write("result", self.result)
+                self.refuse()
+                self.result[field] = original
+                self.write("result", self.result)
+
+    def test_partial_and_unknown_schemas(self):
+        for record in ("spec", "result", "controller", "child", "observed"):
+            original = json.loads(self.paths[record].read_text())
+            for mode in ("missing", "extra"):
+                with self.subTest(record=record, mode=mode):
+                    changed = original.copy()
+                    if mode == "missing":
+                        del changed[next(iter(changed))]
+                    else:
+                        changed["unknown"] = 1
+                    self.write(record, changed)
+                    self.refuse()
+            self.write(record, original)
+
+    def test_invalid_parent_elapsed_seconds(self):
+        for seconds in (None, 0, -1, False, True, "1.0", float("nan"), float("inf"), float("-inf")):
+            with self.subTest(seconds=seconds):
+                self.result["seconds"] = seconds
+                self.write("result", self.result)
+                self.refuse()
+
+    def test_missing_child_and_observation(self):
+        for record in ("child", "observed"):
+            with self.subTest(record=record):
+                saved = self.paths[record].with_suffix(".saved")
+                self.paths[record].rename(saved)
+                self.refuse()
+                saved.rename(self.paths[record])
+
+    def test_source_config_artifact_mismatch(self):
+        for category in ("source_files", "configs", "artifacts"):
+            path = self.root / next(iter(self.manifest[category]))
+            original = path.read_bytes()
+            path.write_bytes(b"changed synthetic data")
+            self.refuse()
+            path.write_bytes(original)
+
+    def test_repository_metadata_mismatch(self):
+        for key in self.git_values:
+            original = self.git_values[key]
+            self.git_values[key] = "wrong"
+            self.refuse()
+            self.git_values[key] = original
+
+    def test_manifest_mutation(self):
+        self.manifest["candidate_tree"] = "changed"
+        self.write("manifest", self.manifest)
+        self.refuse()
+
+    def test_negative_job_index(self):
+        with self.assertRaises(ValueError):
+            verifier.verify(self.paths["spec"], -1)
+
+    def test_coherently_changed_command_refused(self):
+        self.spec_data["jobs"][0]["args"] = ["-m", "pytest", "unrelated"]
+        self.result["command"] = [str(self.root / ".venv/bin/python"), "-m", "pytest", "unrelated"]
+        self.write("spec", self.spec_data)
+        self.write("result", self.result)
+        self.refuse()
+
+    def test_parent_child_same_pid_refused(self):
+        self.child["ppid"] = self.child["pid"]
+        self.observed["parent_pid"] = self.child["pid"]
+        self.write("child", self.child)
+        self.write("observed", self.observed)
+        self.refuse()
+
+    def test_wrong_cpu_harness_profile(self):
+        for workers in (True, 0, 2):
+            self.spec_data["workers"] = workers
+            self.write("spec", self.spec_data)
+            self.refuse()
+
+    def test_other_role_cannot_substitute(self):
+        other = "recurrent_replay_poison" if self.role == "replay_poison" else "replay_poison"
+        self.child["worker"] = other
+        self.write("child", self.child)
+        self.refuse()
+
+    def test_other_node_cannot_substitute(self):
+        other_args = RecurrentReplayVerifierTests.args if self.role == "replay_poison" else ReplayVerifierTests.args
+        self.spec_data["jobs"][0]["args"] = list(other_args)
+        self.result["command"] = [str(self.root / ".venv/bin/python"), *other_args]
+        self.write("spec", self.spec_data)
+        self.write("result", self.result)
+        self.refuse()
+
+
+class RecurrentReplayVerifierTests(ReplayVerifierTests):
+    job_name = "recurrent-replay-poison"
+    role = "recurrent_replay_poison"
+    message = "recurrent replay scratch poison fail closed"
+    args = (
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q",
+    )
+    module_paths = {
+        "townlet.training.sequential_replay_buffer": "src/townlet/training/sequential_replay_buffer.py",
+        "townlet.training.replay_contract": "src/townlet/training/replay_contract.py",
+        "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
+        "test_recurrent_replay_rng_custody": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py",
+        "test_replay_rng_custody": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+    }
+
+    def test_current_role_cannot_substitute(self):
+        for record, field, value in (
+            ("child", "worker", "replay_poison"),
+            ("observed", "message", "replay poison fail closed"),
+            (
+                "child",
+                "replay_imports",
+                {"townlet.training." + n: str(self.root / "src/townlet/training" / (n + ".py")) for n in verifier.REPLAY_MODULES},
+            ),
+        ):
+            data = getattr(self, record)
+            original = data[field]
+            data[field] = value
+            self.write(record, data)
+            self.refuse()
+            data[field] = original
+            self.write(record, data)
+
+    def test_old_node_cannot_substitute(self):
+        self.spec_data["jobs"][0]["args"] = list(verifier.REPLAY_ARGS)
+        self.result["command"] = [str(self.root / ".venv/bin/python"), *verifier.REPLAY_ARGS]
+        self.write("spec", self.spec_data)
+        self.write("result", self.result)
+        self.refuse()
+
+    def test_unknown_job_refused(self):
+        self.spec_data["jobs"][0]["name"] = "unapproved-poison"
+        self.write("spec", self.spec_data)
+        self.refuse()
+
+    def test_new_test_source_hash_checked(self):
+        (self.root / self.module_paths["test_recurrent_replay_rng_custody"]).write_bytes(b"changed synthetic data")
+        self.refuse()
+
+
+CUDA_CASES = (
+    "bootstrap_failure",
+    "runtime_query_failure",
+    "local_completion_single",
+    "local_completion_multiple_body",
+    "poison_unknown_ready",
+    "poison_ready_qualified",
+    "poison_ready_healthy_only",
+    "operation_body_completion",
+    "local_completion_duplicate_parent",
+    "inherited_pid",
+    "invocation_same_error",
+    "invocation_child_failure",
+    "invocation_parent_failure",
+    "invocation_reported_failure",
+    "invocation_phase_reference",
+    "invocation_phase_failure",
+)
+CUDA_MODULES = {
+    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
+    "test_rng_cuda_admission": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+}
+LOCAL_POLICY_GUARD_ACTIONS = ("domain_local_cuda_policy", "domain_resolve_local_cuda_record")
+
+
+class CudaVerifierTests(unittest.TestCase):
+    # Reuse only synthetic fixture construction; no application or real Git invocation.
+    def fixture(self, case="inherited_pid"):
+        fixture = ReplayVerifierTests()
+        self.addCleanup(fixture.doCleanups)
+        fixture.job_name = "cuda-core-" + case.replace("_", "-")
+        fixture.role = "cuda_core_" + case
+        fixture.message = "cuda core inherited pid gates fail closed" if case == "inherited_pid" else f"cuda core {case} fail closed"
+        node = "test_isolated_inherited_pid_gate_refusal" if case == "inherited_pid" else f"test_isolated_poison_protocol[{case}]"
+        fixture.args = ("-m", "pytest", CUDA_MODULES["test_rng_cuda_admission"] + "::" + node, *verifier.REPLAY_ARGS[3:])
+        fixture.module_paths = CUDA_MODULES
+        fixture.setUp()
+        fixture.child["cuda_core_imports"] = fixture.child.pop("replay_imports")
+        fixture.child["cuda_core_test_sha256"] = fixture.manifest["source_files"][CUDA_MODULES["test_rng_cuda_admission"]]
+        fixture.observed["queued_ppid"] = 101
+        fixture.write("child", fixture.child)
+        fixture.write("observed", fixture.observed)
+        if case in ("invocation_phase_reference", "invocation_phase_failure"):
+            fixture.paths["phase"] = fixture.job_dir / f"invocation-phase-{fixture.role}.json"
+            fixture.phase = {
+                "schema": "cuda-core-invocation-phase-v1",
+                "role": fixture.role,
+                "case": case,
+                "pid": 102,
+                "ppid": 101,
+                "base_commit": fixture.manifest["base_commit"],
+                "candidate_tree": fixture.manifest["candidate_tree"],
+                "manifest_sha256": fixture.child["manifest_sha256"],
+                "source_sha256": {k: fixture.manifest["source_files"][v] for k, v in CUDA_MODULES.items()},
+                "devices": [0, 1, 2],
+                "synchronize_events": [0, 1],
+                "exception_labels": ["body", "synchronization"],
+                "completion_failed": None if case == "invocation_phase_reference" else True,
+            }
+            self.save_phase(fixture)
+        fixture.guards = {}
+        if case == "inherited_pid":
+            for trial, pid, actions in (
+                ("admission", 103, ("resolve_cuda", "enroll", "report_failure", "domain_admission")),
+                (
+                    "local",
+                    104,
+                    (
+                        "resolve_cuda",
+                        "complete",
+                        "completion_failed",
+                        "report_failure",
+                        "domain_local_cuda_access",
+                        *LOCAL_POLICY_GUARD_ACTIONS,
+                    ),
+                ),
+                (
+                    "invocation",
+                    105,
+                    ("active_enter", "active_exit", "active_completion_failed", "completed_completion_failed", "domain_device_invocation"),
+                ),
+            ):
+                identity = {
+                    "schema": "cuda-core-fork-guard-identity-v1",
+                    "profile": "linux-fork-inherited-guard-only-v1",
+                    "role": "cuda_core_inherited_pid_guard",
+                    "trial": trial,
+                    "pid": pid,
+                    "ppid": 102,
+                    "inherited_domain_pid": 102,
+                    "qualified": True,
+                    "base_commit": fixture.manifest["base_commit"],
+                    "candidate_tree": fixture.manifest["candidate_tree"],
+                    "manifest_sha256": fixture.child["manifest_sha256"],
+                    "cuda_core_imports": fixture.child["cuda_core_imports"],
+                    "module_origin": "inherited-loaded-module-objects",
+                    "source_sha256": {k: fixture.manifest["source_files"][v] for k, v in CUDA_MODULES.items()},
+                    "os_threads": 1,
+                    "torch_profile": None,
+                    "torch_profile_unavailable_reason": "no Torch calls permitted in fork guard-only process",
+                    "guard_results": {
+                        a: {
+                            "exception_class": "builtins.RuntimeError",
+                            "diagnostic": "RNG custody cannot be inherited by another process",
+                            "lock_acquire_calls": 0,
+                            "owner_lock_acquire_calls": 0,
+                            "cuda_touch_calls": 0,
+                            "body_calls": 0,
+                            "state_unchanged": True,
+                        }
+                        for a in actions
+                    },
+                }
+                observation = {
+                    "schema": "cuda-core-fork-guard-observation-v1",
+                    "trial": trial,
+                    "role": "cuda_core_inherited_pid_guard",
+                    "parent_pid": 102,
+                    "fork_pid": pid,
+                    "waitpid_pid": pid,
+                    "wait_status": 0,
+                    "exit_code": 0,
+                    "queued_pid": pid,
+                    "queued_ppid": 102,
+                    "identity_sha256": "pending",
+                    "message": f"cuda core inherited pid {trial} fail closed",
+                    "parent_os_threads_before_fork": 1,
+                    "manifest_sha256": fixture.child["manifest_sha256"],
+                }
+                fixture.guards[trial] = (identity, observation)
+                self.save_guard(fixture, trial)
+        return fixture
+
+    def save_phase(self, fixture):
+        fixture.write("phase", fixture.phase)
+        fixture.observed["invocation_phase_sha256"] = verifier.digest(fixture.paths["phase"].read_bytes())
+        fixture.write("observed", fixture.observed)
+
+    def save_guard(self, fixture, trial):
+        identity, observed = fixture.guards[trial]
+        path = fixture.job_dir / f"fork-identity-cuda_core_inherited_pid-{trial}.json"
+        path.write_text(json.dumps(identity))
+        if "identity_sha256" in observed:
+            observed["identity_sha256"] = verifier.digest(path.read_bytes())
+        (fixture.job_dir / f"fork-observation-cuda_core_inherited_pid-{trial}.json").write_text(json.dumps(observed))
+
+    def test_all_ten_exact_mappings(self):
+        for case in CUDA_CASES:
+            with self.subTest(case=case):
+                f = self.fixture(case)
+                receipt = f.invoke()
+                self.assertEqual(receipt["case"], f.role)
+                self.assertEqual(receipt["expected_message"], f.message)
+                if case == "inherited_pid":
+                    self.assertEqual(len(receipt["fork_guards"]), 3)
+                    self.assertEqual([r["pid"] for r in receipt["fork_guards"]], [103, 104, 105])
+
+    def test_cuda_outer_corruptions(self):
+        f = self.fixture()
+        controls = [
+            ("child", "cuda_core_test_sha256", "wrong"),
+            ("child", "cuda_core_imports", {}),
+            ("observed", "queued_ppid", True),
+            ("observed", "queued_ppid", 999),
+            ("child", "threads", True),
+            ("child", "interop_threads", 1),
+            ("child", "debug", False),
+            ("child", "pid", True),
+            ("observed", "message", "wrong"),
+            ("observed", "exitcode", False),
+        ]
+        for record, field, bad in controls:
+            with self.subTest(record=record, field=field, bad=bad):
+                obj = getattr(f, record)
+                original = obj[field]
+                obj[field] = bad
+                f.write(record, obj)
+                f.refuse()
+                obj[field] = original
+                f.write(record, obj)
+
+    def test_fork_identity_corruptions(self):
+        f = self.fixture()
+        controls = {
+            "schema": "wrong",
+            "profile": "full-torch",
+            "role": "cuda_core_inherited_pid",
+            "trial": "local",
+            "pid": True,
+            "ppid": 101,
+            "inherited_domain_pid": 999,
+            "qualified": False,
+            "base_commit": "wrong",
+            "candidate_tree": "wrong",
+            "manifest_sha256": "wrong",
+            "cuda_core_imports": {},
+            "module_origin": "fresh-import",
+            "source_sha256": {},
+            "os_threads": True,
+            "torch_profile": {"threads": 5},
+            "torch_profile_unavailable_reason": "wrong",
+            "guard_results": {},
+        }
+        identity, _ = f.guards["admission"]
+        for field, bad in controls.items():
+            with self.subTest(field=field):
+                original = identity[field]
+                identity[field] = bad
+                self.save_guard(f, "admission")
+                f.refuse()
+                identity[field] = original
+                self.save_guard(f, "admission")
+
+    def test_fork_observation_corruptions(self):
+        f = self.fixture()
+        _, observed = f.guards["admission"]
+        controls = {
+            "schema": "wrong",
+            "trial": "local",
+            "role": "wrong",
+            "parent_pid": 101,
+            "fork_pid": 999,
+            "waitpid_pid": 999,
+            "wait_status": 9,
+            "exit_code": False,
+            "queued_pid": True,
+            "queued_ppid": 101,
+            "message": "wrong",
+            "parent_os_threads_before_fork": True,
+            "manifest_sha256": "wrong",
+        }
+        for field, bad in controls.items():
+            with self.subTest(field=field):
+                original = observed[field]
+                observed[field] = bad
+                self.save_guard(f, "admission")
+                f.refuse()
+                observed[field] = original
+                self.save_guard(f, "admission")
+        for bad in (True, -1, 256, 127, 65536):
+            observed["wait_status"] = bad
+            self.save_guard(f, "admission")
+            f.refuse()
+
+    def test_all_guard_effects_and_diagnostics(self):
+        f = self.fixture()
+        for trial, (identity, _) in f.guards.items():
+            for action, result in identity["guard_results"].items():
+                for field in result:
+                    original = result[field]
+                    values = (1, False) if field.endswith("calls") else ("wrong",)
+                    for bad in values:
+                        with self.subTest(trial=trial, action=action, field=field, bad=bad):
+                            result[field] = bad
+                            self.save_guard(f, trial)
+                            f.refuse()
+                    result[field] = original
+                    self.save_guard(f, trial)
+
+    def test_guard_schemas_missing_extra_and_missing_records(self):
+        f = self.fixture()
+        for trial, pair in f.guards.items():
+            for record in pair:
+                for field in list(record):
+                    original = record.pop(field)
+                    self.save_guard(f, trial)
+                    f.refuse()
+                    record[field] = original
+                    self.save_guard(f, trial)
+                record["extra"] = 1
+                self.save_guard(f, trial)
+                f.refuse()
+                del record["extra"]
+                self.save_guard(f, trial)
+            for kind in ("identity", "observation"):
+                path = f.job_dir / f"fork-{kind}-cuda_core_inherited_pid-{trial}.json"
+                saved = path.with_suffix(".saved")
+                path.rename(saved)
+                f.refuse()
+                saved.rename(path)
+
+    def test_guard_hash_and_reused_pid(self):
+        f = self.fixture()
+        path = f.job_dir / "fork-identity-cuda_core_inherited_pid-admission.json"
+        original = path.read_bytes()
+        path.write_bytes(original + b" ")
+        f.refuse()
+        path.write_bytes(original)
+        identity, observed = f.guards["local"]
+        for pid in (101, 102, 103):
+            identity["pid"] = pid
+            for field in ("fork_pid", "waitpid_pid", "queued_pid"):
+                observed[field] = pid
+            self.save_guard(f, "local")
+            f.refuse()
+
+    def test_guard_action_and_result_schema_mutations(self):
+        f = self.fixture()
+        for trial, (identity, _) in f.guards.items():
+            actions = identity["guard_results"]
+            for action in list(actions):
+                result = actions.pop(action)
+                self.save_guard(f, trial)
+                f.refuse()
+                actions[action] = result
+                for field in list(result):
+                    value = result.pop(field)
+                    self.save_guard(f, trial)
+                    f.refuse()
+                    result[field] = value
+                result["extra"] = 0
+                self.save_guard(f, trial)
+                f.refuse()
+                del result["extra"]
+            actions["unknown"] = {}
+            self.save_guard(f, trial)
+            f.refuse()
+            del actions["unknown"]
+            self.save_guard(f, trial)
+
+    def test_local_policy_guard_missing_action_refused(self):
+        f = self.fixture()
+        actions = f.guards["local"][0]["guard_results"]
+        for action in LOCAL_POLICY_GUARD_ACTIONS:
+            with self.subTest(action=action):
+                result = actions.pop(action)
+                self.save_guard(f, "local")
+                f.refuse()
+                actions[action] = result
+                self.save_guard(f, "local")
+
+    def test_legacy_five_action_local_trial_refused(self):
+        f = self.fixture()
+        actions = f.guards["local"][0]["guard_results"]
+        for action in LOCAL_POLICY_GUARD_ACTIONS:
+            del actions[action]
+        self.assertEqual(len(actions), 5)
+        self.save_guard(f, "local")
+        f.refuse()
+
+    def test_local_policy_guard_extra_action_and_wrong_trial_refused(self):
+        f = self.fixture()
+        actions = f.guards["local"][0]["guard_results"]
+        for action in LOCAL_POLICY_GUARD_ACTIONS:
+            with self.subTest(action=action, trial="local"):
+                actions[action + "_extra"] = actions[action].copy()
+                self.save_guard(f, "local")
+                f.refuse()
+                del actions[action + "_extra"]
+                self.save_guard(f, "local")
+            for trial in ("admission", "invocation"):
+                with self.subTest(action=action, trial=trial):
+                    other = f.guards[trial][0]["guard_results"]
+                    other[action] = actions[action].copy()
+                    self.save_guard(f, trial)
+                    f.refuse()
+                    del other[action]
+                    self.save_guard(f, trial)
+
+    def test_local_policy_guard_result_closed_schema_refused(self):
+        f = self.fixture()
+        actions = f.guards["local"][0]["guard_results"]
+        for action in LOCAL_POLICY_GUARD_ACTIONS:
+            result = actions[action]
+            for field in list(result):
+                with self.subTest(action=action, missing=field):
+                    value = result.pop(field)
+                    self.save_guard(f, "local")
+                    f.refuse()
+                    result[field] = value
+                    self.save_guard(f, "local")
+            with self.subTest(action=action, extra="unexpected"):
+                result["unexpected"] = 0
+                self.save_guard(f, "local")
+                f.refuse()
+                del result["unexpected"]
+                self.save_guard(f, "local")
+
+    def test_local_policy_guard_result_types_refused(self):
+        f = self.fixture()
+        actions = f.guards["local"][0]["guard_results"]
+        for action in LOCAL_POLICY_GUARD_ACTIONS:
+            result = actions[action]
+            for bad_result in (None, [], "guard refused", True):
+                with self.subTest(action=action, bad_result=bad_result):
+                    actions[action] = bad_result
+                    self.save_guard(f, "local")
+                    f.refuse()
+            actions[action] = result
+            for field, value in result.items():
+                bad_values = (False, 0.0, "0", None) if field.endswith("calls") else (1, [], None)
+                for bad in bad_values:
+                    with self.subTest(action=action, field=field, bad=bad):
+                        result[field] = bad
+                        self.save_guard(f, "local")
+                        f.refuse()
+                result[field] = value
+            self.save_guard(f, "local")
+
+    def test_local_policy_guard_bad_outcomes_refused(self):
+        f = self.fixture()
+        actions = f.guards["local"][0]["guard_results"]
+        for action in LOCAL_POLICY_GUARD_ACTIONS:
+            result = actions[action]
+            for field, value in result.items():
+                if field.endswith("calls"):
+                    bad_values = (1, -1)
+                elif field == "exception_class":
+                    bad_values = ("builtins.ValueError", "RuntimeError")
+                elif field == "diagnostic":
+                    bad_values = ("", "RNG custody cannot be inherited by another process.")
+                else:
+                    bad_values = (False,)
+                for bad in bad_values:
+                    with self.subTest(action=action, field=field, bad=bad):
+                        result[field] = bad
+                        self.save_guard(f, "local")
+                        f.refuse()
+                result[field] = value
+            self.save_guard(f, "local")
+
+    def test_each_role_rejects_another_cuda_node(self):
+        for case in CUDA_CASES:
+            f = self.fixture(case)
+            wrong = "bootstrap_failure" if case != "bootstrap_failure" else "runtime_query_failure"
+            args = list(f.args)
+            args[2] = CUDA_MODULES["test_rng_cuda_admission"] + f"::test_isolated_poison_protocol[{wrong}]"
+            f.spec_data["jobs"][0]["args"] = args
+            f.result["command"] = [str(f.root / ".venv/bin/python"), *args]
+            f.write("spec", f.spec_data)
+            f.write("result", f.result)
+            f.refuse()
+
+    def test_guard_profile_never_weakens_outer_profile(self):
+        f = self.fixture()
+        f.child["torch"] = None
+        f.write("child", f.child)
+        f.refuse()
+        f.child["torch"] = f.controller["torch"]
+        f.child["interop_threads"] = None
+        f.write("child", f.child)
+        f.refuse()
+
+    def test_unknown_fork_identity_record_refused(self):
+        self.assert_unknown_fork_records_refused(("identity",))
+
+    def test_lone_unknown_fork_observation_refused(self):
+        self.assert_unknown_fork_records_refused(("observation",))
+
+    def test_extra_fork_pair_refused(self):
+        self.assert_unknown_fork_records_refused(("identity", "observation"))
+
+    def assert_unknown_fork_records_refused(self, kinds):
+        fixture = self.fixture()
+        for kind in kinds:
+            original = fixture.job_dir / f"fork-{kind}-cuda_core_inherited_pid-admission.json"
+            extra = fixture.job_dir / f"fork-{kind}-cuda_core_inherited_pid-unknown.json"
+            extra.write_bytes(original.read_bytes())
+        with self.assertRaisesRegex(ValueError, "unexpected fork record inventory"):
+            fixture.invoke()
+        self.assertFalse((fixture.job_dir / ("replay-spawn-custody-" + fixture.role + ".json")).exists())
+
+    def test_node_source_profile_and_unknown_job(self):
+        for check in (
+            "test_other_node_cannot_substitute",
+            "test_source_config_artifact_mismatch",
+            "test_wrong_cpu_harness_profile",
+            "test_invalid_parent_elapsed_seconds",
+            "test_parent_result_controls",
+            "test_partial_and_unknown_schemas",
+        ):
+            f = self.fixture("bootstrap_failure")
+            getattr(f, check)()
+        f = self.fixture()
+        f.spec_data["jobs"][0]["name"] = "cuda-core-unknown"
+        f.write("spec", f.spec_data)
+        f.refuse()
+
+
+class InvocationVerifierTests(unittest.TestCase):
+    fixture = CudaVerifierTests.fixture
+    save_phase = CudaVerifierTests.save_phase
+    save_guard = CudaVerifierTests.save_guard
+    cases = CUDA_CASES[-6:]
+
+    def change(self, f, record, path, bad, rehash=True):
+        original = json.loads(f.paths[record].read_text())
+        value = json.loads(json.dumps(original))
+        target = value
+        for key in path[:-1]:
+            target = target[key]
+        target[path[-1]] = bad
+        f.write(record, value)
+        if record == "phase" and rehash:
+            f.observed["invocation_phase_sha256"] = verifier.digest(f.paths[record].read_bytes())
+            f.write("observed", f.observed)
+        return original
+
+    def test_six_exact_invocation_roles_and_phase_receipts(self):
+        for case in self.cases:
+            with self.subTest(case=case):
+                f = self.fixture(case)
+                receipt = f.invoke()
+                self.assertEqual(receipt["case"], "cuda_core_" + case)
+                self.assertEqual(receipt["expected_message"], f"cuda core {case} fail closed")
+                if "phase" in f.paths:
+                    self.assertEqual(receipt["invocation_phase_sha256"], verifier.digest(f.paths["phase"].read_bytes()))
+                else:
+                    self.assertNotIn("invocation_phase_sha256", receipt)
+
+    def test_each_invocation_role_keeps_outer_controls(self):
+        for case in self.cases:
+            for check in (
+                "test_parent_result_controls",
+                "test_wrong_cpu_harness_profile",
+                "test_repository_metadata_mismatch",
+                "test_source_config_artifact_mismatch",
+                "test_invalid_parent_elapsed_seconds",
+                "test_partial_and_unknown_schemas",
+            ):
+                with self.subTest(case=case, check=check):
+                    getattr(self.fixture(case), check)()
+            f = self.fixture(case)
+            args = list(f.args)
+            args[2] = args[2].replace(case, "invocation_unknown")
+            f.spec_data["jobs"][0]["args"] = args
+            f.result["command"] = [str(f.root / ".venv/bin/python"), *args]
+            f.write("spec", f.spec_data)
+            f.write("result", f.result)
+            f.refuse()
+
+    def test_phase_schema_types_and_identity_are_independent_of_hash(self):
+        controls = [
+            (["schema"], "unknown"),
+            (["role"], "cuda_core_invocation_same_error"),
+            (["case"], "invocation_same_error"),
+            (["pid"], True),
+            (["pid"], 102.0),
+            (["pid"], 999),
+            (["ppid"], 999),
+            (["base_commit"], "wrong"),
+            (["candidate_tree"], "wrong"),
+            (["manifest_sha256"], "0" * 64),
+            (["source_sha256"], {}),
+            (["source_sha256"], []),
+            (["source_sha256", "townlet.exploration.rng_custody"], "0" * 64),
+            (["source_sha256", "test_rng_cuda_admission"], "0" * 64),
+            (["devices"], [False, 1, 2]),
+            (["devices"], [0.0, 1, 2]),
+            (["devices"], [0, 2, 1]),
+            (["synchronize_events"], None),
+            (["synchronize_events"], [True]),
+            (["synchronize_events"], [0.0]),
+            (["synchronize_events"], [-1]),
+            (["synchronize_events"], [3]),
+            (["exception_labels"], ["synchronization", "body"]),
+            (["exception_labels"], ["body"]),
+        ]
+        for case in self.cases[-2:]:
+            f = self.fixture(case)
+            for path, bad in controls + [
+                (["completion_failed"], 1),
+                (["completion_failed"], False),
+                (["completion_failed"], True if case.endswith("reference") else None),
+            ]:
+                with self.subTest(case=case, path=path, bad=bad):
+                    self.change(f, "phase", path, bad)
+                    f.refuse()
+                    self.save_phase(f)
+
+    def test_phase_missing_extra_fields_and_source_keys(self):
+        for case in self.cases[-2:]:
+            f = self.fixture(case)
+            for path in ([], ["source_sha256"]):
+                data = f.phase if not path else f.phase["source_sha256"]
+                for key in [*data, "unknown"]:
+                    changed = dict(data)
+                    if key in changed:
+                        del changed[key]
+                    else:
+                        changed[key] = 0
+                    if path:
+                        self.change(f, "phase", path, changed)
+                    else:
+                        f.write("phase", changed)
+                        f.observed["invocation_phase_sha256"] = verifier.digest(f.paths["phase"].read_bytes())
+                        f.write("observed", f.observed)
+                    f.refuse()
+                    self.save_phase(f)
+
+    def test_phase_parent_hash_missing_file_and_malformed_json(self):
+        for case in self.cases[-2:]:
+            f = self.fixture(case)
+            for payload in (b"{}", b"[]", b"null", b"{", f.paths["phase"].read_bytes() + b" "):
+                f.paths["phase"].write_bytes(payload)
+                f.refuse()
+                self.save_phase(f)
+            for value in (None, True, "0" * 64):
+                f.observed["invocation_phase_sha256"] = value
+                f.write("observed", f.observed)
+                f.refuse()
+            self.save_phase(f)
+            del f.observed["invocation_phase_sha256"]
+            f.write("observed", f.observed)
+            f.refuse()
+            self.save_phase(f)
+            f.paths["phase"].unlink()
+            f.refuse()
+
+    def test_phase_marker_inventory_for_all_cuda_roles(self):
+        for case in CUDA_CASES:
+            f = self.fixture(case)
+            marker = f.job_dir / "invocation-phase-unknown.json"
+            marker.write_text("{}")
+            f.refuse()
+            marker.unlink()
+            if "phase" in f.paths:
+                renamed = f.paths["phase"].with_name("invocation-phase-swapped.json")
+                f.paths["phase"].rename(renamed)
+                f.refuse()
+            else:
+                f.observed["invocation_phase_sha256"] = "0" * 64
+                f.write("observed", f.observed)
+                f.refuse()
+
+    def test_phase_marker_does_not_weaken_replay_or_producer_protocol(self):
+        for cls in (ReplayVerifierTests, RecurrentReplayVerifierTests):
+            f = cls()
+            self.addCleanup(f.doCleanups)
+            f.setUp()
+            (f.job_dir / "invocation-phase-unknown.json").write_text("{}")
+            f.refuse()
+        f = ProducerVerifierTests.fixture(self)
+        (f.job_dir / "invocation-phase-unknown.json").write_text("{}")
+        f.refuse()
+
+    def test_invocation_trial_required_and_exact(self):
+        f = self.fixture()
+        for kind in ("identity", "observation"):
+            path = f.job_dir / f"fork-{kind}-cuda_core_inherited_pid-invocation.json"
+            saved = path.with_suffix(".saved")
+            path.rename(saved)
+            f.refuse()
+            saved.rename(path)
+        identity, _ = f.guards["invocation"]
+        for action in list(identity["guard_results"]):
+            value = identity["guard_results"].pop(action)
+            identity["guard_results"][action + "_renamed"] = value
+            self.save_guard(f, "invocation")
+            f.refuse()
+            del identity["guard_results"][action + "_renamed"]
+            identity["guard_results"][action] = value
+            self.save_guard(f, "invocation")
+        _, observed = f.guards["invocation"]
+        for pid in (101, 102, 103, 104):
+            identity["pid"] = pid
+            for key in ("fork_pid", "waitpid_pid", "queued_pid"):
+                observed[key] = pid
+            self.save_guard(f, "invocation")
+            f.refuse()
+
+    def pair_fixture(self):
+        reference, failure = (self.fixture(case) for case in self.cases[-2:])
+        old_root = str(failure.root)
+        failure.root = reference.root
+        for record in ("controller", "child"):
+            value = getattr(failure, record)
+            value["module"] = str(failure.root / "src/townlet/__init__.py")
+            if record == "child":
+                for key in ("imports", "cuda_core_imports"):
+                    value[key] = {k: v.replace(old_root, str(failure.root), 1) for k, v in value[key].items()}
+            failure.write(record, value)
+        failure.spec_data["root"] = str(failure.root)
+        failure.result["command"][0] = str(failure.root / ".venv/bin/python")
+        failure.write("spec", failure.spec_data)
+        failure.write("result", failure.result)
+        for f in (reference, failure):
+            f.invoke()
+            f.paths["strict"] = f.job_dir / f"replay-spawn-custody-{f.role}.json"
+        return reference, failure
+
+    def pair(self, reference, failure):
+        function = getattr(verifier, "verify_invocation_phase_pair", None)
+        self.assertTrue(callable(function), "missing adopted explicit invocation phase-pair verifier")
+        with patch.object(verifier, "verify", side_effect=AssertionError("pair must not invoke custody writer")):
+            return function(reference.paths["spec"], failure.paths["spec"])
+
+    def pair_refuses(self, reference, failure):
+        before = self.pair_files(reference, failure)
+        with self.assertRaises((ValueError, OSError)):
+            self.pair(reference, failure)
+        after = self.pair_files(reference, failure)
+        self.assertEqual(before, after, "pair rejection must not rewrite or create custody output")
+
+    def pair_files(self, reference, failure):
+        return {p: p.read_bytes() for f in (reference, failure) for p in f.base.rglob("*") if p.is_file()}
+
+    def test_pair_exact_receipt_and_reference_bytes_without_writer(self):
+        reference, failure = self.pair_fixture()
+        before = self.pair_files(reference, failure)
+        receipt = self.pair(reference, failure)
+        self.assertEqual(set(receipt), {"schema", "status", "verifier_sha256", "shared", "reference", "failure", "scope"})
+        self.assertEqual(receipt["schema"], "cuda-core-invocation-phase-pair-custody-v1")
+        self.assertEqual(receipt["status"], "CUDA CORE INVOCATION PHASE PARITY VERIFIED")
+        self.assertEqual(receipt["verifier_sha256"], verifier.digest(VERIFIER.read_bytes()))
+        self.assertEqual(
+            receipt["scope"],
+            "Two separately qualified CPU CUDA-core phase controls; observed synchronization parity only; "
+            "no CUDA hardware, producer, parent-owner, B6 or whole-package qualification.",
+        )
+        self.assertEqual(
+            receipt["shared"],
+            {
+                "root": str(reference.root.resolve()),
+                "base_commit": "a" * 40,
+                "candidate_tree": "b" * 40,
+                "manifest_sha256": verifier.digest(reference.paths["manifest"].read_bytes()),
+                "source_sha256": reference.phase["source_sha256"],
+                "devices": [0, 1, 2],
+                "synchronize_events": [0, 1],
+                "exception_labels": ["body", "synchronization"],
+            },
+        )
+        for field in ("devices", "synchronize_events"):
+            self.assertIs(type(receipt["shared"][field]), list)
+            for device in receipt["shared"][field]:
+                self.assertIs(type(device), int)
+        names = {
+            "spec": "spec",
+            "manifest": "manifest",
+            "result": "result",
+            "controller": "controller",
+            "child_identity": "child",
+            "parent_observation": "observed",
+            "phase_artifact": "phase",
+            "strict_custody": "strict",
+        }
+        for key, f, outcome in (("reference", reference, None), ("failure", failure, True)):
+            subject = receipt[key]
+            self.assertEqual(set(subject), {"role", "case", "child_pid", "parent_pid", "completion_failed", "references"})
+            self.assertEqual(subject["role"], f.role)
+            self.assertEqual(subject["case"], f.role.removeprefix("cuda_core_"))
+            self.assertIs(type(subject["child_pid"]), int)
+            self.assertIs(type(subject["parent_pid"]), int)
+            self.assertEqual((subject["child_pid"], subject["parent_pid"]), (102, 101))
+            self.assertIs(subject["completion_failed"], outcome)
+            self.assertEqual(set(subject["references"]), set(names))
+            for name, path_key in names.items():
+                path = f.paths[path_key]
+                self.assertEqual(
+                    subject["references"][name],
+                    {
+                        "path": str(path.resolve()),
+                        "bytes": len(path.read_bytes()),
+                        "sha256": verifier.digest(path.read_bytes()),
+                    },
+                )
+                self.assertIs(type(subject["references"][name]["bytes"]), int)
+        self.assertEqual(before, self.pair_files(reference, failure))
+        self.assertEqual(receipt, self.pair(reference, failure))
+        for f in (reference, failure):
+            with self.assertRaises(ValueError):
+                f.invoke()
+
+    def test_pair_swapped_duplicate_and_missing_subjects(self):
+        reference, failure = self.pair_fixture()
+        self.pair_refuses(failure, reference)
+        self.pair_refuses(reference, reference)
+        for f in (reference, failure):
+            for key in ("spec", "manifest", "result", "controller", "child", "observed", "phase", "strict"):
+                path = f.paths[key]
+                saved = path.with_suffix(".saved")
+                path.rename(saved)
+                self.pair_refuses(reference, failure)
+                saved.rename(path)
+
+    def test_pair_existing_custody_must_be_exactly_typed_and_recomputed(self):
+        reference, failure = self.pair_fixture()
+        for f in (reference, failure):
+            original = json.loads(f.paths["strict"].read_text())
+            for key, bad in (
+                ("child_pid", 102.0),
+                ("threads", True),
+                ("interop_threads", 5.0),
+                ("debug", 1),
+                ("source_guards", float(original["source_guards"])),
+                ("verifier_sha256", "0" * 64),
+                ("invocation_phase_sha256", "0" * 64),
+                ("status", "unverified"),
+            ):
+                self.change(f, "strict", [key], bad)
+                self.pair_refuses(reference, failure)
+                f.write("strict", original)
+            for key in [*original, "unknown"]:
+                value = dict(original)
+                if key in value:
+                    del value[key]
+                else:
+                    value[key] = 0
+                f.write("strict", value)
+                self.pair_refuses(reference, failure)
+            f.write("strict", original)
+
+    def test_pair_revalidates_bound_records_and_source_bytes(self):
+        reference, failure = self.pair_fixture()
+        for f in (reference, failure):
+            for record, path, bad in (
+                ("spec", ["workers"], True),
+                ("spec", ["jobs"], []),
+                ("spec", ["jobs"], f.spec_data["jobs"] * 2),
+                ("result", ["exit_code"], False),
+                ("controller", ["threads"], True),
+                ("child", ["pid"], 999),
+                ("child", ["interop_threads"], 1),
+                ("observed", ["queued_ppid"], 999),
+                ("phase", ["pid"], 999),
+            ):
+                original = self.change(f, record, path, bad)
+                self.pair_refuses(reference, failure)
+                f.write(record, original)
+                self.save_phase(f)
+            path = f.root / CUDA_MODULES["test_rng_cuda_admission"]
+            original_bytes = path.read_bytes()
+            path.write_bytes(b"changed inert source")
+            self.pair_refuses(reference, failure)
+            path.write_bytes(original_bytes)
+        failure.git_values["tree"] = "wrong"
+        self.pair_refuses(reference, failure)
+
+    def test_pair_unequal_observed_events_with_coherent_individual_receipts(self):
+        reference, failure = self.pair_fixture()
+        failure.phase["synchronize_events"] = [0, 1, 2]
+        self.save_phase(failure)
+        failure.paths["strict"].unlink()
+        failure.invoke()
+        self.pair_refuses(reference, failure)
+
+    def test_pair_compares_observed_events_without_fixed_tail(self):
+        reference, failure = self.pair_fixture()
+        for f in (reference, failure):
+            f.phase["synchronize_events"] = [0, 1, 2]
+            self.save_phase(f)
+            f.paths["strict"].unlink()
+            f.invoke()
+        self.assertEqual(self.pair(reference, failure)["shared"]["synchronize_events"], [0, 1, 2])
+
+    def test_pair_rejects_misplaced_phase_marker_after_individual_qualification(self):
+        reference, failure = self.pair_fixture()
+        (failure.job_dir / "invocation-phase-unknown.json").write_text("{}")
+        self.pair_refuses(reference, failure)
+
+    def test_pair_rejects_individually_valid_different_manifest(self):
+        reference, failure = self.pair_fixture()
+        failure.manifest["configs"]["artifact-data"] = verifier.digest((failure.root / "artifact-data").read_bytes())
+        failure.write("manifest", failure.manifest)
+        manifest_hash = verifier.digest(failure.paths["manifest"].read_bytes())
+        for record in ("result", "child", "observed", "phase"):
+            getattr(failure, record)["manifest_sha256"] = manifest_hash
+            failure.write(record, getattr(failure, record))
+        self.save_phase(failure)
+        failure.paths["strict"].unlink()
+        failure.invoke()
+        self.pair_refuses(reference, failure)
+
+    def test_pair_preserves_each_subject_process_identity(self):
+        reference, failure = self.pair_fixture()
+        failure.child.update(pid=202, ppid=201)
+        failure.observed.update(process_pid=202, queued_pid=202, parent_pid=201, queued_ppid=201)
+        failure.phase.update(pid=202, ppid=201)
+        for record in ("child", "observed"):
+            failure.write(record, getattr(failure, record))
+        self.save_phase(failure)
+        failure.paths["strict"].unlink()
+        failure.invoke()
+        receipt = self.pair(reference, failure)
+        self.assertEqual((receipt["reference"]["child_pid"], receipt["reference"]["parent_pid"]), (102, 101))
+        self.assertEqual((receipt["failure"]["child_pid"], receipt["failure"]["parent_pid"]), (202, 201))
+
+
+PRODUCER_CASES = tuple(
+    f"{family}_{schedule}"
+    for family in ("flat", "per")
+    for schedule in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
+)
+PRODUCER_MODULES = {
+    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
+    **{
+        "townlet.training." + n: "src/townlet/training/" + n + ".py"
+        for n in ("replay_contract", "replay_buffer", "prioritized_replay_buffer")
+    },
+    "test_replay_cuda_producer": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+}
+
+
+class ProducerVerifierTests(unittest.TestCase):
+    def fixture(self, case="flat_local_single"):
+        f = ReplayVerifierTests()
+        self.addCleanup(f.doCleanups)
+        f.job_name, f.role = "cuda-producer-poison-" + case, "cuda_producer_poison"
+        f.message = f"cuda producer {case} poison quarantines under owner custody"
+        f.args = (
+            "-m",
+            "pytest",
+            PRODUCER_MODULES["test_replay_cuda_producer"] + f"::test_isolated_producer_poison[{case}]",
+            *verifier.REPLAY_ARGS[3:],
+        )
+        f.module_paths = PRODUCER_MODULES
+        f.setUp()
+        f.child.update(
+            producer_case=case,
+            cuda_producer_imports=f.child.pop("replay_imports"),
+            cuda_producer_sha256={k: f.manifest["source_files"][v] for k, v in PRODUCER_MODULES.items()},
+        )
+        baseline = {
+            "domain": [1, 2, False],
+            "python": "a" * 64,
+            "numpy": ["MT19937", "b" * 64, 624, 0, 0.0],
+            "torch": "c" * 64,
+            "cuda": None,
+        }
+        f.observed.update(case=case, queued_ppid=101, before=baseline, after={**baseline, "domain": [2, 3, False]}, success=True)
+        same, distinct = case.endswith("same"), case.endswith("distinct")
+        ids = [201, 201, None] if same else [201, 202, 203] if distinct else [None, 202, None]
+
+        def leaf(kind, text, identity):
+            return {"type": kind, "message": text, "id": identity, "children": []}
+
+        body = leaf("ValueError", case + ": body", 201)
+        c0 = leaf("RuntimeError", case + ": completion0", 202)
+        error = body if same else c0
+        if distinct:
+            error = {
+                "type": "ExceptionGroup",
+                "message": "actual diagnostic",
+                "id": 204,
+                "children": [body, c0, leaf("OSError", case + ": completion1", 203)],
+            }
+        f.preflight = {
+            "case": case,
+            "pid": 102,
+            "ppid": 101,
+            "qualified": True,
+            "before": {"domain": [3, 4, False], "devices": [0, 1], "error_ids": ids},
+        }
+        f.after = {
+            "case": case,
+            "pid": 102,
+            "ppid": 101,
+            "qualified": True,
+            "phase": "complete",
+            "success": True,
+            "failure": None,
+            "observations": {
+                "healthy_controls": True,
+                "reached": True,
+                "started_work": same or distinct,
+                "syncs": [0, 1],
+                "peer_blocked": True,
+                "worker_errors": [error],
+                "peer_errors": [leaf("RuntimeError", "owner quarantined", 205)],
+                "completion_failed": [True],
+                "outcome_errors": [],
+                "quarantine_before_unlock": [True],
+                "owner_quarantined": True,
+                "cpu_local_available": True,
+                "ambient_refused": True,
+                "domain_after": [3, 5, True],
+            },
+        }
+        f.parent_before = {"case": case, "parent_pid": 101, "qualified": True, "before": baseline}
+        for key, name in (("preflight", "preflight"), ("after", "after"), ("parent_before", "parent-before")):
+            f.paths[key] = f.job_dir / f"spawn-{name}-{f.role}.json"
+        for key in ("child", "observed", "preflight", "after", "parent_before"):
+            f.write(key, getattr(f, key))
+        return f
+
+    def test_all_ten_producer_cases(self):
+        for case in PRODUCER_CASES:
+            with self.subTest(case=case):
+                f = self.fixture(case)
+                receipt = f.invoke()
+                self.assertEqual(receipt["producer_case"], case)
+                for key in ("preflight", "after", "parent_before"):
+                    self.assertEqual(receipt[key + "_sha256"], verifier.digest(f.paths[key].read_bytes()))
+                with self.assertRaises(ValueError):
+                    f.invoke()
+
+    def mutate(self, f, record, path, value):
+        data = json.loads(f.paths[record].read_text())
+        original = json.loads(json.dumps(data))
+        target = data
+        for part in path[:-1]:
+            target = target[part]
+        target[path[-1]] = value
+        f.write(record, data)
+        f.refuse()
+        f.write(record, original)
+
+    def test_producer_outer_and_crosscase_controls(self):
+        f = self.fixture()
+        for record, field, bad in (
+            ("child", "producer_case", "per_local_single"),
+            ("child", "cuda_producer_sha256", {}),
+            ("child", "cuda_producer_imports", {}),
+            ("child", "threads", True),
+            ("child", "interop_threads", 1),
+            ("child", "pid", True),
+            ("child", "debug", False),
+            ("observed", "queued_ppid", 999),
+            ("observed", "success", False),
+            ("observed", "case", "per_local_single"),
+            ("observed", "message", "wrong"),
+            ("controller", "candidate_tree", "wrong"),
+        ):
+            self.mutate(f, record, [field], bad)
+        for case in PRODUCER_CASES:
+            f = self.fixture(case)
+            other = "per_local_single" if case != "per_local_single" else "flat_local_single"
+            args = list(f.args)
+            args[2] = args[2].replace(case, other)
+            f.spec_data["jobs"][0]["args"] = args
+            f.result["command"] = [str(f.root / ".venv/bin/python"), *args]
+            f.write("spec", f.spec_data)
+            f.write("result", f.result)
+            f.refuse()
+
+    def test_producer_success_schema_and_required_files(self):
+        f = self.fixture()
+        for key in ("preflight", "after", "parent_before", "observed", "child"):
+            data = json.loads(f.paths[key].read_text())
+            for field in data:
+                changed = data.copy()
+                del changed[field]
+                f.write(key, changed)
+                f.refuse()
+            f.write(key, {**data, "extra": 0})
+            f.refuse()
+            f.write(key, data)
+            saved = f.paths[key].with_suffix(".saved")
+            f.paths[key].rename(saved)
+            f.refuse()
+            saved.rename(f.paths[key])
+        for key in ("preflight", "after", "parent_before"):
+            for field, bad in (("case", "wrong"), ("qualified", 1), ("parent_pid" if key == "parent_before" else "pid", True)):
+                self.mutate(f, key, [field], bad)
+        for phase in ("preflight", "fault", "unknown"):
+            self.mutate(f, "after", ["phase"], phase)
+        self.mutate(f, "after", ["success"], False)
+        self.mutate(f, "after", ["failure"], {"type": "AttributeError"})
+
+    def test_producer_observation_controls(self):
+        for case in PRODUCER_CASES:
+            f = self.fixture(case)
+            obs = f.after["observations"]
+            for key in obs:
+                data = json.loads(f.paths["after"].read_text())
+                del data["observations"][key]
+                f.write("after", data)
+                f.refuse()
+                f.write("after", f.after)
+            for key in ("healthy_controls", "reached", "peer_blocked", "owner_quarantined", "cpu_local_available", "ambient_refused"):
+                self.mutate(f, "after", ["observations", key], False)
+            for key, bad in (
+                ("started_work", not obs["started_work"]),
+                ("syncs", [True]),
+                ("syncs", [1, 0]),
+                ("completion_failed", []),
+                ("completion_failed", [1]),
+                ("outcome_errors", [{}]),
+                ("quarantine_before_unlock", [True, True]),
+                ("domain_after", [1, 2, False]),
+                ("worker_errors", []),
+                ("peer_errors", []),
+            ):
+                self.mutate(f, "after", ["observations", key], bad)
+            for key, bad in (("type", "ValueError"), ("message", "healthy"), ("id", True), ("children", [{}])):
+                self.mutate(f, "after", ["observations", "peer_errors", 0, key], bad)
+            for key, bad in (("type", "wrong"), ("message", "wrong"), ("id", True), ("children", [{}])):
+                if key == "message" and case.endswith("distinct"):
+                    continue
+                self.mutate(f, "after", ["observations", "worker_errors", 0, key], bad)
+
+    def test_producer_schedule_and_error_identity(self):
+        for case in PRODUCER_CASES:
+            f = self.fixture(case)
+            for key, bad in (
+                ("devices", [False, True]),
+                ("devices", [1, 0]),
+                ("error_ids", [201, 202, 203, 204]),
+                ("error_ids", [None, True, None]),
+                ("domain", [True, 0, False]),
+                ("domain", [1, 0, True]),
+            ):
+                self.mutate(f, "preflight", ["before", key], bad)
+            self.mutate(f, "after", ["observations", "worker_errors", 0, "id"], 201 if case.endswith("distinct") else 999)
+            if case.endswith("distinct"):
+                for index in range(3):
+                    for field, bad in (("id", 999), ("message", "wrong"), ("type", "RuntimeError"), ("children", [{}])):
+                        if index == 1 and field == "type":
+                            continue
+                        self.mutate(f, "after", ["observations", "worker_errors", 0, "children", index, field], bad)
+            if "admitted" in case:
+                self.mutate(f, "after", ["observations", "completion_failed"], [True, True])
+            else:
+                self.mutate(f, "after", ["observations", "syncs"], [0, 1, 0])
+
+    def test_producer_parent_baselines(self):
+        f = self.fixture()
+        for field, bad in (
+            ("domain", [1, 2, True]),
+            ("python", "wrong"),
+            ("torch", "wrong"),
+            ("cuda", ["wrong"]),
+            ("numpy", ["MT19937", "a" * 64, True, 0, 0.0]),
+        ):
+            for side in ("before", "after"):
+                self.mutate(f, "observed", [side, field], bad)
+        self.mutate(f, "parent_before", ["before", "python"], "b" * 64)
+        self.mutate(f, "observed", ["after", "python"], "b" * 64)
+        self.mutate(f, "observed", ["after", "numpy", 4], float("nan"))
+
+    def test_producer_strict_existing_guards_and_single_job(self):
+        for check in (
+            "test_source_config_artifact_mismatch",
+            "test_wrong_cpu_harness_profile",
+            "test_parent_result_controls",
+            "test_invalid_parent_elapsed_seconds",
+            "test_repository_metadata_mismatch",
+        ):
+            f = self.fixture()
+            getattr(f, check)()
+        f = self.fixture()
+        f.spec_data["jobs"].append(f.spec_data["jobs"][0].copy())
+        f.write("spec", f.spec_data)
+        f.refuse()
+
+    def test_producer_nested_encoding_and_unknown_selection(self):
+        f = self.fixture()
+        for path, bad in ((["numpy", 0], "unknown"), (["numpy", 2], 625), (["numpy", 3], True), (["numpy", 4], 0)):
+            self.mutate(f, "observed", ["after", *path], bad)
+        self.mutate(f, "after", ["observations", "worker_errors", 0, "type"], "builtins.RuntimeError")
+        for record, path in (("preflight", ["before"]), ("after", ["observations"]), ("observed", ["after"])):
+            original = json.loads(f.paths[record].read_text())[path[0]]
+            for key in original:
+                changed = original.copy()
+                del changed[key]
+                self.mutate(f, record, path, changed)
+            self.mutate(f, record, path, {**original, "extra": 0})
+        for key in PRODUCER_MODULES:
+            self.mutate(f, "child", ["cuda_producer_sha256", key], "0" * 64)
+        self.mutate(f, "spec", ["jobs", 0, "name"], "cuda-producer-poison-unknown")
+        self.mutate(f, "spec", ["jobs", 0, "args"], [*f.args, "-n", "1"])
+
+
+if __name__ == "__main__":
+    unittest.main()

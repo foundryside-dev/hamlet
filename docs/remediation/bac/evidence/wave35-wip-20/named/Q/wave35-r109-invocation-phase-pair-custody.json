@@ -1,0 +1,127 @@
+{
+  "schema": "cuda-core-invocation-phase-pair-custody-v1",
+  "status": "CUDA CORE INVOCATION PHASE PARITY VERIFIED",
+  "verifier_sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+  "shared": {
+    "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+    "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+    "manifest_sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781",
+    "source_sha256": {
+      "test_rng_cuda_admission": "780b1464c258d0a0162f9f0983be079b869c3868b4d24fbbc029afa154218b36",
+      "townlet.exploration.rng_custody": "ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e"
+    },
+    "devices": [
+      0,
+      1,
+      2
+    ],
+    "synchronize_events": [
+      0,
+      1
+    ],
+    "exception_labels": [
+      "body",
+      "synchronization"
+    ],
+    "root": "/workspace/hamlet"
+  },
+  "reference": {
+    "role": "cuda_core_invocation_phase_reference",
+    "case": "invocation_phase_reference",
+    "child_pid": 149940,
+    "parent_pid": 149857,
+    "completion_failed": null,
+    "references": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference-spec.json",
+        "bytes": 705,
+        "sha256": "9a0b03f6d6ac0be2091d8a577c8e069389f112ab3ff9a0f6f1b1f6fb08efb4a4"
+      },
+      "manifest": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-candidate.json",
+        "bytes": 203930,
+        "sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781"
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-result.json",
+        "bytes": 974,
+        "sha256": "fbe8a8630dc96e97cacd6afee12c77663347dbb5765cc7ab3af79ca8ba4c9bb7"
+      },
+      "controller": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/identity-controller.json",
+        "bytes": 246,
+        "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565"
+      },
+      "child_identity": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/spawn-identity-cuda_core_invocation_phase_reference.json",
+        "bytes": 975,
+        "sha256": "e12bd5fce4c27de8695338f5b327c52c568faf6fc65b9594ac96b7971faf02a5"
+      },
+      "parent_observation": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/spawn-observation-cuda_core_invocation_phase_reference.json",
+        "bytes": 369,
+        "sha256": "e33b02cdf6c2c53959e25464d251019e453d4a3a106eef1870e99846b2033daf"
+      },
+      "phase_artifact": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/invocation-phase-cuda_core_invocation_phase_reference.json",
+        "bytes": 713,
+        "sha256": "f26c68da18f1c35ecd440bbb766f63786280759661f69a23ae4c226724654871"
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/replay-spawn-custody-cuda_core_invocation_phase_reference.json",
+        "bytes": 1682,
+        "sha256": "77b7fa9522075861e82bb73f4ead58b8b396f8ca56dacfff9ba0bb4bbe2d9264"
+      }
+    }
+  },
+  "failure": {
+    "role": "cuda_core_invocation_phase_failure",
+    "case": "invocation_phase_failure",
+    "child_pid": 149965,
+    "parent_pid": 149859,
+    "completion_failed": true,
+    "references": {
+      "spec": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure-spec.json",
+        "bytes": 699,
+        "sha256": "06881fdc87d51d081f2ce87ea98fd48ed336ac52d1e6ceec4d8be44192eb475f"
+      },
+      "manifest": {
+        "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r109-candidate.json",
+        "bytes": 203930,
+        "sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781"
+      },
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-result.json",
+        "bytes": 966,
+        "sha256": "7e95f58d56fb103a5524570184e9f666f649bb3455115df4a2afe4d18f4d122d"
+      },
+      "controller": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/identity-controller.json",
+        "bytes": 246,
+        "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565"
+      },
+      "child_identity": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/spawn-identity-cuda_core_invocation_phase_failure.json",
+        "bytes": 973,
+        "sha256": "4e9fa5e981f3f370750468385f244258cd41e199d872eda97df12c61c13fb6a8"
+      },
+      "parent_observation": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/spawn-observation-cuda_core_invocation_phase_failure.json",
+        "bytes": 367,
+        "sha256": "840a00458d6c1e2798ce3313511027c2b68e9863af28034f05cf742f4fa21dd3"
+      },
+      "phase_artifact": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/invocation-phase-cuda_core_invocation_phase_failure.json",
+        "bytes": 709,
+        "sha256": "bfe17c328064adb4ddc529ad18df8b7e5d025c55c279573393892dbc0aac1283"
+      },
+      "strict_custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/replay-spawn-custody-cuda_core_invocation_phase_failure.json",
+        "bytes": 1676,
+        "sha256": "ff59f1ddf1359e67bcbf5874b5e848fe780cec738cdaaa388e7b283af140f90e"
+      }
+    }
+  },
+  "scope": "Two separately qualified CPU CUDA-core phase controls; observed synchronization parity only; no CUDA hardware, producer, parent-owner, B6 or whole-package qualification."
+}

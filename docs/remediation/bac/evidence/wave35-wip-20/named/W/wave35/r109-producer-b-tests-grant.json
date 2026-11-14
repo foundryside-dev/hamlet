@@ -1,0 +1,48 @@
+{
+  "schema": "bac-bounded-implementation-grant-v1",
+  "owner": "/root/bac_producer_activation_prep",
+  "integration_owner": "/root",
+  "status": "B ACTIVATION TESTS-ONLY WRITE BATON GRANTED",
+  "writable": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+  ],
+  "read_only": [
+    "src/townlet/exploration/rng_custody.py",
+    "src/townlet/training/replay_contract.py",
+    "src/townlet/training/replay_buffer.py",
+    "src/townlet/training/prioritized_replay_buffer.py"
+  ],
+  "budget": {
+    "actual_existing_lines": 3955,
+    "activation_test_ceiling": 650,
+    "core_ceiling": 1250,
+    "reserved_total": 4907,
+    "files": 5,
+    "hard_total": 5000
+  },
+  "prerequisite": {
+    "root": "W",
+    "path": "wave35/r109-core-prerequisite-adoption.json",
+    "sha256": "f704a9fb2a28eadf16147f0bb65edeeabef94b97c8a8ef514ffdf6c3c034a218",
+    "bytes": 2059
+  },
+  "plan": {
+    "root": "W",
+    "path": "wave35/r109-producer-b-plan-adoption.json",
+    "sha256": "c01a6bad9e9f5a742465a7b01516c9d2cf03449e2ef83bec19d8092c7f523aae",
+    "bytes": 1419
+  },
+  "instructions": [
+    "Finish compact private supplier capsule and announce exacthash before writing activation tests, so separate core-test owner can use names/fields. No additional plan approval cycle required for routine private naming.",
+    "Author meaningful fixed18 canonical-owner/source-issued contract/cache/refusal controls using actual producers and genuine domain participants; never fake authority or add compatibility fallback.",
+    "Preserve nested public local gate refusal. Do not read old producer2468/core2166/helper675 bodies; source budget would exceed5000.",
+    "No production edits yet. Separate root-owned core-test fixture/manifest/cache/fork-state update packet will precede production B.",
+    "Keep tests collectable on pre-B source; choose direct causal missing-activation assertions, report blocked dependent fixtures honestly.",
+    "Root owns collection/runtime/RED. Author static formatting allowed. No app/child execution, Git/branch/worktree/checkout/copy actions."
+  ],
+  "handoff": [
+    "Exact node IDs, scope/proof versus existing836producer/88core/10producerchildren",
+    "Frozen hashes/linecounts and genuine fixture prerequisites",
+    "Remaining explicit supplier or implementation dependencies before rootRED"
+  ]
+}

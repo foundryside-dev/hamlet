@@ -1,0 +1,195 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+  "unique_node_phase_failures": 19,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+  ],
+  "signatures": [
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_PUSH_CUDA')",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_exact_source_manifest_and_immutable_descriptors",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_PUSH_RECORDED_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push_recorded]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push_recorded]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_SERIALIZE_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-serialize]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_READINESS_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-readiness]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-validate_serialized]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-declare_unconstrained_action_dim]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-install_historical_archive]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_priorities]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_unit_priorities]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-install_historical_archive]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-validate_serialized]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-historical_archives]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-readiness]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-load_for_mode]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-historical_archives]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+  where False = hasattr(custody, 'PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA')",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-serialize]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

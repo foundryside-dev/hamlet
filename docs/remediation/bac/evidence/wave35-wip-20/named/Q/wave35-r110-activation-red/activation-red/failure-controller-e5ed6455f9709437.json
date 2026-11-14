@@ -1,0 +1,8 @@
+{
+  "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-serialize]",
+  "phase": "call",
+  "outcome": "failed",
+  "worker": "controller",
+  "longrepr": "family = 'flat', route = 'serialize', name = 'REPLAY_BUFFER_SERIALIZE_CUDA'\ninput_kind = 'none', input_type = <class 'NoneType'>\nowners = (<function owners.<locals>.make at 0x7fea6c8b8a40>, <function owners.<locals>.unrelated at 0x7fea6c8b8ae0>)\nmonkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fea6c8f2250>\n\n    @pytest.mark.parametrize(\"family,route,name,input_kind,input_type\", _ROUTES, ids=_ROUTE_IDS)\n    def test_every_contract_binds_real_canonical_owner(\n        family: str, route: str, name: str, input_kind: str, input_type: type, owners: Any, monkeypatch: pytest.MonkeyPatch\n    ) -> None:\n>       contract = _contract(name)\n                   ^^^^^^^^^^^^^^^\n\ntests/test_townlet/regressions/bac/test_replay_cuda_activation.py:122: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ \n\nname = 'REPLAY_BUFFER_SERIALIZE_CUDA'\n\n    def _contract(name: str) -> custody.LocalCUDAContract:\n>       assert hasattr(custody, name), f\"B activation missing source-issued constant: {name}\"\nE       AssertionError: B activation missing source-issued constant: REPLAY_BUFFER_SERIALIZE_CUDA\nE       assert False\nE        +  where False = hasattr(custody, 'REPLAY_BUFFER_SERIALIZE_CUDA')\n\ntests/test_townlet/regressions/bac/test_replay_cuda_activation.py:55: AssertionError",
+  "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84"
+}

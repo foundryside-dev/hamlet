@@ -1,0 +1,104 @@
+"""Finite independent synthetic probes; never imports application code."""
+import ast
+import copy
+import difflib
+import hashlib
+import importlib.util
+import json
+from pathlib import Path
+
+W = Path('/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades')
+E = W / 'evidence-management'
+V = Path('/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py')
+T = E / 'test_replay_spawn_verifier.py'
+OLD = E / 'r109-preparation'
+old_v = (OLD / 'verify_bac_replay_spawn_identity-r109.py.txt').read_text()
+new_v = V.read_text()
+a, b = ast.parse(old_v), ast.parse(new_v)
+def assignment(tree, name):
+    return next(n for n in tree.body if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == name for t in n.targets))
+old_actions = ast.literal_eval(assignment(a, 'FORK_ACTIONS').value)
+new_actions = ast.literal_eval(assignment(b, 'FORK_ACTIONS').value)
+added = {'domain_local_cuda_policy', 'domain_resolve_local_cuda_record'}
+expected = copy.deepcopy(old_actions)
+expected['local'] |= added
+assert new_actions == expected
+assert {k: len(v) for k,v in new_actions.items()} == {'admission': 4, 'local': 7, 'invocation': 5}
+assignment(a, 'FORK_ACTIONS').value = assignment(b, 'FORK_ACTIONS').value
+assert ast.dump(a) == ast.dump(b), 'Unexpected semantic source change'
+print(json.dumps({'source_diff': ''.join(difflib.unified_diff(old_v.splitlines(True), new_v.splitlines(True))), 'action_counts': {k: len(v) for k,v in new_actions.items()}}))
+def ids(source):
+    classes = {n.name:n for n in ast.parse(source).body if isinstance(n, ast.ClassDef)}
+    def names(name):
+        node = classes[name]
+        found = {n.name for n in node.body if isinstance(n, ast.FunctionDef) and n.name.startswith('test_')}
+        for base in node.bases:
+            if isinstance(base, ast.Name) and base.id in classes:
+                found |= names(base.id)
+        return found
+    return {name + '.' + method for name in classes for method in names(name)}
+old_ids = ids((OLD / 'test_replay_spawn_verifier-r109.py.txt').read_text())
+new_ids = ids(T.read_text())
+assert len(old_ids) == 75 and len(new_ids) == 81 and old_ids <= new_ids
+print(json.dumps({'old_test_ids': sorted(old_ids), 'added_test_ids': sorted(new_ids - old_ids), 'removed_test_ids': sorted(old_ids-new_ids)}))
+spec = importlib.util.spec_from_file_location('finite_probe_fixtures', T)
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+count = 0
+
+def probe(label, mutation=None, reason=None):
+    global count
+    owner = m.CudaVerifierTests()
+    try:
+        f = owner.fixture()
+        if mutation:
+            mutation(f)
+            for trial in f.guards:
+                owner.save_guard(f, trial)
+                identity = f.job_dir / f'fork-identity-cuda_core_inherited_pid-{trial}.json'
+                assert f.guards[trial][1]['identity_sha256'] == hashlib.sha256(identity.read_bytes()).hexdigest()
+        try:
+            receipt = f.invoke()
+        except ValueError as exc:
+            assert mutation is not None, str(exc)
+            assert str(exc) == reason, (label, str(exc), reason)
+            assert not list(f.job_dir.glob('replay-spawn-custody-*.json'))
+            outcome = {'refused': str(exc), 'receipt_absent': True}
+        else:
+            assert mutation is None, ('accepted malformed fixture', label)
+            assert len(receipt['fork_guards']) == 3
+            outcome = {'accepted': True}
+        count += 1
+        print(json.dumps({'probe': label, **outcome}))
+    finally:
+        owner.doCleanups()
+
+def results(f, trial='local'):
+    return f.guards[trial][0]['guard_results']
+
+probe('positive-seven')
+probe('obsolete-five', lambda f: [results(f).pop(action) for action in added], 'fork guard actions mismatch')
+for action in sorted(added):
+    probe(action + ':missing', lambda f: results(f).pop(action), 'fork guard actions mismatch')
+    probe(action + ':extra', lambda f: results(f).__setitem__(action+'_extra', copy.deepcopy(results(f)[action])), 'fork guard actions mismatch')
+    for trial in ('admission','invocation'):
+        probe(action + ':wrong-trial:'+trial, lambda f: results(f,trial).__setitem__(action,copy.deepcopy(results(f)[action])), 'fork guard actions mismatch')
+    for bad in (None, [], True, 'result', 0):
+        probe(action+':result-type:'+repr(bad), lambda f: results(f).__setitem__(action,bad), 'fork guard result schema mismatch: '+action)
+    probe(action+':extra-field', lambda f: results(f)[action].__setitem__('extra',0), 'fork guard result schema mismatch: '+action)
+    fields = ['exception_class','diagnostic','state_unchanged',*sorted(m.verifier.FORK_COUNTERS)]
+    for field in fields:
+        probe(action+':missing-field:'+field, lambda f: results(f)[action].pop(field), 'fork guard result schema mismatch: '+action)
+        if field in m.verifier.FORK_COUNTERS:
+            bad_values = [False, True, 0.0, '0', None, [], {}, -1, 1]
+            reason = 'fork guard effect: '+field
+        elif field == 'state_unchanged':
+            bad_values = [False, 1, 1.0, 'true', None, [], {}]
+            reason = 'fork guard changed state'
+        else:
+            bad_values = [False, 1, None, [], {}, 'RuntimeError' if field == 'exception_class' else 'RNG custody cannot be inherited by another process.']
+            reason = 'fork PID refusal mismatch'
+        for bad in bad_values:
+            probe(action+':bad:'+field+':'+repr(bad), lambda f: results(f)[action].__setitem__(field,bad), reason)
+probe('positive-seven-after-negatives')
+print(json.dumps({'status':'PASS', 'probe_count':count, 'scope':'Synthetic verifier only; no application, Git, actual child/fork or hardware execution'}))

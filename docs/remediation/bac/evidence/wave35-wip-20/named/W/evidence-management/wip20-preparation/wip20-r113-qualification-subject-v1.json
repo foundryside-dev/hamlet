@@ -1,0 +1,1515 @@
+{
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 205427,
+    "path": "wave35/r113-candidate.json",
+    "root": "W",
+    "sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa"
+  },
+  "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "checkpoint_id": "wave35-wip-20",
+  "contract": {
+    "bytes": 7003,
+    "path": "wave35/wip20-checkpoint-contract.json",
+    "root": "W",
+    "sha256": "75f5b65b97d18e02ff62bccf6cf0ee81f37a72fbca8d6396e56fbef0e036d026"
+  },
+  "contract_adoption": {
+    "bytes": 962,
+    "path": "evidence-management/wip20-preparation/wip20-root-contract-adoption-v1.json",
+    "root": "W",
+    "sha256": "2f0d8deb98a8167c41e437e2a03a16c7dd5850b533d8457aead9455531ad1d56"
+  },
+  "document_aliases": [
+    {
+      "pre_application_sha256": "efed71def427225be84e0d6f9e67d6f87df4401df392907de2195d195d3e36a3",
+      "publication_path": {
+        "bytes": 32503,
+        "path": "README.md",
+        "root": "R",
+        "sha256": "3bfd2e19a18d5b6599d7a05e5b39c8fceb4b24129dac94181f08f5788d4d3b35"
+      },
+      "reviewed_immutable_proposal": {
+        "bytes": 32503,
+        "path": "wave35-preparation/wip20-docs/final-proposed/README.md",
+        "root": "W",
+        "sha256": "3bfd2e19a18d5b6599d7a05e5b39c8fceb4b24129dac94181f08f5788d4d3b35"
+      }
+    },
+    {
+      "pre_application_sha256": "52d5261a3b7eb5f8f36286ab2c7e5aa5b13abcaf8764147dcfeb21fe32c4affe",
+      "publication_path": {
+        "bytes": 102002,
+        "path": "docs/remediation/bac/STATUS.md",
+        "root": "R",
+        "sha256": "384255460e70dfdf97712b73e5d7ca6a4ea112f3eca19f9cd09f9e1fd6c490fa"
+      },
+      "reviewed_immutable_proposal": {
+        "bytes": 102002,
+        "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/STATUS.md",
+        "root": "W",
+        "sha256": "384255460e70dfdf97712b73e5d7ca6a4ea112f3eca19f9cd09f9e1fd6c490fa"
+      }
+    },
+    {
+      "pre_application_sha256": "9646ff5b9672b505943d2a3c335b01d8662253f8b92358aee16ad0b050ef6fad",
+      "publication_path": {
+        "bytes": 12599,
+        "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+        "root": "R",
+        "sha256": "e21c1c63b7dddc1bf01dd759d59aefff5ba5ae68780695518cfe24ea2373438c"
+      },
+      "reviewed_immutable_proposal": {
+        "bytes": 12599,
+        "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/EVIDENCE-INDEX.md",
+        "root": "W",
+        "sha256": "e21c1c63b7dddc1bf01dd759d59aefff5ba5ae68780695518cfe24ea2373438c"
+      }
+    },
+    {
+      "pre_application_sha256": "553a840a6b54c28763cec8a1e2e84f8161f9aa67832b2d3e1b07bf90c0eb7aab",
+      "publication_path": {
+        "bytes": 47345,
+        "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+        "root": "R",
+        "sha256": "8d2e1096bfdac94afc97691834e2418a4463de0d70c644ba14aa20ffa73fc99e"
+      },
+      "reviewed_immutable_proposal": {
+        "bytes": 47345,
+        "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+        "root": "W",
+        "sha256": "8d2e1096bfdac94afc97691834e2418a4463de0d70c644ba14aa20ffa73fc99e"
+      }
+    },
+    {
+      "pre_application_sha256": "00082f3cc8dfca251de21ae3e6a41e814f1698f4054aebce0a81ebf4cc57222b",
+      "publication_path": {
+        "bytes": 18978,
+        "path": "docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+        "root": "R",
+        "sha256": "8cd7b369e2e1ac35273680ab16e346c8f540b664586904c8b4b9985f630c2137"
+      },
+      "reviewed_immutable_proposal": {
+        "bytes": 18978,
+        "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+        "root": "W",
+        "sha256": "8cd7b369e2e1ac35273680ab16e346c8f540b664586904c8b4b9985f630c2137"
+      }
+    }
+  ],
+  "document_review_status": {
+    "application": {
+      "bytes": 2307,
+      "path": "evidence-management/wip20-preparation/wip20-document-application-v1.json",
+      "root": "W",
+      "sha256": "d487c09010454e917c22b39b75cf471d2e0ca1dd7352aa0626be3a70221a513f"
+    },
+    "proposal_manifest": {
+      "bytes": 3768,
+      "path": "wave35-preparation/wip20-docs/proposal-manifest-final.json",
+      "root": "W",
+      "sha256": "d385458a97d594f37fcda2d0cc1ac9790853908b529f05f051be42a9a8688383"
+    },
+    "review": {
+      "bytes": 10070,
+      "path": "wave35-preparation/T18e-R0-WIP20-DOCUMENTATION-GROUND-TRUTH-REVIEW.md",
+      "root": "W",
+      "sha256": "b757e551a07e400052d0e7cd5b5736845574ea1d77f7d5b8ae68b8589cae9887"
+    },
+    "scope": "Document ground truth only; not terminal qualification or application acceptance.",
+    "status": "INDEPENDENT DOCUMENT REVIEW PASS; EXACT FIVE PROPOSALS APPLIED"
+  },
+  "documents": [
+    {
+      "bytes": 32503,
+      "path": "wave35-preparation/wip20-docs/final-proposed/README.md",
+      "root": "W",
+      "sha256": "3bfd2e19a18d5b6599d7a05e5b39c8fceb4b24129dac94181f08f5788d4d3b35"
+    },
+    {
+      "bytes": 102002,
+      "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/STATUS.md",
+      "root": "W",
+      "sha256": "384255460e70dfdf97712b73e5d7ca6a4ea112f3eca19f9cd09f9e1fd6c490fa"
+    },
+    {
+      "bytes": 12599,
+      "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/EVIDENCE-INDEX.md",
+      "root": "W",
+      "sha256": "e21c1c63b7dddc1bf01dd759d59aefff5ba5ae68780695518cfe24ea2373438c"
+    },
+    {
+      "bytes": 47345,
+      "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "root": "W",
+      "sha256": "8d2e1096bfdac94afc97691834e2418a4463de0d70c644ba14aa20ffa73fc99e"
+    },
+    {
+      "bytes": 18978,
+      "path": "wave35-preparation/wip20-docs/final-proposed/docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+      "root": "W",
+      "sha256": "8cd7b369e2e1ac35273680ab16e346c8f540b664586904c8b4b9985f630c2137"
+    }
+  ],
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "5b8367adadbc28a276909fdc2a9101f5f6821ca1"
+  },
+  "hardware_status": "CUDA remains UNRUN; server promised but access/topology absent. Hardware plan/handoff is future work, not observed execution.",
+  "interval": [
+    109,
+    113
+  ],
+  "no_source_execution_after_document_application": "Root source-equivalence receipt reports1504 matching execution blobs after reviewed document application. No new runtime performed for this preparation.",
+  "overlap_accounting": {
+    "accounting_basis": "Root exact disjoint node sets; no previous-candidate or collection/static/custody counts added.",
+    "actual_runtime_groups": 38,
+    "collected_unique": 1205,
+    "counts_by_file": {
+      "activation": {
+        "collected": 67,
+        "passed": 67
+      },
+      "bank": {
+        "collected": 155,
+        "passed": 155
+      },
+      "core": {
+        "collected": 89,
+        "passed": 89
+      },
+      "producer": {
+        "collected": 840,
+        "passed": 840
+      },
+      "replay_owner": {
+        "collected": 54,
+        "failed": 2,
+        "passed": 52
+      }
+    },
+    "failed_unique": 2,
+    "node_identity_evidence": {
+      "bytes": 191358,
+      "path": "wave35/r113-root-checks.json",
+      "root": "W",
+      "sha256": "743d10da55b9c5ffecb58b22c67000f6cf34cebc978b423e7d8f27be6ec7334f"
+    },
+    "partial_failed_group_passes": 51,
+    "passed_unique": 1203,
+    "qualified_group_passes": 1152,
+    "qualifying_passed_groups": 37
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "pending_inputs": [
+    "Separate independent terminal review",
+    "Root final receipt seal"
+  ],
+  "preassembly_source_equivalence": {
+    "bytes": 421197,
+    "path": "evidence-management/wip20-preparation/wip20-preassembly-source-equivalence-v1.json",
+    "root": "W",
+    "sha256": "74f4e7e90e3079afe3f696af441ff5134216b203e676efefbd2f3306c8808635"
+  },
+  "publication_boundary": "Subject readiness does not authorize selection, assembly, Git, acceptance or a new application execution.",
+  "qualifying_checks": [
+    {
+      "check": "wave35-r113-activation--activation",
+      "expected_children": [],
+      "passed": 67,
+      "result": {
+        "bytes": 10143,
+        "path": "wave35-r113-activation/activation-result.json",
+        "root": "Q",
+        "sha256": "34f358d93dfa9512c0f49079ffe118db390aee8cfcb3ba3cd574f7b7086fbc3a"
+      },
+      "terminal_attempt": "wave35-r113-activation--activation",
+      "verifier": {
+        "bytes": 642,
+        "path": "wave35-r113-activation/activation-custody.json",
+        "root": "Q",
+        "sha256": "7266078075795a6b95098aaf9577ee8a4ecb0c6560f6c3d20a413b4b0954e886"
+      }
+    },
+    {
+      "check": "wave35-r113-bank-healthy--bank-healthy",
+      "expected_children": [],
+      "passed": 151,
+      "result": {
+        "bytes": 22413,
+        "path": "wave35-r113-bank-healthy/bank-healthy-result.json",
+        "root": "Q",
+        "sha256": "c294756b706b79a38f1b4c8805412ee6dbdf840363e1e6b26a50ebaac1e80ccd"
+      },
+      "terminal_attempt": "wave35-r113-bank-healthy--bank-healthy",
+      "verifier": {
+        "bytes": 644,
+        "path": "wave35-r113-bank-healthy/bank-healthy-custody.json",
+        "root": "Q",
+        "sha256": "62da221f644ee2d978515fde2bcd6f9414f7670ee094baef592b0c2ce8af7bb6"
+      }
+    },
+    {
+      "check": "wave35-r113-bank-poison-cleanup--bank-poison-cleanup",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-bank-poison-cleanup--bank-poison-cleanup",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-bank_restore_poison_cleanup",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 629,
+            "path": "wave35-r113-bank-poison-cleanup/bank-poison-cleanup/spawn-identity-bank_restore_poison_cleanup.json",
+            "root": "Q",
+            "sha256": "85515a7c893e00d4b81ee243a937b7de8f883b82f0e2af4ef1dbbce20937626a"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 937,
+        "path": "wave35-r113-bank-poison-cleanup/bank-poison-cleanup-result.json",
+        "root": "Q",
+        "sha256": "59c2943730681198dd108936791f159dc8a8768ffcdfe274d2c16edca851ee33"
+      },
+      "terminal_attempt": "wave35-r113-bank-poison-cleanup--bank-poison-cleanup",
+      "verifier": {
+        "bytes": 651,
+        "path": "wave35-r113-bank-poison-cleanup/bank-poison-cleanup-custody.json",
+        "root": "Q",
+        "sha256": "1a118e6d2e2c0825539bb2329caa06e6b3739c325306f39dd142a1c799c8d804"
+      }
+    },
+    {
+      "check": "wave35-r113-bank-poison-completion--bank-poison-completion",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-bank-poison-completion--bank-poison-completion",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-bank_restore_poison_completion",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 632,
+            "path": "wave35-r113-bank-poison-completion/bank-poison-completion/spawn-identity-bank_restore_poison_completion.json",
+            "root": "Q",
+            "sha256": "8144929cbfdf91267aa0c5290a940d72750704acfc3bfa52fc2c5162350b8731"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 949,
+        "path": "wave35-r113-bank-poison-completion/bank-poison-completion-result.json",
+        "root": "Q",
+        "sha256": "879e3c12de5a9e531b344d54067c81093436c9e8ba84554c756bc9cfc5991c3c"
+      },
+      "terminal_attempt": "wave35-r113-bank-poison-completion--bank-poison-completion",
+      "verifier": {
+        "bytes": 654,
+        "path": "wave35-r113-bank-poison-completion/bank-poison-completion-custody.json",
+        "root": "Q",
+        "sha256": "201224c6fba9b72fb299a3f61407adf95563f52f297f08d2dcc840da7394e62c"
+      }
+    },
+    {
+      "check": "wave35-r113-bank-poison-install--bank-poison-install",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-bank-poison-install--bank-poison-install",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-bank_install_poison_completion",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 632,
+            "path": "wave35-r113-bank-poison-install/bank-poison-install/spawn-identity-bank_install_poison_completion.json",
+            "root": "Q",
+            "sha256": "32f514dcf9ebe26c8aa0c42da13f03d138360cd19b65cd6b066a5320dc4396bb"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 936,
+        "path": "wave35-r113-bank-poison-install/bank-poison-install-result.json",
+        "root": "Q",
+        "sha256": "8674c02dfa20d345e990c063d38d661840cf80c8658dbe8d802911492e1d8c47"
+      },
+      "terminal_attempt": "wave35-r113-bank-poison-install--bank-poison-install",
+      "verifier": {
+        "bytes": 650,
+        "path": "wave35-r113-bank-poison-install/bank-poison-install-custody.json",
+        "root": "Q",
+        "sha256": "e030c5ca0d1747c2f2b18a9549213979abc5be15409f31bddc0894e7ee5c8b9e"
+      }
+    },
+    {
+      "check": "wave35-r113-bank-poison-setter--bank-poison-setter",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-bank-poison-setter--bank-poison-setter",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-bank_restore_poison_setter",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 628,
+            "path": "wave35-r113-bank-poison-setter/bank-poison-setter/spawn-identity-bank_restore_poison_setter.json",
+            "root": "Q",
+            "sha256": "d6ffe7878e71fde2ff8c893653e449ea3792c34fd5116d941407e52c3eea30bd"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 933,
+        "path": "wave35-r113-bank-poison-setter/bank-poison-setter-result.json",
+        "root": "Q",
+        "sha256": "0f94bd36d91588979e5d0a5efde61f685266039f555b59d2f28a672cbc3d4b69"
+      },
+      "terminal_attempt": "wave35-r113-bank-poison-setter--bank-poison-setter",
+      "verifier": {
+        "bytes": 650,
+        "path": "wave35-r113-bank-poison-setter/bank-poison-setter-custody.json",
+        "root": "Q",
+        "sha256": "69b5e9131236ef8461b3dadac49e94bdf76cb7c554ad9d62624d1b583b378db5"
+      }
+    },
+    {
+      "check": "wave35-r113-core-healthy--core-healthy",
+      "expected_children": [],
+      "passed": 73,
+      "result": {
+        "bytes": 10237,
+        "path": "wave35-r113-core-healthy/core-healthy-result.json",
+        "root": "Q",
+        "sha256": "dab9340c70810278793a8d56c1352c8ee8b1f44df52411c775fb531b6b8183cf"
+      },
+      "terminal_attempt": "wave35-r113-core-healthy--core-healthy",
+      "verifier": {
+        "bytes": 643,
+        "path": "wave35-r113-core-healthy/core-healthy-custody.json",
+        "root": "Q",
+        "sha256": "8bfe7b66ccdd2b4b1bd4f2dd947e784ef5056a8b05195005af50485df6034a1a"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_bootstrap_failure",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 966,
+            "path": "wave35-r113-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/spawn-identity-cuda_core_bootstrap_failure.json",
+            "root": "Q",
+            "sha256": "3e27b7c29543d89bd8300d06a447e275b958474a688b7623f84a5edfd2e54323"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 938,
+        "path": "wave35-r113-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+        "root": "Q",
+        "sha256": "a0c9fbee4de8ced1c977cc87131ef45bb321002070e9ff750ad80b42d3d2f2ca"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+      "verifier": {
+        "bytes": 658,
+        "path": "wave35-r113-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json",
+        "root": "Q",
+        "sha256": "0464a2709ee3f08b583a41befeab895a9f080a4028ac80de3ba70da67a75c82f"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-inherited-pid--cuda-core-inherited-pid",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_inherited_pid",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 962,
+            "path": "wave35-r113-cuda-core-inherited-pid/cuda-core-inherited-pid/spawn-identity-cuda_core_inherited_pid.json",
+            "root": "Q",
+            "sha256": "8c094d5df2cb630e01379b55228881d2a430ee0ef8271e1676fbab12f8c94689"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 917,
+        "path": "wave35-r113-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+        "root": "Q",
+        "sha256": "5cf23082ceea26708722a39a32d31f53dea5132d7d4860970db12bfe2598b972"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-inherited-pid--cuda-core-inherited-pid",
+      "verifier": {
+        "bytes": 653,
+        "path": "wave35-r113-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json",
+        "root": "Q",
+        "sha256": "5ab4f7a18c413c00f594edacc4b41713a4924eb849cefe45e4a44a30247fd777"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-invocation-child-failure--cuda-core-invocation-child-failure",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-invocation-child-failure--cuda-core-invocation-child-failure",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_invocation_child_failure",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 973,
+            "path": "wave35-r113-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/spawn-identity-cuda_core_invocation_child_failure.json",
+            "root": "Q",
+            "sha256": "67fd4e9c2e540fd4088628dd83737063346a8cce1a5abc63699dd890a6570bcb"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 965,
+        "path": "wave35-r113-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-result.json",
+        "root": "Q",
+        "sha256": "5e6f1161ec99f03f848b905b06c16599648509a1d322341df00b862a35722db9"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-invocation-child-failure--cuda-core-invocation-child-failure",
+      "verifier": {
+        "bytes": 664,
+        "path": "wave35-r113-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-custody.json",
+        "root": "Q",
+        "sha256": "bc71e3660f8736a8d4c6555e9969417bb5bfb3947bfd04a4d8758f82fc5c9cd1"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-invocation-parent-failure--cuda-core-invocation-parent-failure",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-invocation-parent-failure--cuda-core-invocation-parent-failure",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_invocation_parent_failure",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 974,
+            "path": "wave35-r113-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/spawn-identity-cuda_core_invocation_parent_failure.json",
+            "root": "Q",
+            "sha256": "f847882faa0078bf1cd5ff4bbcba1c0309d035d670ee69cdf032eba93fa2d763"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 970,
+        "path": "wave35-r113-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-result.json",
+        "root": "Q",
+        "sha256": "a0fa244dc2ed18d502a2e6810346fc3fd7eefbcb0fb91988160d932202f0871d"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-invocation-parent-failure--cuda-core-invocation-parent-failure",
+      "verifier": {
+        "bytes": 666,
+        "path": "wave35-r113-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-custody.json",
+        "root": "Q",
+        "sha256": "1eea9a0e4b219ef109dcaa5d0a47505ec06026d35f57bcca96043b1e32ae0938"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-invocation-phase-failure--cuda-core-invocation-phase-failure",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-invocation-phase-failure--cuda-core-invocation-phase-failure",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_invocation_phase_failure",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 973,
+            "path": "wave35-r113-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/spawn-identity-cuda_core_invocation_phase_failure.json",
+            "root": "Q",
+            "sha256": "de65359447d41b2e5252aaa26b26fbdf987d6d657f6e5ed02c52233b58333967"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 966,
+        "path": "wave35-r113-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-result.json",
+        "root": "Q",
+        "sha256": "97b484faf0bd8077dbfef9eefe080e55034e600daba842c32cd3b176ba61da4b"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-invocation-phase-failure--cuda-core-invocation-phase-failure",
+      "verifier": {
+        "bytes": 665,
+        "path": "wave35-r113-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-custody.json",
+        "root": "Q",
+        "sha256": "fbe44bc985427da6ead94d9b04d5041f0df54fc6e1801fe09e09c30f599d10d8"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-invocation-phase-reference--cuda-core-invocation-phase-reference",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-invocation-phase-reference--cuda-core-invocation-phase-reference",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_invocation_phase_reference",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 975,
+            "path": "wave35-r113-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/spawn-identity-cuda_core_invocation_phase_reference.json",
+            "root": "Q",
+            "sha256": "f932cfdb45aabe37a7dd4dce9ab14871f6ef1db04a132f55ef9463602e59dcbb"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 974,
+        "path": "wave35-r113-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-result.json",
+        "root": "Q",
+        "sha256": "1a7ce1afef99697630d98109aa5b111a0d92480e43fc04ffd2c075a386e73239"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-invocation-phase-reference--cuda-core-invocation-phase-reference",
+      "verifier": {
+        "bytes": 667,
+        "path": "wave35-r113-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-custody.json",
+        "root": "Q",
+        "sha256": "3c4b045d99e4367746382f8a3196fd3d736aa9426ab0a6ed6585ec4c305c8270"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-invocation-reported-failure--cuda-core-invocation-reported-failure",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-invocation-reported-failure--cuda-core-invocation-reported-failure",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_invocation_reported_failure",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 976,
+            "path": "wave35-r113-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/spawn-identity-cuda_core_invocation_reported_failure.json",
+            "root": "Q",
+            "sha256": "7fec0ad1f5cd9603eb2d54c77f3c129c5292ec2f42af0e748fb344682adf3300"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 977,
+        "path": "wave35-r113-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-result.json",
+        "root": "Q",
+        "sha256": "e9708ed76cf1fb04a3eceb2ef1720077b85695a131deb2d64f04f3df930d1914"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-invocation-reported-failure--cuda-core-invocation-reported-failure",
+      "verifier": {
+        "bytes": 667,
+        "path": "wave35-r113-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-custody.json",
+        "root": "Q",
+        "sha256": "a9d6a5a5bcf829799128b782c27a568ab38159c6ca1cc1e3010b6b199b49b4af"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-invocation-same-error--cuda-core-invocation-same-error",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-invocation-same-error--cuda-core-invocation-same-error",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_invocation_same_error",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 970,
+            "path": "wave35-r113-cuda-core-invocation-same-error/cuda-core-invocation-same-error/spawn-identity-cuda_core_invocation_same_error.json",
+            "root": "Q",
+            "sha256": "3cb8f6ebb1a7113766873175000f608601a26203098b934c1e4a52c8959f111c"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 953,
+        "path": "wave35-r113-cuda-core-invocation-same-error/cuda-core-invocation-same-error-result.json",
+        "root": "Q",
+        "sha256": "081be751e024f6302b9cd89cc23667451e86740d04746ea1a92debf14c8244d1"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-invocation-same-error--cuda-core-invocation-same-error",
+      "verifier": {
+        "bytes": 661,
+        "path": "wave35-r113-cuda-core-invocation-same-error/cuda-core-invocation-same-error-custody.json",
+        "root": "Q",
+        "sha256": "dacd308f2a7c9ef3947b0d2175d21bb18757d8f12da38822c5313d14eb7dd8d1"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_local_completion_duplicate_parent",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 982,
+            "path": "wave35-r113-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/spawn-identity-cuda_core_local_completion_duplicate_parent.json",
+            "root": "Q",
+            "sha256": "b180629b31fb6fcb0aca87da842309a75be90e5775da38334b62bc0fb5c2188f"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 1002,
+        "path": "wave35-r113-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+        "root": "Q",
+        "sha256": "decd7aebc0a522b8d555d8069abce9f607f003b4439e2a6dfce4bbc3619527c6"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+      "verifier": {
+        "bytes": 674,
+        "path": "wave35-r113-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-custody.json",
+        "root": "Q",
+        "sha256": "7bda9e619f6ea154729b00d9bcb03f30ff75cdcbd4a7ebe333b830e9bf6311bd"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_local_completion_multiple_body",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 979,
+            "path": "wave35-r113-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/spawn-identity-cuda_core_local_completion_multiple_body.json",
+            "root": "Q",
+            "sha256": "0863a2b7e347540e9e4351da987bac414754272322976bb4a64bc41f4bce6a31"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 990,
+        "path": "wave35-r113-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+        "root": "Q",
+        "sha256": "1b1e16d9f19438ac0e03e29cf241e4499d51a39c4cb2953f8a7c5ce4043de4e8"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+      "verifier": {
+        "bytes": 671,
+        "path": "wave35-r113-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json",
+        "root": "Q",
+        "sha256": "77af02d7adffad78be5695f48356d7d2e5f459bd76a1f1dff0077e68eeb8c0d3"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-local-completion-single--cuda-core-local-completion-single",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_local_completion_single",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 972,
+            "path": "wave35-r113-cuda-core-local-completion-single/cuda-core-local-completion-single/spawn-identity-cuda_core_local_completion_single.json",
+            "root": "Q",
+            "sha256": "0e336b8546905b98a916d76b4ad74d167adaf766200b404fdd8b80f61b209176"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 962,
+        "path": "wave35-r113-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+        "root": "Q",
+        "sha256": "ee76917172899e68ed86248a136820eecbf89ec15880bfc978f341ba714ae56e"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-local-completion-single--cuda-core-local-completion-single",
+      "verifier": {
+        "bytes": 664,
+        "path": "wave35-r113-cuda-core-local-completion-single/cuda-core-local-completion-single-custody.json",
+        "root": "Q",
+        "sha256": "e8bdc22ff99df13ba53e8cae3d0bd6d8a41900859d69ff6d890e9a2b58de69f5"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_operation_body_completion",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 974,
+            "path": "wave35-r113-cuda-core-operation-body-completion/cuda-core-operation-body-completion/spawn-identity-cuda_core_operation_body_completion.json",
+            "root": "Q",
+            "sha256": "447f765188a66b41066c1a72fc5cdbde1a73f9783187b6ff5e1c1201a14d75e8"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 970,
+        "path": "wave35-r113-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+        "root": "Q",
+        "sha256": "c2379be4b1b62818856cd69f59e8073322616232d5b7e998c09a130b1d060b73"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+      "verifier": {
+        "bytes": 666,
+        "path": "wave35-r113-cuda-core-operation-body-completion/cuda-core-operation-body-completion-custody.json",
+        "root": "Q",
+        "sha256": "207c832a10922db44b47c4774c2e55aa34e6b68c41ff4ace45e73f847802debd"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_poison_ready_healthy_only",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 974,
+            "path": "wave35-r113-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/spawn-identity-cuda_core_poison_ready_healthy_only.json",
+            "root": "Q",
+            "sha256": "03e1ca80f91f30e318058f7f6708b7e6f876463e69ec4bebf8f4ccb32b6a3e5b"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 970,
+        "path": "wave35-r113-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+        "root": "Q",
+        "sha256": "56bc74d048ddea4ba1abaaaa6a1227cc9a05db0f422881094639e6951bf2a63d"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+      "verifier": {
+        "bytes": 666,
+        "path": "wave35-r113-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-custody.json",
+        "root": "Q",
+        "sha256": "7c5961d7cf3752c3a62c2b7dd98cc7bc614d3f6e5eaa1e979f803388a259c690"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_poison_ready_qualified",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 971,
+            "path": "wave35-r113-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/spawn-identity-cuda_core_poison_ready_qualified.json",
+            "root": "Q",
+            "sha256": "9d3e6d784e0336a7f430a01614351387a13ebcfdc83d0e6337d5373b2c044734"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 958,
+        "path": "wave35-r113-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+        "root": "Q",
+        "sha256": "67e5e72edcbe03e8f782810fa0198297cb2ce70caa9eaad4086f9e4f5f888c1d"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+      "verifier": {
+        "bytes": 663,
+        "path": "wave35-r113-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-custody.json",
+        "root": "Q",
+        "sha256": "5bf487e044e616b93a486621b991cf3cc6f1c0fc06a0a4955a8f44d9939b957e"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_poison_unknown_ready",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 969,
+            "path": "wave35-r113-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/spawn-identity-cuda_core_poison_unknown_ready.json",
+            "root": "Q",
+            "sha256": "7c0e2ea9787b10dfb7be6d06272cc11a91fa5795767d5b3c6cf4db49c096286c"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 950,
+        "path": "wave35-r113-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+        "root": "Q",
+        "sha256": "641e0af415eec025c26e55f0c88a7131d61c29a6eb2417d0148c34eda318c492"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+      "verifier": {
+        "bytes": 661,
+        "path": "wave35-r113-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-custody.json",
+        "root": "Q",
+        "sha256": "daedcf204d3d59115751891f0d9a0f8f7699920bc639a35ece0391cfe165b4af"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_core_runtime_query_failure",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 970,
+            "path": "wave35-r113-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/spawn-identity-cuda_core_runtime_query_failure.json",
+            "root": "Q",
+            "sha256": "0df6075693c0b32e476f1ce91429447e8da783cb7bdbb1faaf304a5058201d7c"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 954,
+        "path": "wave35-r113-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+        "root": "Q",
+        "sha256": "fa326142eb6a42b89d83f0b1f7d615cd3f1351ed3e0ab12d702bd5b3e7cfd766"
+      },
+      "terminal_attempt": "wave35-r113-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+      "verifier": {
+        "bytes": 662,
+        "path": "wave35-r113-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-custody.json",
+        "root": "Q",
+        "sha256": "9b604f78fa32402d235f5a68cd9288ad20b0365abd3326277729283f90d9d2fb"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-flat_admitted_same--cuda-producer-poison-flat_admitted_same",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-flat_admitted_same--cuda-producer-poison-flat_admitted_same",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1766,
+            "path": "wave35-r113-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "a1ba97b6e2f42ab5219566ccb9980763fc4b266a1c2ade31afff85eb910b34d0"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 977,
+        "path": "wave35-r113-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-result.json",
+        "root": "Q",
+        "sha256": "3c74c1e73620ea467bc931901c91aae349365541025cb770e00b94a797a64fc3"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-flat_admitted_same--cuda-producer-poison-flat_admitted_same",
+      "verifier": {
+        "bytes": 670,
+        "path": "wave35-r113-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-custody.json",
+        "root": "Q",
+        "sha256": "317f114b87006bb823848171e15300aa648ce19058fd40e7d17e97285dd82a38"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-flat_admitted_single--cuda-producer-poison-flat_admitted_single",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-flat_admitted_single--cuda-producer-poison-flat_admitted_single",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1768,
+            "path": "wave35-r113-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "2f58ed133925379ac118fe74c4b1de50f21d449696f18c691d49ed8f18ac62ab"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 985,
+        "path": "wave35-r113-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-result.json",
+        "root": "Q",
+        "sha256": "98c93f03184e5ffe8ab0c301d41747b133f705141bef70ab17d552354963938b"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-flat_admitted_single--cuda-producer-poison-flat_admitted_single",
+      "verifier": {
+        "bytes": 672,
+        "path": "wave35-r113-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-custody.json",
+        "root": "Q",
+        "sha256": "6ce1f762b1544898a5037b973651d216dac749892594119ab620bcdd3f6d7294"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-flat_local_distinct--cuda-producer-poison-flat_local_distinct",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-flat_local_distinct--cuda-producer-poison-flat_local_distinct",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1767,
+            "path": "wave35-r113-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "9b052d30531db74d89889fe0852e2897d8b18008c9bc67a27ba7bab766512740"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 981,
+        "path": "wave35-r113-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-result.json",
+        "root": "Q",
+        "sha256": "d88153689caaebfe6320907a91dd1c71d2ec02304412542fa4bde6adc4762957"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-flat_local_distinct--cuda-producer-poison-flat_local_distinct",
+      "verifier": {
+        "bytes": 671,
+        "path": "wave35-r113-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-custody.json",
+        "root": "Q",
+        "sha256": "f0aa3f43f5907c8d3b05ecd3911ba0d2314692c929e8bed862abbcf428ba9043"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-flat_local_same--cuda-producer-poison-flat_local_same",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-flat_local_same--cuda-producer-poison-flat_local_same",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1763,
+            "path": "wave35-r113-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "2082b5ea36e1f2255763fecf2009ac8cbba532b12fc610c58441d51e66ee90e8"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 965,
+        "path": "wave35-r113-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-result.json",
+        "root": "Q",
+        "sha256": "4290b9ad453636f5705462254dcb66d6c8d5b4a3497c67d175e3782edd8b0351"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-flat_local_same--cuda-producer-poison-flat_local_same",
+      "verifier": {
+        "bytes": 667,
+        "path": "wave35-r113-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-custody.json",
+        "root": "Q",
+        "sha256": "f673cc6897c161801cc479fe3dd2a37513f96653d4b413318cd89bcfdd89d0ec"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-flat_local_single--cuda-producer-poison-flat_local_single",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-flat_local_single--cuda-producer-poison-flat_local_single",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1765,
+            "path": "wave35-r113-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "6081689ad0f08cc712f98eacfdb4ac32f0f259d4b9ee41093888f9b3b0801383"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 972,
+        "path": "wave35-r113-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-result.json",
+        "root": "Q",
+        "sha256": "de2641443201b990cc038105e0f339f4756b0c9a048a2a3f4a94f3c91c109bcd"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-flat_local_single--cuda-producer-poison-flat_local_single",
+      "verifier": {
+        "bytes": 668,
+        "path": "wave35-r113-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-custody.json",
+        "root": "Q",
+        "sha256": "bd6733ad312b400085d25fcb35ebd78948c2533adbfde9a49e3698e9f0263b4e"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-per_admitted_same--cuda-producer-poison-per_admitted_same",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-per_admitted_same--cuda-producer-poison-per_admitted_same",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1765,
+            "path": "wave35-r113-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "1828c4a2def8898f3d43159180f407c1dda494126e96efc6a229b19323091373"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 974,
+        "path": "wave35-r113-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-result.json",
+        "root": "Q",
+        "sha256": "82bf00d24fc6e3229a330884e9e3d0a69212a8ad32fabb9e18150606c5d906d9"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-per_admitted_same--cuda-producer-poison-per_admitted_same",
+      "verifier": {
+        "bytes": 670,
+        "path": "wave35-r113-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-custody.json",
+        "root": "Q",
+        "sha256": "34826d9c18d9042787d533beddcc56f410bbedfbe3b364f9de16d967f21e4bf8"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-per_admitted_single--cuda-producer-poison-per_admitted_single",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-per_admitted_single--cuda-producer-poison-per_admitted_single",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1767,
+            "path": "wave35-r113-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "1f91fc152b802df365b8b46fdd104d3fd909d3a251bfe558b11d79bc30af60f9"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 981,
+        "path": "wave35-r113-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-result.json",
+        "root": "Q",
+        "sha256": "390a28738d1b580fddb35b72f904cb556457233fd3ffd3a4a06eb5e3550e4bd8"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-per_admitted_single--cuda-producer-poison-per_admitted_single",
+      "verifier": {
+        "bytes": 671,
+        "path": "wave35-r113-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-custody.json",
+        "root": "Q",
+        "sha256": "7db8bff2aaede0bec6cd52cd5ed7e07e856ea6414090f75ee73875e706c342f8"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-per_local_distinct--cuda-producer-poison-per_local_distinct",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-per_local_distinct--cuda-producer-poison-per_local_distinct",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1766,
+            "path": "wave35-r113-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "6bff6b434b8ffc0f494dbda3f35fc7aa6b7cf2c59a67a9cd238ce6798119631d"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 977,
+        "path": "wave35-r113-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-result.json",
+        "root": "Q",
+        "sha256": "905e97aa361fd5d0e98f36cfa4aa4ab3d674d18bc04b6dc2ca61788bd3e98c51"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-per_local_distinct--cuda-producer-poison-per_local_distinct",
+      "verifier": {
+        "bytes": 670,
+        "path": "wave35-r113-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-custody.json",
+        "root": "Q",
+        "sha256": "64cbc1ca6fd2dcb1d36cd3df8d0a3d8419b30f58eb31726c24ad6acdb37ff8e5"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-per_local_same--cuda-producer-poison-per_local_same",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-per_local_same--cuda-producer-poison-per_local_same",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1762,
+            "path": "wave35-r113-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "d428ab798925852f99b3ddc564a6bfd2191258b76f2fdee146a5a5ec05fa7441"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 961,
+        "path": "wave35-r113-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-result.json",
+        "root": "Q",
+        "sha256": "ae95480b021803ba110b6549de77b8214fcded4dc469aecb71e377a2b8706405"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-per_local_same--cuda-producer-poison-per_local_same",
+      "verifier": {
+        "bytes": 666,
+        "path": "wave35-r113-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-custody.json",
+        "root": "Q",
+        "sha256": "fd19d368773fdd0db9c2bff815e8ebd82ef965ccf225b92629bba372428f1450"
+      }
+    },
+    {
+      "check": "wave35-r113-cuda-producer-poison-per_local_single--cuda-producer-poison-per_local_single",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-cuda-producer-poison-per_local_single--cuda-producer-poison-per_local_single",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-cuda_producer_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1764,
+            "path": "wave35-r113-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single/spawn-identity-cuda_producer_poison.json",
+            "root": "Q",
+            "sha256": "1e6312204e7259a4e29f303df822e9354860cd7cd228edfbdffb8bf6dcad72be"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 970,
+        "path": "wave35-r113-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-result.json",
+        "root": "Q",
+        "sha256": "568e521aba538ab274e6211db80b52559819f0390b546e46b298de48f3d0e848"
+      },
+      "terminal_attempt": "wave35-r113-cuda-producer-poison-per_local_single--cuda-producer-poison-per_local_single",
+      "verifier": {
+        "bytes": 669,
+        "path": "wave35-r113-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-custody.json",
+        "root": "Q",
+        "sha256": "b54e9097c933b72aef1b0c9c2417629ee2ca401adba9b29828af299dcaf244b7"
+      }
+    },
+    {
+      "check": "wave35-r113-fixture-prerequisites--fixture-prerequisites",
+      "expected_children": [],
+      "passed": 14,
+      "result": {
+        "bytes": 2734,
+        "path": "wave35-r113-fixture-prerequisites/fixture-prerequisites-result.json",
+        "root": "Q",
+        "sha256": "bde3667ba5bbc55548c6218e9cb1061f881c70b9ecb3d31fb636c8c7e8f47114"
+      },
+      "terminal_attempt": "wave35-r113-fixture-prerequisites--fixture-prerequisites",
+      "verifier": {
+        "bytes": 653,
+        "path": "wave35-r113-fixture-prerequisites/fixture-prerequisites-custody.json",
+        "root": "Q",
+        "sha256": "86bb30abd47d0d510a25096f061114bb65d3cf9763ffb675abf39c67388cd020"
+      }
+    },
+    {
+      "check": "wave35-r113-producer-rest-a--producer-rest-a",
+      "expected_children": [],
+      "passed": 408,
+      "result": {
+        "bytes": 55543,
+        "path": "wave35-r113-producer-rest-a/producer-rest-a-result.json",
+        "root": "Q",
+        "sha256": "954f29d718dffc92770397bfdbf1330a7113c2cdd4b050c47b721d26f9edccce"
+      },
+      "terminal_attempt": "wave35-r113-producer-rest-a--producer-rest-a",
+      "verifier": {
+        "bytes": 648,
+        "path": "wave35-r113-producer-rest-a/producer-rest-a-custody.json",
+        "root": "Q",
+        "sha256": "91fe5cdf2f350dfb14efac317d627f6da8f09bdc23a7bce370855bec15feb720"
+      }
+    },
+    {
+      "check": "wave35-r113-producer-rest-b--producer-rest-b",
+      "expected_children": [],
+      "passed": 408,
+      "result": {
+        "bytes": 57926,
+        "path": "wave35-r113-producer-rest-b/producer-rest-b-result.json",
+        "root": "Q",
+        "sha256": "871a4341d2eb6faf52830de58980f34af90f52b22538bd1a3f0c25f6bf40a705"
+      },
+      "terminal_attempt": "wave35-r113-producer-rest-b--producer-rest-b",
+      "verifier": {
+        "bytes": 649,
+        "path": "wave35-r113-producer-rest-b/producer-rest-b-custody.json",
+        "root": "Q",
+        "sha256": "6d377d00174cdc8185701069c990400079c845544a14413359e552785c6b4573"
+      }
+    },
+    {
+      "check": "wave35-r113-replay-poison--replay-poison",
+      "expected_children": [
+        {
+          "attempt_id": "wave35-r113-replay-poison--replay-poison",
+          "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+          "id": "spawn-identity-replay_poison",
+          "linkage_limitation": "Witness does not contain literal attempt_id where absent; original spec/result/parent observation and PID/source verifier linkage retained for root review.",
+          "status": "EXECUTED",
+          "witness": {
+            "bytes": 1073,
+            "path": "wave35-r113-replay-poison/replay-poison/spawn-identity-replay_poison.json",
+            "root": "Q",
+            "sha256": "eba6540615f5afb462ebfe0257c7db42804051f25267cdedc4777f290e555a41"
+          }
+        }
+      ],
+      "passed": 1,
+      "result": {
+        "bytes": 904,
+        "path": "wave35-r113-replay-poison/replay-poison-result.json",
+        "root": "Q",
+        "sha256": "9ba77e5f231c392ed51905ab4a2565e91017b6558a2963948b6829949a1e0074"
+      },
+      "terminal_attempt": "wave35-r113-replay-poison--replay-poison",
+      "verifier": {
+        "bytes": 645,
+        "path": "wave35-r113-replay-poison/replay-poison-custody.json",
+        "root": "Q",
+        "sha256": "89f0eb528bf9888cf5f109570c4b9d2055ed3806a11ed2729c9eac73b579968f"
+      }
+    }
+  ],
+  "required_components": [
+    {
+      "bytes": 353924,
+      "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+      "path": "evidence-management/r109-preparation/r109-history-component-v1.json",
+      "root": "W",
+      "scope": "Closed exact R109 candidate: bounded core source/design/execution approval and 88 distinct passing assertions. No B/package/full-programme/hardware acceptance; no backward compatibility or scope degradation.",
+      "sha256": "de3625e602b1cfb460b034b50bf9077da6694995e469f0f0c21461dc7ac448e4"
+    },
+    {
+      "bytes": 88328,
+      "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+      "path": "evidence-management/r110-preparation/r110-history-component-v1.json",
+      "root": "W",
+      "scope": "Tests-first evidence only. Five positives and twenty causal failures are not B implementation/hardware/global acceptance. Prior R10988 unchanged and not added. No selector/app execution or terminal seal.",
+      "sha256": "76fde5454be68479d87b2f28a9bc2a281f6b68d06c010c2c0913520fa606ac66"
+    },
+    {
+      "bytes": 822124,
+      "candidate_tree": "b0f4e769755ca6999bc03cd8a21cd88a274dc682",
+      "path": "evidence-management/r111-preparation/r111-history-component-v1.json",
+      "root": "W",
+      "scope": "Bounded B source/core review and passing checks preserved. All30failures remain unresolved in this candidate; no complete B/parent/recurrent/runner/hardware/programme acceptance. Repair plan verdict and future candidates excluded.",
+      "sha256": "193e5039ce1c609f5adb6dda363cdcec53cb60b358c3f65ec95b84f8437d3795"
+    },
+    {
+      "bytes": 71142,
+      "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+      "path": "evidence-management/r112-preparation/r112-history-component-v1.json",
+      "root": "W",
+      "scope": "Fixture prerequisite evidence only; retain originalR11130failures as historical. No production change/acceptance reduction or terminal seal; no earlier counts added.",
+      "sha256": "b17347bbfb1273075546f050b861c6c9b7489f150a82597d781e474319495bf2"
+    },
+    {
+      "bytes": 906628,
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "path": "evidence-management/r113-preparation/r113-terminal-component-v2.json",
+      "root": "W",
+      "scope": "Exact terminal R113 bounded evidence, including affected BANK/replay failures,31children and phase-pair; no complete B, original package or programme acceptance.",
+      "sha256": "4f8ed80a77f0037ab485b42ea98f43b02cbc64f5d0697f59a66984a791618034"
+    }
+  ],
+  "required_next": [
+    "Repair stale peer-wait test hook through reviewed tests-only change and rerun both exact failed nodes; no failure waived.",
+    "Execute cold core-first and producer-first import-order proof under separately reviewed plan.",
+    "Retain global15mypy errors, parent/recurrent/runner/coverage>=70/slow/hardware/final CI gates.",
+    "Actual CUDA UNRUN; promised server access/topology absent.",
+    "After authorized WIP checkpoint publication, verify exact remote identity and actual new CI; prior WIP19 ConfigPASS/LintFAIL/TestsFAIL remains separate and Tests log cause unclassified because Transport closed."
+  ],
+  "retained_failures": {
+    "CI_WIP19": "ConfigPASS/LintFAIL/TestsFAIL;Tests logs unavailable via Transport closed, cause unclassified.",
+    "R111": "30 fixture failures preserved on original candidate; repaired later, no erasure.",
+    "R112": "Four causal digest fixture RED failures preserved.",
+    "R113": "Two affected replay peer-wait failures;51partial passes remain in FAILED group. Global mypy15 errors:oracle6/POP9.",
+    "other_history": "Original R109/R110/tooling FAILED and UNRUN attempts retained in complete immutable attempt/component input."
+  },
+  "root_adoption": {
+    "actor": "/root",
+    "at": "2026-11-14T04:47:35.328219+00:00",
+    "historical_alias_dispositions": [
+      {
+        "bytes": 37963,
+        "path": "verify_bac_replay_spawn_identity.py",
+        "root": "Q",
+        "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+      },
+      {
+        "bytes": 63136,
+        "path": "evidence-management/test_replay_spawn_verifier.py",
+        "root": "W",
+        "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b"
+      }
+    ],
+    "integrity_note": "Initial naive all-reference walk stopped at an explicitly historical mutable helper alias. Corrected verification validates its hash-identical retained immutable evidence and excludes only the historical_mutable_path annotation, without modifying input or substituting tool bytes.",
+    "proposal": {
+      "bytes": 70543,
+      "path": "evidence-management/wip20-preparation/wip20-r113-qualification-subject-proposal-v1.json",
+      "root": "W",
+      "sha256": "0583019041e4f9c57c53034f08cbff54332c8553ea0180d8f9892cc3c5de78bf"
+    },
+    "scope": "Finite WIP20 evidence subject freeze only. No global or full B qualification claim. Separate terminal review and root publication checks remain required.",
+    "verified_references": 1225
+  },
+  "schema": "bac-checkpoint-qualification-subject-v1",
+  "scope": "Exact terminal R113 bounded evidence, including affected BANK/replay failures,31children and phase-pair; no complete B, original package or programme acceptance.",
+  "series": "wave35",
+  "source_delta": {
+    "bytes": 96704,
+    "path": "evidence-management/r113-preparation/r113-full-base-candidate.patch",
+    "root": "W",
+    "sha256": "239ab4323970e4be5d95b64027773a8495e593e029644cc7ed1e21989da234de"
+  },
+  "status": "FROZEN FOR INDEPENDENT TERMINAL REVIEW",
+  "supporting_reviews": [
+    {
+      "bytes": 10917,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-FINAL-REVIEW.md",
+      "root": "W",
+      "sha256": "82773010f376603ddff6168eedbb3c8ef45a4c870343f348ef7f2588ab921faa"
+    },
+    {
+      "bytes": 11386,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-REVIEW.md",
+      "root": "W",
+      "sha256": "7aea3ba6b7fd450afa4c9de7146e0f41cdc0cd31c7fdfcefe6e0c8ca3d602bca"
+    },
+    {
+      "bytes": 8799,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-VERIFIER-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "16d1f4a30e3169173c1007a859df7621404b1097034cbed6231f8f8f822a4fa2"
+    },
+    {
+      "bytes": 9995,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ACTIVATION-TEST-REVIEW.md",
+      "root": "W",
+      "sha256": "19dc12c8593767c0de0c2a5b18124ca5e0fcc98f51a92e8f99a8ad09ddd686bf"
+    },
+    {
+      "bytes": 11777,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "2f2c4b6d55aba5037b1d426e3fd11db71c1e4fefa430cc83d9be894d52ae3238"
+    },
+    {
+      "bytes": 7256,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-CORE-ACTUAL-REVIEW.md",
+      "root": "W",
+      "sha256": "46d1a5576db5cbc0de3111680a3d36eccf761b370e5257b95dc7a088d9860a3d"
+    },
+    {
+      "bytes": 6457,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-CORE-TESTS-REVIEW.md",
+      "root": "W",
+      "sha256": "f4e263d6c261a4fc6f16a139858063ecb52558d6b690e7b5cd65bcc047bd99c2"
+    },
+    {
+      "bytes": 8975,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-PLAN-REVIEW.md",
+      "root": "W",
+      "sha256": "f8936611f9ce317c0818750bbfd5823b4a4e0dc322984dfb1979863960c3f486"
+    },
+    {
+      "bytes": 9009,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-IMPLEMENTATION-REPORT.md",
+      "root": "W",
+      "sha256": "fc53bd7ae8759b8b6580611a361de6fdd197a9a04eae66557e8d3ccce9bcdc7f"
+    },
+    {
+      "bytes": 7155,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "c654c8a12623c03347dc64c89b608e3e9c5da77aa880f15781aee871684046b4"
+    },
+    {
+      "bytes": 9197,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-FAILURE-DIAGNOSIS.md",
+      "root": "W",
+      "sha256": "05329b1ef7df41821cea034b367dd76240be7c3b01b8020c15087c6bd8b47b2b"
+    },
+    {
+      "bytes": 21683,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-COLD-IMPORT-QUALIFICATION-PROPOSAL.md",
+      "root": "W",
+      "sha256": "e6538032760a26d82fde8f653f58f63b65ee386dac0c99fd06fdd6554c9fe819"
+    },
+    {
+      "bytes": 87976,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-R113-ROUTE-EVIDENCE.json",
+      "root": "W",
+      "sha256": "1a68e332eefc1721cd029c96f7893da1df47e4a98cb578b82a701c22085ee6e9"
+    },
+    {
+      "bytes": 3979,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-R113-ROUTE-EVIDENCE-REVIEW.md",
+      "root": "W",
+      "sha256": "75eb423fe901244adaf35c0d84e6a729fb59945f967ee8e76429f286b3bfedef"
+    },
+    {
+      "bytes": 10070,
+      "path": "wave35-preparation/T18e-R0-WIP20-DOCUMENTATION-GROUND-TRUTH-REVIEW.md",
+      "root": "W",
+      "sha256": "b757e551a07e400052d0e7cd5b5736845574ea1d77f7d5b8ae68b8589cae9887"
+    }
+  ],
+  "terminal_review_input": {
+    "bytes": 5631513,
+    "path": "evidence-management/wip20-preparation/wip20-r109-r113-complete-receipt-input-v4.json",
+    "root": "W",
+    "sha256": "1c2ea4865cf25e2810608a7b1916f4d40870b02f2751c0ad6607a510d8c306ae"
+  }
+}

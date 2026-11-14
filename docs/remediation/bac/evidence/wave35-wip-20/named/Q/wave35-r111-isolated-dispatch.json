@@ -1,0 +1,375 @@
+{
+  "schema": "bac-actual-isolated-dispatch-v1",
+  "plan": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-isolated-execution-plan.json",
+  "plan_sha256": "88ba900bf1ec87199f63fd7a1ca9eae4948c0055086d0550f90802f498787603",
+  "started_at": "2026-11-13T21:43:59.855680+00:00",
+  "ended_at": "2026-11-13T21:44:53.614166+00:00",
+  "wall_seconds": 53.75854867599264,
+  "results": [
+    {
+      "job": "cuda-core-local-completion-single",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-single-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 5.965599536895752,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-single-dispatch.log",
+      "dispatch_sha256": "4417c974b499429f1f0405f3193c70a31a0e31df70187f970baebbbbf598a20c"
+    },
+    {
+      "job": "cuda-core-runtime-query-failure",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-runtime-query-failure-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.4924046993255615,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-runtime-query-failure-dispatch.log",
+      "dispatch_sha256": "f56e73ddc7ee9537a290654485279ff3a91b0979c88eceb2f5776d8ea0ee9af6"
+    },
+    {
+      "job": "cuda-core-bootstrap-failure",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-bootstrap-failure-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.9608776569366455,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-bootstrap-failure-dispatch.log",
+      "dispatch_sha256": "feb321fae178c8c9a630dc47a0e8a42e421359479b0447b2283b907b905f8209"
+    },
+    {
+      "job": "cuda-core-local-completion-multiple-body",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-multiple-body-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.9175801277160645,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-multiple-body-dispatch.log",
+      "dispatch_sha256": "8ecb09be99f2b571b118908da5aa2a053b6984c9f31cb8a75cddb8e4f124f53a"
+    },
+    {
+      "job": "cuda-core-poison-unknown-ready",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-unknown-ready-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.6560657024383545,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-unknown-ready-dispatch.log",
+      "dispatch_sha256": "2f43a1770fa9c22c198bb56573f0b74e68b67fdbcd2ce2b786d8a0b219b895ab"
+    },
+    {
+      "job": "cuda-core-poison-ready-qualified",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-ready-qualified-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.129836082458496,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-ready-qualified-dispatch.log",
+      "dispatch_sha256": "480597242240d0b36a413c9b2f1aeb77cbbc3a24f476fdfac09356fffbdd671f"
+    },
+    {
+      "job": "cuda-core-poison-ready-healthy-only",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-ready-healthy-only-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 6.638421297073364,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-poison-ready-healthy-only-dispatch.log",
+      "dispatch_sha256": "3748a3bd3759fa1d998792e4bb347d693eb06df660c23cb82b2c66b0a8ae2fc9"
+    },
+    {
+      "job": "cuda-core-operation-body-completion",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-operation-body-completion-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.187350273132324,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-operation-body-completion-dispatch.log",
+      "dispatch_sha256": "c8920c23c33fa723d50cfe5980cccf2db5b85814b1108977c188deabe404b59a"
+    },
+    {
+      "job": "cuda-core-inherited-pid",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-inherited-pid-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.084434747695923,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-inherited-pid-dispatch.log",
+      "dispatch_sha256": "eb440798912cf8700aa59cfc3b55ce9821413e14dcb6f2ad1b124fcca7a35264"
+    },
+    {
+      "job": "cuda-core-local-completion-duplicate-parent",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-duplicate-parent-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 8.170175790786743,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-local-completion-duplicate-parent-dispatch.log",
+      "dispatch_sha256": "37dac17cbc78c196998a1155d8ea6133f1e5ac72ab8b9f9d36a683c0c8143be4"
+    },
+    {
+      "job": "cuda-core-invocation-child-failure",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-child-failure-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 6.993706464767456,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-child-failure-dispatch.log",
+      "dispatch_sha256": "f7b0d6deaa464be124f1332a8e247aacd4d80458aa12358485d388edf850e0f2"
+    },
+    {
+      "job": "cuda-core-invocation-same-error",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-same-error-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.84988808631897,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-same-error/cuda-core-invocation-same-error-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-same-error-dispatch.log",
+      "dispatch_sha256": "cca23437a02a5dcbe16356e30e5c817a8546fabf574571ad8843e904dcbcd389"
+    },
+    {
+      "job": "cuda-core-invocation-parent-failure",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-parent-failure-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 5.947957515716553,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-parent-failure-dispatch.log",
+      "dispatch_sha256": "343eb30a765de506967af7c07e1114a72dd3e65d1f655ca12ee72a279debcb06"
+    },
+    {
+      "job": "cuda-core-invocation-phase-failure",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-phase-failure-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.232410669326782,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-phase-failure-dispatch.log",
+      "dispatch_sha256": "bfcb21eae2f6ecde14a4364051789b8e05def2bfe56e9df5fa29a3f632f237ba"
+    },
+    {
+      "job": "cuda-core-invocation-phase-reference",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-phase-reference-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.877425193786621,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-phase-reference-dispatch.log",
+      "dispatch_sha256": "2cf33d9156badcc9af88f64a0242dcc18ec7576fb1710e30e7b7af383addeb45"
+    },
+    {
+      "job": "cuda-core-invocation-reported-failure",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-reported-failure-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 8.865036249160767,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-core-invocation-reported-failure-dispatch.log",
+      "dispatch_sha256": "136e728797582749a81146f60c66940ca35f321e07861bb4e4adccd595a7d909"
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_single",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_single-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.536005020141602,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_single-dispatch.log",
+      "dispatch_sha256": "590d3357da544b5fc43f0e3c91584d014d6c1ee4fa0f70d57eb6b2e52fcf7b59"
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_single",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_admitted_single-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 6.251760959625244,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_admitted_single-dispatch.log",
+      "dispatch_sha256": "0ba1ba440246828de2496ab6b3802cacaf833ac4a1f14374758eb7b564df33fd"
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_distinct",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_distinct-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.989704608917236,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_distinct-dispatch.log",
+      "dispatch_sha256": "4c1e0bde511ac6b5773a269ba29301af75414258399299552c0208f5e50b670f"
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_same",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_same-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.480389595031738,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_local_same-dispatch.log",
+      "dispatch_sha256": "852937033ad3d6516058a43b5c3d697bab46855883e7fab921beb762ed157e64"
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_same",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_admitted_same-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 7.671745777130127,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-flat_admitted_same-dispatch.log",
+      "dispatch_sha256": "e00bfbedecb84d464eefddfae1281f3fc7923936a1152dbf43c54ecbbcaef773"
+    },
+    {
+      "job": "cuda-producer-poison-per_local_single",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_single-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 8.39090609550476,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_single-dispatch.log",
+      "dispatch_sha256": "5ba84ff61b3e271470838d9e4405567eb5d76f56dcf69665856775edc771db25"
+    },
+    {
+      "job": "cuda-producer-poison-per_local_distinct",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_distinct-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 8.972754001617432,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_distinct-dispatch.log",
+      "dispatch_sha256": "e6a31ec31e1a1e85bb2c5680138f1dadacd67365db78d4c33457b2bd1a1f00c9"
+    },
+    {
+      "job": "cuda-producer-poison-per_local_same",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_same-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 9.569624900817871,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_local_same-dispatch.log",
+      "dispatch_sha256": "89396fe00af2087bb87ae6f1fa62e0e9a7492ff32dbfaaa45949921413dd316e"
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_single",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_admitted_single-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 6.591323614120483,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_admitted_single-dispatch.log",
+      "dispatch_sha256": "07f67f2ce51ab0f54b376ca8cbbd3069e64b5646b3a6a62b16794991c9f20507"
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_same",
+      "command": [
+        "/workspace/hamlet/.venv/bin/python",
+        "/workspace/bac-review-2026-11-01/qualification/run_bac_packet_checks_locked.py",
+        "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_admitted_same-spec.json"
+      ],
+      "orchestration_exit": 0,
+      "actual_exit": 0,
+      "seconds": 6.374120473861694,
+      "result": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-result.json",
+      "dispatch_log": "/workspace/bac-review-2026-11-01/qualification/wave35-r111-cuda-producer-poison-per_admitted_same-dispatch.log",
+      "dispatch_sha256": "96b37f9779b2317c97be28d3e491c0af150a2cafc2fbe7147f08fdb7163d18c5"
+    }
+  ],
+  "custody": "Per-job generic/strict verification pending; orchestration exit is not pytest acceptance."
+}

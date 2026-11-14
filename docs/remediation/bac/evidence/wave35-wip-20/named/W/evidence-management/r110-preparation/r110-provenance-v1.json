@@ -1,0 +1,312 @@
+{
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 205308,
+    "path": "wave35/r110-candidate.json",
+    "root": "W",
+    "sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d"
+  },
+  "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+  "changed_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "concurrency": "Root records three independent one-thread jobs concurrently under measured 4CPU/16GiB; capture/custody index operations serialized.",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+    "tests": "a4e20f734ce8e3819df22d794839f9276aa2284a"
+  },
+  "helper_lineage": [
+    {
+      "helper": {
+        "bytes": 2043,
+        "path": "run_bac_packet_checks_locked.py",
+        "required_by": [
+          "wave35-r110-activation-fixtures--activation-fixtures",
+          "wave35-r110-activation-red--activation-red",
+          "wave35-r110-collection--collection",
+          "wave35-r110-core-manifest-red--core-manifest-red",
+          "wave35-r110-static--ruff-tests",
+          "wave35-r110-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "prior_exact_ref": {
+        "bytes": 2043,
+        "path": "run_bac_packet_checks_locked.py",
+        "required_by": [
+          "wave35-r109-collection--collection",
+          "wave35-r109-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "wave35-r109-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "wave35-r109-cuda-core-invocation-child-failure--cuda-core-invocation-child-failure",
+          "wave35-r109-cuda-core-invocation-parent-failure--cuda-core-invocation-parent-failure",
+          "wave35-r109-cuda-core-invocation-phase-failure--cuda-core-invocation-phase-failure",
+          "wave35-r109-cuda-core-invocation-phase-reference--cuda-core-invocation-phase-reference",
+          "wave35-r109-cuda-core-invocation-reported-failure--cuda-core-invocation-reported-failure",
+          "wave35-r109-cuda-core-invocation-same-error--cuda-core-invocation-same-error",
+          "wave35-r109-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "wave35-r109-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "wave35-r109-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "wave35-r109-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "wave35-r109-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "wave35-r109-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "wave35-r109-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "wave35-r109-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "wave35-r109-new-phase--new-phase",
+          "wave35-r109-new-state-lifetime--new-state-lifetime",
+          "wave35-r109-new-thread-alias--new-thread-alias",
+          "wave35-r109-prior-healthy--prior-healthy",
+          "wave35-r109-static--ruff-tests",
+          "wave35-r109-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "published_exact_ref": {
+        "bytes": 2043,
+        "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+        "root": "R",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "verification": "Hash-only identity. Failed-run helper may be separately authenticated through published WIP19."
+    },
+    {
+      "helper": {
+        "bytes": 6277,
+        "path": "capture_wave14_round.py",
+        "required_by": [
+          "wave35-r110-activation-fixtures--activation-fixtures",
+          "wave35-r110-activation-red--activation-red",
+          "wave35-r110-collection--collection",
+          "wave35-r110-core-manifest-red--core-manifest-red",
+          "wave35-r110-static--ruff-tests",
+          "wave35-r110-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+      },
+      "prior_exact_ref": {
+        "bytes": 6277,
+        "path": "capture_wave14_round.py",
+        "required_by": [
+          "wave35-r109-collection--collection",
+          "wave35-r109-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "wave35-r109-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "wave35-r109-cuda-core-invocation-child-failure--cuda-core-invocation-child-failure",
+          "wave35-r109-cuda-core-invocation-parent-failure--cuda-core-invocation-parent-failure",
+          "wave35-r109-cuda-core-invocation-phase-failure--cuda-core-invocation-phase-failure",
+          "wave35-r109-cuda-core-invocation-phase-reference--cuda-core-invocation-phase-reference",
+          "wave35-r109-cuda-core-invocation-reported-failure--cuda-core-invocation-reported-failure",
+          "wave35-r109-cuda-core-invocation-same-error--cuda-core-invocation-same-error",
+          "wave35-r109-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "wave35-r109-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "wave35-r109-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "wave35-r109-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "wave35-r109-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "wave35-r109-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "wave35-r109-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "wave35-r109-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "wave35-r109-new-phase--new-phase",
+          "wave35-r109-new-state-lifetime--new-state-lifetime",
+          "wave35-r109-new-thread-alias--new-thread-alias",
+          "wave35-r109-prior-healthy--prior-healthy",
+          "wave35-r109-static--ruff-tests",
+          "wave35-r109-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+      },
+      "published_exact_ref": {
+        "bytes": 6277,
+        "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+        "root": "R",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+      },
+      "verification": "Hash-only identity. Failed-run helper may be separately authenticated through published WIP19."
+    },
+    {
+      "helper": {
+        "bytes": 2917,
+        "path": "bac_source_identity.py",
+        "required_by": [
+          "wave35-r110-activation-fixtures--activation-fixtures",
+          "wave35-r110-activation-red--activation-red",
+          "wave35-r110-collection--collection",
+          "wave35-r110-core-manifest-red--core-manifest-red",
+          "wave35-r110-static--ruff-tests",
+          "wave35-r110-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      },
+      "prior_exact_ref": {
+        "bytes": 2917,
+        "path": "bac_source_identity.py",
+        "required_by": [
+          "wave35-r109-collection--collection",
+          "wave35-r109-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "wave35-r109-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "wave35-r109-cuda-core-invocation-child-failure--cuda-core-invocation-child-failure",
+          "wave35-r109-cuda-core-invocation-parent-failure--cuda-core-invocation-parent-failure",
+          "wave35-r109-cuda-core-invocation-phase-failure--cuda-core-invocation-phase-failure",
+          "wave35-r109-cuda-core-invocation-phase-reference--cuda-core-invocation-phase-reference",
+          "wave35-r109-cuda-core-invocation-reported-failure--cuda-core-invocation-reported-failure",
+          "wave35-r109-cuda-core-invocation-same-error--cuda-core-invocation-same-error",
+          "wave35-r109-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "wave35-r109-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "wave35-r109-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "wave35-r109-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "wave35-r109-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "wave35-r109-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "wave35-r109-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "wave35-r109-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "wave35-r109-new-phase--new-phase",
+          "wave35-r109-new-state-lifetime--new-state-lifetime",
+          "wave35-r109-new-thread-alias--new-thread-alias",
+          "wave35-r109-prior-healthy--prior-healthy",
+          "wave35-r109-static--ruff-tests",
+          "wave35-r109-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      },
+      "published_exact_ref": {
+        "bytes": 2917,
+        "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+        "root": "R",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      },
+      "verification": "Hash-only identity. Failed-run helper may be separately authenticated through published WIP19."
+    },
+    {
+      "helper": {
+        "bytes": 3032,
+        "path": "verify_bac_run.py",
+        "required_by": [
+          "wave35-r110-activation-fixtures--activation-fixtures",
+          "wave35-r110-collection--collection"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "prior_exact_ref": {
+        "bytes": 3032,
+        "path": "verify_bac_run.py",
+        "required_by": [
+          "wave35-r109-collection--collection",
+          "wave35-r109-cuda-core-bootstrap-failure--cuda-core-bootstrap-failure",
+          "wave35-r109-cuda-core-inherited-pid--cuda-core-inherited-pid",
+          "wave35-r109-cuda-core-invocation-child-failure--cuda-core-invocation-child-failure",
+          "wave35-r109-cuda-core-invocation-parent-failure--cuda-core-invocation-parent-failure",
+          "wave35-r109-cuda-core-invocation-phase-failure--cuda-core-invocation-phase-failure",
+          "wave35-r109-cuda-core-invocation-phase-reference--cuda-core-invocation-phase-reference",
+          "wave35-r109-cuda-core-invocation-reported-failure--cuda-core-invocation-reported-failure",
+          "wave35-r109-cuda-core-invocation-same-error--cuda-core-invocation-same-error",
+          "wave35-r109-cuda-core-local-completion-duplicate-parent--cuda-core-local-completion-duplicate-parent",
+          "wave35-r109-cuda-core-local-completion-multiple-body--cuda-core-local-completion-multiple-body",
+          "wave35-r109-cuda-core-local-completion-single--cuda-core-local-completion-single",
+          "wave35-r109-cuda-core-operation-body-completion--cuda-core-operation-body-completion",
+          "wave35-r109-cuda-core-poison-ready-healthy-only--cuda-core-poison-ready-healthy-only",
+          "wave35-r109-cuda-core-poison-ready-qualified--cuda-core-poison-ready-qualified",
+          "wave35-r109-cuda-core-poison-unknown-ready--cuda-core-poison-unknown-ready",
+          "wave35-r109-cuda-core-runtime-query-failure--cuda-core-runtime-query-failure",
+          "wave35-r109-new-phase--new-phase",
+          "wave35-r109-new-state-lifetime--new-state-lifetime",
+          "wave35-r109-new-thread-alias--new-thread-alias",
+          "wave35-r109-prior-healthy--prior-healthy",
+          "wave35-r109-static--ruff-tests",
+          "wave35-r109-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "published_exact_ref": {
+        "bytes": 3032,
+        "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+        "root": "R",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "verification": "Hash-only identity. Failed-run helper may be separately authenticated through published WIP19."
+    },
+    {
+      "helper": {
+        "bytes": 4596,
+        "path": "verify_bac_failed_run.py",
+        "required_by": [
+          "wave35-r110-activation-red--activation-red",
+          "wave35-r110-core-manifest-red--core-manifest-red"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+      },
+      "prior_exact_ref": null,
+      "published_exact_ref": {
+        "bytes": 4596,
+        "path": "docs/remediation/bac/evidence/wave35-wip-01/verify_bac_failed_run.py.txt",
+        "root": "R",
+        "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+      },
+      "verification": "Hash-only identity. Failed-run helper may be separately authenticated through published WIP19."
+    },
+    {
+      "helper": {
+        "bytes": 2532,
+        "path": "verify_bac_static_run.py",
+        "required_by": [
+          "wave35-r110-static--ruff-tests",
+          "wave35-r110-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+      },
+      "prior_exact_ref": {
+        "bytes": 2532,
+        "path": "verify_bac_static_run.py",
+        "required_by": [
+          "wave35-r109-static--ruff-tests",
+          "wave35-r109-static--black-tests"
+        ],
+        "role": "executed_check_helper",
+        "root": "Q",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+      },
+      "published_exact_ref": {
+        "bytes": 2532,
+        "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt",
+        "root": "R",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+      },
+      "verification": "Hash-only identity. Failed-run helper may be separately authenticated through published WIP19."
+    }
+  ],
+  "mutable_source_boundary": "Production B writer active. No current mutable application hash is asserted to be R110.",
+  "patch": {
+    "bytes": 71617,
+    "path": "evidence-management/r110-preparation/r110-full-base-candidate.patch",
+    "root": "W",
+    "sha256": "013041bb9e4e1bd1dd2e580a4bbd4a9068c1728931e694e15428263a3050c44d"
+  },
+  "patch_format": "git diff --full-index --binary against exact captured Git tree; inert, never applied",
+  "private_backups": "Excluded; no private backup traversal or selection.",
+  "root_disposition": {
+    "bytes": 3011,
+    "path": "wave35/r110-root-checks.json",
+    "root": "W",
+    "sha256": "8229193dd134acab770d9f799c30310db691aa534c058f16dfbe06a647694ce5"
+  },
+  "schema": "bac-captured-tests-first-provenance-v1"
+}

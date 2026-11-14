@@ -1,0 +1,2549 @@
+{
+  "artifacts": [
+    {
+      "bytes": 4986,
+      "path": "wave35-r109-capture.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "ff59cf33a95baab48857b9f5a270b0941e3b9ec64b68088c45eaf60e281b1395",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-collection/collection/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r109-collection/collection-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8f31094ccc236262c5ed75fe33e0122839c5d162f51e1651ac1c7f5fa4119658",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 859,
+      "path": "wave35-r109-collection/collection-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3c8bd1ccd81b873aeea4349cb174175a9abc7c8ce0d007f9b5237fa5eac19315",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 7854,
+      "path": "wave35-r109-collection/collection.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "38deef3779427bb9775a75bbddddc6443516cf359e8211cb001388fa84b0778f",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r109-collection-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8f31094ccc236262c5ed75fe33e0122839c5d162f51e1651ac1c7f5fa4119658",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 781,
+      "path": "wave35-r109-collection-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "0919eaa3b337fd4c4fca1901da534b0088f83ceccee89b7807bb9f146e0943ca",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 620,
+      "path": "wave35-r109-collection-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "5de1039e989cee2989af0cd420a6e1e5616113c0492bb277b9f215b3ed131e24",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1558,
+      "path": "wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/replay-spawn-custody-cuda_core_bootstrap_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "0d4331dfc51d478e0740d33e0fd87405df25bca3002106d27a09e765a685ca6c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 966,
+      "path": "wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/spawn-identity-cuda_core_bootstrap_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "50bf12f033b16054eb928d90ca2b8665b79bb69e02b4109cdf1d90149e68a6ef",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 265,
+      "path": "wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure/spawn-observation-cuda_core_bootstrap_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "da5b23df59cde5cdbb4e4a210f09f4293829ec843cc9dd223dda24efe2dc57f5",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 659,
+      "path": "wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "18b4dd4869319d7dc6e52ae443029ba365384dd64ccd75beaafaac6acafe1b05",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 939,
+      "path": "wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "f647d63d78bfa7136c283daf252d03aa9f67ae7dcd922e33e4fc10651d6bfd9a",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-bootstrap-failure/cuda-core-bootstrap-failure.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "48009296cffadad872b0b7a43892c63aec7f2628e5b8f9323046e5c5b1bef4f2",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 659,
+      "path": "wave35-r109-cuda-core-bootstrap-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "18b4dd4869319d7dc6e52ae443029ba365384dd64ccd75beaafaac6acafe1b05",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 865,
+      "path": "wave35-r109-cuda-core-bootstrap-failure-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "21368102293444394a217be59deee8fa42b685973a61518932b1ede6bbf34af7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1558,
+      "path": "wave35-r109-cuda-core-bootstrap-failure-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "0d4331dfc51d478e0740d33e0fd87405df25bca3002106d27a09e765a685ca6c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 678,
+      "path": "wave35-r109-cuda-core-bootstrap-failure-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6adec253a1431bd15b5905a7af692d9f0c38b23753a377fabd32959b2e1f074c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 2099,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-admission.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8d4fb872d81874ccebeb819ea9ebe24fcc7693baafb0ffda413231c3f9c75e2b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 2389,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-invocation.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "f05deb35e1d6885230adfaa7ea0305fb041ffaf26fc35f5f8bb37b0772130ebf",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 2361,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-identity-cuda_core_inherited_pid-local.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "339dd28b0df315057a490484aa9b34536b84a9d58ffd91a4246939efcbbf4435",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 526,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-admission.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "5177fdd7e9ee3d56f9459553879e93c5190dda8793ca0830b6951a1673aa786d",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 528,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-invocation.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6c5600237e880a8f0a3bc832472a889728e9bd0faa425add75aed16221f3b7a2",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 518,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/fork-observation-cuda_core_inherited_pid-local.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "86526df1c08afffb5c5ea450fe7229ffb7feca37518f46cc747721adf4cc696b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 2805,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/replay-spawn-custody-cuda_core_inherited_pid.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "53262ff1be484d0a2d1657d38563d94e762d6cfb559caab268d81c0323f35405",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 962,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/spawn-identity-cuda_core_inherited_pid.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "533a12402dda521428ae28ab00c3853df2af82ecfadf17f7f9f0ed64614f5ed2",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 267,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid/spawn-observation-cuda_core_inherited_pid.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "92a5d5d86aba5ed2a55d7a54f6c0f2efeee18916df0ad077f89d8686fd0a0f4d",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 654,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "56c6b1b3b6c01cb3f60cd0ba93a53a7fa4fce45a6ad70581716d4c15f3d217c5",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 918,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "7b5a0940bf1bd51760f7a6dc0755983737f60a0945791367a12e2ced01033d5e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-inherited-pid/cuda-core-inherited-pid.log",
+      "published_object": {
+        "action": "copy-new",
+        "bytes": 578,
+        "path": "docs/remediation/bac/evidence/wave35-wip-19/named/Q/wave35-r106-core-children/cuda-core-local-completion-duplicate-parent.log",
+        "source": "/workspace/bac-review-2026-11-01/qualification/wave35-r106-core-children/cuda-core-local-completion-duplicate-parent.log"
+      },
+      "root": "Q",
+      "sha256": "b3050540ca25d1e20cf4cde4cc9aa4990d0dd217333edd6c6b4b7e503414e972",
+      "storage": "reuse-published-exact-bytes"
+    },
+    {
+      "bytes": 654,
+      "path": "wave35-r109-cuda-core-inherited-pid-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "56c6b1b3b6c01cb3f60cd0ba93a53a7fa4fce45a6ad70581716d4c15f3d217c5",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r109-cuda-core-inherited-pid-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "b08eec76cf406e168c3b767cdabfa27816b0e285551e1cf0a984c37a5ab1dff0",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 2805,
+      "path": "wave35-r109-cuda-core-inherited-pid-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "53262ff1be484d0a2d1657d38563d94e762d6cfb559caab268d81c0323f35405",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 662,
+      "path": "wave35-r109-cuda-core-inherited-pid-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8977f50c03da9541cf01123853bbeb6366ff77edbc8983798e030d1877a3ea2b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1579,
+      "path": "wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/replay-spawn-custody-cuda_core_invocation_child_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a6db862c6552e3b246edda37ef92307974d281be738967398e2e9b39b0cccbaa",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 973,
+      "path": "wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/spawn-identity-cuda_core_invocation_child_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "5a3f86f2b394cb294351b23c4a3545cebc89edea1c75b8a5a96d32b03371feb0",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 272,
+      "path": "wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure/spawn-observation-cuda_core_invocation_child_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "e0fd4b1bfbb814e6e2ea041f3b5a168dd49fd357472a7cca14bc87078fde9017",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d89ba2786ecfa9d9461c59a3c95fc8b00e4232edf4a03a490d9c8b6a415dec23",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 966,
+      "path": "wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a06741385aa6a3fcfc8cdd33b90755273e0f061721437d0830e23ae944030c88",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-invocation-child-failure/cuda-core-invocation-child-failure.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "c94c3e51cef46ed3a5dfc0581f1049db47349fc86b3262d07f7a902b3e4695b1",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r109-cuda-core-invocation-child-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d89ba2786ecfa9d9461c59a3c95fc8b00e4232edf4a03a490d9c8b6a415dec23",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 892,
+      "path": "wave35-r109-cuda-core-invocation-child-failure-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d6f6cebf6294047c955ef13e3b30996583f8b2509fca15d6a8e55cf66fbdc87c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1579,
+      "path": "wave35-r109-cuda-core-invocation-child-failure-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a6db862c6552e3b246edda37ef92307974d281be738967398e2e9b39b0cccbaa",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 699,
+      "path": "wave35-r109-cuda-core-invocation-child-failure-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "99a44b25af84149418540ecd3045356731e624257069af8d999badaa194ffe8a",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/replay-spawn-custody-cuda_core_invocation_parent_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fcb278b0649c04626af6f28326132a3cd4e24091de848403701686db2f454bb6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/spawn-identity-cuda_core_invocation_parent_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "e1ceeab7c85d07ca04d6397345806fadb7805caecb3f1d08c5ea42cbe5ab8f38",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 273,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure/spawn-observation-cuda_core_invocation_parent_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "bff808aba58c16c684109ba326e4d27b3af006406be8ab39898a207ab504eaf6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "09d9492cfcf664d0259d8433210b986bfe91961c75a80e391b7a0b1b47032ac0",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "83be2abc55fd55cb882f8dda295ffca72c51faa24913a08980e02a1195028057",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure/cuda-core-invocation-parent-failure.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "70b119c660317bc83754cd33a24fa3c1069af38415631db127565fbd3cb34ec9",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "09d9492cfcf664d0259d8433210b986bfe91961c75a80e391b7a0b1b47032ac0",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 896,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "b8a3ad353a1128108974f2166e730b3f238817ca7720c75ea330992f00ecb246",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fcb278b0649c04626af6f28326132a3cd4e24091de848403701686db2f454bb6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "bb3b355d64daf29abeb44c0bf59a106913685992338ba12cbc522a9f6530301f",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 709,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/invocation-phase-cuda_core_invocation_phase_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "bfe17c328064adb4ddc529ad18df8b7e5d025c55c279573393892dbc0aac1283",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1676,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/replay-spawn-custody-cuda_core_invocation_phase_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "ff59f1ddf1359e67bcbf5874b5e848fe780cec738cdaaa388e7b283af140f90e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 973,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/spawn-identity-cuda_core_invocation_phase_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "4e9fa5e981f3f370750468385f244258cd41e199d872eda97df12c61c13fb6a8",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 367,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure/spawn-observation-cuda_core_invocation_phase_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "840a00458d6c1e2798ce3313511027c2b68e9863af28034f05cf742f4fa21dd3",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8371b5cc2d796c8badef6e8947e89da94ccde9704fc486a3db0823e155d30966",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 966,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "7e95f58d56fb103a5524570184e9f666f649bb3455115df4a2afe4d18f4d122d",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure/cuda-core-invocation-phase-failure.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "490b8af35a0872005bf81cca7d5434007f0ebda89b28adc76aaa0f1f69778b55",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8371b5cc2d796c8badef6e8947e89da94ccde9704fc486a3db0823e155d30966",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 892,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "18df97139c9b3afaf4d9422589f539cfd104c7f3d54df8305715dbc531ff860e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1676,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "ff59f1ddf1359e67bcbf5874b5e848fe780cec738cdaaa388e7b283af140f90e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 699,
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "06881fdc87d51d081f2ce87ea98fd48ed336ac52d1e6ceec4d8be44192eb475f",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 713,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/invocation-phase-cuda_core_invocation_phase_reference.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "f26c68da18f1c35ecd440bbb766f63786280759661f69a23ae4c226724654871",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1682,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/replay-spawn-custody-cuda_core_invocation_phase_reference.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "77b7fa9522075861e82bb73f4ead58b8b396f8ca56dacfff9ba0bb4bbe2d9264",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 975,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/spawn-identity-cuda_core_invocation_phase_reference.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "e12bd5fce4c27de8695338f5b327c52c568faf6fc65b9594ac96b7971faf02a5",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 369,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference/spawn-observation-cuda_core_invocation_phase_reference.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "e33b02cdf6c2c53959e25464d251019e453d4a3a106eef1870e99846b2033daf",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 667,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "20622ed4cbbab8d3293628d25dc9dbe108c6d40c862657b8579dae8d502b9d83",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fbe8a8630dc96e97cacd6afee12c77663347dbb5765cc7ab3af79ca8ba4c9bb7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference/cuda-core-invocation-phase-reference.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6fac798f304b8da45b8470252f89ea28261079476fef64718116f9403b678614",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 667,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "20622ed4cbbab8d3293628d25dc9dbe108c6d40c862657b8579dae8d502b9d83",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 900,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a7ab952762457a7d05c2b73a67c977962d2cb6f5ddd16a9c09ff514397fc83db",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1682,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "77b7fa9522075861e82bb73f4ead58b8b396f8ca56dacfff9ba0bb4bbe2d9264",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 705,
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "9a0b03f6d6ac0be2091d8a577c8e069389f112ab3ff9a0f6f1b1f6fb08efb4a4",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1588,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/replay-spawn-custody-cuda_core_invocation_reported_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "322d81b761415f5914b490250fb07afa63f79deff68a5feeab759a834027f514",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 976,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/spawn-identity-cuda_core_invocation_reported_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "993c437dcf1531e5f0f5605e583b32d4483072c54f73021e140825719e30173a",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 275,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure/spawn-observation-cuda_core_invocation_reported_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "1b6af7ade06703a29c71a690069089d4a63e8bdccecbe356dcd2042b4c96a8ec",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 668,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "e22eb06dfd56446998cb9cc5ae52dfda4b7785bae11de1f9bc58b172f8d9d3ac",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 978,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "020669f7c32e437d9a9f3f943a707002cb182e1431dc188008854cfa9c05136c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure/cuda-core-invocation-reported-failure.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "be6314248173162aa81b7d1a14944d943b54b8901017411baed166718e1e1219",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 668,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "e22eb06dfd56446998cb9cc5ae52dfda4b7785bae11de1f9bc58b172f8d9d3ac",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 904,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "830482ea2c334cc76d9bf154bc8489db2dd03bba902de1b4f6b63cc4bba66bcc",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1588,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "322d81b761415f5914b490250fb07afa63f79deff68a5feeab759a834027f514",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 708,
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a599d1b58bb576cdb95300d9081b04ea971b08a2424498bf145d04ededdfdeb7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1570,
+      "path": "wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error/replay-spawn-custody-cuda_core_invocation_same_error.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "bad9f1cc372b2e4786e7fbe3e429d0c87ffe853c4ad6851ccf3f3c34d3b079fa",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error/spawn-identity-cuda_core_invocation_same_error.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fdd9038da5116510fb416a5781403bc377ca46ae0e5fcaa13ac8a6e6821fd8ec",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 269,
+      "path": "wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error/spawn-observation-cuda_core_invocation_same_error.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "ab114e385d52e281c8595e9a1b293c85e9bc0b38fea4c5d342ac4d83615c16bb",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 662,
+      "path": "wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6ecb1e56e35d5394d81cc00fa553437fdc735b07f3659178f9ed96056a6d2686",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 954,
+      "path": "wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fd840562190d084e7a3bec1355ff95124359d94eb7afa8b1352f7fd167327c81",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-invocation-same-error/cuda-core-invocation-same-error.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "be9bf12e22fe96e729e06a020ad9f2ffae84cd9fe202567fe4620ff2f50497c3",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 662,
+      "path": "wave35-r109-cuda-core-invocation-same-error-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6ecb1e56e35d5394d81cc00fa553437fdc735b07f3659178f9ed96056a6d2686",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 880,
+      "path": "wave35-r109-cuda-core-invocation-same-error-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "76a721d4dd6f62fb05af19dfdee1bdcd16dc251e008260c58954f6c6d4577f31",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1570,
+      "path": "wave35-r109-cuda-core-invocation-same-error-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "bad9f1cc372b2e4786e7fbe3e429d0c87ffe853c4ad6851ccf3f3c34d3b079fa",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 690,
+      "path": "wave35-r109-cuda-core-invocation-same-error-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "66ab6db176b4e5619d335a38b0715a2e2eb81bad47a8f0e7864721b6d6ccd9f2",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1606,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/replay-spawn-custody-cuda_core_local_completion_duplicate_parent.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fe7e7cd1d8c47c4d32ee4cee68122478dea8c6f40c638039e645d220641c1e32",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 982,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/spawn-identity-cuda_core_local_completion_duplicate_parent.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d74d9714e5fffcbbe16588b825e60a9872f4f81ffb571c394fd94b3bd49ba4e7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 281,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent/spawn-observation-cuda_core_local_completion_duplicate_parent.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "5f9a586034ecf7b98416716b122ad0519bc39f1790781f92e78f31d0b6ed3a86",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 674,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "75cc069f6c34af550374dae0fade84665a5661afc67e40ab794fee621a0c9a3d",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1002,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "31c6c9a05b799e84e60295887ac3dcb415e2c6dfe5e71296a992b36d0ecc18fc",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent/cuda-core-local-completion-duplicate-parent.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "98e1a84f467d9741b19221eac30a6ba034677f3636003ec8b5a62a6a7c46e866",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 674,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "75cc069f6c34af550374dae0fade84665a5661afc67e40ab794fee621a0c9a3d",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 928,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "b117eedabf47db64fef53c8e8fe029cd4cedf790623208e529d7a14a62fe9ea3",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1606,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fe7e7cd1d8c47c4d32ee4cee68122478dea8c6f40c638039e645d220641c1e32",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 726,
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "04e7f4fd90d6ba5f97fc9cc2b9bf4e0fe7645f0f466eb051deeef2a8cf2a4d63",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1597,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/replay-spawn-custody-cuda_core_local_completion_multiple_body.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "04a1163b7645b86bb0f0c7f9f07b16b7b339182189747266aed27a9c7e9a1d57",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 979,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/spawn-identity-cuda_core_local_completion_multiple_body.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "19e5f692c7837852c24fb0b5aafa85a8ed2c9a46de6164d3f9e1775c06f7c958",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 278,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body/spawn-observation-cuda_core_local_completion_multiple_body.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "538cfbcee1ae18d249eba35a785badb211a16f71c64c65a7638ba49379696525",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 672,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6bde8e0c38ef55f7a984af735d3b5c5ec6258669ea0456e5d709c9923054639a",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 991,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "ed4edf81fa23bb19b788f9306ac1ddc267790b4e8f14cc1aacae21b984642bbd",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body/cuda-core-local-completion-multiple-body.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "83802d36e407a08c05283de83d2b4aeed35f69c6390e70571c62aaba7c614f38",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 672,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6bde8e0c38ef55f7a984af735d3b5c5ec6258669ea0456e5d709c9923054639a",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 917,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "c40c0a6841d07be8f484600c1c00393cd454caa1f68e79a03764dfc0046f72a8",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1597,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "04a1163b7645b86bb0f0c7f9f07b16b7b339182189747266aed27a9c7e9a1d57",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 717,
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "9b31bcec8e227dd949dbef06115f320b00f6c3b08946fd48c9ae84ed98f9aab8",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1576,
+      "path": "wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single/replay-spawn-custody-cuda_core_local_completion_single.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "f66b5996712882f687ca8a41acc679cc3d73c7fe3b866d400e91cf338caee2b4",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 972,
+      "path": "wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single/spawn-identity-cuda_core_local_completion_single.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "46e3935727542b2431482da6c0474f1ab34c572b6692318142bb0736db22db69",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 271,
+      "path": "wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single/spawn-observation-cuda_core_local_completion_single.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a660de054e8b5cc58ce65fcd9e0eb18c04a133d468dca4745ba4b6a8fcfbf178",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "2efb1d533f907662a1e390829e324d02aa48e7a33be14ec8452c93a2c5b05630",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 963,
+      "path": "wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "c5788c9ae565c2a21f03c97ee76cabd61910ea64dc59a5f566b237099de9d857",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-local-completion-single/cuda-core-local-completion-single.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "59e3a186f6ccf7e37f5545e89c2656d7a6c3c01e6e97ef6b976f29d3bb3a7330",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 665,
+      "path": "wave35-r109-cuda-core-local-completion-single-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "2efb1d533f907662a1e390829e324d02aa48e7a33be14ec8452c93a2c5b05630",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 889,
+      "path": "wave35-r109-cuda-core-local-completion-single-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d7047c9022964ff2f7c8a3a42a8e656359a325345877683be83e5d69729d4034",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1576,
+      "path": "wave35-r109-cuda-core-local-completion-single-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "f66b5996712882f687ca8a41acc679cc3d73c7fe3b866d400e91cf338caee2b4",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 696,
+      "path": "wave35-r109-cuda-core-local-completion-single-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "4148e2dda5ca14a481a6a417e74608c9025808be5c4316023ad694a3ed25b7e6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion/replay-spawn-custody-cuda_core_operation_body_completion.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8e0b5a5eb96e0998a5c3f036f98b5865d729b2f3d53e3f9e5bac9097f33970c7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion/spawn-identity-cuda_core_operation_body_completion.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "bcd582f1018fc7fe0e5611ba1323d6fa6b74b471e21cdbed6531a00f87945739",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 273,
+      "path": "wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion/spawn-observation-cuda_core_operation_body_completion.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "39fd8ca6a36a32e23ed581022aa6a784cf1113368aa389ce6f1c8ef811cba079",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "04dc2f1b6a6ef5d10027507d1836d01c647f842de0ee4fe58e9903c6f5366c41",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8b3c8f04a9b337ab296cba4719b9e325808b758d132bf827b5c2c3c2095f52ae",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-operation-body-completion/cuda-core-operation-body-completion.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "f7a4b503e781a5b512e640e0f6d573d29e08621e8c07770f895e6fcc93c72426",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r109-cuda-core-operation-body-completion-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "04dc2f1b6a6ef5d10027507d1836d01c647f842de0ee4fe58e9903c6f5366c41",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 896,
+      "path": "wave35-r109-cuda-core-operation-body-completion-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "95ed4416c33f075a278d6c68acac740fe92e970bfc2c6385d0f410a123899560",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r109-cuda-core-operation-body-completion-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "8e0b5a5eb96e0998a5c3f036f98b5865d729b2f3d53e3f9e5bac9097f33970c7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r109-cuda-core-operation-body-completion-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "c173344704ed6ec050bbe140abcad59a2653a3570741554f0c68a94835c13815",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/replay-spawn-custody-cuda_core_poison_ready_healthy_only.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "710ead59d2a92d3ae40c9124b03977571d9cf126fd720c1161a676d4a73dccd7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 974,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/spawn-identity-cuda_core_poison_ready_healthy_only.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a689964d5e0e048ecb0ac7fbf152e04720ad092d47ca6882ac11ec2a157f1042",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 273,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only/spawn-observation-cuda_core_poison_ready_healthy_only.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d4e85031a90eac6296e258982751aeb220690cfea1d721e096e5c13056d18c13",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "10d8a916e4c20152a599dbd4f3e7ca5701b39006255b86de4b408956c6ee85ba",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d71548714a79f03dd3a126a756b31c4c47ad5976a21acc7cf563e764deb80b72",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only/cuda-core-poison-ready-healthy-only.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "59e3a186f6ccf7e37f5545e89c2656d7a6c3c01e6e97ef6b976f29d3bb3a7330",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "10d8a916e4c20152a599dbd4f3e7ca5701b39006255b86de4b408956c6ee85ba",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 896,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "5606e5c6b771ff8ccf2f7457f080df427ea781b2d456deb6a6b7b0899681069a",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1582,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "710ead59d2a92d3ae40c9124b03977571d9cf126fd720c1161a676d4a73dccd7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 702,
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a3328ec349bd8ff8aa28200b6a9d6bdcf9dd91e7835e33fa162f66f6140b2717",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1573,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/replay-spawn-custody-cuda_core_poison_ready_qualified.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "5179142b3155be69811c26faad1f025c5a38e58998ea6ad37441e3c85f6d6ff3",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 971,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/spawn-identity-cuda_core_poison_ready_qualified.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "915ef031a212375a8cd7e502821d182d955b2b2dab78a5f6873aa83b72245cb9",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 270,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified/spawn-observation-cuda_core_poison_ready_qualified.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "975a5967ee0d4bdabb60ece9652e0140334469238a5e63da3be7e81fdd33c0d8",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 664,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "62c7a18142833e3f8f217f3fbfb4dca5ecf06bf33c61734cfcf98f799730c1c7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 959,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "702ccecbf757428262e3e37d52e7b464b91bfea7c4f1aaf277e6d3044048999e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified/cuda-core-poison-ready-qualified.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "255eb6db79f3d60cbf70f046c6a4ffe7978a99d5f3116dda145f8ea7ae384e1b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 664,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "62c7a18142833e3f8f217f3fbfb4dca5ecf06bf33c61734cfcf98f799730c1c7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 885,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "e9ffa22fd7898ef411cd3ad725d248448aa698f5301a8436944e3700c935754c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1573,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "5179142b3155be69811c26faad1f025c5a38e58998ea6ad37441e3c85f6d6ff3",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 693,
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "0e5a2e2ae29a587fab008e54dc7f8ced4ff0c1d8c7f48926e86140f53611f8f6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1567,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/replay-spawn-custody-cuda_core_poison_unknown_ready.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "b0a213841799d441f72065cdfd4b3750d0ff58ddb869667be9f83b27a95a5586",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 969,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/spawn-identity-cuda_core_poison_unknown_ready.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "04d6f69db966486ad6f55eab324fc59cfba645b43dd941135331605b2ec3db5a",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 268,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready/spawn-observation-cuda_core_poison_unknown_ready.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "091b252b9d06508748eaf39c5ff2760e928e72618fd665b93909022e26910386",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "dca183a22588a402c49f385a7e6bcb2f71c2833c112e06eff961093251a1a094",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 949,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "cba4c983af9d8835898285a6f595d696de078fef0597cbc937837398e8b46071",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready/cuda-core-poison-unknown-ready.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "2de4fe880b63c2b460f7165f1802bf9f851758b6299dbb0eb79e9f3bfd29a3bf",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "dca183a22588a402c49f385a7e6bcb2f71c2833c112e06eff961093251a1a094",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 875,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "efcbf9003cbc3f524e271b303ddac457fd0c3b8a5b64108684bee609d9f9c8d4",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1567,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "b0a213841799d441f72065cdfd4b3750d0ff58ddb869667be9f83b27a95a5586",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 687,
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "a2bbaaf22d4275f7cd44b06993ede3f84d3155ade87986087b14e35b2dae7415",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1570,
+      "path": "wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/replay-spawn-custody-cuda_core_runtime_query_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "13835afec88fbca771f1285c283b5399e33ca7735e775fa8f34574899f970532",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 970,
+      "path": "wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/spawn-identity-cuda_core_runtime_query_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "6bfceb5ad5e9805cc726ae39f29afcbdab249a40ccf3d2b780918ec51ee0b50f",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 269,
+      "path": "wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure/spawn-observation-cuda_core_runtime_query_failure.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "ab8d19864132d9b328157f7a3ee59284af68e774a490cea64d3d532600383fdc",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 663,
+      "path": "wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "707de458895ad462c4e59a13f7d0107579a33a0e8d3ca50478541c0d43bc69a9",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 955,
+      "path": "wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "1c4443416d49851e1f19d208e3dec516cae293e5768c2f1da54d90416cb83148",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "2e18c664a1bed29493652585b8069ff82de11ae60efa7368c86f3ee8ce56cbc9",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 663,
+      "path": "wave35-r109-cuda-core-runtime-query-failure-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "707de458895ad462c4e59a13f7d0107579a33a0e8d3ca50478541c0d43bc69a9",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 881,
+      "path": "wave35-r109-cuda-core-runtime-query-failure-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "9d96cc9b303d728a2892bd3b98369cd9dc7796bb3b20f9da754e715400210dee",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1570,
+      "path": "wave35-r109-cuda-core-runtime-query-failure-spawn-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "13835afec88fbca771f1285c283b5399e33ca7735e775fa8f34574899f970532",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 690,
+      "path": "wave35-r109-cuda-core-runtime-query-failure-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "18c484c5bc4baae13ae0ab759b92744eda22c630f52742faf2aa7d7d15cd7b3c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 9658,
+      "path": "wave35-r109-healthy-selection.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "771d388ec3337aa7840d507134ddc00e701fcc16bdf395e38adaeaa3a283ccc1",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 6573,
+      "path": "wave35-r109-invocation-phase-pair-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "7072ea4b2648a2a4f2c1a7519afe50f77db2636b99dd4492c3beca8936539b6e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1042,
+      "path": "wave35-r109-invocation-phase-pair-execution.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "c066b66cee768a0aab1c88dcd29f7bb3d968617db56b468514aee1738e40f84b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 6958,
+      "path": "wave35-r109-isolated-execution-plan.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "7c0ef24ededd0b7174b7492225945222eef0b7183d7a137ca82343d06da7ecf1",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-new-phase/new-phase/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r109-new-phase/new-phase-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "0eb78492085618db65d7ac3c006324203fef9906dc0b258e19d15924fb2f1225",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1352,
+      "path": "wave35-r109-new-phase/new-phase-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fdbb8aab22502ee9dc52b5df026346d04acca57cc1b269b3ad4088b9cc9ce4ba",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 579,
+      "path": "wave35-r109-new-phase/new-phase.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "fc05582cc3d0fc3aa58cde66a61867b6ea59556e68874d3c2e867cc50bbb14e6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r109-new-phase-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "0eb78492085618db65d7ac3c006324203fef9906dc0b258e19d15924fb2f1225",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1266,
+      "path": "wave35-r109-new-phase-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "017df9296bd0f6eb4687948c87534508b2858246cd5814f543a425462b7c3d2b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1121,
+      "path": "wave35-r109-new-phase-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "b60cf437f17c04022a548bbeae5ce31f147cdaaf4739eb9de86b077c42299dec",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-new-state-lifetime/new-state-lifetime/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 649,
+      "path": "wave35-r109-new-state-lifetime/new-state-lifetime-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3a8f1b0cc53bfe833c30c46eefe874ecce654fdd687ef4ed4c7a9f521385eca6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 918,
+      "path": "wave35-r109-new-state-lifetime/new-state-lifetime-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "c792d88ea294a524d75c71adca7c1d0b1955e4b2b16495930e9337e5187b6697",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-new-state-lifetime/new-state-lifetime.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "096c02a7d2b19fca8fe310c15931f55fc8f4372b98e16d5b7064a5eccde24e86",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 649,
+      "path": "wave35-r109-new-state-lifetime-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3a8f1b0cc53bfe833c30c46eefe874ecce654fdd687ef4ed4c7a9f521385eca6",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 844,
+      "path": "wave35-r109-new-state-lifetime-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "f164ec74e60a1b91a640bcecab41943b861056638c280464fdb71624478e1c20",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 667,
+      "path": "wave35-r109-new-state-lifetime-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "40a18976b39e2f26edbc99905101cd6d8af9ed3bcab9edf6593f43eddc7734bc",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-new-thread-alias/new-thread-alias/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 647,
+      "path": "wave35-r109-new-thread-alias/new-thread-alias-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d8c3c35f56a9cd9ed7c2b1964b8be2c064eaeaab89110cedcfb77348c3dfcdb7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 915,
+      "path": "wave35-r109-new-thread-alias/new-thread-alias-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "b071abdbacf627f0d6bbf33d36e6b3f184fa79dbc2a9ae774c6aa90e3cff749d",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 578,
+      "path": "wave35-r109-new-thread-alias/new-thread-alias.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d7ab03b741b17da559d42098cb5cfc93f06ad9d49847b15dffcc641c8b19074d",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 647,
+      "path": "wave35-r109-new-thread-alias-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d8c3c35f56a9cd9ed7c2b1964b8be2c064eaeaab89110cedcfb77348c3dfcdb7",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 841,
+      "path": "wave35-r109-new-thread-alias-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "ad2a48a35ab2e2df3deb427a17894de72a4ad3feddc8845836115fab61b1dfbe",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 666,
+      "path": "wave35-r109-new-thread-alias-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "87b622508a89283f31193c1086a82e62c7ac27dfa5f8124241f56f1295c94559",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r109-owned-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "7d4cfa63c3c6dd231b622f8646327b4fe3eb2e6497a221a69b8a5f168143c56b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r109-prior-healthy/prior-healthy/identity-controller.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "3cb268a07829f8d8376a4aa5768e66db1a0b3700532641c0cd0c35638a67a565",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 645,
+      "path": "wave35-r109-prior-healthy/prior-healthy-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d48d4a656802cb50c0d264191d8583f24a8117451aea0ad21f41150a95ccea22",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 9276,
+      "path": "wave35-r109-prior-healthy/prior-healthy-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "21675a54825a4574fe52d5abb3de2b58758f5b8e0f4ff6c873b9472b9cb81ae3",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r109-prior-healthy/prior-healthy.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "9d38fd0620bd0ecbd03dc422c72e179803ae7d49988a766cde99b9be87f15e3c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 645,
+      "path": "wave35-r109-prior-healthy-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "d48d4a656802cb50c0d264191d8583f24a8117451aea0ad21f41150a95ccea22",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 8942,
+      "path": "wave35-r109-prior-healthy-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "c4db20d851c3fc51bb3ffc8042fe0da057e91395cce9646d31c1b4732fd2431e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 9290,
+      "path": "wave35-r109-prior-healthy-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "2d373b002b11f27ea25c4a852a6c12a3e700a98294fc8e29f5b3d01e5756d85b",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 723,
+      "path": "wave35-r109-static/black-tests-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "cc45e80336ea3aee7935a5d4cf43b6274cde85147c7dd1f5452f3bf16c916f5e",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 55,
+      "path": "wave35-r109-static/black-tests.log",
+      "published_object": {
+        "action": "reference-existing",
+        "bytes": 55,
+        "path": "docs/remediation/bac/evidence/wave10/qualification/wave10-r0-test-style/black-test.log"
+      },
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48",
+      "storage": "reuse-published-exact-bytes"
+    },
+    {
+      "bytes": 719,
+      "path": "wave35-r109-static/ruff-tests-result.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "4a398b93525965d4b15eff117910f837e952b554332fe1eb70d18859251166fa",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r109-static/ruff-tests.log",
+      "published_object": {
+        "action": "reference-existing",
+        "bytes": 19,
+        "path": "docs/remediation/bac/evidence/wave09/documentation-guards/ruff.log"
+      },
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "storage": "reuse-published-exact-bytes"
+    },
+    {
+      "bytes": 998,
+      "path": "wave35-r109-static/static-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "4c8d39d4bc0796059062751d22806537e1e43e03be6cfc71bd8a3a5e68922d8c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 998,
+      "path": "wave35-r109-static-custody.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "4c8d39d4bc0796059062751d22806537e1e43e03be6cfc71bd8a3a5e68922d8c",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 1350,
+      "path": "wave35-r109-static-runner.log",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "1b4a41137af47c7d5a13af426d22565edbbdd2c7c0b01e5f386c81a28663e736",
+      "storage": "new-exact-bytes"
+    },
+    {
+      "bytes": 634,
+      "path": "wave35-r109-static-spec.json",
+      "published_object": null,
+      "root": "Q",
+      "sha256": "eba6f03005f83f5364986a08739bcf30e4959777ccb9a43b46247ad05afa7816",
+      "storage": "new-exact-bytes"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "support",
+      "path": "wave35-r109-capture.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-collection",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-collection-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-collection-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-collection-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-bootstrap-failure",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-bootstrap-failure-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-bootstrap-failure-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-bootstrap-failure-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-bootstrap-failure-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-inherited-pid",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-inherited-pid-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-inherited-pid-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-inherited-pid-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-inherited-pid-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-invocation-child-failure",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-child-failure-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-child-failure-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-child-failure-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-child-failure-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-invocation-parent-failure",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-parent-failure-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-invocation-phase-failure",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-failure-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-invocation-phase-reference",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-phase-reference-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-invocation-reported-failure",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-reported-failure-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-invocation-same-error",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-same-error-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-same-error-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-same-error-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-invocation-same-error-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-duplicate-parent-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-multiple-body-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-local-completion-single",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-single-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-single-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-single-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-local-completion-single-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-operation-body-completion",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-operation-body-completion-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-operation-body-completion-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-operation-body-completion-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-operation-body-completion-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-healthy-only-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-poison-ready-qualified",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-ready-qualified-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-poison-unknown-ready",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-poison-unknown-ready-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-cuda-core-runtime-query-failure",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-runtime-query-failure-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-runtime-query-failure-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-runtime-query-failure-spawn-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-cuda-core-runtime-query-failure-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-healthy-selection.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-invocation-phase-pair-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-invocation-phase-pair-execution.json",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-isolated-execution-plan.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-new-phase",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-phase-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-phase-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-phase-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-new-state-lifetime",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-state-lifetime-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-state-lifetime-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-state-lifetime-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-new-thread-alias",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-thread-alias-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-thread-alias-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-new-thread-alias-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-owned-spec.json",
+      "round": 109,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-prior-healthy",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-prior-healthy-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-prior-healthy-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-prior-healthy-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r109-static",
+      "round": 109,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-static-custody.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-static-runner.log",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r109-static-spec.json",
+      "round": 109,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_start": 109,
+  "namespace": "Q/wave35-r109-*",
+  "namespace_closed": true,
+  "schema": "bac-closed-interval-inventory-v1",
+  "selection_note": "Inventory alone is not selection. Component dependencies explicitly bind all retained interval files and named causal metadata.",
+  "terminal_round": 109
+}

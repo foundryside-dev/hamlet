@@ -1,0 +1,199 @@
+{
+  "schema": "bac-isolated-execution-plan-v1",
+  "created_at": "2026-11-13T22:00:55.243322+00:00",
+  "candidate_manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r113-candidate.json",
+  "strict_verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+  "max_concurrent_independent_process_jobs": 4,
+  "per_job_workers": 1,
+  "per_python_threads": 1,
+  "xdist_workers": 0,
+  "jobs": [
+    {
+      "name": "cuda-core-bootstrap-failure",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[bootstrap_failure]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-bootstrap-failure-spec.json",
+      "spec_sha256": "87751fe76237312e2b37655362d20f82ee3f8311218c0cc1d0f28612d6e3cd84",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-runtime-query-failure",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[runtime_query_failure]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-runtime-query-failure-spec.json",
+      "spec_sha256": "585939f27c832c8fe0fe0dc0cbe461020b195f8026edef26b8abab04bae2bc45",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-local-completion-single",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[local_completion_single]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-local-completion-single-spec.json",
+      "spec_sha256": "e334cedbbbed72e2b0b76720f466bc81630f3887343f5ab52154383e57ce6cd5",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-local-completion-multiple-body",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[local_completion_multiple_body]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-local-completion-multiple-body-spec.json",
+      "spec_sha256": "9ce0234b41b92d9612766c31dbbc292b2f94c527645ad26a85ebc95a1a1dbfa9",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-poison-unknown-ready",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[poison_unknown_ready]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-poison-unknown-ready-spec.json",
+      "spec_sha256": "4e3f9f4416c122fb147f97df8e2768385fdcc7b369635b00329b4e6f6234d13e",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-poison-ready-qualified",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[poison_ready_qualified]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-poison-ready-qualified-spec.json",
+      "spec_sha256": "0cba2d2ab6917fc192d139485fac34c112ea02470c35c8b3108f46c49472f45b",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-poison-ready-healthy-only",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[poison_ready_healthy_only]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-poison-ready-healthy-only-spec.json",
+      "spec_sha256": "1ad9b7c6c73d097c33d1f404fe3db184328c981a00d02a3d795a725794cedc4a",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-operation-body-completion",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[operation_body_completion]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-operation-body-completion-spec.json",
+      "spec_sha256": "3ffd0acd498d881200ba2aca88e73134dfd81c289110e80333b22d5f21ae4f23",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-local-completion-duplicate-parent",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[local_completion_duplicate_parent]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-local-completion-duplicate-parent-spec.json",
+      "spec_sha256": "877a633b75a6745efa5728956a8ff8f0d0e805068b897691a4f160fef9e69319",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-inherited-pid",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_inherited_pid_gate_refusal",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-inherited-pid-spec.json",
+      "spec_sha256": "28f4ac2da1c303c80b6651289c316697230a0557f77ffe261e078cf3aecfe9df",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-invocation-same-error",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[invocation_same_error]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-invocation-same-error-spec.json",
+      "spec_sha256": "dae029a07dc6e90ba0bac4827598c2d992d58ef960e86e05e687df83c70fd678",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-invocation-child-failure",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[invocation_child_failure]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-invocation-child-failure-spec.json",
+      "spec_sha256": "77457875405bb999b5a73d4ddf1a6950707e6e74c52664f4e478f61d5fd4d5b2",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-invocation-parent-failure",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[invocation_parent_failure]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-invocation-parent-failure-spec.json",
+      "spec_sha256": "52ad373a80408b339b82a218b2662d2c9a5fa46ec069def6920fdd3b7f165118",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-invocation-reported-failure",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[invocation_reported_failure]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-invocation-reported-failure-spec.json",
+      "spec_sha256": "540c83b00e5e285edd47191ddaf3afe39c410df68107029646a706d6c2bc6353",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-invocation-phase-reference",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[invocation_phase_reference]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-invocation-phase-reference-spec.json",
+      "spec_sha256": "5df6c7e257a637c191f848a4e63038c8aea2ea1be3d276c03831f31fd64150f3",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-core-invocation-phase-failure",
+      "node": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[invocation_phase_failure]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-invocation-phase-failure-spec.json",
+      "spec_sha256": "d0729a497be29b3f6107f783d87f8adca6af41b65851473623d53385fe3d17b4",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-flat_local_single",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[flat_local_single]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_single-spec.json",
+      "spec_sha256": "ef45e026a31c0d72c39328793aba145dece946d60ce02342a354c48759858334",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-flat_local_distinct",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[flat_local_distinct]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_distinct-spec.json",
+      "spec_sha256": "acbe1218dcf4d836e32f83db3a739d977c4afd18373e39378819bc35fda36b24",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-flat_local_same",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[flat_local_same]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_same-spec.json",
+      "spec_sha256": "d9ec6ebb6a13edfd76958adaa4830d32f2dce89dc45c3f7ba691a9d3c032c9f2",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-flat_admitted_single",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[flat_admitted_single]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_single-spec.json",
+      "spec_sha256": "f15c49a43993277163926599ec3ea94fba9fce8deeaceee85accae4db63b189d",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-flat_admitted_same",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[flat_admitted_same]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_same-spec.json",
+      "spec_sha256": "83251a1c0bf70cb9dcd3cddaad19ba32c251d75d1febc040f805acd99d424e6f",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-per_local_single",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_local_single]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_single-spec.json",
+      "spec_sha256": "cf1b790a99b7e81ea8fe2215085eeaafd1a49b9c64b2b1cf93c3d2bc7433abe0",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-per_local_distinct",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_local_distinct]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_distinct-spec.json",
+      "spec_sha256": "212b2eb5006bc6abefc69330fa9600fe106c5f7f0045f069d5a61fce03c17c59",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-per_local_same",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_local_same]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_same-spec.json",
+      "spec_sha256": "0c43a7dc667b7926a45affe75c29fd0b853264df95e094d62d18e1713b0ae50d",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-per_admitted_single",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_admitted_single]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_single-spec.json",
+      "spec_sha256": "aaa6b7a09ef7beb0e2db6bd9e0ee797c512f225c7201f7fd70f07c60bb96fedb",
+      "status": "UNRUN AT PREPARATION"
+    },
+    {
+      "name": "cuda-producer-poison-per_admitted_same",
+      "node": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_isolated_producer_poison[per_admitted_same]",
+      "spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_same-spec.json",
+      "spec_sha256": "6662d3ffa4991992e50ef84fb51745b0b6e7a3db63934153d7448b576671f5d6",
+      "status": "UNRUN AT PREPARATION"
+    }
+  ],
+  "scope": "Fresh final R113 core16 and producer10 isolated evidence; real CUDA remains unavailable.",
+  "source_review_refs": [
+    "T18e-R0-CUDA-PRODUCER-B-IMPLEMENTATION-REVIEW.md",
+    "T18e-R0-CUDA-PRODUCER-B-CORE-ACTUAL-REVIEW.md"
+  ]
+}

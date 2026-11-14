@@ -1,0 +1,28 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r110-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r110-activation-fixtures",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "activation-fixtures",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_source_fixture_preserves_real_values",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[flat]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[per]",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_archive_fixture_preserves_nonempty_per_rows",
+        "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_cuda_archive_fixture_has_verified_owned_rows",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

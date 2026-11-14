@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r113-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-bank-poison-completion",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "bank-poison-completion",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_bank_rng_custody.py::test_bank_restore_uncertainty_poisons_only_its_isolated_process[completion]",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

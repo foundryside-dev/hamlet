@@ -1,0 +1,20 @@
+{
+  "application_execution": false,
+  "checks": 75,
+  "distinct_hash_bound_current_references_verified": 780,
+  "finite_interval_entries": 240,
+  "historical_alias_exclusion": "Two historical mutable source aliases intentionally retain old hashes inside helper_alias_reconciliation; their mapped immutable evidence is verified and selected.",
+  "input": {
+    "bytes": 1452973,
+    "path": "evidence-management/wip20-preparation/wip20-r109-r112-closed-history-input-v2.json",
+    "root": "W",
+    "sha256": "73b7c791805fb2d11059934f72ea8395f42bf27c76695fa3e61d6f3b785318f7"
+  },
+  "neutral_helper_execution": false,
+  "publication": false,
+  "schema": "bac-metadata-preparation-check-v1",
+  "source_bodies_read": 1,
+  "source_tokens_approximately": 4600,
+  "status": "PASS FOR CLOSED R109\u2013R112 INPUT; R113 OPEN",
+  "template_and_phase_pair_descendant_correction": "Five top-level file attempts inventoried: four UNRUN templates and the R109 phase-pair record. V2 reason abbreviated the four templates; this records the fifth correction explicitly."
+}

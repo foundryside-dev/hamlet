@@ -1,0 +1,2316 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 319 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py ........ [  2%]
+.....FF................................................................. [ 25%]
+........................................................................ [ 47%]
+........................................................................ [ 70%]
+..FF.FF.FF.FF.FF.FF...............................FF.FF.FF.FF.FF.FF..... [ 92%]
+...............FFFF....                                                  [100%]
+
+=================================== FAILURES ===================================
+__ test_install_inventories_issuer_material_without_selector_migration[flat] ___
+
+family = 'flat'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7692374e20>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_install_inventories_issuer_material_without_selector_migration(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+        owner.device = torch.device("cuda:2")
+        simulated_cuda.events.clear()
+>       owner.load_prepared(candidate, lineage=None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:582: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_buffer.py:799: in load_prepared
+    self._validate_replay(candidate, lease)
+src/townlet/training/replay_contract.py:549: in _validate_replay
+    process_rng_domain().validate_current(token=token, operation=lease)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f769241d7f0>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        self._check_pid()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:1165: ValueError
+___ test_install_inventories_issuer_material_without_selector_migration[per] ___
+
+family = 'per'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691e90f30>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    def test_install_inventories_issuer_material_without_selector_migration(family: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cuda:0"))
+        _push(owner, _rows(), recorded=True)
+        state = owner.serialize()
+        owner.device = torch.device("cuda:1")
+        candidate = owner.prepare_serialized(state, expected_obs_dim=2, lineage=None)
+        owner.device = torch.device("cuda:2")
+        simulated_cuda.events.clear()
+>       owner.load_prepared(candidate, lineage=None)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:582: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/prioritized_replay_buffer.py:1289: in load_prepared
+    self._validate_replay(candidate, lease)
+src/townlet/training/replay_contract.py:549: in _validate_replay
+    process_rng_domain().validate_current(token=token, operation=lease)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f769241d7f0>
+
+    def validate_current(self, *, token: RNGCurrentToken, operation: RNGOperation) -> None:
+        self._check_pid()
+        with self._lock:
+            self._usable()
+            self._not_busy()
+            record = self._authenticate(operation)
+            if type(token) is not RNGCurrentToken or token not in self._tokens:
+                raise ValueError("RNG current token is foreign or consumed")
+            expected = self._tokens[token]
+            self._member(expected.participant)
+            if expected.participant not in record.participants or expected.generation != self._generation:
+>               raise ValueError("RNG preparation membership changed")
+E               ValueError: RNG preparation membership changed
+
+src/townlet/exploration/rng_custody.py:1165: ValueError
+_____ test_archive_declared_count_boundaries[validate-match-standard-per] ______
+
+family = 'per', kind = 'standard', case = 'match', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fc87c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+___ test_archive_declared_count_boundaries[validate-match-prioritized-flat] ____
+
+family = 'flat', kind = 'prioritized', case = 'match', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f49390>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+____ test_archive_declared_count_boundaries[validate-match-sequential-flat] ____
+
+family = 'flat', kind = 'sequential', case = 'match', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f484b0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+____ test_archive_declared_count_boundaries[validate-match-sequential-per] _____
+
+family = 'per', kind = 'sequential', case = 'match', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f76920a9cc0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+_____ test_archive_declared_count_boundaries[validate-clone-standard-per] ______
+
+family = 'per', kind = 'standard', case = 'clone', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f76920aa190>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+___ test_archive_declared_count_boundaries[validate-clone-prioritized-flat] ____
+
+family = 'flat', kind = 'prioritized', case = 'clone', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fa38c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+____ test_archive_declared_count_boundaries[validate-clone-sequential-flat] ____
+
+family = 'flat', kind = 'sequential', case = 'clone', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f76922cff50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+____ test_archive_declared_count_boundaries[validate-clone-sequential-per] _____
+
+family = 'per', kind = 'sequential', case = 'clone', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fc8d00>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+____ test_archive_declared_count_boundaries[validate-mapping-standard-per] _____
+
+family = 'per', kind = 'standard', case = 'mapping', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fca970>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+__ test_archive_declared_count_boundaries[validate-mapping-prioritized-flat] ___
+
+family = 'flat', kind = 'prioritized', case = 'mapping', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fc8520>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+___ test_archive_declared_count_boundaries[validate-mapping-sequential-flat] ___
+
+family = 'flat', kind = 'sequential', case = 'mapping', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fc8910>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+___ test_archive_declared_count_boundaries[validate-mapping-sequential-per] ____
+
+family = 'per', kind = 'sequential', case = 'mapping', route = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fcb000>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+______ test_archive_declared_count_boundaries[prepare-match-standard-per] ______
+
+family = 'per', kind = 'standard', case = 'match', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fcbd20>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1265: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1252: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+____ test_archive_declared_count_boundaries[prepare-match-prioritized-flat] ____
+
+family = 'flat', kind = 'prioritized', case = 'match', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691e3a430>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:779: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:765: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+____ test_archive_declared_count_boundaries[prepare-match-sequential-flat] _____
+
+family = 'flat', kind = 'sequential', case = 'match', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691e3a510>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:779: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:765: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+_____ test_archive_declared_count_boundaries[prepare-match-sequential-per] _____
+
+family = 'per', kind = 'sequential', case = 'match', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f76922cdc50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1265: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1252: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+______ test_archive_declared_count_boundaries[prepare-clone-standard-per] ______
+
+family = 'per', kind = 'standard', case = 'clone', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f76922cf230>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1265: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1252: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+____ test_archive_declared_count_boundaries[prepare-clone-prioritized-flat] ____
+
+family = 'flat', kind = 'prioritized', case = 'clone', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691e38fa0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:779: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:765: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+____ test_archive_declared_count_boundaries[prepare-clone-sequential-flat] _____
+
+family = 'flat', kind = 'sequential', case = 'clone', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691e39e80>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:779: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:765: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+_____ test_archive_declared_count_boundaries[prepare-clone-sequential-per] _____
+
+family = 'per', kind = 'sequential', case = 'clone', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fa32a0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1265: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1252: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+_____ test_archive_declared_count_boundaries[prepare-mapping-standard-per] _____
+
+family = 'per', kind = 'standard', case = 'mapping', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691fa07c0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1265: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1252: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+___ test_archive_declared_count_boundaries[prepare-mapping-prioritized-flat] ___
+
+family = 'flat', kind = 'prioritized', case = 'mapping', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f76922cff50>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:779: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:765: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+___ test_archive_declared_count_boundaries[prepare-mapping-sequential-flat] ____
+
+family = 'flat', kind = 'sequential', case = 'mapping', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f854e0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:779: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:765: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from uniform storage")
+E           ValueError: historical archive replay kind differs from uniform storage
+
+src/townlet/training/replay_buffer.py:224: ValueError
+____ test_archive_declared_count_boundaries[prepare-mapping-sequential-per] ____
+
+family = 'per', kind = 'sequential', case = 'mapping', route = 'prepare'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f4b700>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("kind", ["standard", "prioritized", "sequential"])
+    @pytest.mark.parametrize("case", ["above", "below", "zero", "digest", "later", "match", "clone", "mapping"])
+    @pytest.mark.parametrize("route", ["validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_declared_count_boundaries(family: str, kind: str, case: str, route: str, simulated_cuda: _SimCUDA) -> None:
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {name: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for name, value in before.items()}
+        count = 0 if case == "zero" else 2 if case == "above" else 4
+        record = _fix5_archive_record(kind, count, case)
+        accepted = case in ("match", "clone", "mapping")
+        continuation = not (kind == "sequential" and count == 0)  # Only this graph has no subclass rows.
+        devices = (2, 3) if continuation else ()
+        records = [record]
+        if case == "digest":
+            record["source_digest"] = _ArchiveComparison(torch.tensor(1), 1)
+            devices = (1, 2, 3)
+        if case == "later":
+            records = [history._record(_family_archive(family, 0)), record, history._record(_family_archive(family, 3))]
+            devices = (0, 2, 3)
+        incoming["historical_archives"] = records
+        owner.device = torch.device("cuda:4")
+        prepare = route.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        selected = owner.device if prepare and continuation else None
+        assert _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda) == (selected, devices)
+        if route.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+        if accepted:
+>           getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:629: in guarded
+    return self._issue_replay(method(self, *args, **kwargs), lease)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1265: in prepare_serialized
+    return self._prepare_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1252: in _prepare_serialized
+    return self._materialize_serialized(self._validate_serialized(state, expected_obs_dim=expected_obs_dim))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+archive = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 5, 'replay_kind': 'sequential'}, origi...', archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    @staticmethod
+    def _own_archive(archive: history.HistoricalReplayArchive) -> history.HistoricalReplayArchive:
+        if not isinstance(archive, history.HistoricalReplayArchive):
+            raise ValueError("historical archive must be a HistoricalReplayArchive")
+        owned = history._archive_from_state(history._record(archive))
+        if owned.source_formats["replay_kind"] != PRIORITIZED_REPLAY_BUFFER_KIND:
+>           raise ValueError("historical archive replay kind differs from prioritized storage")
+E           ValueError: historical archive replay kind differs from prioritized storage
+
+src/townlet/training/prioritized_replay_buffer.py:445: ValueError
+________ test_archive_clone_repairs_later_count[validate-formats-flat] _________
+
+family = 'flat', location = 'formats', stage = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f4b930>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Preparation records/clones/revalidates archives: its genuine canonical
+        # digest must survive that route, unlike the raw comparison-subclass probe.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+                assert history._archive_from_state(history._record(restored)).archived_row_count == 4
+            return
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in before.items()}
+        incoming["historical_archives"] = [record]
+        owner.device = torch.device("cuda:4")
+        prepare = stage.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        plan = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
+        assert calls == [] and state[field] == 3
+        devices = (1, 2, 3) if operator else (2, 3)
+        assert plan == (owner.device if prepare else None, devices)
+        if stage.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+>       getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2289: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:222: in _own_archive
+    owned = history._archive_from_state(history._record(archive))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+_________ test_archive_clone_repairs_later_count[validate-formats-per] _________
+
+family = 'per', location = 'formats', stage = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f858d0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Preparation records/clones/revalidates archives: its genuine canonical
+        # digest must survive that route, unlike the raw comparison-subclass probe.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+                assert history._archive_from_state(history._record(restored)).archived_row_count == 4
+            return
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in before.items()}
+        incoming["historical_archives"] = [record]
+        owner.device = torch.device("cuda:4")
+        prepare = stage.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        plan = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
+        assert calls == [] and state[field] == 3
+        devices = (1, 2, 3) if operator else (2, 3)
+        assert plan == (owner.device if prepare else None, devices)
+        if stage.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+>       getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2289: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:443: in _own_archive
+    owned = history._archive_from_state(history._record(archive))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+________ test_archive_clone_repairs_later_count[validate-sibling-flat] _________
+
+family = 'flat', location = 'sibling', stage = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f2d780>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Preparation records/clones/revalidates archives: its genuine canonical
+        # digest must survive that route, unlike the raw comparison-subclass probe.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+                assert history._archive_from_state(history._record(restored)).archived_row_count == 4
+            return
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in before.items()}
+        incoming["historical_archives"] = [record]
+        owner.device = torch.device("cuda:4")
+        prepare = stage.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        plan = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
+        assert calls == [] and state[field] == 3
+        devices = (1, 2, 3) if operator else (2, 3)
+        assert plan == (owner.device if prepare else None, devices)
+        if stage.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+>       getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2289: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:770: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:707: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in _serialized_validation
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <genexpr>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/replay_buffer.py:597: in <lambda>
+    archives = tuple(prefix.archive(record, lambda: self._own_archive(history._archive_from_state(record))) for record in records)
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_buffer.py:222: in _own_archive
+    owned = history._archive_from_state(history._record(archive))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+_________ test_archive_clone_repairs_later_count[validate-sibling-per] _________
+
+family = 'per', location = 'sibling', stage = 'validate'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f7691f2e820>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Preparation records/clones/revalidates archives: its genuine canonical
+        # digest must survive that route, unlike the raw comparison-subclass probe.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+                assert history._archive_from_state(history._record(restored)).archived_row_count == 4
+            return
+        owner = _owner(family, torch.device("cpu"))
+        _push(owner, _rows(), recorded=True)
+        before = owner.serialize()
+        incoming = {key: _CUDAData(value, 3) if isinstance(value, torch.Tensor) else value for key, value in before.items()}
+        incoming["historical_archives"] = [record]
+        owner.device = torch.device("cuda:4")
+        prepare = stage.startswith("prepare")
+        method = "prepare_serialized" if prepare else "validate_serialized"
+        plan = _metadata_plan(owner, method, (incoming,), prepare, simulated_cuda)
+        assert calls == [] and state[field] == 3
+        devices = (1, 2, 3) if operator else (2, 3)
+        assert plan == (owner.device if prepare else None, devices)
+        if stage.endswith("-plan"):
+            return
+        arguments = {"expected_obs_dim": 2, **({"lineage": None} if prepare else {})}
+>       getattr(owner, method)(incoming, **arguments)
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2289: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/replay_contract.py:605: in guarded
+    return method(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1257: in validate_serialized
+    return self._validate_serialized(state, expected_obs_dim=expected_obs_dim)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1175: in _validate_serialized
+    return self._serialized_validation(state, expected_obs_dim=expected_obs_dim, prefix=ReplayPrefix(planning=False))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1047: in _serialized_validation
+    archives = tuple(
+src/townlet/training/prioritized_replay_buffer.py:1048: in <genexpr>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/replay_contract.py:133: in archive
+    return restore()
+           ^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:1048: in <lambda>
+    prefix.archive(item, lambda: self._own_archive(history._archive_from_state(item))) for item in state["historical_archives"]
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/prioritized_replay_buffer.py:443: in _own_archive
+    owned = history._archive_from_state(history._record(archive))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-standard-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-prioritized-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-sequential-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-sequential-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-formats-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-formats-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-sibling-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-sibling-per]
+======================== 30 failed, 289 passed in 9.42s ========================

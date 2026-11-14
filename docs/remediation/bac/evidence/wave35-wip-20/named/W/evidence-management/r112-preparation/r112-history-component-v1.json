@@ -1,0 +1,1967 @@
+{
+  "attempt_index": [
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "No absolute UTC job times recorded in retained result; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205427,
+            "path": "wave35/r112-candidate.json",
+            "root": "W",
+            "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+          },
+          "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 4,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 650,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-custody.json",
+              "root": "Q",
+              "sha256": "9b2900cfff10bd2b5b4a385e6b93f9dc5029ff6657034ef7b933199540ee21e6"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 246,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip/identity-controller.json",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-custody.json",
+              "root": "Q",
+              "sha256": "9b2900cfff10bd2b5b4a385e6b93f9dc5029ff6657034ef7b933199540ee21e6"
+            },
+            {
+              "bytes": 1365,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-result.json",
+              "root": "Q",
+              "sha256": "bf1631ba44c831ef534c3dcab12eae12b759372e8b694d5be9379bd53173c1d4"
+            },
+            {
+              "bytes": 579,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip.log",
+              "root": "Q",
+              "sha256": "b604a2d39799f77cb3e0d89d95d5e8c38fdf7104458f5c6723c6509ab051f5e3"
+            }
+          ],
+          "duration_seconds": 3.851477861404419,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "38113f45d5d3990e36a27e6511b7e62d9fa1f9c2"
+          },
+          "exit_code": 0,
+          "id": "wave35-r112-canonical-roundtrip--canonical-roundtrip",
+          "log_paths": [
+            {
+              "bytes": 579,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip.log",
+              "root": "Q",
+              "sha256": "b604a2d39799f77cb3e0d89d95d5e8c38fdf7104458f5c6723c6509ab051f5e3"
+            }
+          ],
+          "path": "wave35-r112-canonical-roundtrip",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-formats-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[canonical-fixture-sibling-per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 650,
+              "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "9b2900cfff10bd2b5b4a385e6b93f9dc5029ff6657034ef7b933199540ee21e6"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1365,
+            "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-result.json",
+            "root": "Q",
+            "sha256": "bf1631ba44c831ef534c3dcab12eae12b759372e8b694d5be9379bd53173c1d4"
+          },
+          "record_id": "canonical-roundtrip",
+          "result": {
+            "bytes": 1365,
+            "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-result.json",
+            "root": "Q",
+            "sha256": "bf1631ba44c831ef534c3dcab12eae12b759372e8b694d5be9379bd53173c1d4"
+          },
+          "spec": {
+            "bytes": 1125,
+            "path": "wave35-r112-canonical-roundtrip-spec.json",
+            "root": "Q",
+            "sha256": "d5c27e670eaa5793f7d3b082fe03791996bae447d39f59883414103773789eeb"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r112-canonical-roundtrip--canonical-roundtrip",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Closed fixture tests-first prerequisite evidence only.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r112-canonical-roundtrip--canonical-roundtrip"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r112-canonical-roundtrip--canonical-roundtrip"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r112-canonical-roundtrip--canonical-roundtrip"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "required_by": [
+            "wave35-r112-canonical-roundtrip--canonical-roundtrip"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r112-canonical-roundtrip--canonical-roundtrip"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "No absolute UTC job times recorded in retained result; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205427,
+            "path": "wave35/r112-candidate.json",
+            "root": "W",
+            "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+          },
+          "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "counts": {
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 641,
+              "path": "wave35-r112-collection/collection-custody.json",
+              "root": "Q",
+              "sha256": "b98303ceafa171f3528cf3ec1735fc00431ef71214a748ee5148e161f9ec236c"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 246,
+              "path": "wave35-r112-collection/collection/identity-controller.json",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 641,
+              "path": "wave35-r112-collection/collection-custody.json",
+              "root": "Q",
+              "sha256": "b98303ceafa171f3528cf3ec1735fc00431ef71214a748ee5148e161f9ec236c"
+            },
+            {
+              "bytes": 861,
+              "path": "wave35-r112-collection/collection-result.json",
+              "root": "Q",
+              "sha256": "c00669c031be96cc7af6f9fe34f9049cec1a8293d62f6edbd8a535dec37a525c"
+            },
+            {
+              "bytes": 74370,
+              "path": "wave35-r112-collection/collection.log",
+              "root": "Q",
+              "sha256": "2b2e66c73db98028ac23c021235b9d89e914ad9ac04195b5a9141b42cc874b20"
+            }
+          ],
+          "duration_seconds": 4.679920673370361,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "38113f45d5d3990e36a27e6511b7e62d9fa1f9c2"
+          },
+          "exit_code": 0,
+          "id": "wave35-r112-collection--collection",
+          "log_paths": [
+            {
+              "bytes": 74370,
+              "path": "wave35-r112-collection/collection.log",
+              "root": "Q",
+              "sha256": "2b2e66c73db98028ac23c021235b9d89e914ad9ac04195b5a9141b42cc874b20"
+            }
+          ],
+          "path": "wave35-r112-collection",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "--collect-only",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r112-collection/collection/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 641,
+              "path": "wave35-r112-collection/collection-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "b98303ceafa171f3528cf3ec1735fc00431ef71214a748ee5148e161f9ec236c"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 861,
+            "path": "wave35-r112-collection/collection-result.json",
+            "root": "Q",
+            "sha256": "c00669c031be96cc7af6f9fe34f9049cec1a8293d62f6edbd8a535dec37a525c"
+          },
+          "record_id": "collection",
+          "result": {
+            "bytes": 861,
+            "path": "wave35-r112-collection/collection-result.json",
+            "root": "Q",
+            "sha256": "c00669c031be96cc7af6f9fe34f9049cec1a8293d62f6edbd8a535dec37a525c"
+          },
+          "spec": {
+            "bytes": 622,
+            "path": "wave35-r112-collection-spec.json",
+            "root": "Q",
+            "sha256": "41076ef13d43cca39b01fae5bde15d0c86e654bb99699c72f405e06c1a76dd29"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r112-collection--collection",
+      "check_kind": "collection",
+      "expected_children": [],
+      "qualification_scope": "Closed fixture tests-first prerequisite evidence only.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r112-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r112-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r112-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "required_by": [
+            "wave35-r112-collection--collection"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r112-collection--collection"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "No absolute UTC job times recorded in retained result; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205427,
+            "path": "wave35/r112-candidate.json",
+            "root": "W",
+            "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+          },
+          "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_released_preparation_refuses_late_membership_enrollment[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_released_preparation_refuses_late_membership_enrollment[per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "passed": 2,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 646,
+              "path": "wave35-r112-late-membership/late-membership-custody.json",
+              "root": "Q",
+              "sha256": "9ed5d55b45b6ffc53efd942146ecac81717855d477bbf99c2b3dd5f41d4232fd"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 246,
+              "path": "wave35-r112-late-membership/late-membership/identity-controller.json",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r112-late-membership/late-membership-custody.json",
+              "root": "Q",
+              "sha256": "9ed5d55b45b6ffc53efd942146ecac81717855d477bbf99c2b3dd5f41d4232fd"
+            },
+            {
+              "bytes": 1060,
+              "path": "wave35-r112-late-membership/late-membership-result.json",
+              "root": "Q",
+              "sha256": "39c96152e17621d9d73cf2cbc00beb099d8b2b4e59bc7ebd243259b43acf8fab"
+            },
+            {
+              "bytes": 579,
+              "path": "wave35-r112-late-membership/late-membership.log",
+              "root": "Q",
+              "sha256": "834a23be9e75a521226f4e54d92fa76cc3679c0632b5bd00f26a8d5539904c0b"
+            }
+          ],
+          "duration_seconds": 4.823345422744751,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "38113f45d5d3990e36a27e6511b7e62d9fa1f9c2"
+          },
+          "exit_code": 0,
+          "id": "wave35-r112-late-membership--late-membership",
+          "log_paths": [
+            {
+              "bytes": 579,
+              "path": "wave35-r112-late-membership/late-membership.log",
+              "root": "Q",
+              "sha256": "834a23be9e75a521226f4e54d92fa76cc3679c0632b5bd00f26a8d5539904c0b"
+            }
+          ],
+          "path": "wave35-r112-late-membership",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_released_preparation_refuses_late_membership_enrollment[flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_released_preparation_refuses_late_membership_enrollment[per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r112-late-membership/late-membership/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 646,
+              "path": "wave35-r112-late-membership/late-membership-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "9ed5d55b45b6ffc53efd942146ecac81717855d477bbf99c2b3dd5f41d4232fd"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1060,
+            "path": "wave35-r112-late-membership/late-membership-result.json",
+            "root": "Q",
+            "sha256": "39c96152e17621d9d73cf2cbc00beb099d8b2b4e59bc7ebd243259b43acf8fab"
+          },
+          "record_id": "late-membership",
+          "result": {
+            "bytes": 1060,
+            "path": "wave35-r112-late-membership/late-membership-result.json",
+            "root": "Q",
+            "sha256": "39c96152e17621d9d73cf2cbc00beb099d8b2b4e59bc7ebd243259b43acf8fab"
+          },
+          "spec": {
+            "bytes": 816,
+            "path": "wave35-r112-late-membership-spec.json",
+            "root": "Q",
+            "sha256": "1b9a8e64d8d3aacdf52ba8476fedd627a1ae435ee9067f6e86a05f4d6da7898d"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r112-late-membership--late-membership",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Closed fixture tests-first prerequisite evidence only.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r112-late-membership--late-membership"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r112-late-membership--late-membership"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r112-late-membership--late-membership"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 3032,
+          "path": "verify_bac_run.py",
+          "required_by": [
+            "wave35-r112-late-membership--late-membership"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r112-late-membership--late-membership"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "No absolute UTC job times recorded in retained result; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205427,
+            "path": "wave35/r112-candidate.json",
+            "root": "W",
+            "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+          },
+          "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "counts": {
+            "errors": 0,
+            "failed": 4,
+            "passed": 0,
+            "skipped": 0,
+            "warnings": 0,
+            "xfailed": 0,
+            "xpassed": 0
+          },
+          "custody_records": [
+            {
+              "bytes": 958,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "625388b1f498fa5aa4866e13635d19bb51447e4953735ee0a42d2ee1cd5a43c1"
+            }
+          ],
+          "descendants": [
+            {
+              "bytes": 3926,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-241f914d57691c6e.json",
+              "root": "Q",
+              "sha256": "8ea9c26d493896f1b6a1dde5cc18db18240fc03378442c6143440c111764713a"
+            },
+            {
+              "bytes": 3926,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-685b61e587824c14.json",
+              "root": "Q",
+              "sha256": "68e37989938bcbada37cfa8176a884a5b4ef0e25e995064473d8bb21441e4710"
+            },
+            {
+              "bytes": 3928,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-98ad97ab9d28b30e.json",
+              "root": "Q",
+              "sha256": "ef263b1df4c6a86fff05b5b597feabe9fdd4c8cf0828e972ebe4b571f53dfc22"
+            },
+            {
+              "bytes": 3928,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-cf8e6d4f9980b887.json",
+              "root": "Q",
+              "sha256": "c0307a6d815e53c402b7d4e2366cccddab5b0d03eb010f2172822e5857b15c9e"
+            },
+            {
+              "bytes": 246,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/identity-controller.json",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 1260,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-failure-index.json",
+              "root": "Q",
+              "sha256": "c72dc924fc951f11ec8abeee35eab67e790774ab63ea4b04720922db5a5fcec0"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-negative-custody.json",
+              "root": "Q",
+              "sha256": "625388b1f498fa5aa4866e13635d19bb51447e4953735ee0a42d2ee1cd5a43c1"
+            },
+            {
+              "bytes": 1334,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-result.json",
+              "root": "Q",
+              "sha256": "e828db32cb3d65116b15b10a8ac268b407cc1087bdf808f5e334e171409941c9"
+            },
+            {
+              "bytes": 15665,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red.log",
+              "root": "Q",
+              "sha256": "f40cbb6151052cf035185298f4b6a2473aeba6ffd259de03fba564eb4429aa44"
+            }
+          ],
+          "duration_seconds": 4.834840774536133,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "38113f45d5d3990e36a27e6511b7e62d9fa1f9c2"
+          },
+          "exit_code": 1,
+          "id": "wave35-r112-operator-roundtrip-red--operator-roundtrip-red",
+          "log_paths": [
+            {
+              "bytes": 15665,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red.log",
+              "root": "Q",
+              "sha256": "f40cbb6151052cf035185298f4b6a2473aeba6ffd259de03fba564eb4429aa44"
+            }
+          ],
+          "path": "wave35-r112-operator-roundtrip-red",
+          "planned_args": [
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-per]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-flat]",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-per]",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q"
+          ],
+          "process_custody": [
+            {
+              "bytes": 246,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/identity-controller.json",
+              "role": "controller",
+              "root": "Q",
+              "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+            },
+            {
+              "bytes": 958,
+              "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-negative-custody.json",
+              "role": "import_thread_debug",
+              "root": "Q",
+              "sha256": "625388b1f498fa5aa4866e13635d19bb51447e4953735ee0a42d2ee1cd5a43c1"
+            }
+          ],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 1334,
+            "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-result.json",
+            "root": "Q",
+            "sha256": "e828db32cb3d65116b15b10a8ac268b407cc1087bdf808f5e334e171409941c9"
+          },
+          "record_id": "operator-roundtrip-red",
+          "result": {
+            "bytes": 1334,
+            "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-result.json",
+            "root": "Q",
+            "sha256": "e828db32cb3d65116b15b10a8ac268b407cc1087bdf808f5e334e171409941c9"
+          },
+          "spec": {
+            "bytes": 1091,
+            "path": "wave35-r112-operator-roundtrip-red-spec.json",
+            "root": "Q",
+            "sha256": "004a698af9e1422468573e60b00ff7e56c1993c06dd91f08d8e36470fd9c79ee"
+          },
+          "started_at": null,
+          "status": "FAILED"
+        }
+      ],
+      "check": "wave35-r112-operator-roundtrip-red--operator-roundtrip-red",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualification_scope": "Closed fixture tests-first prerequisite evidence only.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r112-operator-roundtrip-red--operator-roundtrip-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r112-operator-roundtrip-red--operator-roundtrip-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r112-operator-roundtrip-red--operator-roundtrip-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 4596,
+          "path": "verify_bac_failed_run.py",
+          "required_by": [
+            "wave35-r112-operator-roundtrip-red--operator-roundtrip-red"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+        }
+      ],
+      "status": "FAILED",
+      "terminal_attempt": "wave35-r112-operator-roundtrip-red--operator-roundtrip-red"
+    },
+    {
+      "attempts": [
+        {
+          "ended_at": null,
+          "exit_code": null,
+          "id": "wave35-r112-owned-spec.json--unrun-template",
+          "path": "wave35-r112-owned-spec.json",
+          "planned_jobs": [
+            {
+              "args": [
+                "-m",
+                "pytest",
+                "tests/test_townlet/regressions/bac/test_curriculum_factory.py",
+                "--no-cov",
+                "-p",
+                "no:cacheprovider",
+                "-p",
+                "bac_source_identity",
+                "-q",
+                "-n",
+                "2",
+                "--dist",
+                "worksteal",
+                "--basetemp=/workspace/bac-review-2026-11-01/qualification/scratch/wave35-r112-owned"
+              ],
+              "name": "owned"
+            }
+          ],
+          "process_custody": [],
+          "reason": "Generated owned template unexecuted.",
+          "spec": {
+            "bytes": 707,
+            "path": "wave35-r112-owned-spec.json",
+            "root": "Q",
+            "sha256": "76aba7cbba364ca250283f25b97ebca5031e5aba3e645c209627b09570696c0f"
+          },
+          "started_at": null,
+          "status": "UNRUN"
+        }
+      ],
+      "check": "wave35-r112-owned-spec.json--unrun-template",
+      "check_kind": "runtime",
+      "expected_children": [],
+      "qualifying": false,
+      "required_dependencies": [],
+      "status": "UNRUN",
+      "terminal_attempt": null
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "No absolute UTC job times recorded in retained result; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205427,
+            "path": "wave35/r112-candidate.json",
+            "root": "W",
+            "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+          },
+          "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "counts": null,
+          "custody_records": [],
+          "descendants": [
+            {
+              "bytes": 725,
+              "path": "wave35-r112-static/black-tests-result.json",
+              "root": "Q",
+              "sha256": "3c23ea8b4eb09a9928b473da5aa412ecea6ea81673d4070a1946b3800585aea4"
+            },
+            {
+              "bytes": 55,
+              "path": "wave35-r112-static/black-tests.log",
+              "root": "Q",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+            },
+            {
+              "bytes": 721,
+              "path": "wave35-r112-static/ruff-tests-result.json",
+              "root": "Q",
+              "sha256": "1d21a9af0fa1e3cca9f17a1fbad5848f211ed1f889283797729da8c1bbd17934"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r112-static/ruff-tests.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            },
+            {
+              "bytes": 998,
+              "path": "wave35-r112-static/static-custody.json",
+              "root": "Q",
+              "sha256": "5ab5941620daf0ca3b28e00b6d02bc647baa4f19f49feef4da9018601a25e3a8"
+            }
+          ],
+          "duration_seconds": 0.04605746269226074,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "38113f45d5d3990e36a27e6511b7e62d9fa1f9c2"
+          },
+          "exit_code": 0,
+          "id": "wave35-r112-static--ruff-tests",
+          "log_paths": [
+            {
+              "bytes": 19,
+              "path": "wave35-r112-static/ruff-tests.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            }
+          ],
+          "path": "wave35-r112-static",
+          "planned_args": [
+            "-m",
+            "ruff",
+            "check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 721,
+            "path": "wave35-r112-static/ruff-tests-result.json",
+            "root": "Q",
+            "sha256": "1d21a9af0fa1e3cca9f17a1fbad5848f211ed1f889283797729da8c1bbd17934"
+          },
+          "record_id": "ruff-tests",
+          "result": {
+            "bytes": 721,
+            "path": "wave35-r112-static/ruff-tests-result.json",
+            "root": "Q",
+            "sha256": "1d21a9af0fa1e3cca9f17a1fbad5848f211ed1f889283797729da8c1bbd17934"
+          },
+          "spec": {
+            "bytes": 638,
+            "path": "wave35-r112-static-spec.json",
+            "root": "Q",
+            "sha256": "9928540d3835047039d564ec82c6c96545e67e937ac54ec6a594b616b89a72ec"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r112-static--ruff-tests",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Closed fixture tests-first prerequisite evidence only.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r112-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r112-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r112-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 2532,
+          "path": "verify_bac_static_run.py",
+          "required_by": [
+            "wave35-r112-static--ruff-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r112-static--ruff-tests"
+    },
+    {
+      "attempts": [
+        {
+          "absolute_time_unavailable_reason": "No absolute UTC job times recorded in retained result; none inferred.",
+          "actual_worker_count": 0,
+          "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+          "candidate_manifest": {
+            "bytes": 205427,
+            "path": "wave35/r112-candidate.json",
+            "root": "W",
+            "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+          },
+          "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+          "command": [
+            "/workspace/hamlet/.venv/bin/python",
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "counts": null,
+          "custody_records": [],
+          "descendants": [
+            {
+              "bytes": 725,
+              "path": "wave35-r112-static/black-tests-result.json",
+              "root": "Q",
+              "sha256": "3c23ea8b4eb09a9928b473da5aa412ecea6ea81673d4070a1946b3800585aea4"
+            },
+            {
+              "bytes": 55,
+              "path": "wave35-r112-static/black-tests.log",
+              "root": "Q",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+            },
+            {
+              "bytes": 721,
+              "path": "wave35-r112-static/ruff-tests-result.json",
+              "root": "Q",
+              "sha256": "1d21a9af0fa1e3cca9f17a1fbad5848f211ed1f889283797729da8c1bbd17934"
+            },
+            {
+              "bytes": 19,
+              "path": "wave35-r112-static/ruff-tests.log",
+              "root": "Q",
+              "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+            },
+            {
+              "bytes": 998,
+              "path": "wave35-r112-static/static-custody.json",
+              "root": "Q",
+              "sha256": "5ab5941620daf0ca3b28e00b6d02bc647baa4f19f49feef4da9018601a25e3a8"
+            }
+          ],
+          "duration_seconds": 1.4485723972320557,
+          "ended_at": null,
+          "execution_subtrees": {
+            ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+            "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+            "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+            "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+            "tests": "38113f45d5d3990e36a27e6511b7e62d9fa1f9c2"
+          },
+          "exit_code": 0,
+          "id": "wave35-r112-static--black-tests",
+          "log_paths": [
+            {
+              "bytes": 55,
+              "path": "wave35-r112-static/black-tests.log",
+              "root": "Q",
+              "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+            }
+          ],
+          "path": "wave35-r112-static",
+          "planned_args": [
+            "-m",
+            "black",
+            "--check",
+            "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+          ],
+          "process_custody": [],
+          "process_topology": "single_process",
+          "record": {
+            "bytes": 725,
+            "path": "wave35-r112-static/black-tests-result.json",
+            "root": "Q",
+            "sha256": "3c23ea8b4eb09a9928b473da5aa412ecea6ea81673d4070a1946b3800585aea4"
+          },
+          "record_id": "black-tests",
+          "result": {
+            "bytes": 725,
+            "path": "wave35-r112-static/black-tests-result.json",
+            "root": "Q",
+            "sha256": "3c23ea8b4eb09a9928b473da5aa412ecea6ea81673d4070a1946b3800585aea4"
+          },
+          "spec": {
+            "bytes": 638,
+            "path": "wave35-r112-static-spec.json",
+            "root": "Q",
+            "sha256": "9928540d3835047039d564ec82c6c96545e67e937ac54ec6a594b616b89a72ec"
+          },
+          "started_at": null,
+          "status": "PASSED"
+        }
+      ],
+      "check": "wave35-r112-static--black-tests",
+      "check_kind": "static",
+      "expected_children": [],
+      "qualification_scope": "Closed fixture tests-first prerequisite evidence only.",
+      "qualifying": false,
+      "required_dependencies": [
+        {
+          "bytes": 2043,
+          "path": "run_bac_packet_checks_locked.py",
+          "required_by": [
+            "wave35-r112-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+        },
+        {
+          "bytes": 6277,
+          "path": "capture_wave14_round.py",
+          "required_by": [
+            "wave35-r112-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+        },
+        {
+          "bytes": 2917,
+          "path": "bac_source_identity.py",
+          "required_by": [
+            "wave35-r112-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+        },
+        {
+          "bytes": 2532,
+          "path": "verify_bac_static_run.py",
+          "required_by": [
+            "wave35-r112-static--black-tests"
+          ],
+          "role": "executed_check_helper",
+          "root": "Q",
+          "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+        }
+      ],
+      "status": "PASSED",
+      "terminal_attempt": "wave35-r112-static--black-tests"
+    }
+  ],
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 205427,
+    "path": "wave35/r112-candidate.json",
+    "root": "W",
+    "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+  },
+  "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+  "component_id": "wave35-r112-fixture-tests-first-history-v1",
+  "dependencies": [
+    {
+      "bytes": 246,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip/identity-controller.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-custody.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "9b2900cfff10bd2b5b4a385e6b93f9dc5029ff6657034ef7b933199540ee21e6"
+    },
+    {
+      "bytes": 1365,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-result.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "bf1631ba44c831ef534c3dcab12eae12b759372e8b694d5be9379bd53173c1d4"
+    },
+    {
+      "bytes": 579,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "b604a2d39799f77cb3e0d89d95d5e8c38fdf7104458f5c6723c6509ab051f5e3"
+    },
+    {
+      "bytes": 2043,
+      "path": "run_bac_packet_checks_locked.py",
+      "required_by": [
+        "wave35-r112-canonical-roundtrip--canonical-roundtrip",
+        "wave35-r112-collection--collection",
+        "wave35-r112-late-membership--late-membership",
+        "wave35-r112-operator-roundtrip-red--operator-roundtrip-red",
+        "wave35-r112-static--ruff-tests",
+        "wave35-r112-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+    },
+    {
+      "bytes": 6277,
+      "path": "capture_wave14_round.py",
+      "required_by": [
+        "wave35-r112-canonical-roundtrip--canonical-roundtrip",
+        "wave35-r112-collection--collection",
+        "wave35-r112-late-membership--late-membership",
+        "wave35-r112-operator-roundtrip-red--operator-roundtrip-red",
+        "wave35-r112-static--ruff-tests",
+        "wave35-r112-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+    },
+    {
+      "bytes": 2917,
+      "path": "bac_source_identity.py",
+      "required_by": [
+        "wave35-r112-canonical-roundtrip--canonical-roundtrip",
+        "wave35-r112-collection--collection",
+        "wave35-r112-late-membership--late-membership",
+        "wave35-r112-operator-roundtrip-red--operator-roundtrip-red",
+        "wave35-r112-static--ruff-tests",
+        "wave35-r112-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+    },
+    {
+      "bytes": 3032,
+      "path": "verify_bac_run.py",
+      "required_by": [
+        "wave35-r112-canonical-roundtrip--canonical-roundtrip",
+        "wave35-r112-collection--collection",
+        "wave35-r112-late-membership--late-membership"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+    },
+    {
+      "bytes": 1279,
+      "path": "wave35-r112-canonical-roundtrip-dispatch.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "2ddcb85a4b2e84b76d55583d3cb4ae90852cc65d270e88437d90adfbc35d2a63"
+    },
+    {
+      "bytes": 1125,
+      "path": "wave35-r112-canonical-roundtrip-spec.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "d5c27e670eaa5793f7d3b082fe03791996bae447d39f59883414103773789eeb"
+    },
+    {
+      "bytes": 5075,
+      "path": "wave35-r112-capture.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "d077f26ddb6bc136ef6c374012c6a0fd6e786ecbc2043afe20e60865191524dc"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r112-collection/collection/identity-controller.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r112-collection/collection-custody.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "b98303ceafa171f3528cf3ec1735fc00431ef71214a748ee5148e161f9ec236c"
+    },
+    {
+      "bytes": 861,
+      "path": "wave35-r112-collection/collection-result.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "c00669c031be96cc7af6f9fe34f9049cec1a8293d62f6edbd8a535dec37a525c"
+    },
+    {
+      "bytes": 74370,
+      "path": "wave35-r112-collection/collection.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "2b2e66c73db98028ac23c021235b9d89e914ad9ac04195b5a9141b42cc874b20"
+    },
+    {
+      "bytes": 783,
+      "path": "wave35-r112-collection-dispatch.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "76eaa771b7138df3934f0698877a7748d9f663d85c363a91a5a5691b484c40e0"
+    },
+    {
+      "bytes": 622,
+      "path": "wave35-r112-collection-spec.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "41076ef13d43cca39b01fae5bde15d0c86e654bb99699c72f405e06c1a76dd29"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r112-late-membership/late-membership/identity-controller.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r112-late-membership/late-membership-custody.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "9ed5d55b45b6ffc53efd942146ecac81717855d477bbf99c2b3dd5f41d4232fd"
+    },
+    {
+      "bytes": 1060,
+      "path": "wave35-r112-late-membership/late-membership-result.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "39c96152e17621d9d73cf2cbc00beb099d8b2b4e59bc7ebd243259b43acf8fab"
+    },
+    {
+      "bytes": 579,
+      "path": "wave35-r112-late-membership/late-membership.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "834a23be9e75a521226f4e54d92fa76cc3679c0632b5bd00f26a8d5539904c0b"
+    },
+    {
+      "bytes": 982,
+      "path": "wave35-r112-late-membership-dispatch.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "c95772d3e279bf37c82f3adcce45c67b8d3149d2c09564e3bc6e2e407df9dd0d"
+    },
+    {
+      "bytes": 816,
+      "path": "wave35-r112-late-membership-spec.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "1b9a8e64d8d3aacdf52ba8476fedd627a1ae435ee9067f6e86a05f4d6da7898d"
+    },
+    {
+      "bytes": 3926,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-241f914d57691c6e.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "8ea9c26d493896f1b6a1dde5cc18db18240fc03378442c6143440c111764713a"
+    },
+    {
+      "bytes": 3926,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-685b61e587824c14.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "68e37989938bcbada37cfa8176a884a5b4ef0e25e995064473d8bb21441e4710"
+    },
+    {
+      "bytes": 3928,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-98ad97ab9d28b30e.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "ef263b1df4c6a86fff05b5b597feabe9fdd4c8cf0828e972ebe4b571f53dfc22"
+    },
+    {
+      "bytes": 3928,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-cf8e6d4f9980b887.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "c0307a6d815e53c402b7d4e2366cccddab5b0d03eb010f2172822e5857b15c9e"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/identity-controller.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 1260,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-failure-index.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "c72dc924fc951f11ec8abeee35eab67e790774ab63ea4b04720922db5a5fcec0"
+    },
+    {
+      "bytes": 958,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-negative-custody.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "625388b1f498fa5aa4866e13635d19bb51447e4953735ee0a42d2ee1cd5a43c1"
+    },
+    {
+      "bytes": 1334,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-result.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "e828db32cb3d65116b15b10a8ac268b407cc1087bdf808f5e334e171409941c9"
+    },
+    {
+      "bytes": 15665,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "f40cbb6151052cf035185298f4b6a2473aeba6ffd259de03fba564eb4429aa44"
+    },
+    {
+      "bytes": 4596,
+      "path": "verify_bac_failed_run.py",
+      "required_by": [
+        "wave35-r112-operator-roundtrip-red--operator-roundtrip-red"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "aa23117fc684edf13e70743d5eb4ee2f652a751f218f45d88316ee1859e8bc56"
+    },
+    {
+      "bytes": 1248,
+      "path": "wave35-r112-operator-roundtrip-red-dispatch.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "aff44acb293cfc0db03148ed51da6e6ca8d55b5aa67552e19cc907543f0787f5"
+    },
+    {
+      "bytes": 1091,
+      "path": "wave35-r112-operator-roundtrip-red-spec.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "004a698af9e1422468573e60b00ff7e56c1993c06dd91f08d8e36470fd9c79ee"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r112-owned-spec.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "76aba7cbba364ca250283f25b97ebca5031e5aba3e645c209627b09570696c0f"
+    },
+    {
+      "bytes": 725,
+      "path": "wave35-r112-static/black-tests-result.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "3c23ea8b4eb09a9928b473da5aa412ecea6ea81673d4070a1946b3800585aea4"
+    },
+    {
+      "bytes": 55,
+      "path": "wave35-r112-static/black-tests.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "bytes": 721,
+      "path": "wave35-r112-static/ruff-tests-result.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "1d21a9af0fa1e3cca9f17a1fbad5848f211ed1f889283797729da8c1bbd17934"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r112-static/ruff-tests.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 998,
+      "path": "wave35-r112-static/static-custody.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "5ab5941620daf0ca3b28e00b6d02bc647baa4f19f49feef4da9018601a25e3a8"
+    },
+    {
+      "bytes": 2532,
+      "path": "verify_bac_static_run.py",
+      "required_by": [
+        "wave35-r112-static--ruff-tests",
+        "wave35-r112-static--black-tests"
+      ],
+      "role": "executed_check_helper",
+      "root": "Q",
+      "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+    },
+    {
+      "bytes": 1354,
+      "path": "wave35-r112-static-dispatch.log",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "b1aaebbcd55f2f8d8c104600491224d89bae120274bbc230f47cbb8b1b80196f"
+    },
+    {
+      "bytes": 638,
+      "path": "wave35-r112-static-spec.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "9928540d3835047039d564ec82c6c96545e67e937ac54ec6a594b616b89a72ec"
+    },
+    {
+      "bytes": 230299,
+      "path": "wave35-r112-tests-first-selection.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "retained_interval_evidence",
+      "root": "Q",
+      "sha256": "05b250f0b54742182cd58449825740be8b55c28af6116d4f9f6183ddd3c57926"
+    },
+    {
+      "bytes": 114142,
+      "path": "evidence-management/r112-preparation/r112-explicit-unrun-v1.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "unrun_inventory",
+      "root": "W",
+      "sha256": "32fe21d27d90cec3d9aa85b4078f7adc69d7d5235dbd1b011c9c387fe1026911"
+    },
+    {
+      "bytes": 205427,
+      "path": "wave35/r112-candidate.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+    },
+    {
+      "bytes": 931,
+      "path": "wave35/r112-root-checks.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "b80a99c3519a55f5bf4597e45006b5cab706090abba1e370288af619e994755e"
+    },
+    {
+      "bytes": 3162,
+      "path": "wave35/r112-fixture-resource-preflight.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "340d8f6aad5c37a803d349ee423e0cf74dba979a4a6ee9dad6cd07cc5fa986d4"
+    },
+    {
+      "bytes": 1663,
+      "path": "wave35/r112-fixture-repair-grant.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "b3e5aece7ffedcbc0dac3dcf9f547d9ca1fd43ab27bca31a9562ae821b085467"
+    },
+    {
+      "bytes": 1775,
+      "path": "wave35/r111-fixture-tests-first-grant.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "8aa75adb69db9b1400e9236c247457b3a73370ff3886352509bd5d0debf50847"
+    },
+    {
+      "bytes": 704,
+      "path": "wave35/r111-history-component-adoption.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "cb731cc20998b601b79ea4ae9b441e0d6b50a589d105435ee67181ec38c8feec"
+    },
+    {
+      "bytes": 8975,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-PLAN-REVIEW.md",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "f8936611f9ce317c0818750bbfd5823b4a4e0dc322984dfb1979863960c3f486"
+    },
+    {
+      "bytes": 27437,
+      "path": "evidence-management/wip19-tests-observation-6-native.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "b4e07ca2a803d682dd3b8f7038e9780ba380fbd53a4b757c7b47fb61cd04a0f6"
+    },
+    {
+      "bytes": 6629,
+      "path": "evidence-management/wip19-tests-jobs-terminal-native.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "98cf9716d32383190f404c268d5b897cb1bf9a1c9411cb2f26d78720b295f310"
+    },
+    {
+      "bytes": 210,
+      "path": "evidence-management/wip19-tests-log-attempt-1-native.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "94706eab5bc599a6309f59bd5b1923c166c13dc39ca3a08038dbaf0b15c51b01"
+    },
+    {
+      "bytes": 91567,
+      "path": "evidence-management/r112-preparation/r112-full-base-candidate.patch",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "closed_history_supporting_diagnostic",
+      "root": "W",
+      "sha256": "328d6e854da2116db504e8d1c0391fa19c18ba34c2d22dcf03cd5ba281c401c6"
+    },
+    {
+      "bytes": 2512,
+      "path": "evidence-management/r112-preparation/r112-provenance-v1.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "provenance",
+      "root": "W",
+      "sha256": "aab45051e375416b122514b6d916e9c9d2f2452b10ae10e9d084c511efaab21d"
+    },
+    {
+      "bytes": 10837,
+      "path": "evidence-management/r112-preparation/r112-inventory-v1.json",
+      "required_by": [
+        "wave35-r112-fixture-tests-first-history-v1"
+      ],
+      "role": "inventory",
+      "root": "W",
+      "sha256": "4df25280d53c98a5bbaefaef8dde12f36bad52dc7d11169050c40b4d8c0d8f64"
+    }
+  ],
+  "draft_metadata_only": true,
+  "explicit_unrun": {
+    "bytes": 114142,
+    "path": "evidence-management/r112-preparation/r112-explicit-unrun-v1.json",
+    "root": "W",
+    "sha256": "32fe21d27d90cec3d9aa85b4078f7adc69d7d5235dbd1b011c9c387fe1026911"
+  },
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-canonical-roundtrip",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-canonical-roundtrip-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-canonical-roundtrip-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-capture.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-collection",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-collection-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-collection-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-late-membership",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-late-membership-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-late-membership-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-operator-roundtrip-red",
+      "round": 112,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-operator-roundtrip-red-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-operator-roundtrip-red-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-owned-spec.json",
+      "round": 112,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-static",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-static-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-static-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-tests-first-selection.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_start": 112,
+  "inventory": {
+    "bytes": 10837,
+    "path": "evidence-management/r112-preparation/r112-inventory-v1.json",
+    "root": "W",
+    "sha256": "4df25280d53c98a5bbaefaef8dde12f36bad52dc7d11169050c40b4d8c0d8f64"
+  },
+  "package_accounting": {
+    "qualified": 28,
+    "remaining": 38,
+    "total": 66
+  },
+  "provenance": {
+    "bytes": 2512,
+    "path": "evidence-management/r112-preparation/r112-provenance-v1.json",
+    "root": "W",
+    "sha256": "aab45051e375416b122514b6d916e9c9d2f2452b10ae10e9d084c511efaab21d"
+  },
+  "remaining_root_inputs": [
+    "Adopt R112 closed history",
+    "Capture and qualify subsequent repaired candidate separately",
+    "Choose coherent checkpoint and terminal review/publication"
+  ],
+  "retained_outcomes": {
+    "all_prior836_retained": true,
+    "canonical_passed": 4,
+    "collected": 838,
+    "collected_unrun": 828,
+    "custody": "PASS",
+    "errors": 0,
+    "expected_operator_second_restore_digest_failed": 4,
+    "membership_passed": 2,
+    "owned_template": "UNRUN additional",
+    "skips": 0,
+    "style": "Ruff/Black PASS",
+    "warnings": 0
+  },
+  "reviews": [],
+  "root_disposition": {
+    "bytes": 931,
+    "path": "wave35/r112-root-checks.json",
+    "root": "W",
+    "sha256": "b80a99c3519a55f5bf4597e45006b5cab706090abba1e370288af619e994755e"
+  },
+  "schema": "bac-staged-history-component-receipt-v1",
+  "scope": "Fixture prerequisite evidence only; retain originalR11130failures as historical. No production change/acceptance reduction or terminal seal; no earlier counts added.",
+  "series": "wave35",
+  "status": "CLOSED TESTS-FIRST HISTORY; REPAIRED CANDIDATE STILL OWED",
+  "supporting_reviews": [
+    {
+      "bytes": 8975,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-PLAN-REVIEW.md",
+      "root": "W",
+      "sha256": "f8936611f9ce317c0818750bbfd5823b4a4e0dc322984dfb1979863960c3f486"
+    }
+  ],
+  "terminal_historical_round": 112
+}

@@ -1,0 +1,24 @@
+{
+  "root": "/workspace/hamlet",
+  "manifest": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r110-candidate.json",
+  "output": "/workspace/bac-review-2026-11-01/qualification/wave35-r110-core-manifest-red",
+  "workers": 1,
+  "jobs": [
+    {
+      "name": "core-manifest-red",
+      "args": [
+        "-m",
+        "pytest",
+        "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest",
+        "--no-cov",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:benchmark",
+        "-p",
+        "bac_source_identity",
+        "-q"
+      ]
+    }
+  ]
+}

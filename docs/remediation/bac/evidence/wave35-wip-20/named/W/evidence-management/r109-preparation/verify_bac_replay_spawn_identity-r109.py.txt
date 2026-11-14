@@ -1,0 +1,744 @@
+"""Verify the sealed replay poison child; no application imports."""
+
+import fcntl
+import hashlib
+import json
+import math
+import subprocess
+import sys
+from pathlib import Path
+
+ROLE = "replay_poison"
+MESSAGE = "replay poison fail closed"
+HARNESS_SHA256 = "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+REPLAY_ARGS = (
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_isolated_replay_poison_refuses_all_direct_samplers",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q",
+)
+BOOTSTRAP_MODULES = ("world_curiosity_state", "rng_custody", "rnd")
+REPLAY_MODULES = ("replay_buffer", "prioritized_replay_buffer", "sequential_replay_buffer", "replay_contract")
+ROLE_CONFIGS = {
+    "replay-poison": {
+        "role": ROLE,
+        "message": MESSAGE,
+        "args": REPLAY_ARGS,
+        "imports": {"townlet.training." + n: "src/townlet/training/" + n + ".py" for n in REPLAY_MODULES},
+    },
+    "recurrent-replay-poison": {
+        "role": "recurrent_replay_poison",
+        "message": "recurrent replay scratch poison fail closed",
+        "args": (
+            "-m",
+            "pytest",
+            "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py::test_isolated_recurrent_scratch_work_cannot_heal_common_poison",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            "-p",
+            "no:benchmark",
+            "-p",
+            "bac_source_identity",
+            "-q",
+        ),
+        "imports": {
+            "townlet.training.sequential_replay_buffer": "src/townlet/training/sequential_replay_buffer.py",
+            "townlet.training.replay_contract": "src/townlet/training/replay_contract.py",
+            "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
+            "test_recurrent_replay_rng_custody": "tests/test_townlet/regressions/bac/test_recurrent_replay_rng_custody.py",
+            "test_replay_rng_custody": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py",
+        },
+    },
+}
+IDENTITY_FIELDS = {"sha", "candidate_tree", "module", "worker", "torch", "threads"}
+CHILD_FIELDS = IDENTITY_FIELDS | {"pid", "ppid", "manifest_sha256", "debug", "interop_threads", "imports", "replay_imports"}
+OBSERVATION_FIELDS = {"process_pid", "queued_pid", "exitcode", "qualified", "message", "manifest_sha256", "parent_pid"}
+
+CUDA_IMPORTS = {
+    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
+    "test_rng_cuda_admission": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+}
+# Closed case inventory: derived strings below cannot admit an unknown case/job.
+INVOCATION_CASES = (
+    "invocation_same_error",
+    "invocation_child_failure",
+    "invocation_parent_failure",
+    "invocation_reported_failure",
+    "invocation_phase_reference",
+    "invocation_phase_failure",
+)
+PHASE_CASES = ("invocation_phase_reference", "invocation_phase_failure")
+CUDA_CASES = (
+    "bootstrap_failure",
+    "runtime_query_failure",
+    "local_completion_single",
+    "local_completion_multiple_body",
+    "poison_unknown_ready",
+    "poison_ready_qualified",
+    "poison_ready_healthy_only",
+    "operation_body_completion",
+    "local_completion_duplicate_parent",
+    "inherited_pid",
+    *INVOCATION_CASES,
+)
+for _case in CUDA_CASES:
+    _node = "test_isolated_inherited_pid_gate_refusal" if _case == "inherited_pid" else f"test_isolated_poison_protocol[{_case}]"
+    ROLE_CONFIGS["cuda-core-" + _case.replace("_", "-")] = {
+        "role": "cuda_core_" + _case,
+        "message": ("cuda core inherited pid gates fail closed" if _case == "inherited_pid" else f"cuda core {_case} fail closed"),
+        "args": ("-m", "pytest", CUDA_IMPORTS["test_rng_cuda_admission"] + "::" + _node, *REPLAY_ARGS[3:]),
+        "imports": CUDA_IMPORTS,
+        "cuda": True,
+        "fork": _case == "inherited_pid",
+        "invocation_case": _case if _case in INVOCATION_CASES else None,
+        "phase_case": _case if _case in PHASE_CASES else None,
+    }
+PRODUCER_IMPORTS = {
+    "townlet.exploration.rng_custody": "src/townlet/exploration/rng_custody.py",
+    **{
+        "townlet.training." + n: "src/townlet/training/" + n + ".py"
+        for n in ("replay_contract", "replay_buffer", "prioritized_replay_buffer")
+    },
+    "test_replay_cuda_producer": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+}
+PRODUCER_CASES = tuple(
+    f"{family}_{schedule}"
+    for family in ("flat", "per")
+    for schedule in ("local_single", "local_distinct", "local_same", "admitted_single", "admitted_same")
+)
+for _case in PRODUCER_CASES:
+    ROLE_CONFIGS["cuda-producer-poison-" + _case] = {
+        "role": "cuda_producer_poison",
+        "producer": _case,
+        "message": f"cuda producer {_case} poison quarantines under owner custody",
+        "args": (
+            "-m",
+            "pytest",
+            PRODUCER_IMPORTS["test_replay_cuda_producer"] + f"::test_isolated_producer_poison[{_case}]",
+            *REPLAY_ARGS[3:],
+        ),
+        "imports": PRODUCER_IMPORTS,
+    }
+PRODUCER_CHILD_FIELDS = (CHILD_FIELDS - {"replay_imports"}) | {"producer_case", "cuda_producer_imports", "cuda_producer_sha256"}
+PRODUCER_OBSERVATION_FIELDS = OBSERVATION_FIELDS | {"case", "queued_ppid", "before", "after", "success"}
+
+
+CUDA_CHILD_FIELDS = (CHILD_FIELDS - {"replay_imports"}) | {"cuda_core_imports", "cuda_core_test_sha256"}
+FORK_IDENTITY_FIELDS = {
+    "schema",
+    "profile",
+    "role",
+    "trial",
+    "pid",
+    "ppid",
+    "inherited_domain_pid",
+    "qualified",
+    "base_commit",
+    "candidate_tree",
+    "manifest_sha256",
+    "cuda_core_imports",
+    "module_origin",
+    "source_sha256",
+    "os_threads",
+    "torch_profile",
+    "torch_profile_unavailable_reason",
+    "guard_results",
+}
+FORK_OBSERVATION_FIELDS = {
+    "schema",
+    "trial",
+    "role",
+    "parent_pid",
+    "fork_pid",
+    "waitpid_pid",
+    "wait_status",
+    "exit_code",
+    "queued_pid",
+    "queued_ppid",
+    "identity_sha256",
+    "message",
+    "parent_os_threads_before_fork",
+    "manifest_sha256",
+}
+FORK_ACTIONS = {
+    "admission": {"resolve_cuda", "enroll", "report_failure", "domain_admission"},
+    "local": {"resolve_cuda", "complete", "completion_failed", "report_failure", "domain_local_cuda_access"},
+    "invocation": {"active_enter", "active_exit", "active_completion_failed", "completed_completion_failed", "domain_device_invocation"},
+}
+FORK_COUNTERS = {"lock_acquire_calls", "owner_lock_acquire_calls", "cuda_touch_calls", "body_calls"}
+
+
+def check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash):
+    for kind in ("identity", "observation"):
+        expected = {f"fork-{kind}-cuda_core_inherited_pid-{trial}.json" for trial in FORK_ACTIONS}
+        actual = {path.name for path in job_dir.glob(f"fork-{kind}-cuda_core_inherited_pid-*.json")}
+        require(actual == expected, f"unexpected fork record inventory: {kind}")
+    receipts = []
+    seen_pids = {child["pid"], observed["parent_pid"]}
+    imports = {key: str(root / relative) for key, relative in CUDA_IMPORTS.items()}
+    source_hashes = {key: manifest["source_files"][relative] for key, relative in CUDA_IMPORTS.items()}
+    for trial, actions in FORK_ACTIONS.items():
+        identity_path = job_dir / f"fork-identity-cuda_core_inherited_pid-{trial}.json"
+        observation_path = job_dir / f"fork-observation-cuda_core_inherited_pid-{trial}.json"
+        identity, identity_hash = read_json(identity_path)
+        parent, parent_hash = read_json(observation_path)
+        require(set(identity) == FORK_IDENTITY_FIELDS, "fork identity schema mismatch")
+        require(set(parent) == FORK_OBSERVATION_FIELDS, "fork observation schema mismatch")
+        require(identity["schema"] == "cuda-core-fork-guard-identity-v1", "fork identity version mismatch")
+        require(parent["schema"] == "cuda-core-fork-guard-observation-v1", "fork observation version mismatch")
+        require(identity["profile"] == "linux-fork-inherited-guard-only-v1", "fork profile mismatch")
+        require(identity["role"] == parent["role"] == "cuda_core_inherited_pid_guard", "fork role mismatch")
+        require(identity["trial"] == parent["trial"] == trial, "fork trial mismatch")
+        for value in [identity[k] for k in ("pid", "ppid", "inherited_domain_pid")] + [
+            parent[k] for k in ("parent_pid", "fork_pid", "waitpid_pid", "queued_pid", "queued_ppid")
+        ]:
+            require(positive_pid(value), "fork PID must be positive exact integer")
+        pid = identity["pid"]
+        require(pid not in seen_pids, "fork PID reused or collides with ancestor")
+        seen_pids.add(pid)
+        require(pid == parent["fork_pid"] == parent["waitpid_pid"] == parent["queued_pid"], "fork/waitpid/queue PID mismatch")
+        require(
+            identity["ppid"] == identity["inherited_domain_pid"] == parent["parent_pid"] == parent["queued_ppid"] == child["pid"],
+            "fork ancestry mismatch",
+        )
+        # Linux normal exit zero has raw wait status zero. Never decode a signal into a false success.
+        for field in ("wait_status", "exit_code"):
+            require(type(parent[field]) is int and parent[field] == 0, "fork did not exit normally with zero")
+        require(parent["identity_sha256"] == identity_hash, "fork identity byte hash mismatch")
+        require(parent["message"] == f"cuda core inherited pid {trial} fail closed", "fork success message mismatch")
+        require(identity["qualified"] is True, "unqualified fork")
+        require(identity["manifest_sha256"] == parent["manifest_sha256"] == manifest_hash, "fork manifest mismatch")
+        for field in ("base_commit", "candidate_tree"):
+            require(identity[field] == manifest[field], f"fork {field} mismatch")
+        require(identity["cuda_core_imports"] == imports, "fork import mismatch")
+        require(identity["source_sha256"] == source_hashes, "fork source hashes mismatch")
+        require(identity["module_origin"] == "inherited-loaded-module-objects", "fork module origin mismatch")
+        require(type(identity["os_threads"]) is int and identity["os_threads"] == 1, "fork OS thread profile mismatch")
+        require(
+            type(parent["parent_os_threads_before_fork"]) is int and parent["parent_os_threads_before_fork"] == 1,
+            "pre-fork OS thread profile mismatch",
+        )
+        require(
+            identity["torch_profile"] is None
+            and identity["torch_profile_unavailable_reason"] == "no Torch calls permitted in fork guard-only process",
+            "fork must not claim a Torch profile",
+        )
+        results = identity["guard_results"]
+        require(type(results) is dict and set(results) == actions, "fork guard actions mismatch")
+        for action, result in results.items():
+            require(
+                type(result) is dict and set(result) == FORK_COUNTERS | {"exception_class", "diagnostic", "state_unchanged"},
+                f"fork guard result schema mismatch: {action}",
+            )
+            require(
+                result["exception_class"] == "builtins.RuntimeError"
+                and result["diagnostic"] == "RNG custody cannot be inherited by another process",
+                "fork PID refusal mismatch",
+            )
+            for counter in FORK_COUNTERS:
+                require(type(result[counter]) is int and result[counter] == 0, f"fork guard effect: {counter}")
+            require(result["state_unchanged"] is True, "fork guard changed state")
+        receipts.append(
+            {
+                "trial": trial,
+                "pid": pid,
+                "ppid": child["pid"],
+                "profile": identity["profile"],
+                "identity_sha256": identity_hash,
+                "observation_sha256": parent_hash,
+            }
+        )
+    return receipts
+
+
+def check_producer_records(job_dir, case, child, observed):
+    def exact(value, fields, label):
+        require(type(value) is dict and set(value) == set(fields.split()), label + " schema mismatch")
+
+    def domain(value, poisoned):
+        require(
+            type(value) is list and len(value) == 3 and all(type(v) is int and v >= 0 for v in value[:2]) and value[2] is poisoned,
+            "producer domain health mismatch",
+        )
+
+    def sha(value):
+        return type(value) is str and len(value) == 64 and all(c in "0123456789abcdef" for c in value)
+
+    def baseline(value):
+        exact(value, "domain python numpy torch cuda", "parent baseline")
+        domain(value["domain"], False)
+        require(sha(value["python"]) and sha(value["torch"]), "parent RNG digest mismatch")
+        require(value["cuda"] is None or type(value["cuda"]) is list and all(sha(v) for v in value["cuda"]), "parent CUDA digests")
+        numpy = value["numpy"]
+        require(type(numpy) is list and len(numpy) == 5, "parent numpy schema")
+        require(
+            numpy[0] == "MT19937"
+            and sha(numpy[1])
+            and type(numpy[2]) is int
+            and 0 <= numpy[2] <= 624
+            and type(numpy[3]) is int
+            and numpy[3] in (0, 1)
+            and type(numpy[4]) is float
+            and math.isfinite(numpy[4]),
+            "parent numpy values",
+        )
+
+    def error(value, kind=None, message=None, identity=None):
+        exact(value, "type message id children", "producer error")
+        require(
+            type(value["type"]) is str and type(value["message"]) is str and positive_pid(value["id"]) and type(value["children"]) is list,
+            "producer error types",
+        )
+        if kind is not None:
+            require(value["type"] == kind and value["children"] == [], "producer leaf type/shape mismatch")
+        if message is not None:
+            require(value["message"] == message, "producer error message mismatch")
+        if identity is not None:
+            require(value["id"] == identity, "producer error identity mismatch")
+
+    records, hashes = {}, {}
+    for key, filename, fields in (
+        ("preflight", "preflight", "case pid ppid qualified before"),
+        ("after", "after", "case pid ppid qualified phase success observations failure"),
+        ("parent_before", "parent-before", "case parent_pid qualified before"),
+    ):
+        record, hashes[key + "_sha256"] = read_json(job_dir / f"spawn-{filename}-cuda_producer_poison.json")
+        exact(record, fields, key)
+        require(record["case"] == case and record["qualified"] is True, "producer record case/qualification mismatch")
+        for field, expected in (
+            (("parent_pid", observed["parent_pid"]),) if key == "parent_before" else (("pid", child["pid"]), ("ppid", child["ppid"]))
+        ):
+            require(positive_pid(record[field]) and record[field] == expected, "producer record process mismatch")
+        records[key] = record
+    require(child["producer_case"] == observed["case"] == case and observed["success"] is True, "producer parent success/case mismatch")
+    after = records["after"]
+    require(after["phase"] == "complete" and after["success"] is True and after["failure"] is None, "producer not completed successfully")
+    before = records["preflight"]["before"]
+    exact(before, "domain devices error_ids", "producer preflight before")
+    domain(before["domain"], False)
+    require(
+        type(before["devices"]) is list and before["devices"] == [0, 1] and all(type(v) is int for v in before["devices"]),
+        "producer device inventory mismatch",
+    )
+    ids = before["error_ids"]
+    require(type(ids) is list and len(ids) == 3 and all(v is None or positive_pid(v) for v in ids), "producer error IDs schema")
+    same, distinct, admitted = (case.endswith("same"), case.endswith("distinct"), "_admitted_" in case)
+    if distinct:
+        require(all(positive_pid(v) for v in ids) and len(set(ids)) == 3, "producer distinct error IDs")
+    elif same:
+        require(positive_pid(ids[0]) and ids[0] == ids[1] and ids[2] is None, "producer duplicate error IDs")
+    else:
+        require(ids[0] is None and positive_pid(ids[1]) and ids[2] is None, "producer single error IDs")
+    obs = after["observations"]
+    exact(
+        obs,
+        "healthy_controls reached started_work syncs peer_blocked worker_errors peer_errors completion_failed outcome_errors "
+        "quarantine_before_unlock owner_quarantined cpu_local_available ambient_refused domain_after",
+        "producer observations",
+    )
+    for field in ("healthy_controls", "reached", "peer_blocked", "owner_quarantined", "cpu_local_available", "ambient_refused"):
+        require(obs[field] is True, "producer failed control: " + field)
+    require(obs["started_work"] is (same or distinct), "producer body phase mismatch")
+    syncs = obs["syncs"]
+    require(type(syncs) is list and bool(syncs) and all(type(v) is int and v in (0, 1) for v in syncs), "producer sync types")
+    require(syncs[0] == 0 if admitted else syncs == [0, 1], "producer completion schedule mismatch")
+    completed = obs["completion_failed"]
+    require(
+        type(completed) is list and bool(completed) and all(v is True for v in completed) and (not admitted or len(completed) == 1),
+        "producer completion outcome mismatch",
+    )
+    quarantine = obs["quarantine_before_unlock"]
+    require(type(quarantine) is list and len(quarantine) == 1 and quarantine[0] is True, "producer pre-unlock quarantine missing")
+    require(obs["outcome_errors"] == [], "producer outcome read failed")
+    domain(obs["domain_after"], True)
+    for field in ("worker_errors", "peer_errors"):
+        require(type(obs[field]) is list and len(obs[field]) == 1, "producer outward error count mismatch")
+    outward, peer = obs["worker_errors"][0], obs["peer_errors"][0]
+    error(peer, "RuntimeError")
+    require("quarantined" in peer["message"], "producer peer quarantine diagnostic missing")
+    if distinct:
+        error(outward)
+        require(
+            outward["type"] == "ExceptionGroup" and len(outward["children"]) == 3 and outward["id"] not in ids,
+            "producer distinct group shape mismatch",
+        )
+        for leaf, kind, suffix, identity in zip(
+            outward["children"], ("ValueError", "RuntimeError", "OSError"), ("body", "completion0", "completion1"), ids
+        ):
+            error(leaf, kind, case + ": " + suffix, identity)
+    else:
+        error(outward, "ValueError" if same else "RuntimeError", case + (": body" if same else ": completion0"), ids[0] if same else ids[1])
+    for value in (records["parent_before"]["before"], observed["before"], observed["after"]):
+        baseline(value)
+    require(records["parent_before"]["before"] == observed["before"], "standalone parent baseline mismatch")
+    require(all(observed["before"][k] == observed["after"][k] for k in ("python", "numpy", "torch", "cuda")), "parent RNG state changed")
+    return {
+        **hashes,
+        "producer_case": case,
+        "producer_observations": obs,
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+    }
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def read_json(path):
+    data = Path(path).read_bytes()
+    value = json.loads(data)
+    require(type(value) is dict, f"JSON object required: {path}")
+    return value, digest(data)
+
+
+def positive_pid(value):
+    return type(value) is int and value > 0
+
+
+def check_repository(root, manifest):
+    require(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip() == manifest["base_commit"], "HEAD mismatch")
+    with (root / ".superpowers/bac-qualification-index.lock").open("a") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        try:
+            tree = subprocess.check_output(["git", "write-tree"], cwd=root, text=True).strip()
+            require(tree == manifest["candidate_tree"], "index tree mismatch")
+        finally:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+    require(subprocess.run(["git", "diff", "--quiet"], cwd=root, check=False).returncode == 0, "unstaged changes")
+    registry = subprocess.check_output(["git", "worktree", "list", "--porcelain"], cwd=root, text=True)
+    require(registry == manifest["worktree_registry"], "worktree registry mismatch")
+
+
+def check_inventory(root, manifest):
+    for category in ("source_files", "configs", "artifacts"):
+        inventory = manifest[category]
+        require(type(inventory) is dict, f"invalid {category}")
+        for relative, expected in inventory.items():
+            path = Path(relative)
+            require(not path.is_absolute() and ".." not in path.parts, f"unsafe inventory path: {relative}")
+            target = (root / path).resolve()
+            require(target.is_relative_to(root), f"inventory escapes root: {relative}")
+            require(digest(target.read_bytes()) == expected, f"{category} hash mismatch: {relative}")
+
+
+def check_bindings(spec, job, result, root, manifest, manifest_hash):
+    require(set(spec) == {"root", "manifest", "output", "workers", "jobs"}, "spec schema mismatch")
+    require(set(job) == {"name", "args"} and job["name"] in ROLE_CONFIGS, "job schema/name mismatch")
+    require(type(spec["workers"]) is int and spec["workers"] == 1, "CPU harness concurrency mismatch")
+    fields = {
+        "name",
+        "exit_code",
+        "seconds",
+        "command",
+        "log",
+        "sha256",
+        "candidate_tree",
+        "base_commit",
+        "manifest_sha256",
+        "harness_sha256",
+    }
+    require(set(result) == fields, "result schema mismatch")
+    require(type(result["exit_code"]) is int and result["exit_code"] == 0, "parent job failed")
+    seconds = result["seconds"]
+    require(type(seconds) in (int, float) and math.isfinite(seconds) and seconds > 0, "parent elapsed seconds must be finite and positive")
+    require(result["name"] == job["name"], "result name mismatch")
+    require(type(job["args"]) is list and all(type(arg) is str for arg in job["args"]), "invalid command args")
+    require(job["args"] == list(ROLE_CONFIGS[job["name"]]["args"]), "sealed replay command mismatch")
+    require(result["command"] == [str(root / ".venv/bin/python"), *job["args"]], "result command mismatch")
+    require(result["harness_sha256"] == HARNESS_SHA256, "harness mismatch")
+    require(result["manifest_sha256"] == manifest_hash, "result manifest mismatch")
+    for field in ("base_commit", "candidate_tree"):
+        require(type(manifest[field]) is str and bool(manifest[field]) and result[field] == manifest[field], f"result {field} mismatch")
+    log_path = Path(spec["output"]) / (job["name"] + ".log")
+    require(Path(result["log"]) == log_path, "result log path mismatch")
+    require(digest(log_path.read_bytes()) == result["sha256"], "result log hash mismatch")
+
+
+def check_invocation_phase(job_dir, config, child, observed, manifest, manifest_hash):
+    case = config.get("phase_case")
+    role = config["role"]
+    filename = f"invocation-phase-{role}.json"
+    expected = {filename} if case else set()
+    require({p.name for p in job_dir.glob("invocation-phase-*.json")} == expected, "unexpected invocation phase record inventory")
+    if not case:
+        return None, None
+    phase, phase_hash = read_json(job_dir / filename)
+    require(
+        set(phase)
+        == {
+            "schema",
+            "role",
+            "case",
+            "pid",
+            "ppid",
+            "base_commit",
+            "candidate_tree",
+            "manifest_sha256",
+            "source_sha256",
+            "devices",
+            "synchronize_events",
+            "exception_labels",
+            "completion_failed",
+        },
+        "invocation phase schema mismatch",
+    )
+    require(phase["schema"] == "cuda-core-invocation-phase-v1", "invocation phase version mismatch")
+    require(phase["role"] == role and phase["case"] == case, "invocation phase role/case mismatch")
+    for field in ("pid", "ppid"):
+        require(positive_pid(phase[field]) and phase[field] == child[field], "invocation phase process mismatch")
+    for field in ("base_commit", "candidate_tree"):
+        require(phase[field] == manifest[field], "invocation phase source identity mismatch")
+    require(phase["manifest_sha256"] == manifest_hash, "invocation phase manifest mismatch")
+    require(
+        type(phase["source_sha256"]) is dict
+        and phase["source_sha256"] == {k: manifest["source_files"][v] for k, v in CUDA_IMPORTS.items()},
+        "invocation phase source hashes mismatch",
+    )
+    require(
+        type(phase["devices"]) is list and all(type(v) is int for v in phase["devices"]) and phase["devices"] == [0, 1, 2],
+        "invocation phase devices mismatch",
+    )
+    events = phase["synchronize_events"]
+    require(
+        type(events) is list and bool(events) and all(type(v) is int and v in (0, 1, 2) for v in events),
+        "invocation phase event types mismatch",
+    )
+    require(phase["exception_labels"] == ["body", "synchronization"], "invocation phase exception labels mismatch")
+    require(
+        phase["completion_failed"] is (None if case == "invocation_phase_reference" else True),
+        "invocation phase completion outcome mismatch",
+    )
+    require(observed["invocation_phase_sha256"] == phase_hash, "invocation phase parent byte hash mismatch")
+    return phase, phase_hash
+
+
+def artifact_reference(path, expected_hash):
+    data = Path(path).read_bytes()
+    require(digest(data) == expected_hash, "validated artifact changed during reference capture")
+    return {"path": str(Path(path).resolve()), "bytes": len(data), "sha256": expected_hash}
+
+
+def same_typed(actual, expected):
+    if type(actual) is not type(expected):
+        return False
+    if type(expected) is dict:
+        return set(actual) == set(expected) and all(same_typed(actual[k], v) for k, v in expected.items())
+    if type(expected) is list:
+        return len(actual) == len(expected) and all(same_typed(a, b) for a, b in zip(actual, expected))
+    return actual == expected
+
+
+def _validated_subject(spec_path, job_index):
+    spec, spec_hash = read_json(spec_path)
+    require(set(spec) == {"root", "manifest", "output", "workers", "jobs"}, "spec schema mismatch")
+    require(type(spec["jobs"]) is list, "invalid jobs inventory")
+    require(type(job_index) is int and 0 <= job_index < len(spec["jobs"]), "invalid job index")
+    job = spec["jobs"][job_index]
+    require(type(job) is dict and set(job) == {"name", "args"}, "job schema mismatch")
+    name = job["name"]
+    require(type(name) is str and name not in ("", ".", "..") and Path(name).name == name, "invalid job name")
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    config = ROLE_CONFIGS[name]
+    if config.get("invocation_case"):
+        require(len(spec["jobs"]) == 1, "invocation control requires exactly one job")
+    role, message = config["role"], config["message"]
+    root = Path(spec["root"]).resolve()
+    manifest, manifest_hash = read_json(spec["manifest"])
+    output = Path(spec["output"])
+    job_dir = output / name
+    destination = job_dir / f"replay-spawn-custody-{role}.json"
+    result, result_hash = read_json(output / (name + "-result.json"))
+    check_bindings(spec, job, result, root, manifest, manifest_hash)
+    controller, controller_hash = read_json(job_dir / "identity-controller.json")
+    child, child_hash = read_json(job_dir / f"spawn-identity-{role}.json")
+    observed, observed_hash = read_json(job_dir / f"spawn-observation-{role}.json")
+    require(set(controller) == IDENTITY_FIELDS, "controller schema mismatch")
+    is_cuda = config.get("cuda", False)
+    producer = config.get("producer")
+    if producer:
+        require(len(spec["jobs"]) == 1, "producer requires exactly one job")
+        require(type(child["torch"]) is str and bool(child["torch"]), "producer Torch version missing")
+    require(set(child) == (PRODUCER_CHILD_FIELDS if producer else CUDA_CHILD_FIELDS if is_cuda else CHILD_FIELDS), "child schema mismatch")
+    observation_fields = (
+        PRODUCER_OBSERVATION_FIELDS if producer else OBSERVATION_FIELDS | {"queued_ppid"} if is_cuda else OBSERVATION_FIELDS
+    )
+    if config.get("phase_case"):
+        observation_fields = observation_fields | {"invocation_phase_sha256"}
+    require(set(observed) == observation_fields, "observation schema mismatch")
+    if is_cuda or producer:
+        require(positive_pid(observed["queued_ppid"]) and observed["queued_ppid"] == child["ppid"], "queued PPID mismatch")
+    for value in (child["pid"], child["ppid"], observed["parent_pid"], observed["process_pid"], observed["queued_pid"]):
+        require(positive_pid(value), "PID must be a positive exact integer")
+    require(observed["process_pid"] == observed["queued_pid"] == child["pid"], "child/Process/queue PID mismatch")
+    require(child["ppid"] == observed["parent_pid"] != child["pid"], "parent/PPID mismatch")
+    require(type(observed["exitcode"]) is int and observed["exitcode"] == 0, "child failed")
+    require(observed["qualified"] is True and observed["message"] == message, "qualified success message mismatch")
+    require(observed["manifest_sha256"] == child["manifest_sha256"] == manifest_hash, "child manifest mismatch")
+    require(child["worker"] == role and controller["worker"] == "controller", "role mismatch")
+    for identity in (controller, child):
+        require(identity["sha"] == manifest["base_commit"], "identity commit mismatch")
+        require(identity["candidate_tree"] == manifest["candidate_tree"], "identity tree mismatch")
+        require(Path(identity["module"]).resolve() == root / "src/townlet/__init__.py", "package import mismatch")
+        require(type(identity["threads"]) is int and identity["threads"] == 1, "intra-op profile mismatch")
+    require(child["torch"] == controller["torch"], "Torch version mismatch")
+    require(child["debug"] is True, "debug disabled")
+    require(type(child["interop_threads"]) is int and child["interop_threads"] == 5, "interop profile mismatch")
+    require(
+        child["imports"] == {n: str(root / "src/townlet/exploration" / (n + ".py")) for n in BOOTSTRAP_MODULES},
+        "bootstrap imports mismatch",
+    )
+    replay_imports = {module: str(root / relative) for module, relative in config["imports"].items()}
+    require(
+        child[("cuda_producer_imports" if producer else "cuda_core_imports" if is_cuda else "replay_imports")] == replay_imports,
+        "role imports mismatch",
+    )
+    if is_cuda:
+        require(
+            child["cuda_core_test_sha256"] == manifest["source_files"][CUDA_IMPORTS["test_rng_cuda_admission"]],
+            "CUDA core test source hash mismatch",
+        )
+    for path in [root / "src/townlet/__init__.py", *map(Path, child["imports"].values()), *map(Path, replay_imports.values())]:
+        require(str(path.relative_to(root)) in manifest["source_files"], "import absent from source manifest")
+    if producer:
+        require(
+            child["cuda_producer_sha256"] == {k: manifest["source_files"][v] for k, v in PRODUCER_IMPORTS.items()},
+            "producer source hashes mismatch",
+        )
+    check_inventory(root, manifest)
+    phase, phase_hash = check_invocation_phase(job_dir, config, child, observed, manifest, manifest_hash)
+    producer_receipt = check_producer_records(job_dir, producer, child, observed) if producer else None
+    fork_guards = check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash) if config.get("fork", False) else None
+    check_repository(root, manifest)
+    receipt = {
+        "status": "REPLAY SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": name,
+        "case": role,
+        "expected_message": message,
+        "parent_job_exit_code": result["exit_code"],
+        "base_commit": manifest["base_commit"],
+        "candidate_tree": manifest["candidate_tree"],
+        "manifest_sha256": manifest_hash,
+        "spec_sha256": spec_hash,
+        "result_sha256": result_hash,
+        "controller_sha256": controller_hash,
+        "child_receipt_sha256": child_hash,
+        "parent_observation_sha256": observed_hash,
+        "verifier_sha256": digest(Path(__file__).read_bytes()),
+        "harness_sha256": HARNESS_SHA256,
+        "child_pid": child["pid"],
+        "parent_pid": observed["parent_pid"],
+        "child_ppid": child["ppid"],
+        "torch": child["torch"],
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": True,
+        "source_guards": len(manifest["source_files"]),
+        "configs": len(manifest["configs"]),
+        "artifacts": len(manifest["artifacts"]),
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "This CPU replay poison consumer child only; no restoration-failure, CUDA, other-process or whole-package qualification.",
+    }
+    if is_cuda:
+        receipt["status"] = "CUDA CORE SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+        receipt["scope"] = "This CPU CUDA-core control only; no CUDA hardware, B6, replay migration or whole-package qualification."
+        if fork_guards is not None:
+            receipt["fork_guards"] = fork_guards
+            receipt["fork_guard_limitations"] = (
+                "Linux inherited guard-only records: actual OS single-thread profile, no Torch profile or CUDA work. "
+                "Zero-effect counters require independent production source review of guard ordering, all lock routes and state coverage."
+            )
+    if producer_receipt is not None:
+        receipt.update(producer_receipt)
+        receipt["status"] = "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED"
+        receipt["scope"] = producer_receipt["producer_limitations"]
+    references = {}
+    if phase is not None:
+        receipt["invocation_phase_sha256"] = phase_hash
+        for key, path, expected_hash in (
+            ("spec", spec_path, spec_hash),
+            ("manifest", spec["manifest"], manifest_hash),
+            ("result", output / (name + "-result.json"), result_hash),
+            ("controller", job_dir / "identity-controller.json", controller_hash),
+            ("child_identity", job_dir / f"spawn-identity-{role}.json", child_hash),
+            ("parent_observation", job_dir / f"spawn-observation-{role}.json", observed_hash),
+            ("phase_artifact", job_dir / f"invocation-phase-{role}.json", phase_hash),
+        ):
+            references[key] = artifact_reference(path, expected_hash)
+    return (receipt, destination, {"root": str(root), "phase": phase, "references": references})
+
+
+def verify(spec_path, job_index=0):
+    receipt, destination, _ = _validated_subject(spec_path, job_index)
+    require(not destination.exists(), "custody destination already exists")
+    with destination.open("x") as stream:
+        stream.write(json.dumps(receipt, indent=2) + "\n")
+    return receipt
+
+
+def verify_invocation_phase_pair(reference_spec_path, failure_spec_path):
+    subjects, common, destinations = {}, None, set()
+    try:
+        require(Path(reference_spec_path).resolve() != Path(failure_spec_path).resolve(), "phase pair requires distinct specs")
+        for label, spec_path, case in (
+            ("reference", reference_spec_path, "invocation_phase_reference"),
+            ("failure", failure_spec_path, "invocation_phase_failure"),
+        ):
+            receipt, destination, subject = _validated_subject(spec_path, 0)
+            require(receipt["job"] == "cuda-core-" + case.replace("_", "-"), "phase pair role order mismatch")
+            require(destination.parent.resolve() not in destinations, "phase pair requires distinct job directories")
+            destinations.add(destination.parent.resolve())
+            existing, existing_hash = read_json(destination)
+            require(same_typed(existing, receipt), "existing strict custody differs from recomputed typed receipt")
+            phase = subject["phase"]
+            shared = {
+                key: phase[key]
+                for key in (
+                    "base_commit",
+                    "candidate_tree",
+                    "manifest_sha256",
+                    "source_sha256",
+                    "devices",
+                    "synchronize_events",
+                    "exception_labels",
+                )
+            }
+            shared["root"] = subject["root"]
+            require(common is None or same_typed(shared, common), "invocation phase pair provenance/events mismatch")
+            common = shared
+            subjects[label] = {
+                "role": phase["role"],
+                "case": phase["case"],
+                "child_pid": phase["pid"],
+                "parent_pid": phase["ppid"],
+                "completion_failed": phase["completion_failed"],
+                "references": {**subject["references"], "strict_custody": artifact_reference(destination, existing_hash)},
+            }
+    except (KeyError, TypeError, IndexError) as error:
+        raise ValueError("invalid invocation phase pair subject") from error
+    return {
+        "schema": "cuda-core-invocation-phase-pair-custody-v1",
+        "status": "CUDA CORE INVOCATION PHASE PARITY VERIFIED",
+        "verifier_sha256": digest(Path(__file__).read_bytes()),
+        "shared": common,
+        **subjects,
+        "scope": "Two separately qualified CPU CUDA-core phase controls; observed synchronization parity only; "
+        "no CUDA hardware, producer, parent-owner, B6 or whole-package qualification.",
+    }
+
+
+if __name__ == "__main__":
+    require(len(sys.argv) in (2, 3), "SPEC [JOB_INDEX] required")
+    print(json.dumps(verify(sys.argv[1], int(sys.argv[2]) if len(sys.argv) == 3 else 0), indent=2))

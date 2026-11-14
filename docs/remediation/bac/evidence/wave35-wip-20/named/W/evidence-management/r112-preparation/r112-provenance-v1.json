@@ -1,0 +1,63 @@
+{
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 205427,
+    "path": "wave35/r112-candidate.json",
+    "root": "W",
+    "sha256": "cd67df8e6f92aecf24078a63cfc0db5f3ec39461926bffd10ff9b10d65c5b2a8"
+  },
+  "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+  "changed_paths": [
+    "src/townlet/exploration/rng_custody.py",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "ci_diagnostics": {
+    "logs": "Retrieval failed: Transport closed. No cause inferred from unavailable log.",
+    "records": [
+      {
+        "bytes": 27437,
+        "path": "evidence-management/wip19-tests-observation-6-native.json",
+        "root": "W",
+        "sha256": "b4e07ca2a803d682dd3b8f7038e9780ba380fbd53a4b757c7b47fb61cd04a0f6"
+      },
+      {
+        "bytes": 6629,
+        "path": "evidence-management/wip19-tests-jobs-terminal-native.json",
+        "root": "W",
+        "sha256": "98cf9716d32383190f404c268d5b897cb1bf9a1c9411cb2f26d78720b295f310"
+      },
+      {
+        "bytes": 210,
+        "path": "evidence-management/wip19-tests-log-attempt-1-native.json",
+        "root": "W",
+        "sha256": "94706eab5bc599a6309f59bd5b1923c166c13dc39ca3a08038dbaf0b15c51b01"
+      }
+    ],
+    "scope": "Separate historical CI diagnostic; not R112 application assertions.",
+    "status": "WIP19 Tests terminal FAIL"
+  },
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+    "tests": "38113f45d5d3990e36a27e6511b7e62d9fa1f9c2"
+  },
+  "patch": {
+    "bytes": 91567,
+    "path": "evidence-management/r112-preparation/r112-full-base-candidate.patch",
+    "root": "W",
+    "sha256": "328d6e854da2116db504e8d1c0391fa19c18ba34c2d22dcf03cd5ba281c401c6"
+  },
+  "patch_scope": "Full-index binary diff of exact captured Git tree; inert, never applied/executed. No current mutable source hashes asserted.",
+  "private_backup_exclusion": true,
+  "root_disposition": {
+    "bytes": 931,
+    "path": "wave35/r112-root-checks.json",
+    "root": "W",
+    "sha256": "b80a99c3519a55f5bf4597e45006b5cab706090abba1e370288af619e994755e"
+  },
+  "schema": "bac-captured-tests-first-provenance-v1"
+}

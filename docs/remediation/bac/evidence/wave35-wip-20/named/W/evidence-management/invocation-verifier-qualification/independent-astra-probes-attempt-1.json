@@ -1,0 +1,63 @@
+{
+  "schema": "bac-independent-finite-synthetic-probes-v1",
+  "reviewer": "/root/bac_astra_invocation_verifier_review",
+  "command": "PYTHONDONTWRITEBYTECODE=1 /workspace/hamlet/.venv/bin/python - (stdin orchestration; exact probe program below)",
+  "cwd": "/workspace/hamlet",
+  "source_paths": {
+    "verifier": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+    "synthetic": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py",
+    "application": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  },
+  "source_before": {
+    "verifier": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+    "synthetic": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b",
+    "application": "780b1464c258d0a0162f9f0983be079b869c3868b4d24fbbc029afa154218b36"
+  },
+  "source_after": {
+    "verifier": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+    "synthetic": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b",
+    "application": "780b1464c258d0a0162f9f0983be079b869c3868b4d24fbbc029afa154218b36"
+  },
+  "setup": "Import frozen synthetic module with importlib; existing InvocationVerifierTests.pair_fixture; fixture subprocess and flock mocks retained; no actual Git/app/child execution. Each pair invocation patches writing verify to raise via existing pair helper. Fixture cleanups affect only generated temporary synthetic data.",
+  "probe_program": "\ndef run(name, action):\n    t=m.InvocationVerifierTests()\n    try:\n        a,b=t.pair_fixture()\n        detail=action(t,a,b)\n        results.append({'name':name,'status':'PASS','detail':detail})\n    finally:\n        t.doCleanups()\ndef positive(t,a,b):\n    before=t.pair_files(a,b)\n    out=t.pair(a,b)\n    assert out['reference']['child_pid']==out['failure']['child_pid']==102\n    assert out['reference']['references']['manifest']['path']!=out['failure']['references']['manifest']['path']\n    assert before==t.pair_files(a,b)\n    return 'Equal numeric PIDs and equal manifest bytes at distinct paths accepted; all fixture file bytes unchanged; writing verify prohibited.'\ndef reject(t,a,b):\n    before=t.pair_files(a,b)\n    try:t.pair(a,b)\n    except ValueError as e:\n        assert before==t.pair_files(a,b)\n        return str(e)\n    raise AssertionError('unexpected acceptance')\ndef strict_float(t,a,b):\n    data=json.loads(b.paths['strict'].read_text());data['parent_job_exit_code']=0.0;b.write('strict',data)\n    return reject(t,a,b)\ndef malformed_strict(t,a,b):\n    b.paths['strict'].write_text('[]')\n    return reject(t,a,b)\ndef empty_events(t,a,b):\n    b.phase['synchronize_events']=[];t.save_phase(b)\n    return reject(t,a,b)\ndef boolean_events(t,a,b):\n    for f in (a,b):\n        f.phase['synchronize_events']=[0,True];t.save_phase(f)\n    return reject(t,a,b)\ndef malformed_jobs(t,a,b):\n    b.spec_data['jobs']={'0':b.spec_data['jobs'][0]};b.write('spec',b.spec_data)\n    return reject(t,a,b)\ndef capture_mutation(t,a,b):\n    before=t.pair_files(a,b)\n    original=v.artifact_reference\n    changed=[]\n    def intercept(path, expected_hash):\n        if Path(path)==b.paths['phase'] and not changed:\n            Path(path).write_bytes(Path(path).read_bytes()+b' ');changed.append(True)\n        return original(path,expected_hash)\n    with patch.object(v,'artifact_reference',side_effect=intercept):\n        try:t.pair(a,b)\n        except ValueError as e:\n            assert str(e)=='validated artifact changed during reference capture'\n            after=t.pair_files(a,b)\n            assert set(before)==set(after)\n            assert [p for p in before if before[p]!=after[p]]==[b.paths['phase']]\n            return 'Reference capture detected exact-byte mutation after subject phase validation; no other file changed.'\n        raise AssertionError('unexpected acceptance')\nfor name,action in [('positive_reused_pid_distinct_manifest_paths',positive),('strict_zero_float_alias',strict_float),('strict_nonobject_json',malformed_strict),('coherently_rehashed_empty_events',empty_events),('both_subjects_coherent_bool_event_alias',boolean_events),('peer_jobs_wrong_container',malformed_jobs),('mutation_between_validation_and_reference_capture',capture_mutation)]:\n    run(name,action)\n",
+  "results": [
+    {
+      "name": "positive_reused_pid_distinct_manifest_paths",
+      "status": "PASS",
+      "detail": "Equal numeric PIDs and equal manifest bytes at distinct paths accepted; all fixture file bytes unchanged; writing verify prohibited."
+    },
+    {
+      "name": "strict_zero_float_alias",
+      "status": "PASS",
+      "detail": "existing strict custody differs from recomputed typed receipt"
+    },
+    {
+      "name": "strict_nonobject_json",
+      "status": "PASS",
+      "detail": "JSON object required: /tmp/replay-verifier-data-i_a_z95l/evidence/cuda-core-invocation-phase-failure/replay-spawn-custody-cuda_core_invocation_phase_failure.json"
+    },
+    {
+      "name": "coherently_rehashed_empty_events",
+      "status": "PASS",
+      "detail": "invocation phase event types mismatch"
+    },
+    {
+      "name": "both_subjects_coherent_bool_event_alias",
+      "status": "PASS",
+      "detail": "invocation phase event types mismatch"
+    },
+    {
+      "name": "peer_jobs_wrong_container",
+      "status": "PASS",
+      "detail": "invalid jobs inventory"
+    },
+    {
+      "name": "mutation_between_validation_and_reference_capture",
+      "status": "PASS",
+      "detail": "Reference capture detected exact-byte mutation after subject phase validation; no other file changed."
+    }
+  ],
+  "count": 7,
+  "duration_seconds": 0.07585011799528729,
+  "scope": "Independent finite tooling synthetic checks only; no application, spawn, fork, CUDA, parent-owner or package acceptance."
+}

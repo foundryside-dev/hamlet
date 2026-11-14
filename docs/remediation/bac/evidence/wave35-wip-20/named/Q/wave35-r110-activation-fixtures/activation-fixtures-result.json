@@ -1,0 +1,29 @@
+{
+  "name": "activation-fixtures",
+  "exit_code": 0,
+  "seconds": 5.658378601074219,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_source_fixture_preserves_real_values",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[flat]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_local_data_work_does_not_resolve_cuda_contracts[per]",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_archive_fixture_preserves_nonempty_per_rows",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_cpu_backed_cuda_archive_fixture_has_verified_owned_rows",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r110-activation-fixtures/activation-fixtures.log",
+  "sha256": "605cacc742cb9cfba132f7cd700e2b29d50980a951046f05681881d837f437f0",
+  "candidate_tree": "d1caf7c638ed963b031e6aee781300f34ad43e84",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "manifest_sha256": "ef168fc0e723985ceee0961f01097fbcd82471c56660fddc41f9f58ab5a7bc5d",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

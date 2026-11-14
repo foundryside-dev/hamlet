@@ -1,0 +1,51 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py F          [100%]
+
+=================================== FAILURES ===================================
+______________ test_public_required_signatures_and_empty_manifest ______________
+
+domain = <townlet.exploration.rng_custody.AmbientRNGDomain object at 0x7f483c7e56a0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f483c6b3bb0>
+
+    def test_public_required_signatures_and_empty_manifest(domain: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+        expected = {
+            "operation": ("participant", "operation_kind", "lineage"),
+            "device_operation": ("participant", "operation_kind", "lineage", "cuda_devices"),
+            "admission": ("lineage",),
+            "local_cuda_access": ("participant", "contract"),
+        }
+        for name, names in expected.items():
+            parameters = list(inspect.signature(getattr(custody.AmbientRNGDomain, name)).parameters.values())[1:]
+            assert tuple(parameter.name for parameter in parameters) == names
+            assert all(parameter.kind is inspect.Parameter.KEYWORD_ONLY for parameter in parameters)
+            assert all(parameter.default is inspect.Parameter.empty for parameter in parameters)
+        for name, names in {"resolve_cuda": ("device",), "complete": ("cuda_devices",), "report_failure": ("error",)}.items():
+            parameters = list(inspect.signature(getattr(custody.LocalCUDAGate, name)).parameters.values())[1:]
+            assert tuple(parameter.name for parameter in parameters) == names
+            assert all(parameter.default is inspect.Parameter.empty for parameter in parameters)
+            assert all(parameter.kind is inspect.Parameter.KEYWORD_ONLY for parameter in parameters)
+        assert len(inspect.signature(custody.LocalCUDAGate.completion_failed).parameters) == 1
+        admission_methods = {"resolve_cuda": ("device",), "enroll": ("participant", "cuda_devices"), "report_failure": ("error",)}
+        for name, names in admission_methods.items():
+            parameters = list(inspect.signature(getattr(custody.RNGAdmission, name)).parameters.values())[1:]
+            assert tuple(parameter.name for parameter in parameters) == names
+            assert all(parameter.default is inspect.Parameter.empty for parameter in parameters)
+            expected_kind = inspect.Parameter.POSITIONAL_OR_KEYWORD if name == "resolve_cuda" else inspect.Parameter.KEYWORD_ONLY
+            assert all(parameter.kind is expected_kind for parameter in parameters)
+        assert isinstance(custody._LOCAL_CUDA_CONTRACTS, MappingProxyType)
+        # Preserve the historical node ID while replacing its stage-specific oracle.
+>       descriptor_type = custody._LocalCUDADescriptor
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'townlet.exploration.rng_custody' has no attribute '_LocalCUDADescriptor'
+
+tests/test_townlet/regressions/bac/test_rng_cuda_admission.py:240: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_public_required_signatures_and_empty_manifest
+============================== 1 failed in 0.19s ===============================

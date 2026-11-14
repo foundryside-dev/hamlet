@@ -1,0 +1,33 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "c121628a0ba411e6640ff24401674619931e0e4f",
+  "unique_node_phase_failures": 4,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: archive source digest mismatch after owned cloning",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-per]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

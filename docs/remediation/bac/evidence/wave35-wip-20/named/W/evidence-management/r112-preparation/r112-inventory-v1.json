@@ -1,0 +1,353 @@
+{
+  "artifacts": [
+    {
+      "bytes": 246,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip/identity-controller.json",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-custody.json",
+      "root": "Q",
+      "sha256": "9b2900cfff10bd2b5b4a385e6b93f9dc5029ff6657034ef7b933199540ee21e6"
+    },
+    {
+      "bytes": 1365,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip-result.json",
+      "root": "Q",
+      "sha256": "bf1631ba44c831ef534c3dcab12eae12b759372e8b694d5be9379bd53173c1d4"
+    },
+    {
+      "bytes": 579,
+      "path": "wave35-r112-canonical-roundtrip/canonical-roundtrip.log",
+      "root": "Q",
+      "sha256": "b604a2d39799f77cb3e0d89d95d5e8c38fdf7104458f5c6723c6509ab051f5e3"
+    },
+    {
+      "bytes": 1279,
+      "path": "wave35-r112-canonical-roundtrip-dispatch.log",
+      "root": "Q",
+      "sha256": "2ddcb85a4b2e84b76d55583d3cb4ae90852cc65d270e88437d90adfbc35d2a63"
+    },
+    {
+      "bytes": 1125,
+      "path": "wave35-r112-canonical-roundtrip-spec.json",
+      "root": "Q",
+      "sha256": "d5c27e670eaa5793f7d3b082fe03791996bae447d39f59883414103773789eeb"
+    },
+    {
+      "bytes": 5075,
+      "path": "wave35-r112-capture.log",
+      "root": "Q",
+      "sha256": "d077f26ddb6bc136ef6c374012c6a0fd6e786ecbc2043afe20e60865191524dc"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r112-collection/collection/identity-controller.json",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r112-collection/collection-custody.json",
+      "root": "Q",
+      "sha256": "b98303ceafa171f3528cf3ec1735fc00431ef71214a748ee5148e161f9ec236c"
+    },
+    {
+      "bytes": 861,
+      "path": "wave35-r112-collection/collection-result.json",
+      "root": "Q",
+      "sha256": "c00669c031be96cc7af6f9fe34f9049cec1a8293d62f6edbd8a535dec37a525c"
+    },
+    {
+      "bytes": 74370,
+      "path": "wave35-r112-collection/collection.log",
+      "root": "Q",
+      "sha256": "2b2e66c73db98028ac23c021235b9d89e914ad9ac04195b5a9141b42cc874b20"
+    },
+    {
+      "bytes": 783,
+      "path": "wave35-r112-collection-dispatch.log",
+      "root": "Q",
+      "sha256": "76eaa771b7138df3934f0698877a7748d9f663d85c363a91a5a5691b484c40e0"
+    },
+    {
+      "bytes": 622,
+      "path": "wave35-r112-collection-spec.json",
+      "root": "Q",
+      "sha256": "41076ef13d43cca39b01fae5bde15d0c86e654bb99699c72f405e06c1a76dd29"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r112-late-membership/late-membership/identity-controller.json",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 646,
+      "path": "wave35-r112-late-membership/late-membership-custody.json",
+      "root": "Q",
+      "sha256": "9ed5d55b45b6ffc53efd942146ecac81717855d477bbf99c2b3dd5f41d4232fd"
+    },
+    {
+      "bytes": 1060,
+      "path": "wave35-r112-late-membership/late-membership-result.json",
+      "root": "Q",
+      "sha256": "39c96152e17621d9d73cf2cbc00beb099d8b2b4e59bc7ebd243259b43acf8fab"
+    },
+    {
+      "bytes": 579,
+      "path": "wave35-r112-late-membership/late-membership.log",
+      "root": "Q",
+      "sha256": "834a23be9e75a521226f4e54d92fa76cc3679c0632b5bd00f26a8d5539904c0b"
+    },
+    {
+      "bytes": 982,
+      "path": "wave35-r112-late-membership-dispatch.log",
+      "root": "Q",
+      "sha256": "c95772d3e279bf37c82f3adcce45c67b8d3149d2c09564e3bc6e2e407df9dd0d"
+    },
+    {
+      "bytes": 816,
+      "path": "wave35-r112-late-membership-spec.json",
+      "root": "Q",
+      "sha256": "1b9a8e64d8d3aacdf52ba8476fedd627a1ae435ee9067f6e86a05f4d6da7898d"
+    },
+    {
+      "bytes": 3926,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-241f914d57691c6e.json",
+      "root": "Q",
+      "sha256": "8ea9c26d493896f1b6a1dde5cc18db18240fc03378442c6143440c111764713a"
+    },
+    {
+      "bytes": 3926,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-685b61e587824c14.json",
+      "root": "Q",
+      "sha256": "68e37989938bcbada37cfa8176a884a5b4ef0e25e995064473d8bb21441e4710"
+    },
+    {
+      "bytes": 3928,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-98ad97ab9d28b30e.json",
+      "root": "Q",
+      "sha256": "ef263b1df4c6a86fff05b5b597feabe9fdd4c8cf0828e972ebe4b571f53dfc22"
+    },
+    {
+      "bytes": 3928,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/failure-controller-cf8e6d4f9980b887.json",
+      "root": "Q",
+      "sha256": "c0307a6d815e53c402b7d4e2366cccddab5b0d03eb010f2172822e5857b15c9e"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red/identity-controller.json",
+      "root": "Q",
+      "sha256": "d047bd9b5b6898cbef1aa12310753850222d37d64ad45d711a6c84807e9e6fb8"
+    },
+    {
+      "bytes": 1260,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-failure-index.json",
+      "root": "Q",
+      "sha256": "c72dc924fc951f11ec8abeee35eab67e790774ab63ea4b04720922db5a5fcec0"
+    },
+    {
+      "bytes": 958,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-negative-custody.json",
+      "root": "Q",
+      "sha256": "625388b1f498fa5aa4866e13635d19bb51447e4953735ee0a42d2ee1cd5a43c1"
+    },
+    {
+      "bytes": 1334,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red-result.json",
+      "root": "Q",
+      "sha256": "e828db32cb3d65116b15b10a8ac268b407cc1087bdf808f5e334e171409941c9"
+    },
+    {
+      "bytes": 15665,
+      "path": "wave35-r112-operator-roundtrip-red/operator-roundtrip-red.log",
+      "root": "Q",
+      "sha256": "f40cbb6151052cf035185298f4b6a2473aeba6ffd259de03fba564eb4429aa44"
+    },
+    {
+      "bytes": 1248,
+      "path": "wave35-r112-operator-roundtrip-red-dispatch.log",
+      "root": "Q",
+      "sha256": "aff44acb293cfc0db03148ed51da6e6ca8d55b5aa67552e19cc907543f0787f5"
+    },
+    {
+      "bytes": 1091,
+      "path": "wave35-r112-operator-roundtrip-red-spec.json",
+      "root": "Q",
+      "sha256": "004a698af9e1422468573e60b00ff7e56c1993c06dd91f08d8e36470fd9c79ee"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r112-owned-spec.json",
+      "root": "Q",
+      "sha256": "76aba7cbba364ca250283f25b97ebca5031e5aba3e645c209627b09570696c0f"
+    },
+    {
+      "bytes": 725,
+      "path": "wave35-r112-static/black-tests-result.json",
+      "root": "Q",
+      "sha256": "3c23ea8b4eb09a9928b473da5aa412ecea6ea81673d4070a1946b3800585aea4"
+    },
+    {
+      "bytes": 55,
+      "path": "wave35-r112-static/black-tests.log",
+      "root": "Q",
+      "sha256": "1a56c7cd8457fd05d978cfbd139d7bfd86e86acaa9b57668e718ef8bccc0cf48"
+    },
+    {
+      "bytes": 721,
+      "path": "wave35-r112-static/ruff-tests-result.json",
+      "root": "Q",
+      "sha256": "1d21a9af0fa1e3cca9f17a1fbad5848f211ed1f889283797729da8c1bbd17934"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r112-static/ruff-tests.log",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 998,
+      "path": "wave35-r112-static/static-custody.json",
+      "root": "Q",
+      "sha256": "5ab5941620daf0ca3b28e00b6d02bc647baa4f19f49feef4da9018601a25e3a8"
+    },
+    {
+      "bytes": 1354,
+      "path": "wave35-r112-static-dispatch.log",
+      "root": "Q",
+      "sha256": "b1aaebbcd55f2f8d8c104600491224d89bae120274bbc230f47cbb8b1b80196f"
+    },
+    {
+      "bytes": 638,
+      "path": "wave35-r112-static-spec.json",
+      "root": "Q",
+      "sha256": "9928540d3835047039d564ec82c6c96545e67e937ac54ec6a594b616b89a72ec"
+    },
+    {
+      "bytes": 230299,
+      "path": "wave35-r112-tests-first-selection.json",
+      "root": "Q",
+      "sha256": "05b250f0b54742182cd58449825740be8b55c28af6116d4f9f6183ddd3c57926"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-canonical-roundtrip",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-canonical-roundtrip-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-canonical-roundtrip-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-capture.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-collection",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-collection-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-collection-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-late-membership",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-late-membership-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-late-membership-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-operator-roundtrip-red",
+      "round": 112,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-operator-roundtrip-red-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-operator-roundtrip-red-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-owned-spec.json",
+      "round": 112,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r112-static",
+      "round": 112,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-static-dispatch.log",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-static-spec.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r112-tests-first-selection.json",
+      "round": 112,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_start": 112,
+  "namespace": "Q/wave35-r112-*",
+  "schema": "bac-closed-interval-inventory-v1",
+  "selection_note": "All files explicitly bound through component dependencies; inventory is not selector execution.",
+  "terminal_round": 112
+}

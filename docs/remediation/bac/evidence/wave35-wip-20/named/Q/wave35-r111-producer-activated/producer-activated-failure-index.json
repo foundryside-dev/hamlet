@@ -1,0 +1,155 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "b0f4e769755ca6999bc03cd8a21cd88a274dc682",
+  "unique_node_phase_failures": 30,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "signatures": [
+    {
+      "error": "ValueError: historical archive replay kind differs from prioritized storage",
+      "count": 12,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-standard-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-sequential-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-sequential-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: historical archive replay kind differs from uniform storage",
+      "count": 12,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-match-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-clone-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-clone-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-match-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-prioritized-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[validate-mapping-sequential-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_declared_count_boundaries[prepare-mapping-prioritized-flat]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: archive source digest mismatch after owned cloning",
+      "count": 4,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-sibling-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-formats-per]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-formats-flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[validate-sibling-per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "ValueError: RNG preparation membership changed",
+      "count": 2,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[flat]",
+          "phase": "call"
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_install_inventories_issuer_material_without_selector_migration[per]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

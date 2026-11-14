@@ -1,0 +1,207 @@
+{
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 203930,
+    "path": "wave35/r109-candidate.json",
+    "root": "W",
+    "sha256": "798f7964b2513168b58a3cb46d29b626cd57e5541eb2d738c568141aee1df781"
+  },
+  "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+  "component_id": "wave35-r109-history-v1",
+  "execution_subtrees": {
+    ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+    "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+    "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+    "src": "b4d47e612b7c3f839ae40d73bb65ee76b19052d6",
+    "tests": "44ac8f1a2cb1eaff2b3c9b750fcdc3e6e0bbf416"
+  },
+  "helper_lineage": [
+    {
+      "current": {
+        "bytes": 2043,
+        "path": "run_bac_packet_checks_locked.py",
+        "root": "Q",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      },
+      "history": "Hash-only unchanged published authentication; no helper body read.",
+      "published_unchanged_basis": {
+        "bytes": 2043,
+        "path": "docs/remediation/bac/evidence/wave09/run_bac_packet_checks_locked.py.txt",
+        "root": "R",
+        "sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+      }
+    },
+    {
+      "current": {
+        "bytes": 6277,
+        "path": "capture_wave14_round.py",
+        "root": "Q",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+      },
+      "history": "Hash-only unchanged published authentication; no helper body read.",
+      "published_unchanged_basis": {
+        "bytes": 6277,
+        "path": "docs/remediation/bac/evidence/wave15-wip-01/capture_wave14_round.py.txt",
+        "root": "R",
+        "sha256": "f4c8a6db1df092c6ef37a552d989f4107feef7f92e94578f5cb60f0d78868d02"
+      }
+    },
+    {
+      "current": {
+        "bytes": 2917,
+        "path": "bac_source_identity.py",
+        "root": "Q",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      },
+      "history": "Hash-only unchanged published authentication; no helper body read.",
+      "published_unchanged_basis": {
+        "bytes": 2917,
+        "path": "docs/remediation/bac/evidence/wave09/bac_source_identity.py.txt",
+        "root": "R",
+        "sha256": "0a376a6454e317104adc4bce2cdc0d268c216de8c67e91e60623e6df7d31719d"
+      }
+    },
+    {
+      "current": {
+        "bytes": 3032,
+        "path": "verify_bac_run.py",
+        "root": "Q",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      },
+      "history": "Hash-only unchanged published authentication; no helper body read.",
+      "published_unchanged_basis": {
+        "bytes": 3032,
+        "path": "docs/remediation/bac/evidence/wave35-wip-08/verify_bac_run.py.txt",
+        "root": "R",
+        "sha256": "b00f16ec8666f475805399e80e7f4c2e335f8c6170c18cb705c22f8d6725c91d"
+      }
+    },
+    {
+      "current": {
+        "bytes": 2532,
+        "path": "verify_bac_static_run.py",
+        "root": "Q",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+      },
+      "history": "Hash-only unchanged published authentication; no helper body read.",
+      "published_unchanged_basis": {
+        "bytes": 2532,
+        "path": "docs/remediation/bac/evidence/wave35-wip-02/verify_bac_static_run.py.txt",
+        "root": "R",
+        "sha256": "f1b6d694ebb8ae1659e999d843a4ac112c4833b0992790130bfbd5cde2859ce1"
+      }
+    },
+    {
+      "current": {
+        "bytes": 37963,
+        "path": "verify_bac_replay_spawn_identity.py",
+        "root": "Q",
+        "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+      },
+      "history": "New R109 strict implementation; RED used separate old published version.",
+      "published_unchanged_basis": null
+    }
+  ],
+  "metadata_attempts": [
+    {
+      "application_execution": false,
+      "description": "Initial V8 orchestration text had a missing parenthesis and was rejected before dispatch; corrected orchestration executed each of16 jobs once. No application failure/retry or cancellation.",
+      "ended_at": null,
+      "source": {
+        "bytes": 22429,
+        "path": "wave35/r109-isolated-and-phase-pair-checks.json",
+        "root": "W",
+        "sha256": "906231432c0f1950ae5e2650726ca6c35c0cca2fea1c93aa6ad96f6022dfb97d"
+      },
+      "stage": "pre-dispatch V8 syntax",
+      "started_at": null,
+      "status": "FAILED"
+    }
+  ],
+  "old_strict_red_verifier": {
+    "bytes": 29949,
+    "path": "docs/remediation/bac/evidence/wave35-wip-18/named/Q/verify_bac_replay_spawn_identity.py.txt",
+    "root": "R",
+    "sha256": "8639eae953abe0961a4d4af941c15fbf4d3c85b9bd342d4409158a629e0eae7e"
+  },
+  "private_backup_exclusion": "No private backup namespace inventoried or selected.",
+  "schema": "bac-bounded-history-provenance-v1",
+  "scope": "Closed R109 only; no selector/assembly/publication performed.",
+  "source_delta_archive": {
+    "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+    "changed_paths": [
+      "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+    ],
+    "format": "git diff --full-index --binary; inert only; not applied or executed",
+    "patch": {
+      "bytes": 27889,
+      "path": "evidence-management/r109-preparation/r109-full-base-candidate.patch",
+      "root": "W",
+      "sha256": "dda1d8006afe7d3e15680ffc4f17205062409283193a5c131ff4f5fb64096598"
+    },
+    "target_tree": "35ba7e44c6be2516da6a39422376c26bdf993127"
+  },
+  "tooling_attempts": [
+    {
+      "ended_at": "2026-11-13T20:42:15.302027+00:00",
+      "error_events": 22,
+      "exit_code": 1,
+      "failure_events": 2,
+      "passed": null,
+      "record": {
+        "bytes": 1620,
+        "path": "evidence-management/invocation-verifier-qualification/tests-first-red-result.json",
+        "root": "W",
+        "sha256": "2295df9d830c1a18531a2d149f676591db03f634224dcddf8576ecb35d46e61b"
+      },
+      "scope": "Synthetic tooling only; no application assertions. RED error events include subtests; no invented pass arithmetic.",
+      "stage": "RED",
+      "started_at": "2026-11-13T20:42:13.138412+00:00",
+      "test_methods": 75,
+      "verifier": {
+        "bytes": 29949,
+        "path": "docs/remediation/bac/evidence/wave35-wip-18/named/Q/verify_bac_replay_spawn_identity.py.txt",
+        "root": "R",
+        "sha256": "8639eae953abe0961a4d4af941c15fbf4d3c85b9bd342d4409158a629e0eae7e"
+      }
+    },
+    {
+      "ended_at": "2026-11-13T20:47:11.541007+00:00",
+      "error_events": 0,
+      "exit_code": 0,
+      "failure_events": 0,
+      "passed": 75,
+      "record": {
+        "bytes": 1627,
+        "path": "evidence-management/invocation-verifier-qualification/implementation-green-attempt-1-result.json",
+        "root": "W",
+        "sha256": "208ee0d5701cd41c76ae2327b6335e98cf4181c35635b67560d27cc72ee800c0"
+      },
+      "scope": "Synthetic tooling only; no application assertions. RED error events include subtests; no invented pass arithmetic.",
+      "stage": "GREEN",
+      "started_at": "2026-11-13T20:47:08.614165+00:00",
+      "test_methods": 75,
+      "verifier": {
+        "bytes": 37963,
+        "path": "verify_bac_replay_spawn_identity.py",
+        "root": "Q",
+        "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+      }
+    },
+    {
+      "absolute_time_unavailable_reason": "Absolute times and process exit not recorded; retained seven probe outcomes and independent review establish probe result.",
+      "ended_at": null,
+      "exit_code": null,
+      "observed_probe_passes": 7,
+      "record": {
+        "bytes": 5922,
+        "path": "evidence-management/invocation-verifier-qualification/independent-astra-probes-attempt-1.json",
+        "root": "W",
+        "sha256": "2ab2595250b4b065a32ce250539b6d0a72e7a3e89ca92e3b616c7ebbc7101815"
+      },
+      "reviewer": "/root/bac_astra_invocation_verifier_review",
+      "stage": "INDEPENDENT",
+      "started_at": null
+    }
+  ]
+}

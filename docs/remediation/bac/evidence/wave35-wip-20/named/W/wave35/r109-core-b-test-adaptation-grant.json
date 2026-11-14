@@ -1,0 +1,37 @@
+{
+  "schema": "bac-bounded-implementation-grant-v1",
+  "owner": "/root/bac_core_invocation_impl",
+  "integration_owner": "/root",
+  "status": "B CORE TEST ADAPTATION WRITE BATON GRANTED",
+  "writable": [
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py"
+  ],
+  "read_only": [
+    "src/townlet/exploration/rng_custody.py"
+  ],
+  "budget": {
+    "core_ceiling": 1250,
+    "test_ceiling": 2500,
+    "reserved_total": 3750,
+    "files": 2,
+    "hard_total": 5000
+  },
+  "preserve_node_ids": 88,
+  "fork_protocol_delta": {
+    "local_actions_added": [
+      "domain_local_cuda_policy",
+      "domain_resolve_local_cuda_record"
+    ],
+    "local_count": 7,
+    "admission_count": 4,
+    "invocation_count": 5
+  },
+  "execution": "UNRUN; root collection, causal RED and fork schema admission required before qualification",
+  "production": "Unchanged; tests target reviewed supplier interface. Reconcile actual production before final qualification.",
+  "restrictions": [
+    "No other implementation bodies",
+    "No branch/worktree/source execution copy",
+    "No runtime or child execution",
+    "No weakening ownership/nested gate/poison/PID guards"
+  ]
+}

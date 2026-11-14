@@ -2,7 +2,21 @@
 
 Checkpoint publication, bounded component qualification and whole-programme acceptance are separate. The [evidence process](EVIDENCE-PROCESS.md) governs additions; historical evidence is preserved.
 
-## Current checkpoint: WIP19 / R108 — work in progress
+## Current checkpoint: WIP20 / R113 — work in progress
+
+The [authoritative record](evidence/wave35-wip-20.json) and [selection plan](evidence/wave35-wip-20/selection-plan.json) cover only R109–R113. Terminal executed source is tree `b5298dec04379db31bf9107a26ead7764f53d73c`, candidate-manifest SHA256 `0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa`. Execution identity and publication identity remain distinct; the mixed bounded result does not establish full B or programme acceptance.
+
+The R109–R113 work activates 18 healthy source-issued flat/PER local CUDA contracts (flat8/PER10) with immutable descriptors and a lazily resolved canonical-class policy cache. Own-invocation completion/fork controls and numeric public-producer controls are CPU/protocol evidence; they do not establish actual GPU behavior or whole B acceptance. Root's final R113 record reports 1,205 distinct collected/executed cases: 1,203 PASS and two affected-replay peer-wait FAIL. Core89, activation67, producer840 and BANK155 all pass; affected replay has52 PASS/2 FAIL. All31 isolated children (core16/producer10/BANK4/replay1) have passing generic/appropriate strict custody receipts, including the actual invocation-phase pair. These children are included in the counts, not added again.
+
+The failed flat/PER `test_direct_ambient_sample_waits_for_registered_peer` cases remain open. Read-only diagnosis identifies a stale observer of public `operation`, which the migrated admission/invocation path never calls; the proposed test-only repair and qualified rerun remain owed. This explains the timeout boundary but does not qualify the unexecuted remaining exclusion assertions or erase either failure.
+
+Actual R113 global mypy fails15 required errors (oracle6/POP9); changed producer-test Ruff/Black pass. Owned production style/types/defaults PASS is attributed to R111's unchanged production bytes, with changed-test style rerun at R113. The authoritative root runtime record is `wave35/r113-root-checks.json`, SHA256 `743d10da55b9c5ffecb58b22c67000f6cf34cebc978b423e7d8f27be6ec7334f`; it binds exact attempts, source/custody and the mixed result. Independent finite route reconciliation confirms all18 identities have actual public-route witnesses across activation/producer selections, retaining the flat archive-property trace/ownership limitation. This is CPU protocol/numeric evidence; it does not close B. R109–R112 preparation histories, failed and unrun attempts remain preserved; historical counts from different candidates or overlapping selections are not summed.
+
+Full B remains OPEN: fresh-process core-first and producer-first import-order proof, repair and qualified rerun of the two affected-replay failures, actual parent outcome ownership/lock handoff, recurrent and ordinary-runner integration, global typing and full/default suites, coverage ≥70%, slow/learning checks, fresh final review and exact-final-remote CI remain required. Actual one-/two-GPU CUDA qualification is UNRUN. B6 post-poison GPU capability remains required and unqualified; staged `post_poison=False` bits neither remove that capability nor close B6. The offered 16-worker CUDA server has no established access or GPU topology. **28 qualified / 38 remaining / 66 original packages** remains unchanged.
+
+The latest actually observed remote remains WIP19 `0597715b8d59ab3bdda41ef5521b9772aaa9c436`: Config Validation PASS, Lint FAIL with 15 mypy errors, and Tests FAIL in the fast suite. Log retrieval closed transport, so the Tests cause remains unclassified. No WIP20 remote identity or CI outcome is inferred.
+
+## Historical checkpoint: WIP19 / R108 — work in progress
 
 The [manifest](evidence/wave35-wip-19.json) and [selection plan](evidence/wave35-wip-19/selection-plan.json) record the finite R99–R108 interval, ending at executed candidate `fa1c6804fcff475f5652e5f5f357468e2d931c0d`, base `df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9`, candidate-manifest SHA256 `27b28f930659b690c55db0a0e4a2edc97155210ce0c9bf1f0e38738e4f85bdce`. Execution identity and publication identity are distinct; publication does not turn bounded component evidence into full programme acceptance.
 

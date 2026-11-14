@@ -1,0 +1,10 @@
+{
+  "schema": "bac-root-historical-component-adoption-v1",
+  "status": "R111 MIXED INTEGRATION HISTORY ADOPTED",
+  "recorded_at": "2026-11-13T21:52:08.834810+00:00",
+  "component_sha256": "193e5039ce1c609f5adb6dda363cdcec53cb60b358c3f65ec95b84f8437d3795",
+  "direct_references_rehashed": 373,
+  "scope": "992 collected/executed:962 unique PASS and30 FAIL. All26 isolated/generic/strict and actual phase pair retained; generated owned template UNRUN. No terminal/publication or fullBAC acceptance.",
+  "candidate_tree": "b0f4e769755ca6999bc03cd8a21cd88a274dc682",
+  "metadata_limit": "Pair API result has recorded times and returned PASS; absent process-exit field remains null in historical evidence."
+}

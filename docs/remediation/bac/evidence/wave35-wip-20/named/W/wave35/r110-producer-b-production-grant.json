@@ -1,0 +1,40 @@
+{
+  "schema": "bac-bounded-implementation-grant-v1",
+  "owner": "/root/bac_producer_activation_prep",
+  "integration_owner": "/root",
+  "status": "B PRODUCTION CORE WRITE BATON GRANTED AFTER CAUSAL RED",
+  "writable": [
+    "src/townlet/exploration/rng_custody.py"
+  ],
+  "read_only": [
+    "src/townlet/training/replay_contract.py",
+    "src/townlet/training/replay_buffer.py",
+    "src/townlet/training/prioritized_replay_buffer.py",
+    "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py"
+  ],
+  "frozen_activation_sha256": "cf2e0c46d3910eb3b2aa01ebb746664333d7c83e52278e5cafd5f9f08a3fa8fe",
+  "budget": {
+    "core_ceiling": 1250,
+    "shared": 881,
+    "flat": 816,
+    "per": 1310,
+    "test_actual": 597,
+    "reserved_total": 4854,
+    "files": 5,
+    "hard_total": 5000
+  },
+  "root_checks": {
+    "root": "W",
+    "path": "wave35/r110-root-checks.json",
+    "sha256": "8229193dd134acab770d9f799c30310db691aa534c058f16dfbe06a647694ce5",
+    "bytes": 3011
+  },
+  "requirements": [
+    "Implement adopted B plan and supplier capsule exact18 opaque constants/descriptors, canonical lazy resolution/cache with exact identity",
+    "Real PID first and actual domain lock before inherited cache/import; no nested public local gates or CUDA transaction reentry",
+    "Cache publish only complete successful canonical resolution; no ownerinstance retention, no live gate resolution, exact manifest/cache policy binding",
+    "Healthy True/post_poison False staging does not grant B6 postpoison GPU capability",
+    "No compatibility union, arbitrary type/route authority, scope reduction or extra source bodies"
+  ],
+  "execution": "Root owns runtime after source freeze, core-test reconciliation and fresh actual source review; author formatting/static only."
+}

@@ -1,0 +1,25 @@
+{
+  "name": "cuda-core-runtime-query-failure",
+  "exit_code": 0,
+  "seconds": 8.517362833023071,
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "-m",
+    "pytest",
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::test_isolated_poison_protocol[runtime_query_failure]",
+    "--no-cov",
+    "-p",
+    "no:cacheprovider",
+    "-p",
+    "no:benchmark",
+    "-p",
+    "bac_source_identity",
+    "-q"
+  ],
+  "log": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-core-runtime-query-failure/cuda-core-runtime-query-failure.log",
+  "sha256": "7c030add4107cfb0dd7449338adcc1f158ce8f9d17b143329a10e31282542b16",
+  "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+  "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791"
+}

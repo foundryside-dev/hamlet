@@ -1,0 +1,35 @@
+{
+  "schema": "bac-bounded-tests-first-grant-v1",
+  "recorded_at": "2026-11-13T21:50:12.527762+00:00",
+  "owner": "/root/bac_b_archive_failure_diagnosis",
+  "integration_owner": "/root",
+  "status": "FINITE FIXTURE PREREQUISITE TESTS ONLY; HELPER/ORACLE/POSITIVE REPAIR NOT YET GRANTED",
+  "writable": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "read_only": [
+    "src/townlet/training/replay_contract.py",
+    "src/townlet/training/historical_checkpoint.py"
+  ],
+  "budget": {
+    "producer_test": 2700,
+    "shared_actual": 881,
+    "history_actual": 675,
+    "actual_reserved_total": 4256,
+    "files": 3,
+    "hard_total": 5000
+  },
+  "review_sha256": "f8936611f9ce317c0818750bbfd5823b4a4e0dc322984dfb1979863960c3f486",
+  "root_checks_sha256": "b658352db5d12dc140aaacc21b521a2357854bd7e24a8854174a45ca1b30f742",
+  "first_stage": [
+    "Strengthen all four operator fixture combinations with genuine restore-record-restore, separate second-phase observations, retained value/device and fresh clone ownership",
+    "Add genuine late-membership-enrollment negative for both families with exact diagnostic and unchanged target publication",
+    "Preserve all836 IDs and all existing public/count/inventory assertions; canonical fixtures remain controls"
+  ],
+  "hold": [
+    "Do not fix _ArchiveComparison ownership behavior until root observes four causal RED outcomes",
+    "Do not yet correct24 late-kind oracles or positive membership setup; those follow separate reviewed repair grant",
+    "Production unchanged; no extra bodies/runtime/branch/worktree/execution copies"
+  ],
+  "required_final_scope": "All plan review numbered conditions and frozen producer/core/activation/isolated evidence remain required; no scope reduction."
+}

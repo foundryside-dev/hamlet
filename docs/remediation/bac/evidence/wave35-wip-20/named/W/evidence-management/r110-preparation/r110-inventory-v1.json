@@ -1,0 +1,395 @@
+{
+  "artifacts": [
+    {
+      "bytes": 246,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures/identity-controller.json",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 650,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures-custody.json",
+      "root": "Q",
+      "sha256": "5877d2dc620f2e54f435638172403bc6b1997875198e063a4685885a44b65fa7"
+    },
+    {
+      "bytes": 1457,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures-result.json",
+      "root": "Q",
+      "sha256": "3f93c0e683e40e39069edba203f2912742167a48910d8df504a01766e38e0495"
+    },
+    {
+      "bytes": 579,
+      "path": "wave35-r110-activation-fixtures/activation-fixtures.log",
+      "root": "Q",
+      "sha256": "605cacc742cb9cfba132f7cd700e2b29d50980a951046f05681881d837f437f0"
+    },
+    {
+      "bytes": 1221,
+      "path": "wave35-r110-activation-fixtures-spec.json",
+      "root": "Q",
+      "sha256": "bda9ad9482a1e0acf832d91682ab0b2b4dd14e13c4b4519b755af25ec94254d4"
+    },
+    {
+      "bytes": 1735,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-155df0f6d28f900e.json",
+      "root": "Q",
+      "sha256": "a2692fb53774c27a5ab33f4e9c28fc3e7cd18a9bd1ee5c2e4bd5896207044a2c"
+    },
+    {
+      "bytes": 1693,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-2438f6b37386d3fa.json",
+      "root": "Q",
+      "sha256": "f4ef516bc539a672fe491b9d690f953c0ff2026789b9a549a448e84c5ee4a9cf"
+    },
+    {
+      "bytes": 1609,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-262254579ebd3a74.json",
+      "root": "Q",
+      "sha256": "2cde32fce3d81e0fc7b7fc19e87c440e5a9db1836d1f115ba1355beaa61f824c"
+    },
+    {
+      "bytes": 1674,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-2bed0f1496d319dc.json",
+      "root": "Q",
+      "sha256": "4faf19321be9225ebf1f3d95512b22bf85aa36998c99346af8d8bef3d1dd4da2"
+    },
+    {
+      "bytes": 1679,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-3fb439a963d4f519.json",
+      "root": "Q",
+      "sha256": "c59a53c367b7d01f3a93624cf59469482b5dc5d9484a5b0746b9e62684f48f22"
+    },
+    {
+      "bytes": 1765,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-418723542dcedec4.json",
+      "root": "Q",
+      "sha256": "2f81d434a49948ec14a813decf319fe5a6d62366dac4f92d4991a6993d542cd6"
+    },
+    {
+      "bytes": 1739,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-42e04ac96c58dbd8.json",
+      "root": "Q",
+      "sha256": "81a3c03f6b60d92ac35b61d9843a2b9361b50505d10bb447166899d4adc33079"
+    },
+    {
+      "bytes": 1815,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-4a04dc7c08d01125.json",
+      "root": "Q",
+      "sha256": "953bcb4ccf3d35034277fd7e8af7382410f6d638dda24f06b99a33cc4b80e24f"
+    },
+    {
+      "bytes": 1663,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-6005ba48de48601d.json",
+      "root": "Q",
+      "sha256": "40435a68003d98517bf905f747c7e512f746ecf84fc57f6f1425caf520b73094"
+    },
+    {
+      "bytes": 1720,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-728483dd88d01bab.json",
+      "root": "Q",
+      "sha256": "c61f72607f278cf201e3043b2200ac5fffb885a7a7ab532084243395ef772a1e"
+    },
+    {
+      "bytes": 1838,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-a6f2647fa752c27d.json",
+      "root": "Q",
+      "sha256": "6accae6d7a63f630063f503087595b8474e716976051048537e9c55815a955ba"
+    },
+    {
+      "bytes": 1792,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-c1c92d128fef0fa0.json",
+      "root": "Q",
+      "sha256": "70341cd2a5abd57c4119a44065f2aa87119bdc488f1f7b0ab8fd8c61ae02e342"
+    },
+    {
+      "bytes": 1709,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-c3ec2c6626697028.json",
+      "root": "Q",
+      "sha256": "3915403cc81a099f0838c543b0b2441c4a14864ac2c740b48c4015a9119c5f83"
+    },
+    {
+      "bytes": 1719,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-cf061be496191c51.json",
+      "root": "Q",
+      "sha256": "a892c714ba85f8293d4cf787aae3211d15f7855b03b856006065f2034443befd"
+    },
+    {
+      "bytes": 1711,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-d23352f92a61c6dc.json",
+      "root": "Q",
+      "sha256": "1c03ec1786f2bb97417c3c08062c766b1f837557be6667f6642fd023e3e1f3e5"
+    },
+    {
+      "bytes": 1757,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-dc05bb9c241c1e9e.json",
+      "root": "Q",
+      "sha256": "5139c830704bd700c7bfd4d010075665570f80cbf881efe237a0698726936875"
+    },
+    {
+      "bytes": 1633,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-e5ed6455f9709437.json",
+      "root": "Q",
+      "sha256": "dfa8557950979a692802d94cbea97ad1c9cb45818a806aaad80f00936822a5bd"
+    },
+    {
+      "bytes": 1081,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-f025d547119e4e51.json",
+      "root": "Q",
+      "sha256": "8c748f6ef41c1897b2e86a72339297a741921ce8ea95ed65910ff24b48741dae"
+    },
+    {
+      "bytes": 1655,
+      "path": "wave35-r110-activation-red/activation-red/failure-controller-f53329b4c9625036.json",
+      "root": "Q",
+      "sha256": "f418ebc6d9627243ca63367aa27d6b347d31a2b2c670c2b93469feddc0fa380c"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r110-activation-red/activation-red/identity-controller.json",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 6998,
+      "path": "wave35-r110-activation-red/activation-red-failure-index.json",
+      "root": "Q",
+      "sha256": "c8952bb7533db63d607e8bd82bf62a07672d31ba1234c155ffc0c19b245f6b1a"
+    },
+    {
+      "bytes": 961,
+      "path": "wave35-r110-activation-red/activation-red-negative-custody.json",
+      "root": "Q",
+      "sha256": "c20a82abd13961127d171d60efd8c9545508e0df41136415db52c66762992934"
+    },
+    {
+      "bytes": 3483,
+      "path": "wave35-r110-activation-red/activation-red-result.json",
+      "root": "Q",
+      "sha256": "6eb38caa3a58300ceacfee1b36f702de3b24731e88a7820aa3733f5aa2734854"
+    },
+    {
+      "bytes": 30825,
+      "path": "wave35-r110-activation-red/activation-red.log",
+      "root": "Q",
+      "sha256": "90c3379daff7664a058fa7fc39185286409158f748b6cd5da6c74a4b49c27c6b"
+    },
+    {
+      "bytes": 3308,
+      "path": "wave35-r110-activation-red-spec.json",
+      "root": "Q",
+      "sha256": "1b075094e5195117355d1d81f83e67c25851ca0a96123b27185d49ee684e2fb3"
+    },
+    {
+      "bytes": 5075,
+      "path": "wave35-r110-capture.log",
+      "root": "Q",
+      "sha256": "414157de149442e0e63bdb682195c470f41aac6e9f9d75bf9863f2bbcd4b8775"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r110-collection/collection/identity-controller.json",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 641,
+      "path": "wave35-r110-collection/collection-custody.json",
+      "root": "Q",
+      "sha256": "c827b35981d9051bc929c861b743b89cbaf2c634942767482fc3912461c1dad1"
+    },
+    {
+      "bytes": 932,
+      "path": "wave35-r110-collection/collection-result.json",
+      "root": "Q",
+      "sha256": "da117991c91d3db587831b2cd525a5e77f3f52f3a98149758be364ffdfd57bee"
+    },
+    {
+      "bytes": 13940,
+      "path": "wave35-r110-collection/collection.log",
+      "root": "Q",
+      "sha256": "cd884e5944812cca31731945a0f7fdb20eaa2965b5e5cdd612b4b91391479c16"
+    },
+    {
+      "bytes": 697,
+      "path": "wave35-r110-collection-spec.json",
+      "root": "Q",
+      "sha256": "4111e2a6390604eff41b8d4480717d89d2b4b9037f1b8640333e69572164d0c3"
+    },
+    {
+      "bytes": 3127,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red/failure-controller-c5807472fde45eec.json",
+      "root": "Q",
+      "sha256": "129061054501cd63a4f46bc72fc838b91e6e5c255e85d822cdb1a4fb2accbd93"
+    },
+    {
+      "bytes": 246,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red/identity-controller.json",
+      "root": "Q",
+      "sha256": "0d7caaf926eb5c1e256cfed07c6169cba6654dc19069a141c108818a56a42016"
+    },
+    {
+      "bytes": 694,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-failure-index.json",
+      "root": "Q",
+      "sha256": "1b32bb95563c741f10a522871ad2e381a3e1eddde640cd95b9f81acbeb0508f4"
+    },
+    {
+      "bytes": 958,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-negative-custody.json",
+      "root": "Q",
+      "sha256": "64be3008c01471a25919ff2c908f9de8960b1e00ce55ff8ee1bf0fca6ac747b8"
+    },
+    {
+      "bytes": 910,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red-result.json",
+      "root": "Q",
+      "sha256": "e66f3e96a5fd88d359dc691d8f041c7c058f620c03afde24150ea46768ac71ec"
+    },
+    {
+      "bytes": 3699,
+      "path": "wave35-r110-core-manifest-red/core-manifest-red.log",
+      "root": "Q",
+      "sha256": "b76a627b33732ae428ef24148085a94902ec4020bff58c700ce775b3303abc24"
+    },
+    {
+      "bytes": 660,
+      "path": "wave35-r110-core-manifest-red-spec.json",
+      "root": "Q",
+      "sha256": "425226a6873a1e76c97a7f31f66a9736046ffeb3af14616d489eb0466d4a0065"
+    },
+    {
+      "bytes": 707,
+      "path": "wave35-r110-owned-spec.json",
+      "root": "Q",
+      "sha256": "c6344a1b132bb93390a6e42545b16c144f600fcdc3621f11c1140364ad2da428"
+    },
+    {
+      "bytes": 796,
+      "path": "wave35-r110-static/black-tests-result.json",
+      "root": "Q",
+      "sha256": "241d11929703021e22d3a6f6ed614c7ad4c35667c815a00d269b1a04764b9ff7"
+    },
+    {
+      "bytes": 56,
+      "path": "wave35-r110-static/black-tests.log",
+      "root": "Q",
+      "sha256": "b9cf511501d306d2bd8355ccb165c8ddc0a6fdd62d7c72c4a7b1795cf8934c8c"
+    },
+    {
+      "bytes": 792,
+      "path": "wave35-r110-static/ruff-tests-result.json",
+      "root": "Q",
+      "sha256": "23064659aba972c9c1daec67bd1f07073c42c29d08766e9dfa4a4ab8ff8c31f1"
+    },
+    {
+      "bytes": 19,
+      "path": "wave35-r110-static/ruff-tests.log",
+      "root": "Q",
+      "sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    {
+      "bytes": 998,
+      "path": "wave35-r110-static/static-custody.json",
+      "root": "Q",
+      "sha256": "b03255ef9330e918c0d2191029a029ea127280e96bbeac2e5d1e7019de74e829"
+    },
+    {
+      "bytes": 788,
+      "path": "wave35-r110-static-spec.json",
+      "root": "Q",
+      "sha256": "f862b02be4e88a0ba527d1c8721a33fe814de20ae0aa936aa778691795c3170f"
+    },
+    {
+      "bytes": 42650,
+      "path": "wave35-r110-tests-first-selection.json",
+      "root": "Q",
+      "sha256": "0612465d0aed4a7b1a596dad2aaab9b4f75746ec049c3f198744b31a67fe2282"
+    }
+  ],
+  "interval_entries": [
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-activation-fixtures",
+      "round": 110,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-activation-fixtures-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-activation-red",
+      "round": 110,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-activation-red-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-capture.log",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-collection",
+      "round": 110,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-collection-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-core-manifest-red",
+      "round": 110,
+      "status": "FAILED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-core-manifest-red-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-owned-spec.json",
+      "round": 110,
+      "status": "UNRUN"
+    },
+    {
+      "kind": "attempt",
+      "path": "wave35-r110-static",
+      "round": 110,
+      "status": "PASSED"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-static-spec.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    },
+    {
+      "kind": "support",
+      "path": "wave35-r110-tests-first-selection.json",
+      "round": 110,
+      "status": "DIAGNOSTIC"
+    }
+  ],
+  "interval_start": 110,
+  "namespace": "Q/wave35-r110-*",
+  "schema": "bac-closed-interval-inventory-v1",
+  "selection_note": "All listed files explicitly bound in component dependencies; inventory is not selector output.",
+  "terminal_round": 110
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "bac-bounded-fixture-repair-grant-v1",
+  "owner": "/root/bac_b_archive_failure_diagnosis",
+  "status": "REVIEWED FIXTURE REPAIR GRANTED AFTER CAUSAL RED",
+  "writable": [
+    "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py"
+  ],
+  "read_only": [
+    "src/townlet/training/replay_contract.py",
+    "src/townlet/training/historical_checkpoint.py"
+  ],
+  "budget": {
+    "producer_test": 2700,
+    "shared": 881,
+    "historical": 675,
+    "total": 4256,
+    "files": 3
+  },
+  "root_checks_sha256": "b80a99c3519a55f5bf4597e45006b5cab706090abba1e370288af619e994755e",
+  "review_sha256": "f8936611f9ce317c0818750bbfd5823b4a4e0dc322984dfb1979863960c3f486",
+  "repairs": [
+    "Preserve only local comparison fixture detach/clone subclass semantics with real tensor work, fresh clone storage and unchanged arithmetic/sum behavior",
+    "Correct count-valid incompatible family public oracle to exact anchored late-kind refusal; preserve full Cartesian IDs, earlier count/digest refusal and conservative inventories",
+    "Use real idle preflight of0/1 before original positive preparation through install; retain selector2 and all numeric/completion assertions",
+    "Keep new roundtrip and late-membership controls and all prior836 cases; add bounded rejection-preservation control if needed for explicit proof"
+  ],
+  "restrictions": [
+    "No production code changes, generic exception broadening, fake authority, token refresh or compatibility",
+    "No runtime by author; root qualification and independent actual patch review required",
+    "No additional implementation bodies, branches, worktrees or source execution copies"
+  ]
+}

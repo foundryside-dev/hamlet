@@ -1,0 +1,420 @@
+.EEEEEEE..............EEEEEEEEEFF...EEEEEE............................................
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='inherited_pid')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 519, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 530, in verify
+    fork_guards = check_fork_guards(job_dir, child, observed, root, manifest, manifest_hash) if config.get("fork", False) else None
+                  ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 170, in check_fork_guards
+    require(actual == expected, f"unexpected fork record inventory: {kind}")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unexpected fork record inventory: identity
+
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='invocation_same_error')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 519, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='invocation_child_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 519, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='invocation_parent_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 519, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='invocation_reported_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 519, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='invocation_phase_reference')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 519, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_all_ten_exact_mappings (__main__.CudaVerifierTests.test_all_ten_exact_mappings) (case='invocation_phase_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 519, in test_all_ten_exact_mappings
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_compares_observed_events_without_fixed_tail (__main__.InvocationVerifierTests.test_pair_compares_observed_events_without_fixed_tail)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1106, in test_pair_compares_observed_events_without_fixed_tail
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_exact_receipt_and_reference_bytes_without_writer (__main__.InvocationVerifierTests.test_pair_exact_receipt_and_reference_bytes_without_writer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 966, in test_pair_exact_receipt_and_reference_bytes_without_writer
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_existing_custody_must_be_exactly_typed_and_recomputed (__main__.InvocationVerifierTests.test_pair_existing_custody_must_be_exactly_typed_and_recomputed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1045, in test_pair_existing_custody_must_be_exactly_typed_and_recomputed
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_preserves_each_subject_process_identity (__main__.InvocationVerifierTests.test_pair_preserves_each_subject_process_identity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1133, in test_pair_preserves_each_subject_process_identity
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_rejects_individually_valid_different_manifest (__main__.InvocationVerifierTests.test_pair_rejects_individually_valid_different_manifest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1120, in test_pair_rejects_individually_valid_different_manifest
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_rejects_misplaced_phase_marker_after_individual_qualification (__main__.InvocationVerifierTests.test_pair_rejects_misplaced_phase_marker_after_individual_qualification)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1115, in test_pair_rejects_misplaced_phase_marker_after_individual_qualification
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_revalidates_bound_records_and_source_bytes (__main__.InvocationVerifierTests.test_pair_revalidates_bound_records_and_source_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1072, in test_pair_revalidates_bound_records_and_source_bytes
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_swapped_duplicate_and_missing_subjects (__main__.InvocationVerifierTests.test_pair_swapped_duplicate_and_missing_subjects)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1033, in test_pair_swapped_duplicate_and_missing_subjects
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_pair_unequal_observed_events_with_coherent_individual_receipts (__main__.InvocationVerifierTests.test_pair_unequal_observed_events_with_coherent_individual_receipts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 1098, in test_pair_unequal_observed_events_with_coherent_individual_receipts
+    reference, failure = self.pair_fixture()
+                         ~~~~~~~~~~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 945, in pair_fixture
+    f.invoke()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_six_exact_invocation_roles_and_phase_receipts (__main__.InvocationVerifierTests.test_six_exact_invocation_roles_and_phase_receipts) (case='invocation_same_error')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 770, in test_six_exact_invocation_roles_and_phase_receipts
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_six_exact_invocation_roles_and_phase_receipts (__main__.InvocationVerifierTests.test_six_exact_invocation_roles_and_phase_receipts) (case='invocation_child_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 770, in test_six_exact_invocation_roles_and_phase_receipts
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_six_exact_invocation_roles_and_phase_receipts (__main__.InvocationVerifierTests.test_six_exact_invocation_roles_and_phase_receipts) (case='invocation_parent_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 770, in test_six_exact_invocation_roles_and_phase_receipts
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_six_exact_invocation_roles_and_phase_receipts (__main__.InvocationVerifierTests.test_six_exact_invocation_roles_and_phase_receipts) (case='invocation_reported_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 770, in test_six_exact_invocation_roles_and_phase_receipts
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_six_exact_invocation_roles_and_phase_receipts (__main__.InvocationVerifierTests.test_six_exact_invocation_roles_and_phase_receipts) (case='invocation_phase_reference')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 770, in test_six_exact_invocation_roles_and_phase_receipts
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+ERROR: test_six_exact_invocation_roles_and_phase_receipts (__main__.InvocationVerifierTests.test_six_exact_invocation_roles_and_phase_receipts) (case='invocation_phase_failure')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 770, in test_six_exact_invocation_roles_and_phase_receipts
+    receipt = f.invoke()
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 144, in invoke
+    return verifier.verify(self.paths["spec"])
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 463, in verify
+    require(name in ROLE_CONFIGS, "unauthorized replay job")
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py", line 380, in require
+    raise ValueError(message)
+ValueError: unauthorized replay job
+
+======================================================================
+FAIL: test_phase_marker_does_not_weaken_replay_or_producer_protocol (__main__.InvocationVerifierTests.test_phase_marker_does_not_weaken_replay_or_producer_protocol)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 899, in test_phase_marker_does_not_weaken_replay_or_producer_protocol
+    f.refuse()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 147, in refuse
+    with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'KeyError'>, <class 'FileNotFoundError'>, <class 'FileExistsError'>) not raised
+
+======================================================================
+FAIL: test_phase_marker_inventory_for_all_cuda_roles (__main__.InvocationVerifierTests.test_phase_marker_inventory_for_all_cuda_roles)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 882, in test_phase_marker_inventory_for_all_cuda_roles
+    f.refuse()
+    ~~~~~~~~^^
+  File "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py", line 147, in refuse
+    with self.assertRaises((ValueError, KeyError, FileNotFoundError, FileExistsError)):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (<class 'ValueError'>, <class 'KeyError'>, <class 'FileNotFoundError'>, <class 'FileExistsError'>) not raised
+
+----------------------------------------------------------------------
+Ran 75 tests in 1.972s
+
+FAILED (failures=2, errors=22)

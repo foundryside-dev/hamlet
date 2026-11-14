@@ -1,0 +1,53 @@
+{
+  "schema": "bac-root-tooling-adoption-v1",
+  "status": "FINITE VERIFIER QUALIFIED; R109 ISOLATED EXECUTION AUTHORIZED",
+  "verifier": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py",
+    "sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+    "bytes": 37963
+  },
+  "synthetic_tests": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py",
+    "sha256": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b",
+    "bytes": 63136
+  },
+  "actual_app_test": {
+    "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_rng_cuda_admission.py",
+    "sha256": "780b1464c258d0a0162f9f0983be079b869c3868b4d24fbbc029afa154218b36",
+    "bytes": 94938
+  },
+  "root_green": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/invocation-verifier-qualification/implementation-green-attempt-1-result.json",
+    "sha256": "208ee0d5701cd41c76ae2327b6335e98cf4181c35635b67560d27cc72ee800c0",
+    "bytes": 1627
+  },
+  "review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-INVOCATION-VERIFIER-IMPLEMENTATION-REVIEW.md",
+    "sha256": "16d1f4a30e3169173c1007a859df7621404b1097034cbed6231f8f8f822a4fa2",
+    "bytes": 8799
+  },
+  "independent_probes": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/invocation-verifier-qualification/independent-astra-probes-attempt-1.json",
+    "sha256": "2ab2595250b4b065a32ce250539b6d0a72e7a3e89ca92e3b616c7ebbc7101815",
+    "bytes": 5922
+  },
+  "root_static": {
+    "ruff_exit": 0,
+    "black_exit": 0,
+    "black_line_length": 140,
+    "files": 2
+  },
+  "runtime_plan": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-isolated-execution-plan.json",
+    "sha256": "7c0ef24ededd0b7174b7492225945222eef0b7183d7a137ca82343d06da7ecf1",
+    "bytes": 6958
+  },
+  "resources": {
+    "cpu": "400000 100000",
+    "memory_current": "1160306688",
+    "memory_limit": "17179869184",
+    "parallel_independent_jobs": 4
+  },
+  "execution": "16 one-job specs, each workers1/no-xdist/fresh owned child. Run up to4 independent jobs concurrently. Serialize actual index/custody verification afterward. Pair receipt only after both individual phase jobs pass generic and strict verification.",
+  "scope": "Tooling qualification and runtime grant only; no actual child, fork, phase, B or hardware success inferred."
+}

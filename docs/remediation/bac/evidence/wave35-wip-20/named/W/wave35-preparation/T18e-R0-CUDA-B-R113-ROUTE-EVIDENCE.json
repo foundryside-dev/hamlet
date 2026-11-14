@@ -1,0 +1,1893 @@
+{
+  "schema": "bac-r113-route-evidence-reconciliation-v1",
+  "reviewer": "/root/bac_astra_wip20_route_evidence",
+  "date": "2026-11-14",
+  "disposition": "SPEC PASS / QUALITY PASS for bounded route-evidence reconciliation; no new route-level accepted requirement found uncovered",
+  "scope": "Independent static test/assertion and existing execution-record reconciliation, not a new runtime or terminal whole-BAC review. Only two implementation/test bodies accessed; no production/helper implementation body read.",
+  "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "candidate_manifest": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35/r113-candidate.json",
+    "sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+    "bytes": 205427
+  },
+  "test_seals": [
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_replay_cuda_producer.py",
+      "sha256": "e629acf35a89bb5719945b4c8c9a5578de2dc1c69791038ba2072bb71dabe801",
+      "bytes": 123958,
+      "lines": 2558
+    },
+    {
+      "path": "/workspace/hamlet/tests/test_townlet/regressions/bac/test_replay_cuda_activation.py",
+      "sha256": "cf2e0c46d3910eb3b2aa01ebb746664333d7c83e52278e5cafd5f9f08a3fa8fe",
+      "bytes": 29734,
+      "lines": 597
+    }
+  ],
+  "whole_body_charge": 3155,
+  "prior_ledger_preserved": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ROUTE-COVERAGE-LEDGER.json",
+    "sha256": "1184859fc6b747b768ae75003e892fb949c01c0e4dac227598b45b2107d573c9",
+    "bytes": 159161
+  },
+  "production_behavior_review": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/wave35-preparation/T18e-R0-CUDA-PRODUCER-B-IMPLEMENTATION-REVIEW.md",
+    "sha256": "2f2c4b6d55aba5037b1d426e3fd11db71c1e4fefa430cc83d9be894d52ae3238",
+    "bytes": 11777
+  },
+  "selection_records": [
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-qualification-selection.json",
+      "sha256": "759d7e5b4d1ae1f94c7c7710f8cace3431d8c06684f5d6082f8688e52c33a0b0",
+      "bytes": 140485
+    },
+    {
+      "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-runtime-selection.json",
+      "sha256": "b25321dcd3eb1772dd12e5569e1f0f98ffd4004f267046ababc467250d1822a7",
+      "bytes": 138259
+    }
+  ],
+  "runtime_records": [
+    {
+      "job": "fixture-prerequisites",
+      "nodes": 14,
+      "passed": 14,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-fixture-prerequisites/fixture-prerequisites-result.json",
+        "sha256": "bde3667ba5bbc55548c6218e9cb1061f881c70b9ecb3d31fb636c8c7e8f47114",
+        "bytes": 2734
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-fixture-prerequisites/fixture-prerequisites-custody.json",
+        "sha256": "86bb30abd47d0d510a25096f061114bb65d3cf9763ffb675abf39c67388cd020",
+        "bytes": 653
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-fixture-prerequisites/fixture-prerequisites.log",
+        "sha256": "8f245e9fe32456b47005701786f1c3ae46e9587167c2eb77174cfbb6f2200879",
+        "bytes": 660
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "activation",
+      "nodes": 67,
+      "passed": 67,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-activation/activation-result.json",
+        "sha256": "34f358d93dfa9512c0f49079ffe118db390aee8cfcb3ba3cd574f7b7086fbc3a",
+        "bytes": 10143
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-activation/activation-custody.json",
+        "sha256": "7266078075795a6b95098aaf9577ee8a4ecb0c6560f6c3d20a413b4b0954e886",
+        "bytes": 642
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-activation/activation.log",
+        "sha256": "ab4e95855bc4a38fc3d4b17eb232325a3cd16eeed0c48e21a1996d4a8c519a67",
+        "bytes": 660
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "producer-rest-a",
+      "nodes": 408,
+      "passed": 408,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-producer-rest-a/producer-rest-a-result.json",
+        "sha256": "954f29d718dffc92770397bfdbf1330a7113c2cdd4b050c47b721d26f9edccce",
+        "bytes": 55543
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-producer-rest-a/producer-rest-a-custody.json",
+        "sha256": "91fe5cdf2f350dfb14efac317d627f6da8f09bdc23a7bce370855bec15feb720",
+        "bytes": 648
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-producer-rest-a/producer-rest-a.log",
+        "sha256": "69984c044b488508f2fc34d15a906576f7777b1e54b381b425c96799be3c99c7",
+        "bytes": 1061
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "producer-rest-b",
+      "nodes": 408,
+      "passed": 408,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-producer-rest-b/producer-rest-b-result.json",
+        "sha256": "871a4341d2eb6faf52830de58980f34af90f52b22538bd1a3f0c25f6bf40a705",
+        "bytes": 57926
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-producer-rest-b/producer-rest-b-custody.json",
+        "sha256": "6d377d00174cdc8185701069c990400079c845544a14413359e552785c6b4573",
+        "bytes": 649
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-producer-rest-b/producer-rest-b.log",
+        "sha256": "e2f0a4f9660040c9f66ef6827fab78f190b3b5af6e1e8341bea803a3d997a4a6",
+        "bytes": 1061
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_single",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-result.json",
+        "sha256": "de2641443201b990cc038105e0f339f4756b0c9a048a2a3f4a94f3c91c109bcd",
+        "bytes": 972
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single-custody.json",
+        "sha256": "bd6733ad312b400085d25fcb35ebd78948c2533adbfde9a49e3698e9f0263b4e",
+        "bytes": 668
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_single/cuda-producer-poison-flat_local_single.log",
+        "sha256": "20dc71638693202c8d17fa1c1a9f129d85f89a825091413d1ba1558e96bf78e0",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_distinct",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-result.json",
+        "sha256": "d88153689caaebfe6320907a91dd1c71d2ec02304412542fa4bde6adc4762957",
+        "bytes": 981
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct-custody.json",
+        "sha256": "f0aa3f43f5907c8d3b05ecd3911ba0d2314692c929e8bed862abbcf428ba9043",
+        "bytes": 671
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_distinct/cuda-producer-poison-flat_local_distinct.log",
+        "sha256": "1bb836f37370ef1306cb5efd540186aca15f0cd5e39e21f049b4938c0e418358",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_same",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-result.json",
+        "sha256": "4290b9ad453636f5705462254dcb66d6c8d5b4a3497c67d175e3782edd8b0351",
+        "bytes": 965
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same-custody.json",
+        "sha256": "f673cc6897c161801cc479fe3dd2a37513f96653d4b413318cd89bcfdd89d0ec",
+        "bytes": 667
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_local_same/cuda-producer-poison-flat_local_same.log",
+        "sha256": "77afb615446606787845ca3bc912f73936f7920b7f644e635ab313ad8691c129",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_single",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-result.json",
+        "sha256": "98c93f03184e5ffe8ab0c301d41747b133f705141bef70ab17d552354963938b",
+        "bytes": 985
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single-custody.json",
+        "sha256": "6ce1f762b1544898a5037b973651d216dac749892594119ab620bcdd3f6d7294",
+        "bytes": 672
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_single/cuda-producer-poison-flat_admitted_single.log",
+        "sha256": "d7f943c1e3f14811bb782960fb853569169e848d9fa13bb9930e3f055415dbee",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_same",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-result.json",
+        "sha256": "3c74c1e73620ea467bc931901c91aae349365541025cb770e00b94a797a64fc3",
+        "bytes": 977
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same-custody.json",
+        "sha256": "317f114b87006bb823848171e15300aa648ce19058fd40e7d17e97285dd82a38",
+        "bytes": 670
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-flat_admitted_same/cuda-producer-poison-flat_admitted_same.log",
+        "sha256": "1ec916968c8bba47f404619775a5b769cef82dcd558f79c116aef389944db1d6",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-per_local_single",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-result.json",
+        "sha256": "568e521aba538ab274e6211db80b52559819f0390b546e46b298de48f3d0e848",
+        "bytes": 970
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single-custody.json",
+        "sha256": "b54e9097c933b72aef1b0c9c2417629ee2ca401adba9b29828af299dcaf244b7",
+        "bytes": 669
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_single/cuda-producer-poison-per_local_single.log",
+        "sha256": "9a68be809adfb10d6eb09ad9cc138bf97a51d7d18ca698d23a0d82a7190727eb",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-per_local_distinct",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-result.json",
+        "sha256": "905e97aa361fd5d0e98f36cfa4aa4ab3d674d18bc04b6dc2ca61788bd3e98c51",
+        "bytes": 977
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct-custody.json",
+        "sha256": "64cbc1ca6fd2dcb1d36cd3df8d0a3d8419b30f58eb31726c24ad6acdb37ff8e5",
+        "bytes": 670
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_distinct/cuda-producer-poison-per_local_distinct.log",
+        "sha256": "ce30f0ced9392ba2f5a3879c37c23550fc7e6610ac1a467afd86cbaf3bdc9c69",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-per_local_same",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-result.json",
+        "sha256": "ae95480b021803ba110b6549de77b8214fcded4dc469aecb71e377a2b8706405",
+        "bytes": 961
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same-custody.json",
+        "sha256": "fd19d368773fdd0db9c2bff815e8ebd82ef965ccf225b92629bba372428f1450",
+        "bytes": 666
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_local_same/cuda-producer-poison-per_local_same.log",
+        "sha256": "b17d9205697602fad5751981ae573c09a3a3f4bbe8759a502feb49e5d81d5133",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_single",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-result.json",
+        "sha256": "390a28738d1b580fddb35b72f904cb556457233fd3ffd3a4a06eb5e3550e4bd8",
+        "bytes": 981
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single-custody.json",
+        "sha256": "7db8bff2aaede0bec6cd52cd5ed7e07e856ea6414090f75ee73875e706c342f8",
+        "bytes": 671
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_single/cuda-producer-poison-per_admitted_single.log",
+        "sha256": "1e01421ce2e6ea9a47b694e2cf88d535a9bdf54cd0ea56b53bf2cb08bc234e64",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_same",
+      "nodes": 1,
+      "passed": 1,
+      "result": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-result.json",
+        "sha256": "82bf00d24fc6e3229a330884e9e3d0a69212a8ad32fabb9e18150606c5d906d9",
+        "bytes": 974
+      },
+      "custody": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same-custody.json",
+        "sha256": "34826d9c18d9042787d533beddcc56f410bbedfbe3b364f9de16d967f21e4bf8",
+        "bytes": 670
+      },
+      "log": {
+        "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-cuda-producer-poison-per_admitted_same/cuda-producer-poison-per_admitted_same.log",
+        "sha256": "d9010943f9dbfc10411101a317e9718b55b48c39d1564abac82244029360943c",
+        "bytes": 578
+      },
+      "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+      "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+      "custody_status": "PASS"
+    }
+  ],
+  "isolated_custody_record": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r113-isolated-custody-verification.json",
+    "sha256": "ac4af6b4452a71cb13ce1f6a2b0ae6acbd79e8fdf1ad3bf20161fef8bf8224b7",
+    "bytes": 92749
+  },
+  "producer_child_verification": [
+    {
+      "job": "cuda-producer-poison-flat_local_single",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-flat_local_single",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 7.50621223449707,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_single",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-flat_local_single",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer flat_local_single poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "ef45e026a31c0d72c39328793aba145dece946d60ce02342a354c48759858334",
+        "result_sha256": "de2641443201b990cc038105e0f339f4756b0c9a048a2a3f4a94f3c91c109bcd",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "6081689ad0f08cc712f98eacfdb4ac32f0f259d4b9ee41093888f9b3b0801383",
+        "parent_observation_sha256": "496ef4354fbee58b1d94109827624075cc2edfa195a0bc9d55c28593c3310ab6",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 163860,
+        "parent_pid": 163688,
+        "child_ppid": 163688,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "1ffd17f85aff28c42675693e42153d196ea3955eb5c9a32d9f97b13b016c3b7e",
+        "after_sha256": "926e42e1119cc14d57d05d1a0b85dbf7e2f36661c4e22cdfae0c9098f7f40eef",
+        "parent_before_sha256": "440e9b242253f2edc058ebf9b08383e8f5469bedad99d01521431cbaf61555c8",
+        "producer_case": "flat_local_single",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            1,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 139949741342048,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": false,
+          "syncs": [
+            0,
+            1
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 139949741341856,
+              "message": "flat_local_single: completion0",
+              "type": "RuntimeError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_distinct",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-flat_local_distinct",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 7.279905557632446,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_distinct",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-flat_local_distinct",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer flat_local_distinct poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "acbe1218dcf4d836e32f83db3a739d977c4afd18373e39378819bc35fda36b24",
+        "result_sha256": "d88153689caaebfe6320907a91dd1c71d2ec02304412542fa4bde6adc4762957",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "9b052d30531db74d89889fe0852e2897d8b18008c9bc67a27ba7bab766512740",
+        "parent_observation_sha256": "90f9cc526ce8b5ab346af8bc1bbbcc0bdbbdf6afdd7f153f13459d5dac2406b9",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 163885,
+        "parent_pid": 163737,
+        "child_ppid": 163737,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "e547418249e2dd41c5d1aabaa091a54f6aa9760e1012757344aace505862720b",
+        "after_sha256": "12d00a293a22eae462c08acd3b29c3217509cf476807a926947d1a3285c9fb4b",
+        "parent_before_sha256": "bd6542029cc06a99a60263dc9b9421a798dafd25ec716f7767720dfa05d3a852",
+        "producer_case": "flat_local_distinct",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            1,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 139823440526592,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": true,
+          "syncs": [
+            0,
+            1
+          ],
+          "worker_errors": [
+            {
+              "children": [
+                {
+                  "children": [],
+                  "id": 139823440526400,
+                  "message": "flat_local_distinct: body",
+                  "type": "ValueError"
+                },
+                {
+                  "children": [],
+                  "id": 139823440527264,
+                  "message": "flat_local_distinct: completion0",
+                  "type": "RuntimeError"
+                },
+                {
+                  "children": [],
+                  "id": 139823440887360,
+                  "message": "flat_local_distinct: completion1",
+                  "type": "OSError"
+                }
+              ],
+              "id": 139823440886096,
+              "message": "RNG operation and device completion failed (3 sub-exceptions)",
+              "type": "ExceptionGroup"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_same",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-flat_local_same",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 6.509372234344482,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_local_same",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-flat_local_same",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer flat_local_same poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "d9ec6ebb6a13edfd76958adaa4830d32f2dce89dc45c3f7ba691a9d3c032c9f2",
+        "result_sha256": "4290b9ad453636f5705462254dcb66d6c8d5b4a3497c67d175e3782edd8b0351",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "2082b5ea36e1f2255763fecf2009ac8cbba532b12fc610c58441d51e66ee90e8",
+        "parent_observation_sha256": "0b3fcbca7767109955a1d660b641ea010598812f337f8966c5d4551a3458eecb",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 163910,
+        "parent_pid": 163833,
+        "child_ppid": 163833,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "481213d17e5bac8af3c891ce78c1cef69db63d78cdf59d10ca60ed74654a444d",
+        "after_sha256": "bffa9bfaae359c783fc4c91e97f37fdb1046e6a99d7437f68a27de5a825f838e",
+        "parent_before_sha256": "9482b5aa9af46f26aef746718d25c8be9b1e20198d712673435863210bc49b46",
+        "producer_case": "flat_local_same",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            1,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 139657771793760,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": true,
+          "syncs": [
+            0,
+            1
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 139657771793568,
+              "message": "flat_local_same: body",
+              "type": "ValueError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_single",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-flat_admitted_single",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 8.957310676574707,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_single",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-flat_admitted_single",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer flat_admitted_single poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "f15c49a43993277163926599ec3ea94fba9fce8deeaceee85accae4db63b189d",
+        "result_sha256": "98c93f03184e5ffe8ab0c301d41747b133f705141bef70ab17d552354963938b",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "2f58ed133925379ac118fe74c4b1de50f21d449696f18c691d49ed8f18ac62ab",
+        "parent_observation_sha256": "aece6d729950e0325221fd1e3476e904656ce09fda9c36c34b922c3de74bf8f5",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 163947,
+        "parent_pid": 163835,
+        "child_ppid": 163835,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "a6de49d2e14fcd22bc2c8781c632e581000d9b55c770aaef0a1725fc9079ff88",
+        "after_sha256": "bff17809a329f9f1751f3ec0617b7a1ab68d39f6e7656bb87431569d6d2efa92",
+        "parent_before_sha256": "c48488d4ff03bbd9b57f24d0298e93e559b794c105119d83d995c8de80deb144",
+        "producer_case": "flat_admitted_single",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            2,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 140050447039456,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": false,
+          "syncs": [
+            0
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 140050447039552,
+              "message": "flat_admitted_single: completion0",
+              "type": "RuntimeError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_same",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-flat_admitted_same",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 8.988763093948364,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-flat_admitted_same",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-flat_admitted_same",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer flat_admitted_same poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "83251a1c0bf70cb9dcd3cddaad19ba32c251d75d1febc040f805acd99d424e6f",
+        "result_sha256": "3c74c1e73620ea467bc931901c91aae349365541025cb770e00b94a797a64fc3",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "a1ba97b6e2f42ab5219566ccb9980763fc4b266a1c2ade31afff85eb910b34d0",
+        "parent_observation_sha256": "65c63d90e4334f04dbbd875becc793c06547c611c9b1e7822a3aa55b99ab68c2",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 164304,
+        "parent_pid": 164097,
+        "child_ppid": 164097,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "6f32809396f3d1bd1e4ba5b396e8634dcee80b1f8cb2a3086d4c50ed08233d10",
+        "after_sha256": "a155f4ceeb28063b4ce3eeca1f590ab47dd97a5fe1bc11f27ec411170611a78c",
+        "parent_before_sha256": "7e30319d7d83498e62bb1b7234133d2506f8e181c227b0b55fd5096a29424c49",
+        "producer_case": "flat_admitted_same",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            2,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 140670285184352,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": true,
+          "syncs": [
+            0
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 140670285184160,
+              "message": "flat_admitted_same: body",
+              "type": "ValueError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_local_single",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-per_local_single",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 7.4996137619018555,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_local_single",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-per_local_single",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer per_local_single poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "cf1b790a99b7e81ea8fe2215085eeaafd1a49b9c64b2b1cf93c3d2bc7433abe0",
+        "result_sha256": "568e521aba538ab274e6211db80b52559819f0390b546e46b298de48f3d0e848",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "1e6312204e7259a4e29f303df822e9354860cd7cd228edfbdffb8bf6dcad72be",
+        "parent_observation_sha256": "26252c6ef02f72b0ed9d168863afc05e0992ea343d6641a53dd6da139c4e8c45",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 164302,
+        "parent_pid": 164123,
+        "child_ppid": 164123,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "40116389721d3105cf9281138358e3d6804b86c83f3d5858d3140193127b8659",
+        "after_sha256": "191cbb4f213e562bbeced9b66dff3889b94acdfbeff573aca8fdeb2a60865859",
+        "parent_before_sha256": "354e76e93aa8027b2229f055e4f88d0ab191b3d7e20286163ea43d2e5c896294",
+        "producer_case": "per_local_single",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            1,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 140252859561440,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": false,
+          "syncs": [
+            0,
+            1
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 140252859563168,
+              "message": "per_local_single: completion0",
+              "type": "RuntimeError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_local_distinct",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-per_local_distinct",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 9.548750162124634,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_local_distinct",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-per_local_distinct",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer per_local_distinct poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "212b2eb5006bc6abefc69330fa9600fe106c5f7f0045f069d5a61fce03c17c59",
+        "result_sha256": "905e97aa361fd5d0e98f36cfa4aa4ab3d674d18bc04b6dc2ca61788bd3e98c51",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "6bff6b434b8ffc0f494dbda3f35fc7aa6b7cf2c59a67a9cd238ce6798119631d",
+        "parent_observation_sha256": "f23a0a8bd8d7edc80b13ae0746c92e9f422e1741d2e5216ab5aa7b4bc1c3ba45",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 164329,
+        "parent_pid": 164174,
+        "child_ppid": 164174,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "1184c0b3456bb96531b0302cab6f71e8c31e1aaad4732552e95f31e4c8dbbaf7",
+        "after_sha256": "6ebd57bbb7bef5bbfad2efe2d4a9b7fa0f86bfa9b8153d14a81b17c2703c594e",
+        "parent_before_sha256": "79e8633ec010bbdf25e366aad957c116d58e5e8c92651f34d7ced99a35806806",
+        "producer_case": "per_local_distinct",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            1,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 140240939382048,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": true,
+          "syncs": [
+            0,
+            1
+          ],
+          "worker_errors": [
+            {
+              "children": [
+                {
+                  "children": [],
+                  "id": 140240939383968,
+                  "message": "per_local_distinct: body",
+                  "type": "ValueError"
+                },
+                {
+                  "children": [],
+                  "id": 140240939384736,
+                  "message": "per_local_distinct: completion0",
+                  "type": "RuntimeError"
+                },
+                {
+                  "children": [],
+                  "id": 140240939810368,
+                  "message": "per_local_distinct: completion1",
+                  "type": "OSError"
+                }
+              ],
+              "id": 140240939810000,
+              "message": "RNG operation and device completion failed (3 sub-exceptions)",
+              "type": "ExceptionGroup"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_local_same",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-per_local_same",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 6.447721004486084,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_local_same",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-per_local_same",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer per_local_same poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "0c43a7dc667b7926a45affe75c29fd0b853264df95e094d62d18e1713b0ae50d",
+        "result_sha256": "ae95480b021803ba110b6549de77b8214fcded4dc469aecb71e377a2b8706405",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "d428ab798925852f99b3ddc564a6bfd2191258b76f2fdee146a5a5ec05fa7441",
+        "parent_observation_sha256": "890622d23f4df4b2d6224f5641fcef3d58b8253ef717ef464b2959d597bfa682",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 164354,
+        "parent_pid": 164300,
+        "child_ppid": 164300,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "8fab9c7e21f8044449069a0d817d05894d7374f6f42fff46da1dae7a2b734590",
+        "after_sha256": "b4fed0e62f4354a55415d57547a38c98f6e8eb2258920100555a0f5fa3de40f4",
+        "parent_before_sha256": "0b6bc40e4c84e3d5ae9284859118571dd870b54b3f72705eaca3d00e38354631",
+        "producer_case": "per_local_same",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            1,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 140020637758848,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": true,
+          "syncs": [
+            0,
+            1
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 140020637760672,
+              "message": "per_local_same: body",
+              "type": "ValueError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_single",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-per_admitted_single",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 6.386820316314697,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_single",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-per_admitted_single",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer per_admitted_single poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "aaa6b7a09ef7beb0e2db6bd9e0ee797c512f225c7201f7fd70f07c60bb96fedb",
+        "result_sha256": "390a28738d1b580fddb35b72f904cb556457233fd3ffd3a4a06eb5e3550e4bd8",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "1f91fc152b802df365b8b46fdd104d3fd909d3a251bfe558b11d79bc30af60f9",
+        "parent_observation_sha256": "4042f133c9f4ca2e6e9860d389cc78f776f6a28499f3cd381dcf5efef3581c33",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 164627,
+        "parent_pid": 164455,
+        "child_ppid": 164455,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "41bd59936d9f3c530b45c37568359bcc35858d55d4a3afa211e7d3dd09df82eb",
+        "after_sha256": "b3456ec29cdbd150ea030aef149e648750ed910161020b0a2e8e17609a84b559",
+        "parent_before_sha256": "e11611cfc643db06ea7a5770d9736d29817f084357c6cf419d493a9df99339f9",
+        "producer_case": "per_admitted_single",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            2,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 139959288706624,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": false,
+          "syncs": [
+            0
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 139959288708160,
+              "message": "per_admitted_single: completion0",
+              "type": "RuntimeError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_same",
+      "kind": "generic",
+      "exit_code": 0,
+      "details": {
+        "job": "cuda-producer-poison-per_admitted_same",
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "exit_code": 0,
+        "counts": {
+          "passed": 1,
+          "skipped": 0,
+          "xfailed": 0,
+          "xpassed": 0,
+          "warnings": 0
+        },
+        "wall_seconds": 6.6060521602630615,
+        "source_guards": 819,
+        "process_identities": 1,
+        "config_digests": 573,
+        "protected_artifacts": 13,
+        "worktree_registry_records": 14,
+        "worktrees_available": 1,
+        "source_index_import_threads_fixture_custody": "PASS",
+        "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+      }
+    },
+    {
+      "job": "cuda-producer-poison-per_admitted_same",
+      "kind": "strict",
+      "exit_code": 0,
+      "details": {
+        "status": "CUDA PRODUCER SPAWN CHILD IDENTITY AND PARENT PID/PPID CORRELATION VERIFIED",
+        "job": "cuda-producer-poison-per_admitted_same",
+        "case": "cuda_producer_poison",
+        "expected_message": "cuda producer per_admitted_same poison quarantines under owner custody",
+        "parent_job_exit_code": 0,
+        "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "manifest_sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa",
+        "spec_sha256": "6662d3ffa4991992e50ef84fb51745b0b6e7a3db63934153d7448b576671f5d6",
+        "result_sha256": "82bf00d24fc6e3229a330884e9e3d0a69212a8ad32fabb9e18150606c5d906d9",
+        "controller_sha256": "754bc7140f1fe6cb588cfc6513311a13005e56018a0fe32f6e3205a32854c937",
+        "child_receipt_sha256": "1828c4a2def8898f3d43159180f407c1dda494126e96efc6a229b19323091373",
+        "parent_observation_sha256": "f4d8012b8b21e62663bc89c557e7285ae50746f725dd4a24fe21931729ffc3c4",
+        "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+        "harness_sha256": "180558c22da088a57326aa9251fbb64761e2788f18cb982532525b84b571f791",
+        "child_pid": 164652,
+        "parent_pid": 164556,
+        "child_ppid": 164556,
+        "torch": "2.11.0+cu130",
+        "threads": 1,
+        "interop_threads": 5,
+        "debug": true,
+        "source_guards": 819,
+        "configs": 573,
+        "artifacts": 13,
+        "absolute_time_unavailable_reason": "Producer records do not supply absolute UTC timestamps; none inferred.",
+        "scope": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification.",
+        "preflight_sha256": "eb36a7aaab68e3376e6abda94767116f8c1a2520a7782871305e093ecb148836",
+        "after_sha256": "94afbac2f1e097ad7d67532ed565e53ab5714679adb5f38c2fa298be890b5783",
+        "parent_before_sha256": "ea79cf7c4d3915738f2f4c57dc6599c5126a13d274ec3c97487563c5a95e7401",
+        "producer_case": "per_admitted_same",
+        "producer_observations": {
+          "ambient_refused": true,
+          "completion_failed": [
+            true
+          ],
+          "cpu_local_available": true,
+          "domain_after": [
+            3,
+            2,
+            true
+          ],
+          "healthy_controls": true,
+          "outcome_errors": [],
+          "owner_quarantined": true,
+          "peer_blocked": true,
+          "peer_errors": [
+            {
+              "children": [],
+              "id": 139986213074784,
+              "message": "Replay owner is quarantined after uncertain publication",
+              "type": "RuntimeError"
+            }
+          ],
+          "quarantine_before_unlock": [
+            true
+          ],
+          "reached": true,
+          "started_work": true,
+          "syncs": [
+            0
+          ],
+          "worker_errors": [
+            {
+              "children": [],
+              "id": 139986213076128,
+              "message": "per_admitted_same: body",
+              "type": "ValueError"
+            }
+          ]
+        },
+        "producer_limitations": "CPU stand-in producer control only; no CUDA hardware or whole-package qualification."
+      }
+    }
+  ],
+  "accounting": {
+    "activation_unique_pass": 67,
+    "producer_unique_pass": 840,
+    "producer_partition": [
+      14,
+      408,
+      408,
+      10
+    ],
+    "poison_children_included_not_additive": 10,
+    "original_contract_identities": 18,
+    "flat": 8,
+    "per": 10,
+    "activation_public_route_identities": 9,
+    "remaining_producer_route_identities": 9,
+    "route_witness_counts_not_additive": true
+  },
+  "routes": [
+    {
+      "identity": "flat-push",
+      "owner_kind": "flat",
+      "route": "push",
+      "constant": "REPLAY_BUFFER_PUSH_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_plain_push_owns_numeric_rows_and_declares_legal_masks[flat]",
+          "source_line": 440,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Actual public push into CPU destination; exact gate/convert/source1 completion/exit; source mutation cannot alter retained observations; numeric successor/action/reward/component presence and legal masks checked.",
+          "limits": "CPU-backed source metadata; no physical CUDA destination."
+        }
+      ]
+    },
+    {
+      "identity": "flat-push_recorded",
+      "owner_kind": "flat",
+      "route": "push_recorded",
+      "constant": "REPLAY_BUFFER_PUSH_RECORDED_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-push_recorded]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dynamic_selector_resolves_each_real_push[flat]",
+          "source_line": 539,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Actual recorded insertion and observation equality; selected targets0 then1, selector identity retained, exactly one current lookup and exact armed completion per push.",
+          "limits": "Observation assertion is not full row ownership coverage."
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_push_inventories_retained_secondary_source_and_destination[flat]",
+          "source_line": 557,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Actual recorded insertion changes observations; retained destination0 plus allocation selector1 and secondary reward source2 complete exactly (0,1,2), work after authentic arm.",
+          "limits": "Numeric assertion targets observations; no mutation-based row ownership assertion in these nodes."
+        }
+      ]
+    },
+    {
+      "identity": "flat-readiness",
+      "owner_kind": "flat",
+      "route": "readiness",
+      "constant": "REPLAY_BUFFER_READINESS_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-readiness]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[readiness-flat]",
+          "source_line": 728,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Actual readiness.ready; retained legality2 only, exact arm/completion(2), all observed work armed, no current lookup despite selector3/storage0.",
+          "limits": "Reduction success, not row copy/ownership evidence."
+        }
+      ]
+    },
+    {
+      "identity": "flat-serialize",
+      "owner_kind": "flat",
+      "route": "serialize",
+      "constant": "REPLAY_BUFFER_SERIALIZE_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-serialize]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_serialize_dispatch_owns_rows_and_completes_only_source[flat]",
+          "source_line": 363,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Public serialize exact gate/copy/source1 completion/exit; full state equality, ordinary CPU tensor outputs and independent observations after output mutation.",
+          "limits": "Only observations carry CUDA metadata; CPU numeric work."
+        }
+      ]
+    },
+    {
+      "identity": "flat-validate_serialized",
+      "owner_kind": "flat",
+      "route": "validate_serialized",
+      "constant": "REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-validate_serialized]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mapping_view_inventory_preserves_accepted_transport[False-flat]",
+          "source_line": 1449,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Public validate_serialized accepts MappingProxyType CUDA2 fields; returned observations equal input rows, live state unchanged; exact arm/completion(2), real clones precede completion.",
+          "limits": "No returned-state mutation-based ownership assertion in this node; prepare=True is admitted and not counted as local validation."
+        }
+      ]
+    },
+    {
+      "identity": "flat-load_for_mode",
+      "owner_kind": "flat",
+      "route": "load_for_mode",
+      "constant": "REPLAY_BUFFER_LOAD_FOR_MODE_VALIDATION_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-load_for_mode]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_flat_load_for_mode_completes_validation_before_install",
+          "source_line": 470,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Distinct local validation contract: source clones before first completion and local exit; later admitted conversion, exactly two source1 completions; full row roundtrip and source mutation ownership.",
+          "limits": "Later materialization/install are admitted operations, not extra local route contracts; CPU destination."
+        }
+      ]
+    },
+    {
+      "identity": "flat-historical_archives",
+      "owner_kind": "flat",
+      "route": "historical_archives",
+      "constant": "REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-historical_archives]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_inventory_precedes_clone_on_read",
+          "source_line": 758,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Public install of canonical archive3 followed by actual public historical_archives[0].source_digest equality; captured install trace asserts exact arm/completion(3), work armed.",
+          "limits": "Property executes and digest is checked, but event snapshot precedes property: exact trace applies to install only. No numeric archived-row or mutation ownership assertion in this node."
+        }
+      ]
+    },
+    {
+      "identity": "flat-install_historical_archive",
+      "owner_kind": "flat",
+      "route": "install_historical_archive",
+      "constant": "REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[flat-install_historical_archive]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_inventory_precedes_clone_on_read",
+          "source_line": 758,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Public install of canonical archive3 followed by actual public historical_archives[0].source_digest equality; captured install trace asserts exact arm/completion(3), work armed.",
+          "limits": "Property executes and digest is checked, but event snapshot precedes property: exact trace applies to install only. No numeric archived-row or mutation ownership assertion in this node."
+        }
+      ]
+    },
+    {
+      "identity": "per-push",
+      "owner_kind": "per",
+      "route": "push",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_PUSH_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_plain_push_owns_numeric_rows_and_declares_legal_masks[per]",
+          "source_line": 440,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Actual public push into CPU destination; exact gate/convert/source1 completion/exit; source mutation cannot alter retained observations; numeric successor/action/reward/component presence and legal masks checked.",
+          "limits": "CPU-backed source metadata; no physical CUDA destination."
+        }
+      ]
+    },
+    {
+      "identity": "per-push_recorded",
+      "owner_kind": "per",
+      "route": "push_recorded",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_PUSH_RECORDED_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-push_recorded]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_dynamic_selector_resolves_each_real_push[per]",
+          "source_line": 539,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Actual recorded insertion and observation equality; selected targets0 then1, selector identity retained, exactly one current lookup and exact armed completion per push.",
+          "limits": "Observation assertion is not full row ownership coverage."
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_push_inventories_retained_secondary_source_and_destination[per]",
+          "source_line": 557,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Actual recorded insertion changes observations; retained destination0 plus allocation selector1 and secondary reward source2 complete exactly (0,1,2), work after authentic arm.",
+          "limits": "Numeric assertion targets observations; no mutation-based row ownership assertion in these nodes."
+        }
+      ]
+    },
+    {
+      "identity": "per-readiness",
+      "owner_kind": "per",
+      "route": "readiness",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_READINESS_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-readiness]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_read_routes_inventory_accessed_fields_not_selector[readiness-per]",
+          "source_line": 728,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Actual readiness.ready; retained legality2 only, exact arm/completion(2), all observed work armed, no current lookup despite selector3/storage0.",
+          "limits": "Reduction success, not row copy/ownership evidence."
+        }
+      ]
+    },
+    {
+      "identity": "per-serialize",
+      "owner_kind": "per",
+      "route": "serialize",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_SERIALIZE_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-serialize]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_serialize_dispatch_owns_rows_and_completes_only_source[per]",
+          "source_line": 363,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Public serialize exact gate/copy/source1 completion/exit; full state equality, ordinary CPU tensor outputs and independent observations after output mutation.",
+          "limits": "Only observations carry CUDA metadata; CPU numeric work."
+        }
+      ]
+    },
+    {
+      "identity": "per-validate_serialized",
+      "owner_kind": "per",
+      "route": "validate_serialized",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_VALIDATE_SERIALIZED_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-validate_serialized]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_mapping_view_inventory_preserves_accepted_transport[False-per]",
+          "source_line": 1449,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Public validate_serialized accepts MappingProxyType CUDA2 fields; returned observations equal input rows, live state unchanged; exact arm/completion(2), real clones precede completion.",
+          "limits": "No returned-state mutation-based ownership assertion in this node; prepare=True is admitted and not counted as local validation."
+        }
+      ]
+    },
+    {
+      "identity": "per-declare_unconstrained_action_dim",
+      "owner_kind": "per",
+      "route": "declare_unconstrained_action_dim",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_DECLARE_UNCONSTRAINED_ACTION_DIM_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-declare_unconstrained_action_dim]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "producer",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_declaration_distinguishes_allocating_and_noop_branches[False]",
+          "source_line": 668,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Public declaration sets action_dim2 and mask shape(4,2); actual allocation work under authentic arm, exact completion(0).",
+          "limits": "Shape/state assertion, not mask-value or ownership assertion."
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_per_declaration_distinguishes_allocating_and_noop_branches[True]",
+          "source_line": 668,
+          "executed_job": "producer-rest-a",
+          "status": "PASS",
+          "assertions": "Repeated matching declaration with unused selector3 produces no CUDA events and preserves action_dim2.",
+          "limits": "No-op branch does not demonstrate a GPU leaf."
+        }
+      ]
+    },
+    {
+      "identity": "per-historical_archives",
+      "owner_kind": "per",
+      "route": "historical_archives",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_HISTORICAL_ARCHIVES_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-historical_archives]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_per_historical_property_clones_nonempty_cuda_archive",
+          "source_line": 540,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Actual public install and public property each have separate exact source1 completion/gate traces with real clone/copy work. Canonical two-row archive/digest identity, distinct owned objects, incoming and returned mutation independence, no active rows.",
+          "limits": "Two routes share one executed test; private retained-state inspection supports ownership assertions; CPU-backed CUDA metadata only."
+        }
+      ]
+    },
+    {
+      "identity": "per-install_historical_archive",
+      "owner_kind": "per",
+      "route": "install_historical_archive",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_INSTALL_HISTORICAL_ARCHIVE_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-install_historical_archive]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_per_historical_property_clones_nonempty_cuda_archive",
+          "source_line": 540,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Actual public install and public property each have separate exact source1 completion/gate traces with real clone/copy work. Canonical two-row archive/digest identity, distinct owned objects, incoming and returned mutation independence, no active rows.",
+          "limits": "Two routes share one executed test; private retained-state inspection supports ownership assertions; CPU-backed CUDA metadata only."
+        }
+      ]
+    },
+    {
+      "identity": "per-update_priorities",
+      "owner_kind": "per",
+      "route": "update_priorities",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_UPDATE_PRIORITIES_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_priorities]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_priority_dispatch_preserves_algorithm_and_source_completion[physical]",
+          "source_line": 389,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Exact gate/convert/source1 completion/exit; full priority array/max/revision checked. Physical indices [0,1], errors [-2,4] yield absolute error + epsilon.",
+          "limits": "CPU priority arrays and CPU-backed source; not hardware."
+        }
+      ]
+    },
+    {
+      "identity": "per-update_unit_priorities",
+      "owner_kind": "per",
+      "route": "update_unit_priorities",
+      "constant": "PRIORITIZED_REPLAY_BUFFER_UPDATE_UNIT_PRIORITIES_CUDA",
+      "binding_nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_every_contract_binds_real_canonical_owner[per-update_unit_priorities]",
+      "binding_status": "PASS; empty completion only, not public producer behavior",
+      "public_evidence_basis": "activation",
+      "public_witnesses": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_priority_dispatch_preserves_algorithm_and_source_completion[stable]",
+          "source_line": 389,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Exact gate/convert/source1 completion/exit; full priority array/max/revision checked. Wrapped IDs [4,5,2,3], updates [4,2,4] discriminate nonidentity mapping and duplicate max from last-write.",
+          "limits": "CPU priority arrays and CPU-backed source; not hardware."
+        },
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_cuda_activation.py::test_real_stale_unit_priority_refusal_preserves_numeric_state",
+          "source_line": 579,
+          "executed_job": "activation",
+          "status": "PASS",
+          "assertions": "Retired ID0 after valid ID4 refuses after actual conversion/completion; priorities/IDs/max unchanged, revision increments, domain/owner usable.",
+          "limits": "Exceptional observer has no gate-exit marker; does not assert successful publication."
+        }
+      ]
+    }
+  ],
+  "prior_gap_reconciliation": {
+    "successful_plain_push_both": "closed by final activation public numeric/ownership controls",
+    "flat_load_validation_prelude": "closed by actual local validation then admitted install",
+    "per_nonempty_historical_property": "closed by separate observed public install/property traces and ownership",
+    "stable_priority_mapping_duplicate_max_and_stale_refusal": "closed by wrapped nonidentity numeric and separate stale case",
+    "per_install_setup_only": "closed by isolated install trace/effect assertions in shared property test",
+    "producer_and_activation_runtime": "closed for exact840/67 by disjoint selection/result/custody records; broader affected/full-B gates remain open"
+  },
+  "limits_and_remaining_gaps": [
+    "Fresh-process cold core/flat/PER import-order proof remains missing and required separately; in-process missing-class/cache controls do not substitute.",
+    "Flat historical_archives property has public execution/digest evidence but no isolated exact completion trace or numeric/mutation ownership assertion in the cited witness; do not broaden its claim.",
+    "Affected BANK155 PASS; replay54 =52 PASS/2 peer-wait FAIL under diagnosis. B is not fully qualified.",
+    "B6, hardware, parent/recurrent and global gates remain open."
+  ],
+  "docs_safe_claim": "On exact R113 tree b5298dec04379db31bf9107a26ead7764f53d73c, all 18 original flat8/PER10 contracts have passing canonical binding and actual public-route witnesses: nine route identities in activation and nine in producer tests. Activation67 and producer840 passed; ten producer poison children are included in840. Evidence is CPU protocol/numeric control evidence, with per-route assertion limits; it is not full B, B6, hardware or whole-BAC qualification."
+}

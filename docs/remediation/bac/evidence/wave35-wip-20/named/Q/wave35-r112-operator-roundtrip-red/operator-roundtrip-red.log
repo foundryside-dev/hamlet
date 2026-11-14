@@ -1,0 +1,237 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: /workspace/hamlet
+configfile: pyproject.toml
+plugins: anyio-4.14.2, hypothesis-6.165.3, asyncio-1.4.0, cov-7.1.0, xdist-3.8.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 4 items
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py FFFF     [100%]
+
+=================================== FAILURES ===================================
+_________ test_archive_clone_repairs_later_count[fixture-formats-flat] _________
+
+family = 'flat', location = 'formats', stage = 'fixture'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f4d8f829010>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Both digest forms must survive real recording/revalidation ownership;
+        # public preparation also retains its genuine canonical digest control.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+            simulated_cuda.events.clear()
+            owned_record = history._record(restored)
+            recording_events = list(simulated_cuda.events)
+            simulated_cuda.events.clear()
+>           reowned = history._archive_from_state(owned_record)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2303: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+_________ test_archive_clone_repairs_later_count[fixture-formats-per] __________
+
+family = 'per', location = 'formats', stage = 'fixture'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f4d8fad65d0>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Both digest forms must survive real recording/revalidation ownership;
+        # public preparation also retains its genuine canonical digest control.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+            simulated_cuda.events.clear()
+            owned_record = history._record(restored)
+            recording_events = list(simulated_cuda.events)
+            simulated_cuda.events.clear()
+>           reowned = history._archive_from_state(owned_record)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2303: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+_________ test_archive_clone_repairs_later_count[fixture-sibling-flat] _________
+
+family = 'flat', location = 'sibling', stage = 'fixture'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f4d8f58c190>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Both digest forms must survive real recording/revalidation ownership;
+        # public preparation also retains its genuine canonical digest control.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+            simulated_cuda.events.clear()
+            owned_record = history._record(restored)
+            recording_events = list(simulated_cuda.events)
+            simulated_cuda.events.clear()
+>           reowned = history._archive_from_state(owned_record)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2303: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'standard'}, origina...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+_________ test_archive_clone_repairs_later_count[fixture-sibling-per] __________
+
+family = 'per', location = 'sibling', stage = 'fixture'
+simulated_cuda = <test_replay_cuda_producer._SimCUDA object at 0x7f4d8f885220>
+
+    @pytest.mark.parametrize("family", ["flat", "per"])
+    @pytest.mark.parametrize("location", ["formats", "sibling"])
+    @pytest.mark.parametrize("stage", ["fixture", "canonical-fixture", "validate-plan", "prepare-plan", "validate", "prepare"])
+    def test_archive_clone_repairs_later_count(family: str, location: str, stage: str, simulated_cuda: _SimCUDA) -> None:
+        # Both digest forms must survive real recording/revalidation ownership;
+        # public preparation also retains its genuine canonical digest control.
+        operator = stage not in ("canonical-fixture", "prepare")
+        record, calls, field = _clone_repair_record(family, location, operator=operator)
+        state = record["original_state"]
+        assert type(state[field]) is int and state[field] == 3 and record["archived_row_count"] == 4
+        if stage in ("fixture", "canonical-fixture"):
+            simulated_cuda.events.clear()
+            restored = history._archive_from_state(record)
+            assert restored.archived_row_count == 4
+            assert calls and state[field] == 4
+            assert any(event[:3] == ("finished", "clone", (2,)) for event in simulated_cuda.events)
+            assert any(event[:3] == ("work", "sum", (1,)) for event in simulated_cuda.events) is operator
+            if not operator:
+                assert type(record["source_digest"]) is str and restored.source_digest == record["source_digest"]
+            simulated_cuda.events.clear()
+            owned_record = history._record(restored)
+            recording_events = list(simulated_cuda.events)
+            simulated_cuda.events.clear()
+>           reowned = history._archive_from_state(owned_record)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_townlet/regressions/bac/test_replay_cuda_producer.py:2303: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/townlet/training/historical_checkpoint.py:474: in _archive_from_state
+    return HistoricalReplayArchive(**state)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<string>:9: in __init__
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = HistoricalReplayArchive(source_formats={'scope': 'standalone_replay', 'replay': 4, 'replay_kind': 'prioritized'}, orig...), archived_row_count=4, reward_semantics='historical_recorded_pre_fix', approval_reference='BAC-HISTORY-A-2026-11-01')
+
+    def __post_init__(self) -> None:
+        _own(self, ("source_formats", "original_state"))
+        state, formats = self.original_state, self.source_formats
+        if self.reward_semantics != REWARD_SEMANTICS or self.approval_reference != APPROVAL_REFERENCE:
+            raise ValueError("archive reward semantics/approval differs from approved historical policy")
+        count = _validate_archive_state(_mapping(state, "archive.original_state"), _mapping(formats, "archive.source_formats"))
+        if count != _integer(self.archived_row_count, "archive.archived_row_count", 0):
+            raise ValueError("archive row count differs from original state")
+        if self.source_digest != _state_digest(state, formats):
+>           raise ValueError("archive source digest mismatch after owned cloning")
+E           ValueError: archive source digest mismatch after owned cloning
+
+src/townlet/training/historical_checkpoint.py:304: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-formats-per]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-flat]
+FAILED tests/test_townlet/regressions/bac/test_replay_cuda_producer.py::test_archive_clone_repairs_later_count[fixture-sibling-per]
+============================== 4 failed in 0.41s ===============================

@@ -1,0 +1,22 @@
+{
+  "job": "cuda-core-poison-unknown-ready",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+  "exit_code": 0,
+  "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0,
+    "warnings": 0
+  },
+  "wall_seconds": 8.00367546081543,
+  "source_guards": 818,
+  "process_identities": 1,
+  "config_digests": 573,
+  "protected_artifacts": 13,
+  "worktree_registry_records": 14,
+  "worktrees_available": 1,
+  "source_index_import_threads_fixture_custody": "PASS",
+  "scope": "Only this named executable evidence; no package release or whole-BAC completion implied"
+}

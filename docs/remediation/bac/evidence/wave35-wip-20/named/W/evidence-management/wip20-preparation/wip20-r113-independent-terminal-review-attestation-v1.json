@@ -1,0 +1,233 @@
+{
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_manifest": {
+    "bytes": 205427,
+    "path": "wave35/r113-candidate.json",
+    "root": "W",
+    "sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa"
+  },
+  "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "checkpoint_id": "wave35-wip-20",
+  "contract": {
+    "bytes": 7003,
+    "path": "wave35/wip20-checkpoint-contract.json",
+    "root": "W",
+    "sha256": "75f5b65b97d18e02ff62bccf6cf0ee81f37a72fbca8d6396e56fbef0e036d026"
+  },
+  "disposition": "PASS",
+  "document_review_status": {
+    "application": {
+      "bytes": 2307,
+      "path": "evidence-management/wip20-preparation/wip20-document-application-v1.json",
+      "root": "W",
+      "sha256": "d487c09010454e917c22b39b75cf471d2e0ca1dd7352aa0626be3a70221a513f"
+    },
+    "proposal_manifest": {
+      "bytes": 3768,
+      "path": "wave35-preparation/wip20-docs/proposal-manifest-final.json",
+      "root": "W",
+      "sha256": "d385458a97d594f37fcda2d0cc1ac9790853908b529f05f051be42a9a8688383"
+    },
+    "review": {
+      "bytes": 10070,
+      "path": "wave35-preparation/T18e-R0-WIP20-DOCUMENTATION-GROUND-TRUTH-REVIEW.md",
+      "root": "W",
+      "sha256": "b757e551a07e400052d0e7cd5b5736845574ea1d77f7d5b8ae68b8589cae9887"
+    },
+    "scope": "Document ground truth only; not terminal qualification or application acceptance.",
+    "status": "INDEPENDENT DOCUMENT REVIEW PASS; EXACT FIVE PROPOSALS APPLIED"
+  },
+  "independence_basis": "Separate delegated terminal reviewer; did not author evidence, frozen subject, candidate, application changes, documentation proposal or documentation review. Personally performed metadata/hash/custody reconciliation; no application execution or selector run.",
+  "independent": true,
+  "integrity": {
+    "attempt_paths_checked": 112,
+    "checks": 119,
+    "execution_blobs_rehashed": 1504,
+    "failed_unique": 2,
+    "interval_entries": 377,
+    "partial_failed_group_passes": 51,
+    "passed_unique": 1203,
+    "qualifying_children_checked": 31,
+    "qualifying_group_passes": 1152,
+    "qualifying_groups": 37,
+    "unique_rooted_references_verified": 1226
+  },
+  "interval": [
+    109,
+    113
+  ],
+  "limitations": [
+    "No runtime rerun or independent application acceptance.",
+    "Historical witnesses without literal attempt_id retain that limitation; current spec/result/witness/verifier/parent PID-source linkage checked.",
+    "Root final receipt, selection, materialization and exact publication/remote-CI remain outstanding existing process steps."
+  ],
+  "material_publication_defects": [],
+  "preassembly_source_equivalence": {
+    "bytes": 421197,
+    "path": "evidence-management/wip20-preparation/wip20-preassembly-source-equivalence-v1.json",
+    "root": "W",
+    "sha256": "74f4e7e90e3079afe3f696af441ff5134216b203e676efefbd2f3306c8808635"
+  },
+  "producer": "/root",
+  "receipt_input": {
+    "bytes": 5631513,
+    "path": "evidence-management/wip20-preparation/wip20-r109-r113-complete-receipt-input-v4.json",
+    "root": "W",
+    "sha256": "1c2ea4865cf25e2810608a7b1916f4d40870b02f2751c0ad6607a510d8c306ae"
+  },
+  "required_next": [
+    "Repair stale peer-wait test hook through reviewed tests-only change and rerun both exact failed nodes; no failure waived.",
+    "Execute cold core-first and producer-first import-order proof under separately reviewed plan.",
+    "Retain global15mypy errors, parent/recurrent/runner/coverage>=70/slow/hardware/final CI gates.",
+    "Actual CUDA UNRUN; promised server access/topology absent.",
+    "After authorized WIP checkpoint publication, verify exact remote identity and actual new CI; prior WIP19 ConfigPASS/LintFAIL/TestsFAIL remains separate and Tests log cause unclassified because Transport closed."
+  ],
+  "retained_failures": {
+    "CI_WIP19": "ConfigPASS/LintFAIL/TestsFAIL;Tests logs unavailable via Transport closed, cause unclassified.",
+    "R111": "30 fixture failures preserved on original candidate; repaired later, no erasure.",
+    "R112": "Four causal digest fixture RED failures preserved.",
+    "R113": "Two affected replay peer-wait failures;51partial passes remain in FAILED group. Global mypy15 errors:oracle6/POP9.",
+    "other_history": "Original R109/R110/tooling FAILED and UNRUN attempts retained in complete immutable attempt/component input."
+  },
+  "review": {
+    "bytes": 8430,
+    "path": "wave35-preparation/T18e-R0-WIP20-TERMINAL-REVIEW.md",
+    "root": "W",
+    "sha256": "db4b5b5dbf38fb0e06d9566d1827fae1e42c51f8ff9996bb8a1359a82290b5b1"
+  },
+  "review_subject": {
+    "bytes": 71820,
+    "path": "evidence-management/wip20-preparation/wip20-r113-qualification-subject-v1.json",
+    "root": "W",
+    "sha256": "519fdc98da7cf36fe58fce0617152b06f015af393a59a9c609ba5d330c6c6197"
+  },
+  "reviewer": "/root/bac_astra_wip20_terminal",
+  "schema": "bac-independent-terminal-review-attestation-v1",
+  "scope": "Finite R109\u2013R113 terminal evidence for bounded WIP20 durability publication only. No full B/B6/package/global/BAC acceptance or Git authority.",
+  "series": "wave35",
+  "source_delta": {
+    "bytes": 96704,
+    "path": "evidence-management/r113-preparation/r113-full-base-candidate.patch",
+    "root": "W",
+    "sha256": "239ab4323970e4be5d95b64027773a8495e593e029644cc7ed1e21989da234de"
+  },
+  "status": "PASS FOR BOUNDED DURABILITY PUBLICATION; NOT FULL B/BAC ACCEPTANCE",
+  "subjects": [
+    {
+      "bytes": 71820,
+      "path": "evidence-management/wip20-preparation/wip20-r113-qualification-subject-v1.json",
+      "root": "W",
+      "sha256": "519fdc98da7cf36fe58fce0617152b06f015af393a59a9c609ba5d330c6c6197"
+    },
+    {
+      "bytes": 5631513,
+      "path": "evidence-management/wip20-preparation/wip20-r109-r113-complete-receipt-input-v4.json",
+      "root": "W",
+      "sha256": "1c2ea4865cf25e2810608a7b1916f4d40870b02f2751c0ad6607a510d8c306ae"
+    },
+    {
+      "bytes": 7003,
+      "path": "wave35/wip20-checkpoint-contract.json",
+      "root": "W",
+      "sha256": "75f5b65b97d18e02ff62bccf6cf0ee81f37a72fbca8d6396e56fbef0e036d026"
+    },
+    {
+      "bytes": 205427,
+      "path": "wave35/r113-candidate.json",
+      "root": "W",
+      "sha256": "0f05c4f3faab3e6f5ea15b7ba8fc8c466f0e3dda9bbc87abbde47af7bd2f3daa"
+    }
+  ],
+  "supporting_review_references": [
+    {
+      "bytes": 10917,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-FINAL-REVIEW.md",
+      "root": "W",
+      "sha256": "82773010f376603ddff6168eedbb3c8ef45a4c870343f348ef7f2588ab921faa"
+    },
+    {
+      "bytes": 11386,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-REVIEW.md",
+      "root": "W",
+      "sha256": "7aea3ba6b7fd450afa4c9de7146e0f41cdc0cd31c7fdfcefe6e0c8ca3d602bca"
+    },
+    {
+      "bytes": 8799,
+      "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-VERIFIER-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "16d1f4a30e3169173c1007a859df7621404b1097034cbed6231f8f8f822a4fa2"
+    },
+    {
+      "bytes": 9995,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-ACTIVATION-TEST-REVIEW.md",
+      "root": "W",
+      "sha256": "19dc12c8593767c0de0c2a5b18124ca5e0fcc98f51a92e8f99a8ad09ddd686bf"
+    },
+    {
+      "bytes": 11777,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "2f2c4b6d55aba5037b1d426e3fd11db71c1e4fefa430cc83d9be894d52ae3238"
+    },
+    {
+      "bytes": 7256,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-CORE-ACTUAL-REVIEW.md",
+      "root": "W",
+      "sha256": "46d1a5576db5cbc0de3111680a3d36eccf761b370e5257b95dc7a088d9860a3d"
+    },
+    {
+      "bytes": 6457,
+      "path": "wave35-preparation/T18e-R0-CUDA-PRODUCER-B-CORE-TESTS-REVIEW.md",
+      "root": "W",
+      "sha256": "f4e263d6c261a4fc6f16a139858063ecb52558d6b690e7b5cd65bcc047bd99c2"
+    },
+    {
+      "bytes": 8975,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-PLAN-REVIEW.md",
+      "root": "W",
+      "sha256": "f8936611f9ce317c0818750bbfd5823b4a4e0dc322984dfb1979863960c3f486"
+    },
+    {
+      "bytes": 9009,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-IMPLEMENTATION-REPORT.md",
+      "root": "W",
+      "sha256": "fc53bd7ae8759b8b6580611a361de6fdd197a9a04eae66557e8d3ccce9bcdc7f"
+    },
+    {
+      "bytes": 7155,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-FIXTURE-REPAIR-IMPLEMENTATION-REVIEW.md",
+      "root": "W",
+      "sha256": "c654c8a12623c03347dc64c89b608e3e9c5da77aa880f15781aee871684046b4"
+    },
+    {
+      "bytes": 9197,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-PEER-WAIT-FAILURE-DIAGNOSIS.md",
+      "root": "W",
+      "sha256": "05329b1ef7df41821cea034b367dd76240be7c3b01b8020c15087c6bd8b47b2b"
+    },
+    {
+      "bytes": 21683,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-COLD-IMPORT-QUALIFICATION-PROPOSAL.md",
+      "root": "W",
+      "sha256": "e6538032760a26d82fde8f653f58f63b65ee386dac0c99fd06fdd6554c9fe819"
+    },
+    {
+      "bytes": 87976,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-R113-ROUTE-EVIDENCE.json",
+      "root": "W",
+      "sha256": "1a68e332eefc1721cd029c96f7893da1df47e4a98cb578b82a701c22085ee6e9"
+    },
+    {
+      "bytes": 3979,
+      "path": "wave35-preparation/T18e-R0-CUDA-B-R113-ROUTE-EVIDENCE-REVIEW.md",
+      "root": "W",
+      "sha256": "75eb423fe901244adaf35c0d84e6a729fb59945f967ee8e76429f286b3bfedef"
+    },
+    {
+      "bytes": 10070,
+      "path": "wave35-preparation/T18e-R0-WIP20-DOCUMENTATION-GROUND-TRUTH-REVIEW.md",
+      "root": "W",
+      "sha256": "b757e551a07e400052d0e7cd5b5736845574ea1d77f7d5b8ae68b8589cae9887"
+    }
+  ]
+}

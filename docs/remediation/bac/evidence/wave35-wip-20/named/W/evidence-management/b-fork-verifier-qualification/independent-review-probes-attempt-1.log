@@ -1,0 +1,150 @@
+{"source_diff": "--- \n+++ \n@@ -170,7 +170,15 @@\n }\n FORK_ACTIONS = {\n     \"admission\": {\"resolve_cuda\", \"enroll\", \"report_failure\", \"domain_admission\"},\n-    \"local\": {\"resolve_cuda\", \"complete\", \"completion_failed\", \"report_failure\", \"domain_local_cuda_access\"},\n+    \"local\": {\n+        \"resolve_cuda\",\n+        \"complete\",\n+        \"completion_failed\",\n+        \"report_failure\",\n+        \"domain_local_cuda_access\",\n+        \"domain_local_cuda_policy\",\n+        \"domain_resolve_local_cuda_record\",\n+    },\n     \"invocation\": {\"active_enter\", \"active_exit\", \"active_completion_failed\", \"completed_completion_failed\", \"domain_device_invocation\"},\n }\n FORK_COUNTERS = {\"lock_acquire_calls\", \"owner_lock_acquire_calls\", \"cuda_touch_calls\", \"body_calls\"}\n", "action_counts": {"admission": 4, "local": 7, "invocation": 5}}
+{"old_test_ids": ["CudaVerifierTests.test_all_guard_effects_and_diagnostics", "CudaVerifierTests.test_all_ten_exact_mappings", "CudaVerifierTests.test_cuda_outer_corruptions", "CudaVerifierTests.test_each_role_rejects_another_cuda_node", "CudaVerifierTests.test_extra_fork_pair_refused", "CudaVerifierTests.test_fork_identity_corruptions", "CudaVerifierTests.test_fork_observation_corruptions", "CudaVerifierTests.test_guard_action_and_result_schema_mutations", "CudaVerifierTests.test_guard_hash_and_reused_pid", "CudaVerifierTests.test_guard_profile_never_weakens_outer_profile", "CudaVerifierTests.test_guard_schemas_missing_extra_and_missing_records", "CudaVerifierTests.test_lone_unknown_fork_observation_refused", "CudaVerifierTests.test_node_source_profile_and_unknown_job", "CudaVerifierTests.test_unknown_fork_identity_record_refused", "InvocationVerifierTests.test_each_invocation_role_keeps_outer_controls", "InvocationVerifierTests.test_invocation_trial_required_and_exact", "InvocationVerifierTests.test_pair_compares_observed_events_without_fixed_tail", "InvocationVerifierTests.test_pair_exact_receipt_and_reference_bytes_without_writer", "InvocationVerifierTests.test_pair_existing_custody_must_be_exactly_typed_and_recomputed", "InvocationVerifierTests.test_pair_preserves_each_subject_process_identity", "InvocationVerifierTests.test_pair_rejects_individually_valid_different_manifest", "InvocationVerifierTests.test_pair_rejects_misplaced_phase_marker_after_individual_qualification", "InvocationVerifierTests.test_pair_revalidates_bound_records_and_source_bytes", "InvocationVerifierTests.test_pair_swapped_duplicate_and_missing_subjects", "InvocationVerifierTests.test_pair_unequal_observed_events_with_coherent_individual_receipts", "InvocationVerifierTests.test_phase_marker_does_not_weaken_replay_or_producer_protocol", "InvocationVerifierTests.test_phase_marker_inventory_for_all_cuda_roles", "InvocationVerifierTests.test_phase_missing_extra_fields_and_source_keys", "InvocationVerifierTests.test_phase_parent_hash_missing_file_and_malformed_json", "InvocationVerifierTests.test_phase_schema_types_and_identity_are_independent_of_hash", "InvocationVerifierTests.test_six_exact_invocation_roles_and_phase_receipts", "ProducerVerifierTests.test_all_ten_producer_cases", "ProducerVerifierTests.test_producer_nested_encoding_and_unknown_selection", "ProducerVerifierTests.test_producer_observation_controls", "ProducerVerifierTests.test_producer_outer_and_crosscase_controls", "ProducerVerifierTests.test_producer_parent_baselines", "ProducerVerifierTests.test_producer_schedule_and_error_identity", "ProducerVerifierTests.test_producer_strict_existing_guards_and_single_job", "ProducerVerifierTests.test_producer_success_schema_and_required_files", "RecurrentReplayVerifierTests.test_coherently_changed_command_refused", "RecurrentReplayVerifierTests.test_current_role_cannot_substitute", "RecurrentReplayVerifierTests.test_identity_and_observation_controls", "RecurrentReplayVerifierTests.test_import_maps", "RecurrentReplayVerifierTests.test_invalid_parent_elapsed_seconds", "RecurrentReplayVerifierTests.test_manifest_mutation", "RecurrentReplayVerifierTests.test_missing_child_and_observation", "RecurrentReplayVerifierTests.test_negative_job_index", "RecurrentReplayVerifierTests.test_new_test_source_hash_checked", "RecurrentReplayVerifierTests.test_old_node_cannot_substitute", "RecurrentReplayVerifierTests.test_other_node_cannot_substitute", "RecurrentReplayVerifierTests.test_other_role_cannot_substitute", "RecurrentReplayVerifierTests.test_parent_child_same_pid_refused", "RecurrentReplayVerifierTests.test_parent_result_controls", "RecurrentReplayVerifierTests.test_partial_and_unknown_schemas", "RecurrentReplayVerifierTests.test_positive_and_exclusive_destination", "RecurrentReplayVerifierTests.test_repository_metadata_mismatch", "RecurrentReplayVerifierTests.test_source_config_artifact_mismatch", "RecurrentReplayVerifierTests.test_unknown_job_refused", "RecurrentReplayVerifierTests.test_wrong_cpu_harness_profile", "ReplayVerifierTests.test_coherently_changed_command_refused", "ReplayVerifierTests.test_identity_and_observation_controls", "ReplayVerifierTests.test_import_maps", "ReplayVerifierTests.test_invalid_parent_elapsed_seconds", "ReplayVerifierTests.test_manifest_mutation", "ReplayVerifierTests.test_missing_child_and_observation", "ReplayVerifierTests.test_negative_job_index", "ReplayVerifierTests.test_other_node_cannot_substitute", "ReplayVerifierTests.test_other_role_cannot_substitute", "ReplayVerifierTests.test_parent_child_same_pid_refused", "ReplayVerifierTests.test_parent_result_controls", "ReplayVerifierTests.test_partial_and_unknown_schemas", "ReplayVerifierTests.test_positive_and_exclusive_destination", "ReplayVerifierTests.test_repository_metadata_mismatch", "ReplayVerifierTests.test_source_config_artifact_mismatch", "ReplayVerifierTests.test_wrong_cpu_harness_profile"], "added_test_ids": ["CudaVerifierTests.test_legacy_five_action_local_trial_refused", "CudaVerifierTests.test_local_policy_guard_bad_outcomes_refused", "CudaVerifierTests.test_local_policy_guard_extra_action_and_wrong_trial_refused", "CudaVerifierTests.test_local_policy_guard_missing_action_refused", "CudaVerifierTests.test_local_policy_guard_result_closed_schema_refused", "CudaVerifierTests.test_local_policy_guard_result_types_refused"], "removed_test_ids": []}
+{"probe": "positive-seven", "accepted": true}
+{"probe": "obsolete-five", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:extra", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:wrong-trial:admission", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:wrong-trial:invocation", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:result-type:None", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:result-type:[]", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:result-type:True", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:result-type:'result'", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:result-type:0", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:extra-field", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing-field:exception_class", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:exception_class:False", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:exception_class:1", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:exception_class:None", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:exception_class:[]", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:exception_class:{}", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:exception_class:'RuntimeError'", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing-field:diagnostic", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:diagnostic:False", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:diagnostic:1", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:diagnostic:None", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:diagnostic:[]", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:diagnostic:{}", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:diagnostic:'RNG custody cannot be inherited by another process.'", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing-field:state_unchanged", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:state_unchanged:False", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:state_unchanged:1", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:state_unchanged:1.0", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:state_unchanged:'true'", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:state_unchanged:None", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:state_unchanged:[]", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:state_unchanged:{}", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing-field:body_calls", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:False", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:True", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:0.0", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:'0'", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:None", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:[]", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:{}", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:-1", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:body_calls:1", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing-field:cuda_touch_calls", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:False", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:True", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:0.0", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:'0'", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:None", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:[]", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:{}", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:-1", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:cuda_touch_calls:1", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing-field:lock_acquire_calls", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:False", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:True", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:0.0", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:'0'", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:None", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:[]", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:{}", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:-1", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:lock_acquire_calls:1", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:missing-field:owner_lock_acquire_calls", "refused": "fork guard result schema mismatch: domain_local_cuda_policy", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:False", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:True", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:0.0", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:'0'", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:None", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:[]", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:{}", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:-1", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_local_cuda_policy:bad:owner_lock_acquire_calls:1", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:extra", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:wrong-trial:admission", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:wrong-trial:invocation", "refused": "fork guard actions mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:result-type:None", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:result-type:[]", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:result-type:True", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:result-type:'result'", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:result-type:0", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:extra-field", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing-field:exception_class", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:exception_class:False", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:exception_class:1", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:exception_class:None", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:exception_class:[]", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:exception_class:{}", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:exception_class:'RuntimeError'", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing-field:diagnostic", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:diagnostic:False", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:diagnostic:1", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:diagnostic:None", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:diagnostic:[]", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:diagnostic:{}", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:diagnostic:'RNG custody cannot be inherited by another process.'", "refused": "fork PID refusal mismatch", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing-field:state_unchanged", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:state_unchanged:False", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:state_unchanged:1", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:state_unchanged:1.0", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:state_unchanged:'true'", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:state_unchanged:None", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:state_unchanged:[]", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:state_unchanged:{}", "refused": "fork guard changed state", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing-field:body_calls", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:False", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:True", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:0.0", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:'0'", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:None", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:[]", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:{}", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:-1", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:body_calls:1", "refused": "fork guard effect: body_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing-field:cuda_touch_calls", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:False", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:True", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:0.0", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:'0'", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:None", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:[]", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:{}", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:-1", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:cuda_touch_calls:1", "refused": "fork guard effect: cuda_touch_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing-field:lock_acquire_calls", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:False", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:True", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:0.0", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:'0'", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:None", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:[]", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:{}", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:-1", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:lock_acquire_calls:1", "refused": "fork guard effect: lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:missing-field:owner_lock_acquire_calls", "refused": "fork guard result schema mismatch: domain_resolve_local_cuda_record", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:False", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:True", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:0.0", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:'0'", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:None", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:[]", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:{}", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:-1", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "domain_resolve_local_cuda_record:bad:owner_lock_acquire_calls:1", "refused": "fork guard effect: owner_lock_acquire_calls", "receipt_absent": true}
+{"probe": "positive-seven-after-negatives", "accepted": true}
+{"status": "PASS", "probe_count": 147, "scope": "Synthetic verifier only; no application, Git, actual child/fork or hardware execution"}

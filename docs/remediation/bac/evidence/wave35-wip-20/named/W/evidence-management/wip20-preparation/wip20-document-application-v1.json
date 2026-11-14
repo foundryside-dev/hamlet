@@ -1,0 +1,55 @@
+{
+  "schema": "bac-reviewed-document-application-v1",
+  "at": "2026-11-14T04:45:04.859185+00:00",
+  "actor": "/root",
+  "proposal": {
+    "root": "W",
+    "path": "wave35-preparation/wip20-docs/proposal-manifest-final.json",
+    "sha256": "d385458a97d594f37fcda2d0cc1ac9790853908b529f05f051be42a9a8688383",
+    "bytes": 3768
+  },
+  "review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-WIP20-DOCUMENTATION-GROUND-TRUTH-REVIEW.md",
+    "sha256": "b757e551a07e400052d0e7cd5b5736845574ea1d77f7d5b8ae68b8589cae9887",
+    "bytes": 10070
+  },
+  "documents": [
+    {
+      "path": "README.md",
+      "before_sha256": "efed71def427225be84e0d6f9e67d6f87df4401df392907de2195d195d3e36a3",
+      "after_sha256": "3bfd2e19a18d5b6599d7a05e5b39c8fceb4b24129dac94181f08f5788d4d3b35",
+      "before_bytes": 32210,
+      "after_bytes": 32503
+    },
+    {
+      "path": "docs/remediation/bac/STATUS.md",
+      "before_sha256": "52d5261a3b7eb5f8f36286ab2c7e5aa5b13abcaf8764147dcfeb21fe32c4affe",
+      "after_sha256": "384255460e70dfdf97712b73e5d7ca6a4ea112f3eca19f9cd09f9e1fd6c490fa",
+      "before_bytes": 98514,
+      "after_bytes": 102002
+    },
+    {
+      "path": "docs/remediation/bac/EVIDENCE-INDEX.md",
+      "before_sha256": "9646ff5b9672b505943d2a3c335b01d8662253f8b92358aee16ad0b050ef6fad",
+      "after_sha256": "e21c1c63b7dddc1bf01dd759d59aefff5ba5ae68780695518cfe24ea2373438c",
+      "before_bytes": 8979,
+      "after_bytes": 12599
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-RNG-CUSTODY-CORE-CONTRACT.md",
+      "before_sha256": "553a840a6b54c28763cec8a1e2e84f8161f9aa67832b2d3e1b07bf90c0eb7aab",
+      "after_sha256": "8d2e1096bfdac94afc97691834e2418a4463de0d70c644ba14aa20ffa73fc99e",
+      "before_bytes": 44999,
+      "after_bytes": 47345
+    },
+    {
+      "path": "docs/remediation/bac/CURRENT-REPLAY-CUSTODY-CONTRACT.md",
+      "before_sha256": "00082f3cc8dfca251de21ae3e6a41e814f1698f4054aebce0a81ebf4cc57222b",
+      "after_sha256": "8cd7b369e2e1ac35273680ab16e346c8f540b664586904c8b4b9985f630c2137",
+      "before_bytes": 11552,
+      "after_bytes": 18978
+    }
+  ],
+  "scope": "Exact five reviewed document proposals applied after closed R113 runtime. Index is prospective until coupled checkpoint materialization; must not publish alone. No execution source changed."
+}

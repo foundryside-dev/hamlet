@@ -1,0 +1,23 @@
+{
+  "schema": "bac-exact-tool-execution-v1",
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py"
+  ],
+  "cwd": "/workspace/hamlet",
+  "started_at": "2026-11-13T21:24:38.157003+00:00",
+  "ended_at": "2026-11-13T21:24:40.937623+00:00",
+  "seconds": 2.780633048998425,
+  "exit_code": 1,
+  "source_before": {
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+  },
+  "source_after": {
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08"
+  },
+  "log": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/b-fork-verifier-qualification/tests-first-red-attempt-1.log",
+  "log_sha256": "5c27735600b5df5b2ceb002307fb7ec58dfcb366c6916d58ee89c0eace1306e5",
+  "scope": "Synthetic tool tests only; no application or hardware qualification"
+}

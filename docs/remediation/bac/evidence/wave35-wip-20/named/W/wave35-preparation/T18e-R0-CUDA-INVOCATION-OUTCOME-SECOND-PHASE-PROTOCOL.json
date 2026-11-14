@@ -1,0 +1,113 @@
+{
+  "schema": "bac-invocation-authored-protocol-handoff-v1",
+  "status": "AUTHORED FROZEN TEST BYTES; COLLECTION AND RUNTIME UNEXECUTED",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "source": {
+    "src/townlet/exploration/rng_custody.py": {
+      "lines": 948,
+      "sha256": "ed8df0b56707baa08d46dd3422b91521bbe15a02c187643cc360a565e3c8372e",
+      "changed": false
+    },
+    "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py": {
+      "lines": 2166,
+      "sha256": "780b1464c258d0a0162f9f0983be079b869c3868b4d24fbbc029afa154218b36",
+      "previous_sha256": "ccc74e6bac55f322d3363ac1e19c820b2b97b0d86839b392dfabedb452647a38"
+    }
+  },
+  "node_prefix": "tests/test_townlet/regressions/bac/test_rng_cuda_admission.py::",
+  "nonpoison_node_suffixes": [
+    "test_device_invocation_nonempty_completion_matches_existing_operation",
+    "test_device_invocation_nested_siblings_keep_lineage_and_receipts",
+    "test_device_invocation_nested_currency_preserves_currentness_rules[device_operation]",
+    "test_device_invocation_nested_currency_preserves_currentness_rules[device_invocation]",
+    "test_device_invocation_thread_object_rejects_numeric_alias",
+    "test_device_invocation_registry_lifetime_and_lock_paths"
+  ],
+  "new_children": [
+    {
+      "case": "invocation_same_error",
+      "role": "cuda_core_invocation_same_error",
+      "node_suffix": "test_isolated_poison_protocol[invocation_same_error]",
+      "message": "cuda core invocation_same_error fail closed"
+    },
+    {
+      "case": "invocation_child_failure",
+      "role": "cuda_core_invocation_child_failure",
+      "node_suffix": "test_isolated_poison_protocol[invocation_child_failure]",
+      "message": "cuda core invocation_child_failure fail closed"
+    },
+    {
+      "case": "invocation_parent_failure",
+      "role": "cuda_core_invocation_parent_failure",
+      "node_suffix": "test_isolated_poison_protocol[invocation_parent_failure]",
+      "message": "cuda core invocation_parent_failure fail closed"
+    },
+    {
+      "case": "invocation_reported_failure",
+      "role": "cuda_core_invocation_reported_failure",
+      "node_suffix": "test_isolated_poison_protocol[invocation_reported_failure]",
+      "message": "cuda core invocation_reported_failure fail closed"
+    },
+    {
+      "case": "invocation_phase_reference",
+      "role": "cuda_core_invocation_phase_reference",
+      "node_suffix": "test_isolated_poison_protocol[invocation_phase_reference]",
+      "message": "cuda core invocation_phase_reference fail closed"
+    },
+    {
+      "case": "invocation_phase_failure",
+      "role": "cuda_core_invocation_phase_failure",
+      "node_suffix": "test_isolated_poison_protocol[invocation_phase_failure]",
+      "message": "cuda core invocation_phase_failure fail closed"
+    }
+  ],
+  "child_target": "test_rng_cuda_admission.cuda_core_child",
+  "queue_shape": ["message", "actual_child_pid", "actual_child_ppid", "qualified_bool"],
+  "phase": {
+    "roles": ["cuda_core_invocation_phase_reference", "cuda_core_invocation_phase_failure"],
+    "schema": "cuda-core-invocation-phase-v1",
+    "filenames": [
+      "invocation-phase-cuda_core_invocation_phase_reference.json",
+      "invocation-phase-cuda_core_invocation_phase_failure.json"
+    ],
+    "exact_keys": [
+      "schema", "role", "case", "pid", "ppid", "base_commit", "candidate_tree", "manifest_sha256",
+      "source_sha256", "devices", "synchronize_events", "exception_labels", "completion_failed"
+    ],
+    "source_sha256_exact_keys": ["townlet.exploration.rng_custody", "test_rng_cuda_admission"],
+    "devices": [0, 1, 2],
+    "exception_labels": ["body", "synchronization"],
+    "reference_completion_failed": null,
+    "failure_completion_failed": true,
+    "events": "Observed ordered integer device vector; compare paired subjects, do not hard-code early-stop tail",
+    "parent_observation_extra_key": "invocation_phase_sha256",
+    "parent_hash": "Parent hashes actual child artifact after successful owned termination",
+    "writer": "Qualified child only, exclusive file create; ordinary unqualified runs emit no phase artifact"
+  },
+  "fork": {
+    "node_suffix": "test_isolated_inherited_pid_gate_refusal",
+    "spawn_role": "cuda_core_inherited_pid",
+    "target": "test_rng_cuda_admission.inherited_pid_child",
+    "final_message": "cuda core inherited pid gates fail closed",
+    "required_trials": ["admission", "local", "invocation"],
+    "new_trial": "invocation",
+    "exact_new_action_keys": [
+      "active_enter", "active_exit", "active_completion_failed", "completed_completion_failed", "domain_device_invocation"
+    ],
+    "identity_schema": "cuda-core-fork-guard-identity-v1",
+    "observation_schema": "cuda-core-fork-guard-observation-v1",
+    "profile": "linux-fork-inherited-guard-only-v1",
+    "guard_role": "cuda_core_inherited_pid_guard",
+    "identity_filename": "fork-identity-cuda_core_inherited_pid-invocation.json",
+    "observation_filename": "fork-observation-cuda_core_inherited_pid-invocation.json",
+    "acknowledgement_message": "cuda core inherited pid invocation fail closed",
+    "exception_class": "builtins.RuntimeError",
+    "diagnostic": "RNG custody cannot be inherited by another process",
+    "counter_keys": ["lock_acquire_calls", "owner_lock_acquire_calls", "cuda_touch_calls", "body_calls"],
+    "counters_required": 0,
+    "state_unchanged_required": true,
+    "state_witness": "Existing guard_state plus invocation_state scalar snapshot of all eight actual registry fields and live generator/frame completion identity"
+  },
+  "execution_prerequisite": "Separate strict verifier implementation/review/synthetic qualification and root exact capture before new poison/fork execution",
+  "inventory_policy": "No broad role prefix, trial allowance, old-role optional fields or unknown phase-marker artifacts"
+}

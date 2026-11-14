@@ -1,0 +1,27 @@
+{
+  "schema": "bac-tooling-synthetic-run-v1",
+  "stage": "Finite implementation GREEN attempt1",
+  "command": [
+    "/workspace/hamlet/.venv/bin/python",
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py"
+  ],
+  "cwd": "/workspace/hamlet",
+  "started_at": "2026-11-13T20:47:08.614165+00:00",
+  "ended_at": "2026-11-13T20:47:11.541007+00:00",
+  "duration_seconds": 2.926854414996342,
+  "exit_code": 0,
+  "source_before": {
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+  },
+  "source_after": {
+    "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/test_replay_spawn_verifier.py": "dc604fcab0dccbec82feb592be29108b6e4c6cb2899c3f4b5d647725e098228b",
+    "/workspace/bac-review-2026-11-01/qualification/verify_bac_replay_spawn_identity.py": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0"
+  },
+  "log": {
+    "path": "/workspace/hamlet/.superpowers/sdd/2026-11-01-bac-remediation-upgrades/evidence-management/invocation-verifier-qualification/implementation-green-attempt-1.log",
+    "sha256": "e5ee64da40d172629750ff6656ee76ee6f5d99f9b81223ea5c51d92da6bd56bc",
+    "bytes": 174
+  },
+  "scope": "Synthetic strict-verifier qualification only; no application or actual child execution."
+}

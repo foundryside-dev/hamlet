@@ -1,0 +1,31 @@
+{
+  "status": "FINAL OBSERVED FAILURE INDEX, NOT ACCEPTANCE",
+  "base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+  "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+  "unique_node_phase_failures": 2,
+  "affected_paths": [
+    "tests/test_townlet/regressions/bac/test_replay_rng_custody.py"
+  ],
+  "signatures": [
+    {
+      "error": "+    where wait = <threading.Event at 0x7fcd7912ed50: unset>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[per]",
+          "phase": "call"
+        }
+      ]
+    },
+    {
+      "error": "+    where wait = <threading.Event at 0x7fcd792f1310: unset>.wait",
+      "count": 1,
+      "cases": [
+        {
+          "nodeid": "tests/test_townlet/regressions/bac/test_replay_rng_custody.py::test_direct_ambient_sample_waits_for_registered_peer[flat]",
+          "phase": "call"
+        }
+      ]
+    }
+  ]
+}

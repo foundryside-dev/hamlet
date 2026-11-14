@@ -1,0 +1,88 @@
+# Producer B activation — frozen production handoff
+
+2026-11-13. Implemented under root R110 production grant SHA256
+`e4c359e3892a39ffe4c5d039aa9fc3dadd47f2fa399c0aa67efc8a77e07a7775`.
+Only application source changed: `src/townlet/exploration/rng_custody.py`.
+This report is the requested prose handoff. Writer releases the baton at this
+freeze; separate core-test owner must reconcile actual source before root GREEN.
+
+## Exact frozen source
+
+| Body | Lines | SHA256 |
+| --- | ---: | --- |
+| `src/townlet/exploration/rng_custody.py` | 1195 | `6cb01ca77b58db5f4c4784dc36da566c06cf68c2a7c2ce227bb780549f3344f8` |
+| `src/townlet/training/replay_contract.py` | 881 | `8c0251c3c46e9c296e7b3bb5afcf2f6cdce8083fa22666c5a662be454a9a12f4` |
+| `src/townlet/training/replay_buffer.py` | 816 | `683e0b9b0f500cc523391b8574acbfc31bf8dc8a36d92ad0547323621261838d` |
+| `src/townlet/training/prioritized_replay_buffer.py` | 1310 | `7a76183ded0712103c81ebd31b3e05425b3738e9338689cacfbefbc8fd493a29` |
+| `tests/test_townlet/regressions/bac/test_replay_cuda_activation.py` | 597 | `cf2e0c46d3910eb3b2aa01ebb746664333d7c83e52278e5cafd5f9f08a3fa8fe` |
+
+Actual4799/five; core1195 <=1250 and total <=4854 reserved / hard5000.
+Other four bodies are unchanged. No excluded core2360/producer2468/helper675
+body, other implementation body, or diff/snippet substitute was read. No Git,
+branch/worktree/checkout/copy, child/application runtime or delegation occurred.
+
+## Implemented private interface and public constants
+
+The exact18 constant names, routes and primary input tags are the adopted
+activation map, with no additional aliases/identities. Eight flat and ten PER
+identities are created at core initialization without importing producer classes.
+Every source descriptor is frozen with healthy=True/post_poison=False. No
+public issuer, caller registration/predicate, compatibility union or fallback.
+
+Supplier capsule SHA256
+`851d113a120c5fcd40d7f11cb7731c9fb67e6c2d8c5b74dd2670c367a0e73ad3`
+is implemented with its exact names and required arguments:
+
+- `_LocalCUDADescriptor` at140 has owner_kind, route, input_kind, rationale,
+  healthy and post_poison; `_LOCAL_CUDA_CONTRACTS` at173 is its immutable map.
+- `_local_cuda_policies` at397 is the per-domain dictionary mapping each
+  contract to `(exact_descriptor, exact_frozen_LocalCUDARecord)`.
+- `_resolve_local_cuda_record(*, descriptor)` at587 checks actual PID, actual
+  lock ownership, CUDA-transaction reentry and descriptor type before fixed
+  canonical imports. Owner kinds flat/per and seven input tags resolve through
+  the canonical modules in the supplier capsule. Unknown tags, unavailable
+  classes and failed imports refuse; this method does not publish cache state.
+- `_local_cuda_policy(*, contract)` at632 repeats PID/actual-lock/reentry checks,
+  authenticates source contract/descriptor, refuses changed cached descriptors,
+  and publishes only a complete concrete record after successful resolution.
+  Cache hits return that same record; records contain classes, never owners.
+- `_gate_record` at653 performs no resolution/import. It verifies current
+  manifest descriptor identity, cached policy identity and existing exact
+  membership/owner/class/thread/lock binding. Replacement/removal invalidates
+  the live binding; resolving another route does not replace its policy.
+- `local_cuda_access` at728 preserves public nested-local refusal, authenticates
+  actual membership before canonical resolution, enforces exact owner class,
+  then applies existing permissions/pinning/lifetime behavior.
+
+`_LocalCUDARecord` and `_Gate.policy` remain concrete frozen policy types.
+Primary input metadata is descriptive, not arbitrary-input purity proof or a
+new input rejection. Producer inventory/dispatch remains its source obligation.
+No outcome/completion algorithm, RNG currency/revision, READY/poison, owner
+quarantine or producer sampling/publication implementation was changed.
+
+## Static verification and execution boundary
+
+Author ran only these formatting/static checks from `/workspace/hamlet`, with
+`UV_CACHE_DIR=/tmp/bac-b-activation-format-cache`:
+
+| Command after `uv run --no-sync` | Result |
+| --- | --- |
+| `black src/townlet/exploration/rng_custody.py` | PASS, formatted source |
+| `ruff check src/townlet/exploration/rng_custody.py` | PASS, All checks passed |
+| `mypy src/townlet/exploration/rng_custody.py --follow-imports=silent` | PASS, no issues in1 source file |
+
+No author collection/runtime result is claimed. Root's source-bound R110 RED
+receipt SHA256 `8229193dd134acab770d9f799c30310db691aa534c058f16dfbe06a647694ce5`
+reports156 collected (core89 + activation67), five CPU/source/archive fixture
+PASS,19 direct missing-constant failures covering18 plus manifest, and one
+core-manifest missing-descriptor failure, with no errors/skips/warnings.
+Those are earlier-source root observations, not GREEN at these new bytes.
+
+The separate core-test owner must now inspect this actual interface, reconcile
+its finite fake-policy resolver seam/manifest/cache/fork-state controls without
+accepting old record entries, and publish exact updated state/child schema facts.
+Root then owns final-byte application/child verification and independent review.
+Activation67, remaining producer routes, actual poison children, fresh-process
+ordering, parent outcome/lineage, recurrent and real one-/two-device hardware
+qualification remain governed by their existing packets. Healthy-only policy
+does not close post-poison GPU capability, B6/R0 or programme acceptance.

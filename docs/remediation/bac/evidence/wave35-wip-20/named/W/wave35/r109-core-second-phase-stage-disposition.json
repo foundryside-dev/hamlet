@@ -1,0 +1,19 @@
+{
+  "schema": "bac-root-component-disposition-v1",
+  "status": "SECOND-PHASE SOURCE REVIEW AND HEALTHY CHECKS PASS; ISOLATED QUALIFICATION OPEN",
+  "source_review": {
+    "root": "W",
+    "path": "wave35-preparation/T18e-R0-CUDA-INVOCATION-OUTCOME-SECOND-PHASE-REVIEW.md",
+    "sha256": "7aea3ba6b7fd450afa4c9de7146e0f41cdc0cd31c7fdfcefe6e0c8ca3d602bca",
+    "bytes": 11386
+  },
+  "checks": {
+    "root": "W",
+    "path": "wave35/r109-root-checks.json",
+    "sha256": "87320230075f8299f55d974be77b5057f679fcc922c9ee6e06d7681228407903",
+    "bytes": 4027
+  },
+  "candidate_tree": "35ba7e44c6be2516da6a39422376c26bdf993127",
+  "scope": "Actual2body3114 source review and72 unique healthy controls; no material source finding.16 isolated jobs and phase-pair runtime remain unrun until strict verifier qualification.",
+  "remaining": "Strict tool tests-first/implementation/review/qualification, actual child/fork/phase evidence, then B activation and downstream integration/hardware/global gates."
+}

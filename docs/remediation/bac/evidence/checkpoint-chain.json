@@ -6,7 +6,7 @@
     "sha256": "778eb89176aced5619cb4978bca1585b79d574676967674be800c64770056129"
   },
   "chain_semantics": "Natural publication-label order; links authenticate exact checkpoint bytes, not inferred Git ancestry or current-source equivalence. Missing wave labels are not synthesized.",
-  "current_local_candidate": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+  "current_local_candidate": "b5298dec04379db31bf9107a26ead7764f53d73c",
   "entries": [
     {
       "artifact_checks": {
@@ -1751,15 +1751,55 @@
         "bytes": 1269940
       },
       "publication": "WIP checkpoint; exact remote/CI verification separate"
+    },
+    {
+      "id": "wave35-wip-20",
+      "manifest": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+        "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd",
+        "bytes": 1382890
+      },
+      "previous_record": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-19.json",
+        "sha256": "7f03a92f589227f68ee87064fd153dac3d961a8bfe3e1565323ecf318076c24b"
+      },
+      "previous_catalog_entry": "wave35-wip-19",
+      "identity": {
+        "evidence_base_commit": "0597715b8d59ab3bdda41ef5521b9772aaa9c436",
+        "evidence_candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
+        "execution_subtrees": {
+          ".defaults-ratchet": "e9f960cf4ac4e28e6cf8ecbad6f08c44ea9de347",
+          "configs": "33e853d568354eeb24afab9498b9bc227830671d",
+          "scripts": "1797d2e80c7a5285fe03c1c029954b0f622fe57e",
+          "src": "4f93103a70fa167ce8a80ac6398a95d3c2600295",
+          "tests": "5b8367adadbc28a276909fdc2a9101f5f6821ca1"
+        }
+      },
+      "status": "UNRELEASED WIP; canonical local CUDA policies and fixture repairs reviewed; two replay failures, cold-import and integration/hardware/programme qualification open",
+      "packet": "Canonical local CUDA policies, invocation controls and fixture repairs; remaining qualification explicit",
+      "round": 113,
+      "receipt_pointer": "#/receipt",
+      "package_accounting": {
+        "qualified": 28,
+        "remaining": 38,
+        "total": 66
+      },
+      "qualified_progress": "28 qualified / 38 remaining / 66 original packages unchanged",
+      "selection_plan": {
+        "path": "docs/remediation/bac/evidence/wave35-wip-20/selection-plan.json",
+        "sha256": "e1244dc1a12b3dec2c744dd891f9d891147cd4d5992c1cc648da4b5dafafaffe",
+        "bytes": 1691458
+      },
+      "publication": "WIP checkpoint; exact remote/CI verification separate"
     }
   ],
-  "latest_verified_remote_publication_at_assembly": "wave35-wip-18",
+  "latest_verified_remote_publication_at_assembly": "wave35-wip-19",
   "current_checkpoint": {
-    "path": "docs/remediation/bac/evidence/wave35-wip-19.json",
-    "sha256": "7f03a92f589227f68ee87064fd153dac3d961a8bfe3e1565323ecf318076c24b",
-    "bytes": 998690,
-    "candidate_tree": "fa1c6804fcff475f5652e5f5f357468e2d931c0d",
+    "path": "docs/remediation/bac/evidence/wave35-wip-20.json",
+    "sha256": "3ff2feabefcb14c370960810eaaeb7296382de455e902a19757056b8672c74bd",
+    "bytes": 1382890,
+    "candidate_tree": "b5298dec04379db31bf9107a26ead7764f53d73c",
     "publication": "WIP checkpoint; exact remote/CI verification separate"
   },
-  "latest_verified_remote_commit_at_assembly": "df8dcebc90d8faec3da82f2eb036c24fcc2eb8e9"
+  "latest_verified_remote_commit_at_assembly": "0597715b8d59ab3bdda41ef5521b9772aaa9c436"
 }

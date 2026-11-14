@@ -1,0 +1,17 @@
+{
+  "schema": "bac-root-pair-verification-execution-v1",
+  "started_at": "2026-11-13T20:53:43.817846+00:00",
+  "ended_at": "2026-11-13T20:53:44.196771+00:00",
+  "duration_seconds": 0.37869005899119657,
+  "entrypoint": "verify_invocation_phase_pair(reference_spec_path, failure_spec_path)",
+  "reference_spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-reference-spec.json",
+  "failure_spec": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-cuda-core-invocation-phase-failure-spec.json",
+  "verifier_sha256": "311f32e05522e1f81b7c2e130f95483568eb642a88b12ed44e7b3188084c7cd0",
+  "exit_code": 0,
+  "receipt": {
+    "path": "/workspace/bac-review-2026-11-01/qualification/wave35-r109-invocation-phase-pair-custody.json",
+    "sha256": "7072ea4b2648a2a4f2c1a7519afe50f77db2636b99dd4492c3beca8936539b6e",
+    "bytes": 6573
+  },
+  "scope": "Actual two separately qualified CPU phase jobs; root exclusively materialized returned pair receipt. No GPU/B/producer/parent-owner qualification."
+}

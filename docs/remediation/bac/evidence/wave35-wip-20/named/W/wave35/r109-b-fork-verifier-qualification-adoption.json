@@ -1,0 +1,14 @@
+{
+  "schema": "bac-tool-qualification-adoption-v1",
+  "recorded_at": "2026-11-13T21:28:37.625303+00:00",
+  "status": "STRICT B LOCAL FORK SCHEMA QUALIFIED FOR ACTUAL CURRENT PROTOCOL",
+  "verifier_sha256": "6006c7247d79a99226a74756a2266a2966fce800f9f84af802f2990db4606173",
+  "tests_sha256": "469a6a5708a384f0563eebf950bc981485e2a64c4e7ffb41a6d51ac8b85b8f08",
+  "root_synthetic_methods_passed": 81,
+  "root_green_result_sha256": "6ac2a43f1fe61af9099348536db1844768b1924f5cb2c2493087d8cee12e9a2f",
+  "independent_review_sha256": "c8e6d1087a0115f45b6bf1fce2f9954e98c8ba54a7256b6142ee3c61c9079ec8",
+  "independent_synthetic_probes": 147,
+  "static": "Root Ruff and Black --check --line-length140 on both files passed",
+  "scope": "Exact local7/admission4/invocation5 action protocol only. Older local5 histories require retained exact R109 tool evidence. No actual B child/HW/application qualification inferred.",
+  "runtime_hold": "Actual core child execution awaits B implementation and reconciled current source/tests."
+}
